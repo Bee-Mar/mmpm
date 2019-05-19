@@ -5,6 +5,7 @@ install: -build_depends -place_in_path
 
 -place_in_path: mmpm.py
 	sudo cp mmpm.py /usr/local/bin/mmpm
+	sudo chmod +x /usr/local/bin/mmpm
 
 uninstall:
 	sudo rm /usr/local/bin/mmpm

@@ -18,7 +18,7 @@ Currently, the supported features consist of five main categories:
 
 ## Prior State of Affairs
 
-Prior to this project, the installation process of MagicMirror modules was rather tedious. First, you needed to navigate to the [MagicMirror 3rd Party Modules](https://github.com/MichMich/MagicMirror/wiki/3rd-Party-Modules) page, scroll through a large list of modules available. Then, once you found the modules you wanted to install, you needed to clone each of the repos manually,
+Prior to this project, the installation process of MagicMirror modules was rather tedious. First, you needed to navigate to the [MagicMirror 3rd Party Modules](https://github.com/MichMich/MagicMirror/wiki/3rd-Party-Modules) page and scroll through a large list of available modules. Once you found the module(s) you wanted to install, you needed to clone each of the repos manually,
 then handle the updates all your own.
 
 ## Future State of Affairs
@@ -27,13 +27,19 @@ Ideally, this project will become the official package manager of [Magic Mirror]
 
 ## Potential Problems
 
-As it stands, this project is entirely dependent on the structure of the [MagicMirror 3rd Party Modules](https://github.com/MichMich/MagicMirror/wiki/3rd-Party-Modules) page. The HTML is parsed, and the appropriate text of each module is extracted. If for some reason any of the information is not displayed correctly, it is most likely due to someone changing the structure of the page. Ideally, a database will be constructed, and things will be handeled in a more formal, predictable way in the future. So, think of this currently as a shim, just to get the project going.
+As it stands, this project is entirely dependent on the structure of the [MagicMirror 3rd Party Modules](https://github.com/MichMich/MagicMirror/wiki/3rd-Party-Modules) page. The HTML is parsed, and the appropriate text of each module is extracted. If for some reason any of the information is not displayed correctly, it is most likely due to someone changing the structure of the page. Ideally, in the future, a database will be constructed, and things will be handeled in a more formal, predictable way. So, think of this currently as a shim, just to get the project going.
 
 ## Installation of MMPM
 
-The only system requirements are `python3` and the `pip3` package manager. If you are unsure as to whether or not you have `pip3` installed, open a terminal, and execute `which pip3`. If the program exists within your `$PATH`, then the previous command will display something like `/usr/bin/pip3`. If nothing is printed, then you probably do not have it installed, and you can install it with `sudo apt install python3-pip`. To install `python3`, simply run `sudo apt install python3`, but it is most likely already installed.
+| System Dependency | Installation                       |
+| ----------------- | ---------------------------------- |
+| `python3`         | `sudo apt install python3`         |
+| `pip3`            | `sudo apt install python3-pip`     |
+| `libgit2-dev`     | `sudo apt-get install libgit2-dev` | 
 
-Next, clone this repository anywhere you like, and execute `make install` from a terminal. The required Python3 packages will be installed, and the command line program will be placed in `/usr/local/bin`. Moving the executable to `/usr/local/bin` requires `sudo` permission, so depending on your system configuration you may or may not be prompted for the root password. From here, you'll be able to execute any of the below `mmpm` commands.
+The system requirements are listed above. If you are unsure as to whether or not you have `pip3` installed, open a terminal, and execute `which pip3`. If the program exists within your `$PATH`, then the previous command will display something like `/usr/bin/pip3`. If nothing is printed, then you probably do not have it installed, and you can install it with `sudo apt install python3-pip`. To install `python3`, simply run `sudo apt install python3`, but it is most likely already installed (assuming your version of Raspbian is up to date).
+
+Next, clone this repository anywhere you like, and execute `make install` from a terminal. The required Python3 packages will be installed, and the command line program will be placed in `/usr/local/bin`. Moving the executable to `/usr/local/bin` requires `sudo` permission, so depending on your system configuration you may or may not be prompted for the root password. From here, you'll be able to execute any of the `mmpm` commands described in the "Overview of Commands" section.
 
 ```sh
 # check for python3 installation
@@ -53,7 +59,7 @@ $ git clone https://github.com/Bee-Mar/mmpm.git && cd mmpm && make install
 
 Obviously, MagicMirror is required as well. If you do not have it installed, head over to [Magic Mirror](https://github.com/MichMich/MagicMirror)'s home page for instructions. I intend to add an option to install MagicMirror from `mmpm` in the future.
 
-After executing `make install` within the cloned repository, you may remove the folder for `mmpm`.
+After executing `make install` within the cloned repository, you may remove the folder for `mmpm`, since the executable will now be part of your `$PATH`.
 
 ## `magic_mirror_modules_snapshot.json`
 
@@ -70,11 +76,18 @@ If you decide to remove `mmpm`, you can execute `make uninstall` from within the
 $ make uninstall
 ```
 
+Or, you can manually remove the executable, along with the `magic_mirror_modules_snapshot.json` file by executing the following:
+
+```sh
+$ sudo rm /usr/local/bin/mmpm
+$ rm ~/.magic_mirror_modules_snapshot.json
+```
+
 # Overview of Commands
 
 ## `-h` or `--help`
 
-This command line option simply displays the help message.
+Displays the help message.
 
 ```sh
 $ mmpm -h
@@ -201,9 +214,9 @@ $ mmpm --categories
 
 ## `-s` or `--search`
 
-This command line option requires at least one argument. Without reading this section, the search functionality may seem slightly initially. However, the actions are intentional.
+This command line option requires at least one argument. Without reading this section, the search functionality may seem slightly odd when first used. However, the actions are intentional.
 
-When a query is entered, first, an attempt to match the query to a category name is made. The search in this instance is case-sensitive. If no category name matches the query **exactly**, the search becomes non-case-sensitive, and attempts to match text within the *title*, *author*, or *description* are made. If any one of those fields contains matching text, that module is returned a search result. For any search query that contains more than one word, surround the text in quotation marks. This was done intentionally to prevent bombarding the user with large numbers of search results when possible.
+When a query is entered, first, an attempt to match the query to a category name is made. The search in this instance is case-sensitive. If no category name matches the query **exactly**, the search becomes non-case-sensitive, and attempts to match text within the *title*, *author*, or *description* are made. If any one of those fields contains matching text, that module is returned as a search result. For any search query that contains more than one word, surround the text in quotation marks. This was done intentionally to prevent bombarding the user with large numbers of search results.
 
 When searching for a category name that is lengthy, it is best to list the categories using `mmpm -c` first, then copy and paste the **exact** category name into terminal. See the examples below:
 
@@ -230,7 +243,7 @@ $ mmpm --search "FACIAL RECOGNITION"
 
 ## `-d` or `--snapshot-details`
 
-This command line option takes no arguments, and displays the details of the most recent MagicMirror 3rd Party Modules snapshot. The snapshot may be forcibly refreshed by executing `mmpm -f` or `mmpm --force-refresh`.
+This command line option takes no arguments, and displays the details of the most recent MagicMirror 3rd Party Modules snapshot. The snapshot may be forcibly refreshed by executing `mmpm -f` or `mmpm --force-refresh` (see above).
 
 ```sh
 $ mmpm -d
@@ -251,8 +264,6 @@ $ mmpm --snapshot-details
 ## `-i` or `--install`
 
 This command line option requires at least one argument. The spelling of the modules is case-sensitive, and each of the module names must be separated by at least one space. If any module name(s) contain a space, surround the name of the module in quotation marks.
-
-install
 
 ```sh
 # install a single package

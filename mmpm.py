@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import os
 import sys
 import time
@@ -285,11 +285,10 @@ def load_modules(snapshot_file, force_refresh=False):
         curr_snap = os.path.getmtime(snapshot_file)
         next_snap = curr_snap + refresh_interval * 60 * 60
     else:
-
         next_snap = curr_snap = time.time()
 
-    # if the snapshot has expired, get a new one
-    if force_refresh or next_snap - time.time() <= 0.0:
+    # if the snapshot has expired, or doesn't exist, get a new one
+    if not os.path.exists(snapshot_file) or force_refresh or next_snap - time.time() <= 0.0:
         modules = retrieve_modules()
         with open(snapshot_file, "w") as f:  # save the new snapshot
             json.dump(modules, f)
@@ -376,11 +375,15 @@ def retrieve_modules():
 
     category_soup = soup.find_all(attrs={"class": "markdown-body"})
     categories_soup = category_soup[0].find_all("h3")
+
     categories = []
 
     for (i, row) in enumerate(categories_soup):
         last_element = len(categories_soup[i].contents) - 1
-        categories.append(categories_soup[i].contents[last_element])
+        new_category = categories_soup[i].contents[last_element]
+
+        if new_category != "General Advice":
+            categories.append(new_category)
 
     tr_soup = []
     table_soups = []
@@ -391,7 +394,8 @@ def retrieve_modules():
         tr_soup.append(table.find_all("tr"))
 
     for (i, row) in enumerate(tr_soup):
-        modules.update({categories[i+1]: list()})
+        modules.update({categories[i]: list()})
+
         for (j, value) in enumerate(row):
             # ignore the cells that contain literally say "Title", "Author", "Description"
             if j > 0:
@@ -434,7 +438,7 @@ def retrieve_modules():
 
                         desc = str(desc)
 
-                modules[categories[i+1]].append({
+                modules[categories[i]].append({
                     "Title": title,
                     "Repository": repo,
                     "Author": author,

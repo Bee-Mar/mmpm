@@ -14,17 +14,56 @@ from bs4 import BeautifulSoup
 from collections import defaultdict
 from colorama import Fore, Back, Style
 
+BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
+BRIGHT_GREEN = Style.BRIGHT + Fore.GREEN
+BRIGHT_MAGENTA = Style.BRIGHT + Fore.MAGENTA
+BRIGHT_WHITE = Style.BRIGHT + Fore.WHITE
+BRIGHT_YELLOW = Style.BRIGHT + Fore.YELLOW
+NORMAL_WHITE = Style.NORMAL + Fore.WHITE
+
 
 def error_msg(msg):
+    '''
+    Displays error message to user, and exits program.
+
+    Arguments
+    =========
+    msg: String
+    '''
     print(Fore.RED + Style.BRIGHT + "ERROR: " + Fore.WHITE + msg)
     exit(0)
 
 
 def warning_msg(msg):
-    print(Fore.YELLOW + Style.BRIGHT + "WARNING: " + Fore.WHITE + msg)
+    '''
+    Displays warning message to user and continues program execution.
+
+    Arguments
+    =========
+    msg: String
+    '''
+    print(BRIGHT_YELLOW + "WARNING: " + Fore.WHITE + msg)
 
 
-def update_or_upgrade_modules(modules_table, update=False, upgrade=True, modules_to_upgrade=None):
+def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrade=None):
+    '''
+    Depending on flags passed in as arguments:
+
+    Checks for available module updates, and alerts the user. Or, pulls latest
+    version of module(s) from the associated repos.
+
+    If upgrading, a user can upgrade all modules that have available upgrades
+    by ommitting additional arguments. Or, upgrade specific modules by
+    supplying their case-sensitive name(s) as an addtional argument.
+
+    Arguments
+    =========
+    modules_table: Dictionary
+    update: Boolean
+    upgrade: Boolean
+    modules_to_upgrade: List
+    '''
+
     original_dir = os.getcwd()
     modules_dir = os.path.expanduser("~") + "/MagicMirror/modules"
     os.chdir(modules_dir)
@@ -38,12 +77,7 @@ def update_or_upgrade_modules(modules_table, update=False, upgrade=True, modules
         dirs = modules_to_upgrade
 
     if update:
-        print(Style.BRIGHT +
-              Fore.CYAN +
-              "Checking for updates..." +
-              Fore.WHITE +
-              Style.NORMAL
-              )
+        print(BRIGHT_CYAN + "Checking for updates..." + NORMAL_WHITE)
 
     for key, value in modules_table.items():
         for i in range(len(value)):
@@ -61,11 +95,9 @@ def update_or_upgrade_modules(modules_table, update=False, upgrade=True, modules
                         updates_list.append(title)
 
                 elif upgrade:
-                    print(Style.BRIGHT +
-                          Fore.CYAN +
+                    print(BRIGHT_CYAN +
                           "Requesting upgrade for {}...".format(title) +
-                          Fore.WHITE +
-                          Style.NORMAL
+                          NORMAL_WHITE
                           )
 
                     os.system("git pull")
@@ -78,14 +110,11 @@ def update_or_upgrade_modules(modules_table, update=False, upgrade=True, modules
 
     if update:
         if not updates_list:
-            print(Fore.WHITE + Style.BRIGHT +
-                  "No updates available." + Style.NORMAL)
+            print(BRIGHT_WHITE + "No updates available." + Style.NORMAL)
         else:
-            print(Fore.MAGENTA +
-                  Style.BRIGHT +
+            print(BRIGHT_MAGENTA +
                   "Updates are available for the following modules:\n" +
-                  Style.NORMAL +
-                  Fore.WHITE
+                  NORMAL_WHITE
                   )
 
             for i in range(len(updates_list)):
@@ -95,16 +124,26 @@ def update_or_upgrade_modules(modules_table, update=False, upgrade=True, modules
                   "\nTo update all modules, execute 'mmpm -U', or you may choose individual " +
                   "modules to update\nby executing mmpm -U followed by the name of the modules(s).'" +
                   "For example:" +
-                  Fore.GREEN +
-                  Style.BRIGHT +
+                  BRIGHT_GREEN +
                   "\n\n'mmpm -U {}'".format(updates_list[0]) +
-                  Fore.WHITE +
-                  Style.NORMAL +
+                  NORMAL_WHITE +
                   "\n"
                   )
 
 
 def search_modules(modules_table, search):
+    '''
+    Used to search the 'modules_table' for either a category, or keyword/phrase
+    appearing within module descriptions. If the argument supplied is a
+    category name, all modules from that category will be listed. Otherwise,
+    all modules whose descriptions contain the keyword/phrase will be
+    displayed.
+
+    Arguments
+    =========
+    modules_table: Dictionary
+    search: String
+    '''
 
     search_results = {}
 
@@ -148,6 +187,16 @@ def search_modules(modules_table, search):
 
 
 def install_modules(modules_table, modules_to_install):
+    '''
+    Compares list of 'modules_to_install' to modules found within the
+    'modules_table', clones the repository within the ~/MagicMirror/modules
+    directory, and runs 'npm install' for each newly installed module.
+
+    Arguments
+    =========
+    modules_table: Dictionary
+    modules_to_install: List
+    '''
 
     modules_dir = os.path.expanduser("~") + "/MagicMirror/modules"
     original_dir = os.getcwd()
@@ -181,23 +230,19 @@ def install_modules(modules_table, modules_to_install):
 
                 os.chdir(target)
 
-                print(Fore.GREEN +
-                      Style.BRIGHT +
+                print(BRIGHT_GREEN +
                       "Installing {}".format(value[i]["Title"]) +
                       Fore.YELLOW +
                       " @ " +
                       Fore.GREEN +
                       "{}\n".format(target) +
-                      Fore.WHITE)
+                      Fore.WHITE
+                      )
 
                 print(Fore.CYAN + "Cloning repository for {}...".format(title))
                 pygit2.clone_repository(repo, target)
                 print(Fore.CYAN + "Repository cloned...")
-                print(Fore.CYAN +
-                      "Installing NodeJS dependencies...\n" +
-                      Fore.WHITE +
-                      Style.NORMAL
-                      )
+                print(Fore.CYAN + "Installing NodeJS dependencies...\n" + NORMAL_WHITE)
                 os.system("npm install")
                 os.chdir(curr_subdir)
                 print("\n")
@@ -210,15 +255,13 @@ def install_modules(modules_table, modules_to_install):
             msg += "with installation candidate. Is the title casing correct?\n"
             warning_msg(msg)
 
-    print(Fore.GREEN +
-          Style.BRIGHT +
+    print(BRIGHT_GREEN +
           "To finish installation, populate " +
           Fore.WHITE +
           "'~/MagicMirror/config/config.js'" +
           Fore.GREEN +
           "\nwith the necessary configurations for each of the newly installed modules.\n" +
-          Fore.WHITE +
-          Style.NORMAL +
+          NORMAL_WHITE +
           "\nWhile I did my best to install dependencies for you, " +
           "there may be additional steps required\nto fully setup each of the modules " +
           "(ie. running 'make' for specific targets within each directory).\n\n" +
@@ -228,6 +271,17 @@ def install_modules(modules_table, modules_to_install):
 
 
 def remove_modules(installed_modules, modules_to_remove):
+    '''
+    Gathers list of modules currently installed in the ~/MagicMirror/modules
+    directory, and removes each of the modules from the folder, if modules are
+    currently installed. Otherwise, the user is shown an error message alerting
+    them no modules are currently installed.
+
+    Arguments
+    =========
+    modules_table: Dictionary
+    modules_to_install: List
+    '''
 
     if not installed_modules:
         error_msg("No modules are currently installed.")
@@ -254,13 +308,13 @@ def remove_modules(installed_modules, modules_to_remove):
         try:
             shutil.rmtree(dir_to_rm)
             successful_removals.append(module)
+
         except FileNotFoundError as err:
             msg = "The directory for '{}' does not exist.".format(module)
             warning_msg(msg)
 
     if successful_removals:
-        print(Fore.GREEN +
-              Style.BRIGHT +
+        print(BRIGHT_GREEN +
               "The following modules were successfully deleted:" +
               Style.NORMAL
               )
@@ -276,6 +330,16 @@ def remove_modules(installed_modules, modules_to_remove):
 
 
 def load_modules(snapshot_file, force_refresh=False):
+    '''
+    Reads in modules from the hiddent 'snapshot_file' stored in the users home
+    directory, and checks if the file is out of date. If so, the modules are
+    gathered again from the MagicMirror 3rd Party Modules wiki.
+
+    Arguments
+    =========
+    snapshot_file: Path to file
+    force_refresh: Boolean
+    '''
 
     modules = {}
     curr_snap = 0
@@ -306,17 +370,23 @@ def load_modules(snapshot_file, force_refresh=False):
     return modules, curr_snap, next_snap
 
 
-def display_all_modules(modules_table, list_all=False, list_categories=False):
+def display_modules(modules_table, list_all=False, list_categories=False):
+    '''
+    Depending on the user flags passed in from the command line, either all
+    existing modules may be displayed, or the names of all categories of
+    modules may be displayed.
+
+    Arguments
+    =========
+    modules_table: Dictionary
+    list_all: Boolean
+    list_categories: Boolean
+    '''
 
     if list_categories:
         count = 1
 
-        print(Fore.CYAN +
-              Style.BRIGHT +
-              "MagicMirror Module Categories\n" +
-              Fore.WHITE +
-              Style.NORMAL
-              )
+        print(BRIGHT_CYAN + "MagicMirror Module Categories\n" + NORMAL_WHITE)
 
         for key in modules_table.keys():
             print("{}) {}".format(count, key))
@@ -344,6 +414,15 @@ def display_all_modules(modules_table, list_all=False, list_categories=False):
 
 
 def get_installed_modules(modules_table):
+    '''
+    Saves a list of all currently installed modules in the
+    ~/MagicMirror/modules directory, and compares against the known modules
+    from the MagicMirror 3rd Party Wiki.
+
+    Arguments
+    =========
+    modules_table: Dictionary
+    '''
 
     original_dir = os.getcwd()
     modules_dir = os.path.expanduser("~") + "/MagicMirror/modules"
@@ -364,6 +443,15 @@ def get_installed_modules(modules_table):
 
 
 def retrieve_modules():
+    '''
+    Scrapes the MagicMirror 3rd Party Wiki, and saves all modules along with
+    their full, available descriptions in a hidden JSON file in the users home
+    directory.
+
+    Arguments
+    =========
+    None
+    '''
 
     modules = {}
 
@@ -449,6 +537,18 @@ def retrieve_modules():
 
 
 def snapshot_details(modules, curr_snap, next_snap):
+    '''
+    Displays information regarding the most recent 'snapshot_file', ie. when it
+    was taken, when the next scheduled snapshot will be taken, how many module
+    categories exist, and the total number of modules available. Additionally,
+    tells user how to forcibly request a new snapshot be taken.
+
+    Arguments
+    =========
+    modules: Dictionary
+    curr_snap: String (timestamp)
+    next_snap: String (timestamp)
+    '''
 
     num_categories = len(modules.keys())
     num_modules = 0
@@ -456,18 +556,14 @@ def snapshot_details(modules, curr_snap, next_snap):
     for key, value in modules.items():
         num_modules += len(modules[key])
 
-    print(Style.BRIGHT +
-          Fore.WHITE +
-          Fore.YELLOW +
+    print(BRIGHT_YELLOW +
           "\nMost recent snapshot of MagicMirror Modules taken @ " +
-          Style.NORMAL +
-          Fore.WHITE +
+          NORMAL_WHITE +
           "{}.".format(curr_snap) +
-          Style.BRIGHT +
-          Fore.YELLOW + "\n"
+          BRIGHT_YELLOW +
+          "\n"
           "The next snapshot will be taken on or after " +
-          Style.NORMAL +
-          Fore.WHITE +
+          NORMAL_WHITE +
           "{}.\n".format(next_snap) +
           Style.BRIGHT +
           "\nModule Categories: " +
@@ -477,8 +573,7 @@ def snapshot_details(modules, curr_snap, next_snap):
           "Modules Available: " +
           Fore.GREEN +
           "{}\n".format(num_modules) +
-          Style.NORMAL +
-          Fore.WHITE +
+          NORMAL_WHITE +
           "\nTo forcibly refresh the snapshot, run 'mmpm -f' or 'mmpm --force-refresh'\n"
           )
 
@@ -613,22 +708,16 @@ def main(argv):
                                                        )
 
     if args.all:
-        display_all_modules(modules_table,
-                            list_all=True,
-                            list_categories=False
-                            )
+        display_modules(modules_table, list_all=True, list_categories=False)
 
     elif args.categories:
-        display_all_modules(modules_table,
-                            list_all=False,
-                            list_categories=True
-                            )
+        display_modules(modules_table, list_all=False, list_categories=True)
 
     elif args.search:
-        display_all_modules(search_modules(modules_table, args.search),
-                            list_all=True,
-                            list_categories=False
-                            )
+        display_modules(search_modules(modules_table, args.search),
+                        list_all=True,
+                        list_categories=False
+                        )
 
     elif args.install:
         install_modules(modules_table, args.install)
@@ -643,12 +732,7 @@ def main(argv):
         if not installed_modules:
             error_msg("No modules are currently installed")
 
-        print(Fore.CYAN +
-              Style.BRIGHT +
-              "Module(s) Installed:\n" +
-              Fore.WHITE +
-              Style.NORMAL
-              )
+        print(BRIGHT_CYAN + "Module(s) Installed:\n" + NORMAL_WHITE)
 
         for i in range(len(installed_modules)):
             print(installed_modules[i])
@@ -657,14 +741,12 @@ def main(argv):
         snapshot_details(modules_table, curr_snap, next_snap)
 
     elif args.update:
-        update_or_upgrade_modules(modules_table, update=True, upgrade=False)
+        enhance_modules(modules_table, update=True,
+                        upgrade=False, modules_to_upgrade=None)
 
     elif args.upgrade:
-        update_or_upgrade_modules(modules_table,
-                                  update=False,
-                                  upgrade=True,
-                                  modules_to_upgrade=args.upgrade[0]
-                                  )
+        enhance_modules(modules_table, update=False, upgrade=True,
+                        modules_to_upgrade=args.upgrade[0])
 
 
 if __name__ == "__main__":

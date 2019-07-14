@@ -15,7 +15,7 @@ from collections import defaultdict
 
 
 try:
-    import argpase
+    import argparse
 except ImportError:
     print("ArgParse package not found. Pip installing with --user flag.")
     print("==========================================================\n")
@@ -105,10 +105,10 @@ def check_for_mmpm_enhancements():
         contents = str(mmpm_file.read())
         version_line = re.findall("__version__ = \d+\.\d+", contents)
 
-        if __version__ < version_number:
-            version_number = re.findall("\d+\.\d+", version_line[0])
-            version_number = float(version_number[0])
+        version_number = re.findall("\d+\.\d+", version_line[0])
+        version_number = float(version_number[0])
 
+        if version_line and __version__ < version_number:
             valid_response = False
 
             while not valid_response:
@@ -467,6 +467,8 @@ def load_modules(snapshot_file, force_refresh=False):
 
         curr_snap = os.path.getmtime(snapshot_file)
         next_snap = curr_snap + refresh_interval * 60 * 60
+
+        check_for_mmpm_enhancements()
 
     else:
         with open(snapshot_file, "r") as f:
@@ -870,8 +872,6 @@ def main(argv):
     elif args.version:
         print(BRIGHT_CYAN + "MMPM Version: " +
               NORMAL_WHITE + "{}".format(__version__))
-
-    check_for_mmpm_enhancements()
 
 
 if __name__ == "__main__":

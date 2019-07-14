@@ -45,6 +45,11 @@ def warning_msg(msg):
     print(BRIGHT_YELLOW + "WARNING: " + Fore.WHITE + msg)
 
 
+def check_for_mmpm_enhancements():
+    # mmpm_repository = "git@"
+    pass
+
+
 def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrade=None):
     '''
     Depending on flags passed in as arguments:
@@ -212,6 +217,7 @@ def install_modules(modules_table, modules_to_install):
 
     for key, value in modules_table.items():
         curr_subdir = os.getcwd()
+
         for i in range(len(value)):
             if value[i]["Title"] in modules_to_install:
                 title = value[i]["Title"]
@@ -222,6 +228,7 @@ def install_modules(modules_table, modules_to_install):
 
                 try:
                     os.mkdir(target)
+
                 except FileExistsError as err:
                     msg = "The {} module already exists. ".format(title)
                     msg += "To remove the module, run 'mmpm -r {}'".format(
@@ -240,11 +247,15 @@ def install_modules(modules_table, modules_to_install):
                       )
 
                 print(Fore.CYAN + "Cloning repository for {}...".format(title))
+
                 pygit2.clone_repository(repo, target)
+
                 print(Fore.CYAN + "Repository cloned...")
                 print(Fore.CYAN + "Installing NodeJS dependencies...\n" + NORMAL_WHITE)
+
                 os.system("npm install")
                 os.chdir(curr_subdir)
+
                 print("\n")
 
     os.chdir(original_dir)
@@ -426,6 +437,12 @@ def get_installed_modules(modules_table):
 
     original_dir = os.getcwd()
     modules_dir = os.path.expanduser("~") + "/MagicMirror/modules"
+
+    if not os.path.exists(modules_dir):
+        msg = "The directory '{}' does not exist. ".format(modules_dir)
+        msg += "Have you installed MagicMirror properly?"
+        error_msg(msg)
+
     os.chdir(modules_dir)
 
     module_dirs = os.listdir(os.getcwd())

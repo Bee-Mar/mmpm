@@ -9,6 +9,7 @@
 - Added doc-strings to functions
 - Added new method `check_for_mmpm_enhancements` to check for updates to MMPM, which will run
   intermittently, and prompt the user when one is found
+- The user may also run `check_for_mmpm_enhancements` by specifying the `-e` flag
 - Removed onus of installing required Python modules on user during `make install` process by
   including `try` and `except` blocks in `mmpm.py`. Primary reason for this was based on odd
   segmentation faults when attempting to handle original `make install` from within

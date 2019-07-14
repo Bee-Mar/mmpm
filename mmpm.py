@@ -141,6 +141,8 @@ def check_for_mmpm_enhancements():
                     valid_response = True
                 else:
                     warning_msg("Respond with yes/no or y/n.")
+        else:
+            print("No enhancements available for MMPM.")
 
     except urllib.error.HTTPError as err:
         pass
@@ -729,6 +731,12 @@ def main(argv):
                                  '''
                             )
 
+    arg_parser.add_argument("-e",
+                            "--enhance-mmpm",
+                            action="store_true",
+                            help="Checks is there are enhancements available for MMPM. Prompts user if upgrade is available."
+                            )
+
     arg_parser.add_argument("-a",
                             "--all",
                             action="store_true",
@@ -868,6 +876,9 @@ def main(argv):
     elif args.upgrade:
         enhance_modules(modules_table, update=False, upgrade=True,
                         modules_to_upgrade=args.upgrade[0])
+
+    elif args.enhance_mmpm:
+        check_for_mmpm_enhancements()
 
     elif args.version:
         print(BRIGHT_CYAN + "MMPM Version: " +

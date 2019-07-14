@@ -52,7 +52,9 @@ $ which pip3
 $ make install
 
 ```
+
 Full Installation:
+
 ```sh
 $ git clone https://github.com/Bee-Mar/mmpm.git && cd mmpm && make install
 ```
@@ -117,6 +119,7 @@ $ mmpm --update
 This command line option may take one or more additional arguments. If no arguments are provided, **all** modules that have available updates will be upgraded. You may however upgrade specific modules by supplying the name of those modules as additional argument(s).
 
 Example usage:
+
 ```sh
 # upgrade every single currently installed module
 $ mmpm -U
@@ -128,6 +131,13 @@ $ mmpm -U MMM-Simple-Swiper MMM-pages
 $ mmpm --upgrade
 $ mmpm --upgrade MMM-Simple-Swiper MMM-pages
 ```
+
+## `-e` or `--enhance-mmpm`
+
+This command line option takes no additional arguments. The version available on the GitHub repo is
+check against the one currently installed. If there is a newer version available, the user is
+prompted to install the newest version. If accepted, the repository is cloned, and the installation
+process is executed for the user.
 
 ## `-a` or `--all`
 
@@ -216,7 +226,7 @@ $ mmpm --categories
 
 This command line option requires at least one argument. Without reading this section, the search functionality may seem slightly odd when first used. However, the actions are intentional.
 
-When a query is entered, first, an attempt to match the query to a category name is made. The search in this instance is case-sensitive. If no category name matches the query **exactly**, the search becomes non-case-sensitive, and attempts to match text within the *title*, *author*, or *description* are made. If any one of those fields contains matching text, that module is returned as a search result. For any search query that contains more than one word, surround the text in quotation marks. This was done intentionally to prevent bombarding the user with large numbers of search results.
+When a query is entered, first, an attempt to match the query to a category name is made. The search in this instance is case-sensitive. If no category name matches the query **exactly**, the search becomes non-case-sensitive, and attempts to match text within the _title_, _author_, or _description_ are made. If any one of those fields contains matching text, that module is returned as a search result. For any search query that contains more than one word, surround the text in quotation marks. This was done intentionally to prevent bombarding the user with large numbers of search results.
 
 When searching for a category name that is lengthy, it is best to list the categories using `mmpm -c` first, then copy and paste the **exact** category name into terminal. See the examples below:
 
@@ -239,7 +249,6 @@ $ mmpm -s "facial recognition"
 # this will return the same results as the previous example
 $ mmpm --search "FACIAL RECOGNITION"
 ```
-
 
 ## `-d` or `--snapshot-details`
 
@@ -320,4 +329,3 @@ MMM-Facial-Recognition
 
 $ mmpm --list-installed
 ```
-

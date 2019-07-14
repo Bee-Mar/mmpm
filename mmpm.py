@@ -5,6 +5,7 @@ import sys
 import time
 import json
 import shutil
+import signal
 import pygit2
 import argparse
 import datetime
@@ -24,6 +25,8 @@ BRIGHT_MAGENTA = Style.BRIGHT + Fore.MAGENTA
 BRIGHT_WHITE = Style.BRIGHT + Fore.WHITE
 BRIGHT_YELLOW = Style.BRIGHT + Fore.YELLOW
 NORMAL_WHITE = Style.NORMAL + Fore.WHITE
+
+home_dir = os.path.expanduser("~")
 
 
 def error_msg(msg):
@@ -50,31 +53,60 @@ def warning_msg(msg):
 
 
 def check_for_mmpm_enhancements():
-    mmpm_repository = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm.py"
+    mmpm_repository = "https://github.com/Bee-Mar/mmpm.git"
+
+    # master
+    # mmpm_main_file = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm.py"
+
+    # develop
+    mmpm_main_file = "https://raw.githubusercontent.com/Bee-Mar/mmpm/develop/mmpm.py"
 
     try:
-        mmpm_file = urllib.request.urlopen(mmpm_repository)
+        mmpm_file = urllib.request.urlopen(mmpm_main_file)
         contents = str(mmpm_file.read())
         version_line = re.findall("__version__ = \d+\.\d+", contents)
 
+        # if __version__ < version_number:
         if version_line:
             version_number = re.findall("\d+\.\d+", version_line[0])
+            version_number = float(version_number[0])
 
-            if __version__ < float(version_number):
-                print(BRIGHT_GREEN +
-                      "MMPM has an upgrade available. "
-                      + NORMAL_WHITE +
-                      "Would you like to upgrade now?" +
-                      NORMAL_WHITE
-                      )
+            valid_response = False
+
+            while not valid_response:
+                user_response = input(BRIGHT_GREEN +
+                                      "MMPM has an upgrade available. "
+                                      + NORMAL_WHITE +
+                                      "Would you like to upgrade now? [yes/no | y/n] " +
+                                      NORMAL_WHITE
+                                      )
+
+                if 'yes' in user_response or 'y' in user_response:
+
+                    dir_cleanup = "rm -rf mmpm"
+                    clone_repo = "git clone {}".format(mmpm_repository)
+                    install_mmpm = "make install"
+
+                    original_dir = os.getcwd()
+
+                    os.chdir(home_dir + "/Downloads")
+                    os.system(dir_cleanup)
+                    os.system(clone_repo)
+                    os.chdir("mmpm")
+                    os.system(install_mmpm)
+
+                    os.chdir(original_dir)
+                    os.system("rm -rf " + home_dir + "/Downloads/mmpm")
+
+                    valid_response = True
+
+                elif 'no' in user_response or 'n' in user_response:
+                    valid_response = True
+                else:
+                    warning_msg("Respond with yes/no or y/n.")
 
     except urllib.error.HTTPError as err:
         pass
-
-    # command = "cd ~/Downloads && git clone {} && make install".format(
-    #     mmpm_repository)
-
-    # os.system(command)
 
 
 def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrade=None):
@@ -97,7 +129,7 @@ def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrad
     '''
 
     original_dir = os.getcwd()
-    modules_dir = os.path.expanduser("~") + "/MagicMirror/modules"
+    modules_dir = home_dir + "/MagicMirror/modules"
     os.chdir(modules_dir)
 
     updates_avail = False
@@ -230,7 +262,8 @@ def install_modules(modules_table, modules_to_install):
     modules_to_install: List
     '''
 
-    modules_dir = os.path.expanduser("~") + "/MagicMirror/modules"
+    modules_dir = home_dir + "/MagicMirror/modules"
+
     original_dir = os.getcwd()
 
     if not os.path.exists(modules_dir):
@@ -324,7 +357,7 @@ def remove_modules(installed_modules, modules_to_remove):
     if not installed_modules:
         error_msg("No modules are currently installed.")
 
-    modules_dir = os.path.expanduser("~") + "/MagicMirror/modules"
+    modules_dir = home_dir + "/MagicMirror/modules"
     original_dir = os.getcwd()
 
     if not os.path.exists(modules_dir):
@@ -463,7 +496,7 @@ def get_installed_modules(modules_table):
     '''
 
     original_dir = os.getcwd()
-    modules_dir = os.path.expanduser("~") + "/MagicMirror/modules"
+    modules_dir = home_dir + "/MagicMirror/modules"
 
     if not os.path.exists(modules_dir):
         msg = "The directory '{}' does not exist. ".format(modules_dir)
@@ -735,6 +768,12 @@ def main(argv):
                             help="Lists all currently installed modules."
                             )
 
+    arg_parser.add_argument("-v",
+                            "--version",
+                            action="store_true",
+                            help="Displays MMPM version."
+                            )
+
     if len(argv) < 2:
         arg_parser.print_help()
         exit(0)
@@ -744,7 +783,6 @@ def main(argv):
     modules_table = {}
     installed_modules_table = {}
 
-    home_dir = os.path.expanduser("~")
     snapshot_file = home_dir + "/.magic_mirror_modules_snapshot.json"
 
     modules_table, curr_snap, next_snap = load_modules(snapshot_file,
@@ -792,8 +830,15 @@ def main(argv):
         enhance_modules(modules_table, update=False, upgrade=True,
                         modules_to_upgrade=args.upgrade[0])
 
+    elif args.version:
+        print(BRIGHT_CYAN + "MMPM Version: " +
+              NORMAL_WHITE + "{}".format(__version__))
+
     check_for_mmpm_enhancements()
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    try:
+        main(sys.argv)
+    except KeyboardInterrupt:
+        error_msg("Caught keyboard interrupt. Exiting")

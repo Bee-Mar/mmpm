@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import re
 import sys
 import time
 import json
@@ -8,11 +9,14 @@ import pygit2
 import argparse
 import datetime
 import subprocess
+import urllib.error
 import urllib.request
 from math import floor
 from bs4 import BeautifulSoup
 from collections import defaultdict
 from colorama import Fore, Back, Style
+
+__version__ = 0.2
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
 BRIGHT_GREEN = Style.BRIGHT + Fore.GREEN
@@ -46,8 +50,31 @@ def warning_msg(msg):
 
 
 def check_for_mmpm_enhancements():
-    # mmpm_repository = "git@"
-    pass
+    mmpm_repository = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm.py"
+
+    try:
+        mmpm_file = urllib.request.urlopen(mmpm_repository)
+        contents = str(mmpm_file.read())
+        version_line = re.findall("__version__ = \d+\.\d+", contents)
+
+        if version_line:
+            version_number = re.findall("\d+\.\d+", version_line[0])
+
+            if __version__ < float(version_number):
+                print(BRIGHT_GREEN +
+                      "MMPM has an upgrade available. "
+                      + NORMAL_WHITE +
+                      "Would you like to upgrade now?" +
+                      NORMAL_WHITE
+                      )
+
+    except urllib.error.HTTPError as err:
+        pass
+
+    # command = "cd ~/Downloads && git clone {} && make install".format(
+    #     mmpm_repository)
+
+    # os.system(command)
 
 
 def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrade=None):
@@ -764,6 +791,8 @@ def main(argv):
     elif args.upgrade:
         enhance_modules(modules_table, update=False, upgrade=True,
                         modules_to_upgrade=args.upgrade[0])
+
+    check_for_mmpm_enhancements()
 
 
 if __name__ == "__main__":

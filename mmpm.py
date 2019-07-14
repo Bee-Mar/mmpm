@@ -7,6 +7,7 @@ import time
 import json
 import shutil
 import datetime
+import textwrap
 import subprocess
 import urllib.error
 import urllib.request
@@ -46,12 +47,22 @@ except ImportError:
     pip.main(["install", "--user", "colorama"])
     print("\n\n")
 
+try:
+    import tabulate
+except ImportError:
+    print("Tabulate package not found. Pip installing with --user flag.")
+    print("============================================================\n")
+    pip.main(["install", "--user", "tabulate"])
+    print("\n\n")
+
+
 import pygit2
 import argparse
+from tabulate import tabulate
 from bs4 import BeautifulSoup
 from colorama import Fore, Back, Style
 
-__version__ = 0.2
+__version__ = 0.25
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
 BRIGHT_GREEN = Style.BRIGHT + Fore.GREEN
@@ -496,33 +507,36 @@ def display_modules(modules_table, list_all=False, list_categories=False):
     '''
 
     if list_categories:
-        count = 1
-
-        print(BRIGHT_CYAN + "MagicMirror Module Categories\n" + NORMAL_WHITE)
+        headers = [BRIGHT_CYAN + "CATEGORY", BRIGHT_CYAN +
+                   "NUMBER OF MODULES" + NORMAL_WHITE]
+        rows = []
 
         for key in modules_table.keys():
-            print("{}) {}".format(count, key))
-            count += 1
+            rows.append([key, len(modules_table[key])])
 
-        print("\n")
+        print(tabulate(rows, headers, tablefmt="fancy_grid"))
 
     elif list_all:
+
+        headers = [BRIGHT_CYAN + "CATEGORY",
+                   "TITLE",
+                   "REPOSITORY",
+                   "AUTHOR",
+                   "DESCRIPTION" + NORMAL_WHITE
+                   ]
+        rows = []
+
         for key, value in modules_table.items():
             for i in range(len(value)):
                 val = value[i]
-                print(Fore.CYAN + "{}".format("Category: ") +
-                      Fore.WHITE + "{}".format(key))
+                rows.append([key,
+                             val["Title"],
+                             textwrap.fill(val["Repository"]),
+                             textwrap.fill(val["Author"], width=12),
+                             textwrap.fill(val["Description"], width=15)
+                             ])
 
-                print(Fore.CYAN + "{}".format("Title: ") +
-                      Fore.WHITE + "{}".format(val["Title"]))
-
-                print(Fore.CYAN + "{}".format("Repository: ") +
-                      Fore.WHITE + "{}".format(val["Repository"]))
-                print(Fore.CYAN + "{}".format("Author: ") +
-                      Fore.WHITE + "{}".format(val["Author"]))
-                print(Fore.CYAN + "{}".format("Description: ") +
-                      Fore.WHITE + "{}".format(val["Description"]))
-                print("\n")
+        print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))
 
 
 def get_installed_modules(modules_table):

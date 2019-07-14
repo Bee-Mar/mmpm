@@ -1,4 +1,4 @@
-# MMPM - The MagicMirror Package Manager                                                                                                                                                                             
+# MMPM - The MagicMirror Package Manager
 
 | Author          | Contact                           |
 | --------------- | --------------------------------- |
@@ -35,7 +35,7 @@ As it stands, this project is entirely dependent on the structure of the [MagicM
 | ----------------- | ---------------------------------- |
 | `python3`         | `sudo apt install python3`         |
 | `pip3`            | `sudo apt install python3-pip`     |
-| `libgit2-dev`     | `sudo apt-get install libgit2-dev` | 
+| `libgit2-dev`     | `sudo apt-get install libgit2-dev` |
 
 The system requirements are listed above. If you are unsure as to whether or not you have `pip3` installed, open a terminal, and execute `which pip3`. If the program exists within your `$PATH`, then the previous command will display something like `/usr/bin/pip3`. If nothing is printed, then you probably do not have it installed, and you can install it with `sudo apt install python3-pip`. To install `python3`, simply run `sudo apt install python3`, but it is most likely already installed (assuming your version of Raspbian is up to date).
 
@@ -117,7 +117,7 @@ $ mmpm --update
 This command line option may take one or more additional arguments. If no arguments are provided, **all** modules that have available updates will be upgraded. You may however upgrade specific modules by supplying the name of those modules as additional argument(s).
 
 Example usage:
-```sh                                                                                                                                                                                                                
+```sh
 # upgrade every single currently installed module
 $ mmpm -U
 
@@ -319,5 +319,5 @@ MMM-Facial-Recognition
 # LONG FORM
 
 $ mmpm --list-installed
-``` 
+```
 

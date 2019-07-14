@@ -2,19 +2,53 @@
 import os
 import re
 import sys
+import pip
 import time
 import json
 import shutil
-import signal
-import pygit2
-import argparse
 import datetime
 import subprocess
 import urllib.error
 import urllib.request
 from math import floor
-from bs4 import BeautifulSoup
 from collections import defaultdict
+
+
+try:
+    import argpase
+except ImportError:
+    print("ArgParse package not found. Pip installing with --user flag.")
+    print("==========================================================\n")
+    pip.main(["install", "--user", "argparse"])
+    print("\n\n")
+
+try:
+    import pygit2
+except ImportError:
+    print("PyGit2 package not found. Pip installing with --user flag.")
+    print("==========================================================\n")
+    pip.main(["install", "--user", "pygit2"])
+    print("\n\n")
+
+try:
+    import bs4
+except ImportError:
+    print("BeautifulSoup4 package not found. Pip installing with --user flag.")
+    print("==================================================================\n")
+    pip.main(["install", "--user", "bs4"])
+    print("\n\n")
+
+try:
+    import colorama
+except ImportError:
+    print("Colorama package not found. Pip installing with --user flag.")
+    print("============================================================\n")
+    pip.main(["install", "--user", "colorama"])
+    print("\n\n")
+
+import pygit2
+import argparse
+from bs4 import BeautifulSoup
 from colorama import Fore, Back, Style
 
 __version__ = 0.2
@@ -53,21 +87,25 @@ def warning_msg(msg):
 
 
 def check_for_mmpm_enhancements():
+    '''
+    Scrapes the main file of MMPM off the github repo, and compares the current
+    version, versus the one available in the master branch. If there is a newer
+    version, the user is prompted for an upgrade.
+
+    Arguments
+    =========
+    None
+
+    '''
     mmpm_repository = "https://github.com/Bee-Mar/mmpm.git"
-
-    # master
-    # mmpm_main_file = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm.py"
-
-    # develop
-    mmpm_main_file = "https://raw.githubusercontent.com/Bee-Mar/mmpm/develop/mmpm.py"
+    mmpm_main_file = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm.py"
 
     try:
         mmpm_file = urllib.request.urlopen(mmpm_main_file)
         contents = str(mmpm_file.read())
         version_line = re.findall("__version__ = \d+\.\d+", contents)
 
-        # if __version__ < version_number:
-        if version_line:
+        if __version__ < version_number:
             version_number = re.findall("\d+\.\d+", version_line[0])
             version_number = float(version_number[0])
 
@@ -82,21 +120,20 @@ def check_for_mmpm_enhancements():
                                       )
 
                 if 'yes' in user_response or 'y' in user_response:
-
-                    dir_cleanup = "rm -rf mmpm"
-                    clone_repo = "git clone {}".format(mmpm_repository)
-                    install_mmpm = "make install"
-
                     original_dir = os.getcwd()
 
                     os.chdir(home_dir + "/Downloads")
-                    os.system(dir_cleanup)
-                    os.system(clone_repo)
+                    os.system("rm -rf mmpm")
+                    os.system("git clone {}".format(mmpm_repository))
                     os.chdir("mmpm")
-                    os.system(install_mmpm)
+                    os.system("make")
 
                     os.chdir(original_dir)
+
                     os.system("rm -rf " + home_dir + "/Downloads/mmpm")
+
+                    print("Newly cloned MMPM repository in ~/Downloads.")
+                    print("Feel free to remove the directory.")
 
                     valid_response = True
 

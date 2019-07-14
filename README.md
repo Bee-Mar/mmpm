@@ -135,7 +135,7 @@ $ mmpm --upgrade MMM-Simple-Swiper MMM-pages
 ## `-e` or `--enhance-mmpm`
 
 This command line option takes no additional arguments. The version available on the GitHub repo is
-check against the one currently installed. If there is a newer version available, the user is
+checked against the one currently installed. If there is a newer version available, the user is
 prompted to install the newest version. If accepted, the repository is cloned, and the installation
 process is executed for the user.
 

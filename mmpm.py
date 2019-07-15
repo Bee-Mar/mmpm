@@ -53,7 +53,7 @@ from tabulate import tabulate
 from bs4 import BeautifulSoup
 from colorama import Fore, Back, Style
 
-__version__ = 0.26
+__version__ = 0.261
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
 BRIGHT_GREEN = Style.BRIGHT + Fore.GREEN
@@ -115,9 +115,9 @@ def check_for_mmpm_enhancements():
 
             while not valid_response:
                 user_response = input(BRIGHT_GREEN +
-                                      "MMPM has an upgrade available. "
+                                      "MMPM enhancements are available. "
                                       + NORMAL_WHITE +
-                                      "Would you like to upgrade now? [yes/no | y/n] " +
+                                      "Would you like to upgrade now? [yes/no | y/n]: " +
                                       NORMAL_WHITE
                                       )
 
@@ -134,8 +134,8 @@ def check_for_mmpm_enhancements():
 
                     os.system("rm -rf " + home_dir + "/Downloads/mmpm")
 
-                    print("Newly cloned MMPM repository in ~/Downloads.")
-                    print("Feel free to remove the directory.")
+                    print("\n\nNewly cloned MMPM repository in ~/Downloads.")
+                    print("Feel free to remove the directory from ~/Downloads.")
 
                     valid_response = True
 
@@ -347,7 +347,10 @@ def install_modules(modules_table, modules_to_install):
                       Fore.WHITE
                       )
 
-                print(Fore.CYAN + "Cloning repository for {}...".format(title))
+                print(BRIGHT_CYAN +
+                      "Cloning repository for {}...".format(
+                          title + NORMAL_WHITE)
+                      )
 
                 command = "git clone {} {}".format(repo, target)
                 os.system(command)

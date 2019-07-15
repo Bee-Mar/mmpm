@@ -6,6 +6,8 @@
 
 The MagicMirror Package Manager (`mmpm`) is a command line interface designed to simplify the installation, removal, and maintenance of MagicMirror modules.
 
+(See `CHANGELOG.md` for details of updates)
+
 Consider this project to be in an Alpha state, as you most likely will discover some bugs I was unable to find. Additionally, the features are rather basic at the moment, with an eye on stability, followed by feature expansion. Again, do not consider this to be feature complete, but rather a step in right direction.
 
 Currently, the supported features consist of five main categories:
@@ -138,6 +140,27 @@ This command line option takes no additional arguments. The version available on
 checked against the one currently installed. If there is a newer version available, the user is
 prompted to install the newest version. If accepted, the repository is cloned, and the installation
 process is executed for the user.
+
+```sh
+$ mmpm -e
+
+MMPM has an upgrade available. Would you like to upgrade now? [yes/no | y/n] yes
+Cloning into 'mmpm'...
+remote: Enumerating objects: 54, done.
+remote: Counting objects: 100% (54/54), done.
+remote: Compressing objects: 100% (38/38), done.
+remote: Total 54 (delta 28), reused 34 (delta 14), pack-reused 0
+Unpacking objects: 100% (54/54), done.
+chmod +x mmpm.py && sudo cp mmpm.py /usr/local/bin/mmpm
+[sudo] password for bpm:
+Newly cloned MMPM repository in ~/Downloads.
+Feel free to remove the directory.
+
+$ mmpm --enhance-mmpm
+
+# same output
+
+```
 
 ## `-a` or `--all`
 

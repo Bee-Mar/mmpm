@@ -37,3 +37,11 @@
 - Updated `display_modules` to display the output as a formatted table
 
 - Version 0.3 will focus on performance improvements, and code cleanup
+
+# Version 0.26
+
+- Removed `pygit2` from dependencies, and replaced with `os.system` call
+
+# Version 0.261
+
+- Minor change in font color when installing packages

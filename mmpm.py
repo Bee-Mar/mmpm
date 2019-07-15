@@ -24,14 +24,6 @@ except ImportError:
     print("\n\n")
 
 try:
-    import pygit2
-except ImportError:
-    print("PyGit2 package not found. Pip installing with --user flag.")
-    print("==========================================================\n")
-    pip.main(["install", "--user", "pygit2"])
-    print("\n\n")
-
-try:
     import bs4
 except ImportError:
     print("BeautifulSoup4 package not found. Pip installing with --user flag.")
@@ -56,13 +48,12 @@ except ImportError:
     print("\n\n")
 
 
-import pygit2
 import argparse
 from tabulate import tabulate
 from bs4 import BeautifulSoup
 from colorama import Fore, Back, Style
 
-__version__ = 0.25
+__version__ = 0.26
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
 BRIGHT_GREEN = Style.BRIGHT + Fore.GREEN
@@ -358,7 +349,8 @@ def install_modules(modules_table, modules_to_install):
 
                 print(Fore.CYAN + "Cloning repository for {}...".format(title))
 
-                pygit2.clone_repository(repo, target)
+                command = "git clone {} {}".format(repo, target)
+                os.system(command)
 
                 print(Fore.CYAN + "Repository cloned...")
                 print(Fore.CYAN + "Installing NodeJS dependencies...\n" + NORMAL_WHITE)
@@ -714,7 +706,8 @@ def main(argv):
     arg_parser = argparse.ArgumentParser(prog="mmpm",
                                          epilog='''
                                                 NOTE: See the GitHub page for
-                                                more thorough examples of usage.
+                                                more thorough examples of
+                                                usage.
                                                 ''',
                                          description='''
                                                     The MagicMirror Package
@@ -729,7 +722,10 @@ def main(argv):
     arg_parser.add_argument("-u",
                             "--update",
                             action="store_true",
-                            help="Check for updates for each of the currently installed modules."
+                            help='''
+                                Check for updates for each of the currently
+                                installed modules.
+                                '''
                             )
 
     arg_parser.add_argument("-U",
@@ -737,18 +733,22 @@ def main(argv):
                             action="append",
                             nargs="*",
                             help='''
-                                 Upgrades modules currently installed. If no module name(s)
-                                 follows the upgrade command, all modules will be upgraded.
-                                 To upgrade specific modules, supply one or more module names,
-                                 each separated by a space. For example, 'mmpm -U MMM-Simple-Swiper
-                                 MMM-pages'
+                                 Upgrades modules currently installed. If no
+                                 module name(s) follows the upgrade command,
+                                 all modules will be upgraded.  To upgrade
+                                 specific modules, supply one or more module
+                                 names, each separated by a space. For example,
+                                 'mmpm -U MMM-Simple-Swiper MMM-pages'
                                  '''
                             )
 
     arg_parser.add_argument("-e",
                             "--enhance-mmpm",
                             action="store_true",
-                            help="Checks is there are enhancements available for MMPM. Prompts user if upgrade is available."
+                            help='''
+                                Checks is there are enhancements available for
+                                MMPM. Prompts user if upgrade is available.
+                                '''
                             )
 
     arg_parser.add_argument("-a",
@@ -760,13 +760,19 @@ def main(argv):
     arg_parser.add_argument("-f",
                             "--force-refresh",
                             action="store_true",
-                            help="Forces a refresh of the modules database snapshot."
+                            help='''
+                                Forces a refresh of the modules database
+                                snapshot.
+                                '''
                             )
 
     arg_parser.add_argument("-c",
                             "--categories",
                             action="store_true",
-                            help="Lists names of all module categories, ie. Finance, Weather, etc."
+                            help='''
+                                Lists names of all module categories, ie.
+                                Finance, Weather, etc.
+                                '''
                             )
 
     arg_parser.add_argument("-s",
@@ -799,8 +805,8 @@ def main(argv):
                             "--snapshot-details",
                             action="store_true",
                             help='''
-                                Display details about the most recent snapshot of the
-                                MagicMirror 3rd Party Modules taken.
+                                Display details about the most recent snapshot
+                                of the MagicMirror 3rd Party Modules taken.
                                 '''
                             )
 
@@ -809,7 +815,7 @@ def main(argv):
                             nargs="+",
                             help='''
                                 Installs module(s) with given name(s) separated
-                                by spaces.  Installation candidate names are
+                                by spaces. Installation candidate names are
                                 case-sensitive.
                                 '''
                             )
@@ -818,8 +824,9 @@ def main(argv):
                             "--remove",
                             nargs="+",
                             help='''
-                                Removes module(s) with given name(s) separated by spaces.
-                                Removal candidate names are case-sensitive.
+                                Removes module(s) with given name(s) separated
+                                by spaces. Removal candidate names are
+                                case-sensitive.
                                 '''
                             )
 

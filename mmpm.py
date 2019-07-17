@@ -53,7 +53,7 @@ from tabulate import tabulate
 from bs4 import BeautifulSoup
 from colorama import Fore, Back, Style
 
-__version__ = 0.267
+__version__ = 0.269
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
 BRIGHT_GREEN = Style.BRIGHT + Fore.GREEN
@@ -111,7 +111,6 @@ def check_for_mmpm_enhancements():
         version_number = float(version_number[0])
 
         if version_number and __version__ < version_number:
-            print('here')
             valid_response = False
 
             while not valid_response:

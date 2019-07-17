@@ -65,3 +65,7 @@
 # Version 0.268
 
 - I'm done tidying up today
+
+# Version 0.269
+
+- forgot to remove debug statement

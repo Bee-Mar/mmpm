@@ -55,3 +55,5 @@
 
 - Accidentally created issue with `npm install` by placing text color in front of `os.system`
   command
+
+- Also, removed unused variables

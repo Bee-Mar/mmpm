@@ -53,7 +53,7 @@ from tabulate import tabulate
 from bs4 import BeautifulSoup
 from colorama import Fore, Back, Style
 
-__version__ = 0.265
+__version__ = 0.266
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
 BRIGHT_GREEN = Style.BRIGHT + Fore.GREEN
@@ -206,7 +206,7 @@ def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrad
                           )
 
                     os.system("git pull")
-                    os.system("npm install")
+                    os.system("$(which npm) install")
 
                 print("\n")
                 os.chdir(modules_dir)
@@ -330,7 +330,7 @@ def install_modules(modules_table, modules_to_install):
                 try:
                     os.mkdir(target)
 
-                except FileExistsError as err:
+                except FileExistsError:
                     msg = "The {} module already exists. ".format(title)
                     msg += "To remove the module, run 'mmpm -r {}'".format(
                         title)
@@ -356,9 +356,12 @@ def install_modules(modules_table, modules_to_install):
                 os.system(command)
 
                 print(Fore.CYAN + "Repository cloned...")
-                print(Fore.CYAN + "Installing NodeJS dependencies...\n" + NORMAL_WHITE)
+                print(Fore.CYAN +
+                      "Installing NodeJS dependencies...\n" +
+                      NORMAL_WHITE
+                      )
 
-                os.system("npm install")
+                os.system("$(which npm) install")
                 os.chdir(curr_subdir)
 
                 print("\n")
@@ -368,7 +371,8 @@ def install_modules(modules_table, modules_to_install):
     for i in range(len(modules_to_install)):
         if modules_to_install[i] not in successful_installs:
             msg = "Unable to match '{}' ".format(modules_to_install[i])
-            msg += "with installation candidate. Is the title casing correct?\n"
+            msg += "with installation candidate. "
+            msg += "Is the title casing correct?\n"
             warning_msg(msg)
 
     print(BRIGHT_GREEN +
@@ -376,11 +380,14 @@ def install_modules(modules_table, modules_to_install):
           Fore.WHITE +
           "'~/MagicMirror/config/config.js'" +
           Fore.GREEN +
-          "\nwith the necessary configurations for each of the newly installed modules.\n" +
+          "\nwith the necessary configurations for each of the " +
+          "newly installed modules.\n" +
           NORMAL_WHITE +
           "\nWhile I did my best to install dependencies for you, " +
-          "there may be additional steps required\nto fully setup each of the modules " +
-          "(ie. running 'make' for specific targets within each directory).\n\n" +
+          "there may be additional steps required\n" +
+          "to fully setup each of the modules " +
+          "(ie. running 'make' for specific targets " +
+          "within each directory).\n\n" +
           "Review the GitHub pages for each of the newly installed modules " +
           "for any additional instructions.\n"
           )
@@ -415,7 +422,6 @@ def remove_modules(installed_modules, modules_to_remove):
     successful_removals = []
 
     curr_dir = os.getcwd()
-    dir = os.listdir(curr_dir)
 
     for i in range(len(modules_to_remove)):
         module = modules_to_remove[i]
@@ -425,7 +431,7 @@ def remove_modules(installed_modules, modules_to_remove):
             shutil.rmtree(dir_to_rm)
             successful_removals.append(module)
 
-        except FileNotFoundError as err:
+        except FileNotFoundError:
             msg = "The directory for '{}' does not exist.".format(module)
             warning_msg(msg)
 
@@ -462,15 +468,17 @@ def load_modules(snapshot_file, force_refresh=False):
     refresh_interval = 6
 
     checked_for_enhancements = False
+    file_exists = os.path.exists(snapshot_file)
 
-    if not force_refresh and os.path.exists(snapshot_file):
+    if not force_refresh and file_exists:
         curr_snap = os.path.getmtime(snapshot_file)
         next_snap = curr_snap + refresh_interval * 60 * 60
     else:
         next_snap = curr_snap = time.time()
 
     # if the snapshot has expired, or doesn't exist, get a new one
-    if not os.path.exists(snapshot_file) or force_refresh or next_snap - time.time() <= 0.0:
+    if not file_exists or force_refresh or next_snap - time.time() <= 0.0:
+
         modules = retrieve_modules()
         with open(snapshot_file, "w") as f:  # save the new snapshot
             json.dump(modules, f)
@@ -604,9 +612,6 @@ def retrieve_modules():
             categories.append(new_category)
 
     tr_soup = []
-    table_soups = []
-    hrefs = []
-    anchor_tags = []
 
     for table in table_soup:
         tr_soup.append(table.find_all("tr"))
@@ -859,7 +864,6 @@ def main(argv):
     args = arg_parser.parse_args()
 
     modules_table = {}
-    installed_modules_table = {}
 
     snapshot_file = home_dir + "/.magic_mirror_modules_snapshot.json"
 

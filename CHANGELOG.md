@@ -50,3 +50,8 @@
 
 - Fixed small bug where checking for updates could happen twice if the snapshot file needed to be
   updated. The enhancement command now will only run once at most in either case.
+
+# Version 0.266
+
+- Accidentally created issue with `npm install` by placing text color in front of `os.system`
+  command

@@ -53,7 +53,7 @@ from tabulate import tabulate
 from bs4 import BeautifulSoup
 from colorama import Fore, Back, Style
 
-__version__ = 0.261
+__version__ = 0.265
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
 BRIGHT_GREEN = Style.BRIGHT + Fore.GREEN
@@ -100,14 +100,14 @@ def check_for_mmpm_enhancements():
 
     '''
     mmpm_repository = "https://github.com/Bee-Mar/mmpm.git"
-    mmpm_main_file = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm.py"
+    mmpm_file = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm.py"
 
     try:
-        mmpm_file = urllib.request.urlopen(mmpm_main_file)
+        mmpm_file = urllib.request.urlopen(mmpm_file)
         contents = str(mmpm_file.read())
-        version_line = re.findall("__version__ = \d+\.\d+", contents)
+        version_line = re.findall(r"__version__ = \d+\.\d+", contents)
 
-        version_number = re.findall("\d+\.\d+", version_line[0])
+        version_number = re.findall(r"\d+\.\d+", version_line[0])
         version_number = float(version_number[0])
 
         if version_line and __version__ < version_number:
@@ -461,6 +461,8 @@ def load_modules(snapshot_file, force_refresh=False):
     curr_snap = 0
     refresh_interval = 6
 
+    checked_for_enhancements = False
+
     if not force_refresh and os.path.exists(snapshot_file):
         curr_snap = os.path.getmtime(snapshot_file)
         next_snap = curr_snap + refresh_interval * 60 * 60
@@ -477,6 +479,7 @@ def load_modules(snapshot_file, force_refresh=False):
         next_snap = curr_snap + refresh_interval * 60 * 60
 
         check_for_mmpm_enhancements()
+        checked_for_enhancements = True
 
     else:
         with open(snapshot_file, "r") as f:
@@ -485,7 +488,7 @@ def load_modules(snapshot_file, force_refresh=False):
     curr_snap = datetime.datetime.fromtimestamp(int(curr_snap))
     next_snap = datetime.datetime.fromtimestamp(int(next_snap))
 
-    return modules, curr_snap, next_snap
+    return modules, curr_snap, next_snap, checked_for_enhancements
 
 
 def display_modules(modules_table, list_all=False, list_categories=False):
@@ -836,13 +839,17 @@ def main(argv):
     arg_parser.add_argument("-L",
                             "--list-installed",
                             action="store_true",
-                            help="Lists all currently installed modules."
+                            help='''
+                                Lists all currently installed modules.
+                                '''
                             )
 
     arg_parser.add_argument("-v",
                             "--version",
                             action="store_true",
-                            help="Displays MMPM version."
+                            help='''
+                                Displays MMPM version.
+                                '''
                             )
 
     if len(argv) < 2:
@@ -856,9 +863,8 @@ def main(argv):
 
     snapshot_file = home_dir + "/.magic_mirror_modules_snapshot.json"
 
-    modules_table, curr_snap, next_snap = load_modules(snapshot_file,
-                                                       args.force_refresh
-                                                       )
+    modules_table, curr_snap, next_snap, checked_enhancements = load_modules(snapshot_file,
+                                                                             args.force_refresh)
 
     if args.all:
         display_modules(modules_table, list_all=True, list_categories=False)
@@ -869,8 +875,7 @@ def main(argv):
     elif args.search:
         display_modules(search_modules(modules_table, args.search),
                         list_all=True,
-                        list_categories=False
-                        )
+                        list_categories=False)
 
     elif args.install:
         install_modules(modules_table, args.install)
@@ -901,7 +906,7 @@ def main(argv):
         enhance_modules(modules_table, update=False, upgrade=True,
                         modules_to_upgrade=args.upgrade[0])
 
-    elif args.enhance_mmpm:
+    elif args.enhance_mmpm and not checked_enhancements:
         check_for_mmpm_enhancements()
 
     elif args.version:

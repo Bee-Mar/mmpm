@@ -105,12 +105,13 @@ def check_for_mmpm_enhancements():
     try:
         mmpm_file = urllib.request.urlopen(mmpm_file)
         contents = str(mmpm_file.read())
-        version_line = re.findall(r"__version__ = \d+\.\d+", contents)
 
+        version_line = re.findall(r"__version__ = \d+\.\d+", contents)
         version_number = re.findall(r"\d+\.\d+", version_line[0])
         version_number = float(version_number[0])
 
-        if version_line and __version__ < version_number:
+        if version_number and __version__ < version_number:
+            print('here')
             valid_response = False
 
             while not valid_response:

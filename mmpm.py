@@ -53,7 +53,7 @@ from tabulate import tabulate
 from bs4 import BeautifulSoup
 from colorama import Fore, Back, Style
 
-__version__ = 0.266
+__version__ = 0.267
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
 BRIGHT_GREEN = Style.BRIGHT + Fore.GREEN
@@ -132,10 +132,14 @@ def check_for_mmpm_enhancements():
 
                     os.chdir(original_dir)
 
-                    os.system("rm -rf " + home_dir + "/Downloads/mmpm")
+                    new_version_message = BRIGHT_GREEN + "MMPM Version "
+                    new_version_message += "{}".format(version_number)
+                    new_version_message += " installed." + NORMAL_WHITE
+                    new_version_message += "You can find the newly cloned repo"
+                    new_version_message += " in your Downloads folder. Feel "
+                    new_version_message += " free to remove the directory."
 
-                    print("\n\nNewly cloned MMPM repository in ~/Downloads.")
-                    print("Feel free to remove the directory from ~/Downloads.")
+                    print(new_version_message)
 
                     valid_response = True
 

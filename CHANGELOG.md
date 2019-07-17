@@ -57,3 +57,7 @@
   command
 
 - Also, removed unused variables
+
+# Version 0.267
+
+- Tidying up some output messages, nothing important

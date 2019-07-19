@@ -156,7 +156,7 @@ def check_for_mmpm_enhancements():
         else:
             print("No enhancements available for MMPM.")
 
-    except urllib.error.HTTPError as err:
+    except urllib.error.HTTPError:
         pass
 
 
@@ -217,10 +217,11 @@ def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrad
 
                     os.system("git pull")
 
-                    # if os.path.exists(os.getcwd() + "package.json"):
-                    print(Fore.CYAN +
-                          "Installing NodeJS dependencies...\n" + NORMAL_WHITE)
-                    os.system("$(which npm) install")
+                    if os.path.isfile(os.getcwd() + "/package.json"):
+                        message = BRIGHT_CYAN + "Found package.json. "
+                        message += "Installing NodeJS dependencies..."
+                        print(message + NORMAL_WHITE)
+                        os.system("$(which npm) install")
 
                 print("\n")
                 os.chdir(modules_dir)
@@ -265,43 +266,41 @@ def search_modules(modules_table, search):
     '''
 
     search_results = {}
+    query = search[0]
 
     try:
-        for query in search:
-            if modules_table[query]:
-                search_results[query] = modules_table[query]
+        if modules_table[query]:
+            search_results[query] = modules_table[query]
 
         return search_results
 
-    except KeyError as err:
+    except KeyError:
         pass
 
     try:
         search_results = defaultdict(list)
+        query = query.lower()
 
-        for query in search:
-            query = query.lower()
+        for key, value in modules_table.items():
+            for i in range(len(value)):
+                title = value[i]["Title"]
+                desc = value[i]["Description"]
+                repo = value[i]["Repository"]
+                author = value[i]["Author"]
 
-            for key, value in modules_table.items():
-                for i in range(len(value)):
-                    title = value[i]["Title"]
-                    desc = value[i]["Description"]
-                    repo = value[i]["Repository"]
-                    author = value[i]["Author"]
+                if query in title.lower() or query in desc.lower() or query in author.lower():
+                    entry = {"Title": title,
+                             "Repository": repo,
+                             "Author": author,
+                             "Description": desc
+                             }
 
-                    if query in title.lower() or query in desc.lower() or query in author.lower():
-                        entry = {"Title": title,
-                                 "Repository": repo,
-                                 "Author": author,
-                                 "Description": desc
-                                 }
-
-                        if entry not in search_results[key]:
-                            search_results[key].append(entry)
+                    if entry not in search_results[key]:
+                        search_results[key].append(entry)
 
         return search_results
 
-    except KeyError as err:
+    except KeyError:
         pass
 
 
@@ -357,25 +356,22 @@ def install_modules(modules_table, modules_to_install):
                       Fore.YELLOW +
                       " @ " +
                       Fore.GREEN +
-                      "{}\n".format(target) +
-                      Fore.WHITE
-                      )
+                      "{}\n".format(target))
 
                 print(BRIGHT_CYAN +
-                      "Cloning repository for {}...\n".format(
-                          title + NORMAL_WHITE)
-                      )
+                      "Cloning repository for {}...\n".format(title) +
+                      NORMAL_WHITE)
 
                 command = "git clone {} {}".format(repo, target)
                 os.system(command)
 
-                print(Fore.CYAN + "Repository cloned...")
+                print(BRIGHT_CYAN + "\nRepository cloned.\n")
 
-                # if os.path.exists(os.getcwd() + "package.json"):
-                print(Fore.CYAN +
-                      "Installing NodeJS dependencies...\n" + NORMAL_WHITE)
-
-                os.system("$(which npm) install")
+                if os.path.isfile(os.getcwd() + "/package.json"):
+                    message = "Found package.json. "
+                    message += "Installing NodeJS dependencies...\n"
+                    print(message + NORMAL_WHITE)
+                    os.system("$(which npm) install")
 
                 os.chdir(curr_subdir)
 

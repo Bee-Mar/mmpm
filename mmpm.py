@@ -18,32 +18,32 @@ from collections import defaultdict
 try:
     import argparse
 except ImportError:
-    print("ArgParse package not found. Pip installing with --user flag.")
-    print("==========================================================\n")
+    msg = "ArgParse package not found. Pip installing with --user flag."
+    print("=" * len(msg) + "\n")
     pip.main(["install", "--user", "argparse"])
     print("\n\n")
 
 try:
     import bs4
 except ImportError:
-    print("BeautifulSoup4 package not found. Pip installing with --user flag.")
-    print("==================================================================\n")
+    msg = "BeautifulSoup4 package not found. Pip installing with --user flag."
+    print("=" * len(msg) + "\n")
     pip.main(["install", "--user", "bs4"])
     print("\n\n")
 
 try:
     import colorama
 except ImportError:
-    print("Colorama package not found. Pip installing with --user flag.")
-    print("============================================================\n")
+    msg = "Colorama package not found. Pip installing with --user flag."
+    print("=" * len(msg) + "\n")
     pip.main(["install", "--user", "colorama"])
     print("\n\n")
 
 try:
     import tabulate
 except ImportError:
-    print("Tabulate package not found. Pip installing with --user flag.")
-    print("============================================================\n")
+    msg = "Tabulate package not found. Pip installing with --user flag."
+    print("=" * len(msg) + "\n")
     pip.main(["install", "--user", "tabulate"])
     print("\n\n")
 
@@ -97,8 +97,8 @@ def check_for_mmpm_enhancements():
     Arguments
     =========
     None
-
     '''
+
     mmpm_repository = "https://github.com/Bee-Mar/mmpm.git"
     mmpm_file = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm.py"
 
@@ -117,7 +117,8 @@ def check_for_mmpm_enhancements():
                 user_response = input(BRIGHT_GREEN +
                                       "MMPM enhancements are available. "
                                       + NORMAL_WHITE +
-                                      "Would you like to upgrade now? [yes/no | y/n]: " +
+                                      "Would you like to upgrade now? " +
+                                      "[yes/no | y/n]: " +
                                       NORMAL_WHITE
                                       )
 
@@ -125,16 +126,21 @@ def check_for_mmpm_enhancements():
                     original_dir = os.getcwd()
 
                     os.chdir(home_dir + "/Downloads")
+
+                    # make sure there isn't a pre-existing version cloned
                     os.system("rm -rf mmpm")
+
+                    print("\n")
                     os.system("git clone {}".format(mmpm_repository))
                     os.chdir("mmpm")
+                    print("\n")
                     os.system("make")
 
                     os.chdir(original_dir)
 
-                    new_version_message = BRIGHT_GREEN + "MMPM Version "
+                    new_version_message = BRIGHT_GREEN + "\nMMPM Version "
                     new_version_message += "{}".format(version_number)
-                    new_version_message += " installed." + NORMAL_WHITE
+                    new_version_message += " installed. " + NORMAL_WHITE
                     new_version_message += "You can find the newly cloned repo"
                     new_version_message += " in your Downloads folder. Feel "
                     new_version_message += " free to remove the directory."
@@ -210,6 +216,10 @@ def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrad
                           )
 
                     os.system("git pull")
+
+                    # if os.path.exists(os.getcwd() + "package.json"):
+                    print(Fore.CYAN +
+                          "Installing NodeJS dependencies...\n" + NORMAL_WHITE)
                     os.system("$(which npm) install")
 
                 print("\n")
@@ -352,7 +362,7 @@ def install_modules(modules_table, modules_to_install):
                       )
 
                 print(BRIGHT_CYAN +
-                      "Cloning repository for {}...".format(
+                      "Cloning repository for {}...\n".format(
                           title + NORMAL_WHITE)
                       )
 
@@ -360,12 +370,13 @@ def install_modules(modules_table, modules_to_install):
                 os.system(command)
 
                 print(Fore.CYAN + "Repository cloned...")
+
+                # if os.path.exists(os.getcwd() + "package.json"):
                 print(Fore.CYAN +
-                      "Installing NodeJS dependencies...\n" +
-                      NORMAL_WHITE
-                      )
+                      "Installing NodeJS dependencies...\n" + NORMAL_WHITE)
 
                 os.system("$(which npm) install")
+
                 os.chdir(curr_subdir)
 
                 print("\n")

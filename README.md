@@ -52,7 +52,6 @@ $ which pip3
 
 # execute inside the mmpm cloned repository
 $ make install
-
 ```
 
 Full Installation:
@@ -64,6 +63,20 @@ $ git clone https://github.com/Bee-Mar/mmpm.git && cd mmpm && make install
 Obviously, MagicMirror is required as well. If you do not have it installed, head over to [Magic Mirror](https://github.com/MichMich/MagicMirror)'s home page for instructions. I intend to add an option to install MagicMirror from `mmpm` in the future.
 
 After executing `make install` within the cloned repository, you may remove the folder for `mmpm`, since the executable will now be part of your `$PATH`.
+
+## Possible Issues
+
+- If any of the required Python3 modules fail to install initially, you can attempt to install them
+  from the `apt` repository using the commands below. Note, they have intentionally been broken into
+  separate commands because it is recommended you first try to install the modules using `pip3`. The
+  reason for this is the `pip3` versions are almost always more recent than the ones available in
+  `apt`. This should be a last resort, if any of them fail to install initially.
+
+```sh
+$ sudo apt install python3-bs4 -y
+$ sudo apt install python3-colorama -y
+$ sudo apt install python3-tabulate -y
+```
 
 ## `magic_mirror_modules_snapshot.json`
 

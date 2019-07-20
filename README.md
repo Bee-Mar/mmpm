@@ -64,7 +64,7 @@ Obviously, MagicMirror is required as well. If you do not have it installed, hea
 
 After executing `make install` within the cloned repository, you may remove the folder for `mmpm`, since the executable will now be part of your `$PATH`.
 
-## Possible Issues
+## Python3 Module Installation Issues
 
 - If any of the required Python3 modules fail to install initially, you can attempt to install them
   from the `apt` repository using the commands below. Note, they have intentionally been broken into

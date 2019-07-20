@@ -66,11 +66,11 @@ After executing `make install` within the cloned repository, you may remove the 
 
 ## Python3 Module Installation Issues
 
-- If any of the required Python3 modules fail to install initially, you can attempt to install them
-  from the `apt` repository using the commands below. Note, they have intentionally been broken into
-  separate commands because it is recommended you first try to install the modules using `pip3`. The
-  reason for this is the `pip3` versions are almost always more recent than the ones available in
-  `apt`. This should be a last resort, if any of them fail to install initially.
+If any of the required Python3 modules fail to install initially, you can attempt to install them
+from the `apt` repository using the commands below. Note, they have intentionally been broken into
+separate commands because it is recommended you first try to install the modules using `pip3`. The
+reason for this is the `pip3` versions are almost always more recent than the ones available in
+`apt`. This should be a last resort, if any of them fail to install initially.
 
 ```sh
 $ sudo apt install python3-bs4 -y

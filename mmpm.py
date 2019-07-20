@@ -156,7 +156,7 @@ def check_for_mmpm_enhancements():
         else:
             print("No enhancements available for MMPM.")
 
-    except urllib.error.HTTPError as err:
+    except urllib.error.HTTPError:
         pass
 
 
@@ -217,10 +217,11 @@ def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrad
 
                     os.system("git pull")
 
-                    # if os.path.exists(os.getcwd() + "package.json"):
-                    print(Fore.CYAN +
-                          "Installing NodeJS dependencies...\n" + NORMAL_WHITE)
-                    os.system("$(which npm) install")
+                    if os.path.isfile(os.getcwd() + "/package.json"):
+                        message = BRIGHT_CYAN + "Found package.json. "
+                        message += "Installing NodeJS dependencies..."
+                        print(message + NORMAL_WHITE)
+                        os.system("$(which npm) install")
 
                 print("\n")
                 os.chdir(modules_dir)
@@ -265,43 +266,41 @@ def search_modules(modules_table, search):
     '''
 
     search_results = {}
+    query = search[0]
 
     try:
-        for query in search:
-            if modules_table[query]:
-                search_results[query] = modules_table[query]
+        if modules_table[query]:
+            search_results[query] = modules_table[query]
 
         return search_results
 
-    except KeyError as err:
+    except KeyError:
         pass
 
     try:
         search_results = defaultdict(list)
+        query = query.lower()
 
-        for query in search:
-            query = query.lower()
+        for key, value in modules_table.items():
+            for i in range(len(value)):
+                title = value[i]["Title"]
+                desc = value[i]["Description"]
+                repo = value[i]["Repository"]
+                author = value[i]["Author"]
 
-            for key, value in modules_table.items():
-                for i in range(len(value)):
-                    title = value[i]["Title"]
-                    desc = value[i]["Description"]
-                    repo = value[i]["Repository"]
-                    author = value[i]["Author"]
+                if query in title.lower() or query in desc.lower() or query in author.lower():
+                    entry = {"Title": title,
+                             "Repository": repo,
+                             "Author": author,
+                             "Description": desc
+                             }
 
-                    if query in title.lower() or query in desc.lower() or query in author.lower():
-                        entry = {"Title": title,
-                                 "Repository": repo,
-                                 "Author": author,
-                                 "Description": desc
-                                 }
-
-                        if entry not in search_results[key]:
-                            search_results[key].append(entry)
+                    if entry not in search_results[key]:
+                        search_results[key].append(entry)
 
         return search_results
 
-    except KeyError as err:
+    except KeyError:
         pass
 
 
@@ -357,25 +356,22 @@ def install_modules(modules_table, modules_to_install):
                       Fore.YELLOW +
                       " @ " +
                       Fore.GREEN +
-                      "{}\n".format(target) +
-                      Fore.WHITE
-                      )
+                      "{}\n".format(target))
 
                 print(BRIGHT_CYAN +
-                      "Cloning repository for {}...\n".format(
-                          title + NORMAL_WHITE)
-                      )
+                      "Cloning repository for {}...\n".format(title) +
+                      NORMAL_WHITE)
 
                 command = "git clone {} {}".format(repo, target)
                 os.system(command)
 
-                print(Fore.CYAN + "Repository cloned...")
+                print(BRIGHT_CYAN + "\nRepository cloned.\n")
 
-                # if os.path.exists(os.getcwd() + "package.json"):
-                print(Fore.CYAN +
-                      "Installing NodeJS dependencies...\n" + NORMAL_WHITE)
-
-                os.system("$(which npm) install")
+                if os.path.isfile(os.getcwd() + "/package.json"):
+                    message = "Found package.json. "
+                    message += "Installing NodeJS dependencies...\n"
+                    print(message + NORMAL_WHITE)
+                    os.system("$(which npm) install")
 
                 os.chdir(curr_subdir)
 
@@ -406,6 +402,25 @@ def install_modules(modules_table, modules_to_install):
           "Review the GitHub pages for each of the newly installed modules " +
           "for any additional instructions.\n"
           )
+
+
+def install_magicmirror():
+
+    if not os.path.exists(home_dir + "/MagicMirror"):
+        # will need to perform check here to see if nodejs exists on system
+        nodejs_install = "curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -"
+        os.system(nodejs_install)
+        os.system("sudo apt install nodejs -y")
+
+        os.system(
+            'bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"')
+
+    else:
+        original_dir = os.getcwd()
+        os.chdir(home_dir + "/MagicMirror")
+        print("inside magicmirror dir")
+
+    os.chdir(original_dir)
 
 
 def remove_modules(installed_modules, modules_to_remove):
@@ -493,13 +508,24 @@ def load_modules(snapshot_file, force_refresh=False):
 
     # if the snapshot has expired, or doesn't exist, get a new one
     if not file_exists or force_refresh or next_snap - time.time() <= 0.0:
+        sys.stdout.write(
+            BRIGHT_CYAN + "Snapshot expired, retrieving modules... ")
+
+        sys.stdout.flush()
 
         modules = retrieve_modules()
         with open(snapshot_file, "w") as f:  # save the new snapshot
             json.dump(modules, f)
 
+        sys.stdout.write(NORMAL_WHITE + "Retrieval complete.\n")
+
         curr_snap = os.path.getmtime(snapshot_file)
         next_snap = curr_snap + refresh_interval * 60 * 60
+
+        sys.stdout.write(
+            BRIGHT_CYAN + "Automated check for MMPM enhancements... " + NORMAL_WHITE)
+
+        sys.stdout.flush()
 
         check_for_mmpm_enhancements()
         checked_for_enhancements = True
@@ -836,6 +862,18 @@ def main(argv):
                                 '''
                             )
 
+    arg_parser.add_argument("-M",
+                            "--magicmirror",
+                            action="store_true",
+                            help='''
+                                    Installs the most recent version of MagicMirror based on
+                                    instructions from the MagicMirror GitHub repo. First, your
+                                    system will be checked for a an existing installation of
+                                    MagicMirror, and if one is found, it will check for updates.
+                                    Otherwise, it will perform a new installation.
+                                '''
+                            )
+
     arg_parser.add_argument("-i",
                             "--install",
                             nargs="+",
@@ -898,6 +936,9 @@ def main(argv):
 
     elif args.install:
         install_modules(modules_table, args.install)
+
+    elif args.magicmirror:
+        install_magicmirror()
 
     elif args.remove:
         installed_modules = get_installed_modules(modules_table)

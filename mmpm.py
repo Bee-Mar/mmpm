@@ -12,48 +12,44 @@ import subprocess
 import urllib.error
 import urllib.request
 from collections import defaultdict
-import pip
 
+FAILED_IMPORTS = []
 
 try:
     import argparse
-except ImportError:
-    msg = "ArgParse package not found. Pip installing with --user flag."
-    print(msg + "\n" + "=" * len(msg) + "\n")
-    pip.main(["install", "--user", "argparse"])
-    print("\n\n")
+except:
+    FAILED_IMPORTS.append("argparse")
 
 try:
     import bs4
-except ImportError:
-    msg = "BeautifulSoup4 package not found. Pip installing with --user flag."
-    print(msg + "\n" + "=" * len(msg) + "\n")
-    pip.main(["install", "--user", "bs4"])
-    print("\n\n")
+except:
+    FAILED_IMPORTS.append("bs4")
 
 try:
     import colorama
-except ImportError:
-    msg = "Colorama package not found. Pip installing with --user flag."
-    print(msg + "\n" + "=" * len(msg) + "\n")
-    pip.main(["install", "--user", "colorama"])
-    print("\n\n")
+except:
+    FAILED_IMPORTS.append("colorama")
 
 try:
     import tabulate
-except ImportError:
-    msg = "Tabulate package not found. Pip installing with --user flag."
-    print(msg + "\n" + "=" * len(msg) + "\n")
-    pip.main(["install", "--user", "tabulate"])
-    print("\n\n")
+except:
+    FAILED_IMPORTS.append("tabulate")
 
+if FAILED_IMPORTS:
+    import pip
+    for index, package in enumerate(FAILED_IMPORTS):
+        msg = "{} package not found. ".format(package)
+        msg += "Pip installing with --user flag"
+        print(msg + "\n" + "=" * len(msg) + "\n")
+        pip.main(["install", "--user", package])
+        print("\n\n")
 
-import argparse
-from tabulate import tabulate
+from colorama import Fore, Back, Style
 from bs4 import BeautifulSoup
-from colorama import Fore, Style
+from tabulate import tabulate
+import argparse
 
-__version__ = 0.275
+__version__ = 0.3
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
 BRIGHT_GREEN = Style.BRIGHT + Fore.GREEN

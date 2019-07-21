@@ -118,15 +118,19 @@ def check_for_mmpm_enhancements():
         if version_number and __version__ < version_number:
             valid_response = False
 
-            while not valid_response:
-                user_response = input(BRIGHT_GREEN +
-                                      "MMPM enhancements are available. " +
-                                      NORMAL_WHITE +
-                                      "Would you like to upgrade now? " +
-                                      "[yes/no | y/n]: " +
-                                      NORMAL_WHITE)
+            plain_print(BRIGHT_CYAN +
+                        "Automated check for MMPM enhancements... " +
+                        NORMAL_WHITE)
 
-                if user_response in ("yes", "y"):
+            while not valid_response:
+                reponse = input(BRIGHT_GREEN +
+                                "MMPM enhancements are available. " +
+                                NORMAL_WHITE +
+                                "Would you like to upgrade now? " +
+                                "[yes/no | y/n]: " +
+                                NORMAL_WHITE)
+
+                if reponse in ("yes", "y"):
                     original_dir = os.getcwd()
 
                     os.chdir(HOME_DIR + "/Downloads")
@@ -151,7 +155,7 @@ def check_for_mmpm_enhancements():
 
                     valid_response = True
 
-                elif user_response in ("no", "n"):
+                elif reponse in ("no", "n"):
                     valid_response = True
                 else:
                     warning_msg("Respond with yes/no or y/n.")
@@ -375,7 +379,7 @@ def install_modules(modules_table, modules_to_install):
 
     os.chdir(original_dir)
 
-    for module in enumerate(modules_to_install):
+    for _, module in enumerate(modules_to_install):
         if module not in successful_installs:
             warning_msg("Unable to match '{}' ".format(module) +
                         "with installation candidate. " +
@@ -402,11 +406,11 @@ def install_modules(modules_table, modules_to_install):
 
 def install_magicmirror():
     '''
-    Installs MagicMirror. First checks if a MagicMirror installation can be found,
-    and if one is found, prompts user to update the MagicMirror. Otherwise,
-    searches for current version of NodeJS on the system. If one is found, the
-    MagicMirror is then installed. If an old version of NodeJS is found, a
-    newer version is installed before installing MagicMirror.
+    Installs MagicMirror. First checks if a MagicMirror installation can be
+    found, and if one is found, prompts user to update the MagicMirror.
+    Otherwise, searches for current version of NodeJS on the system. If one is
+    found, the MagicMirror is then installed. If an old version of NodeJS is
+    found, a newer version is installed before installing MagicMirror.
 
     Arguments
     =========
@@ -420,16 +424,43 @@ def install_magicmirror():
 
         node_major_version = int(os.popen("nodejs --version").read()[1:3])
 
-        if node_major_version < 10:
+        if node_major_version > 9:
             print(BRIGHT_GREEN +
-                  "Found out-of-date major version ({})\n".format(node_major_version))
+                  "Found recent major version ({})".format(node_major_version))
 
-            nodejs_install = "curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -"
-            os.system(nodejs_install)
-            os.system("sudo apt install nodejs -y")
         else:
-            print(
-                BRIGHT_GREEN + "Found recent major version ({})".format(node_major_version))
+            if node_major_version <= 10:
+                print(BRIGHT_GREEN +
+                      "Found out-of-date major version " +
+                      "({})\n".format(node_major_version))
+            else:
+                print(BRIGHT_GREEN + "NodeJS installation not found.")
+
+            valid_response = False
+
+            while not valid_response:
+                response = input(BRIGHT_GREEN +
+                                 "MMPM enhancements are available. " +
+                                 NORMAL_WHITE +
+                                 "Would you like to upgrade now? " +
+                                 "[yes/no | y/n]: " +
+                                 NORMAL_WHITE)
+
+                if response in ("yes", "y"):
+                    print("Installing most recent stable version of NodeJS...")
+
+                    nodejs_install = "curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -"
+                    os.system(nodejs_install)
+                    os.system("sudo apt install nodejs -y")
+                    valid_response = True
+
+                elif response in ("no", "n"):
+                    error_msg("NodeJS is required to install MagicMirror. " +
+                              "See https://github.com/MichMich/MagicMirror " +
+                              "for details.")
+
+                else:
+                    warning_msg("Respond with yes/no or y/n.")
 
         print(NORMAL_WHITE + "Installing MagicMirror...")
 
@@ -493,7 +524,7 @@ def remove_modules(installed_modules, modules_to_remove):
 
     curr_dir = os.getcwd()
 
-    for module in enumerate(modules_to_remove):
+    for _, module in enumerate(modules_to_remove):
         dir_to_rm = curr_dir + "/" + module
 
         try:
@@ -509,8 +540,8 @@ def remove_modules(installed_modules, modules_to_remove):
               "The following modules were successfully deleted:" +
               Style.NORMAL)
 
-        for removal in enumerate(successful_removals):
-            plain_print(Fore.WHITE + "{} ".format(removal))
+        for _, removal in enumerate(successful_removals):
+            print(NORMAL_WHITE + "{}".format(removal))
 
     else:
         error_msg("Unable to remove modules.")
@@ -545,24 +576,21 @@ def load_modules(snapshot_file, force_refresh=False):
 
     # if the snapshot has expired, or doesn't exist, get a new one
     if not file_exists or force_refresh or next_snap - time.time() <= 0.0:
-        sys.stdout.write(
+        plain_print(
             BRIGHT_CYAN + "Snapshot expired, retrieving modules... ")
-
-        sys.stdout.flush()
 
         modules = retrieve_modules()
         with open(snapshot_file, "w") as f:  # save the new snapshot
             json.dump(modules, f)
 
-        sys.stdout.write(NORMAL_WHITE + "Retrieval complete.\n")
+        plain_print(NORMAL_WHITE + "Retrieval complete.\n")
 
         curr_snap = os.path.getmtime(snapshot_file)
         next_snap = curr_snap + refresh_interval * 60 * 60
 
-        sys.stdout.write(
-            BRIGHT_CYAN + "Automated check for MMPM enhancements... " + NORMAL_WHITE)
-
-        sys.stdout.flush()
+        plain_print(BRIGHT_CYAN +
+                    "Automated check for MMPM enhancements... " +
+                    NORMAL_WHITE)
 
         check_for_mmpm_enhancements()
         checked_for_enhancements = True
@@ -593,10 +621,8 @@ def display_modules(modules_table, list_all=False, list_categories=False):
     if list_categories:
         headers = [BRIGHT_CYAN + "CATEGORY", BRIGHT_CYAN +
                    "NUMBER OF MODULES" + NORMAL_WHITE]
-        rows = []
 
-        for key in modules_table.keys():
-            rows.append([key, len(modules_table[key])])
+        rows = [[key, len(modules_table[key])] for key in modules_table.keys()]
 
         print(tabulate(rows, headers, tablefmt="fancy_grid"))
 
@@ -681,9 +707,9 @@ def retrieve_modules():
 
     categories = []
 
-    for (i, row) in enumerate(categories_soup):
-        last_element = len(categories_soup[i].contents) - 1
-        new_category = categories_soup[i].contents[last_element]
+    for index, _ in enumerate(categories_soup):
+        last_element = len(categories_soup[index].contents) - 1
+        new_category = categories_soup[index].contents[last_element]
 
         if new_category != "General Advice":
             categories.append(new_category)
@@ -693,13 +719,13 @@ def retrieve_modules():
     for table in table_soup:
         tr_soup.append(table.find_all("tr"))
 
-    for (i, row) in enumerate(tr_soup):
-        modules.update({categories[i]: list()})
+    for index, row in enumerate(tr_soup):
+        modules.update({categories[index]: list()})
 
-        for (j, value) in enumerate(row):
+        for j, _ in enumerate(row):
             # ignore the cells that contain literally say "Title", "Author", "Description"
             if j > 0:
-                td_soup = tr_soup[i][j].find_all("td")
+                td_soup = tr_soup[index][j].find_all("td")
 
                 title = ""
                 repo = "N/A"
@@ -738,7 +764,7 @@ def retrieve_modules():
 
                         desc = str(desc)
 
-                modules[categories[i]].append({
+                modules[categories[index]].append({
                     "Title": title,
                     "Repository": repo,
                     "Author": author,

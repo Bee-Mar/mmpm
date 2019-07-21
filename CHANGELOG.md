@@ -74,3 +74,7 @@
 
 - cleanup
 
+# Version 0.275
+
+- Added new method `install_magicmirror` to handle installation/upgrades of MagicMirror itself
+- Can be called with `mmpm -M` or `mmpm --magicmirror`

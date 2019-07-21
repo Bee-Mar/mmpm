@@ -417,51 +417,10 @@ def install_magicmirror():
     '''
 
     if not os.path.exists(HOME_DIR + "/MagicMirror"):
-        print(BRIGHT_CYAN + "MagicMirror directory not found. ")
-
-        plain_print("Checking for NodeJS installation... ")
-
-        node_major_version = int(os.popen("nodejs --version").read()[1:3])
-
-        if node_major_version > 9:
-            print(BRIGHT_GREEN +
-                  "Found recent major version ({})".format(node_major_version))
-
-        else:
-            if node_major_version <= 10:
-                print(BRIGHT_GREEN +
-                      "Found out-of-date major version " +
-                      "({})\n".format(node_major_version))
-            else:
-                print(BRIGHT_GREEN + "NodeJS installation not found.")
-
-            valid_response = False
-
-            while not valid_response:
-                response = input(BRIGHT_GREEN +
-                                 "MMPM enhancements are available. " +
-                                 NORMAL_WHITE +
-                                 "Would you like to upgrade now? " +
-                                 "[yes/no | y/n]: " +
-                                 NORMAL_WHITE)
-
-                if response in ("yes", "y"):
-                    print("Installing most recent stable version of NodeJS...")
-
-                    nodejs_install = "curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -"
-                    os.system(nodejs_install)
-                    os.system("sudo apt install nodejs -y")
-                    valid_response = True
-
-                elif response in ("no", "n"):
-                    error_msg("NodeJS is required to install MagicMirror. " +
-                              "See https://github.com/MichMich/MagicMirror " +
-                              "for details.")
-
-                else:
-                    warning_msg("Respond with yes/no or y/n.")
-
-        print(NORMAL_WHITE + "Installing MagicMirror...")
+        print(BRIGHT_CYAN +
+              "MagicMirror directory not found. " +
+              NORMAL_WHITE +
+              "Installing MagicMirror...")
 
         os.system(
             'bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"')

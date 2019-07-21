@@ -477,11 +477,29 @@ def install_magicmirror():
             response = input(message)
 
             if response in ("yes", "y"):
-                print("Checking for updates...")
+                original_dir = os.getcwd()
+                os.chdir(HOME_DIR + "/MagicMirror")
+
+                print(BRIGHT_CYAN + "Checking for updates..." + NORMAL_WHITE)
+
+                git_status = subprocess.run(["git", "fetch", "--dry-run"],
+                                            stdout=subprocess.PIPE)
+                if git_status.stdout:
+                    print(BRIGHT_CYAN +
+                          "Updates found for MagicMirror. " +
+                          NORMAL_WHITE +
+                          "Requesting upgrades...")
+
+                    os.system("git pull")
+                    os.system("$(which npm) install")
+
+                else:
+                    print("No updates available for MagicMirror.")
+
+                os.chdir(original_dir)
                 valid_response = True
 
             elif response in ("no", "n"):
-                print("nah biiiiiiitch")
                 valid_response = True
 
             else:
@@ -489,7 +507,6 @@ def install_magicmirror():
 
         original_dir = os.getcwd()
         os.chdir(HOME_DIR + "/MagicMirror")
-        print("inside magicmirror dir")
 
     os.chdir(original_dir)
 

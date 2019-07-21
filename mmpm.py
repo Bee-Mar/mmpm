@@ -240,11 +240,9 @@ def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrad
                 print("{}".format(updates_list[i]))
 
             print(Style.BRIGHT +
-                  "\nTo update all modules, execute 'mmpm -U', " +
-                  "or you may choose individual " +
-                  "modules to update\nby executing mmpm -U followed by " +
-                  "the name of the modules(s).'" +
-                  "For example:" +
+                  "\nTo update all modules, execute 'mmpm -U', or you may " +
+                  "individual modules\nby executing mmpm -U followed by the" +
+                  "name of the modules(s).' For example:" +
                   BRIGHT_GREEN +
                   "\n\n'mmpm -U {}'".format(updates_list[0]) +
                   NORMAL_WHITE +
@@ -320,9 +318,8 @@ def install_modules(modules_table, modules_to_install):
     original_dir = os.getcwd()
 
     if not os.path.exists(modules_dir):
-        msg = "The directory '{}' does not exist. ".format(modules_dir)
-        msg += "Have you installed MagicMirror properly?"
-        error_msg(msg)
+        error_msg("The directory '{}' does not exist. ".format(modules_dir) +
+                  "Have you installed MagicMirror properly?")
 
     os.chdir(modules_dir)
 
@@ -404,6 +401,17 @@ def install_modules(modules_table, modules_to_install):
 
 
 def install_magicmirror():
+    '''
+    Installs MagicMirror. First checks if a MagicMirror installation can be found,
+    and if one is found, prompts user to update the MagicMirror. Otherwise,
+    searches for current version of NodeJS on the system. If one is found, the
+    MagicMirror is then installed. If an old version of NodeJS is found, a
+    newer version is installed before installing MagicMirror.
+
+    Arguments
+    =========
+    None
+    '''
 
     if not os.path.exists(HOME_DIR + "/MagicMirror"):
         print(BRIGHT_CYAN + "MagicMirror directory not found. ")
@@ -476,9 +484,8 @@ def remove_modules(installed_modules, modules_to_remove):
     original_dir = os.getcwd()
 
     if not os.path.exists(modules_dir):
-        msg = "The '{}' directory doesn't exist.".format(modules_dir)
-        msg += "have you installed magicmirror?"
-        error_msg(msg)
+        error_msg("The '{}' directory doesn't exist.".format(modules_dir) +
+                  "have you installed magicmirror?")
 
     os.chdir(modules_dir)
 
@@ -631,9 +638,8 @@ def get_installed_modules(modules_table):
     modules_dir = HOME_DIR + "/MagicMirror/modules"
 
     if not os.path.exists(modules_dir):
-        msg = "The directory '{}' does not exist. ".format(modules_dir)
-        msg += "Have you installed MagicMirror properly?"
-        error_msg(msg)
+        error_msg("The directory '{}' does not exist. ".format(modules_dir) +
+                  "Have you installed MagicMirror properly?")
 
     os.chdir(modules_dir)
 
@@ -780,8 +786,8 @@ def snapshot_details(modules, curr_snap, next_snap):
           Fore.GREEN +
           "{}\n".format(num_modules) +
           NORMAL_WHITE +
-          "\nTo forcibly refresh the snapshot, run 'mmpm -f' or 'mmpm --force-refresh'\n"
-          )
+          "\nTo forcibly refresh the snapshot, run 'mmpm -f' or " +
+          "'mmpm --force-refresh'\n")
 
 
 def main(argv):
@@ -798,8 +804,7 @@ def main(argv):
                                                     simplify the installation,
                                                     removal, and maintenance of
                                                     MagicMirror modules.
-                                                    '''
-                                         )
+                                                    ''')
 
     arg_parser.add_argument("-u",
                             "--update",
@@ -807,8 +812,7 @@ def main(argv):
                             help='''
                                 Check for updates for each of the currently
                                 installed modules.
-                                '''
-                            )
+                                ''')
 
     arg_parser.add_argument("-U",
                             "--upgrade",
@@ -821,8 +825,7 @@ def main(argv):
                                  specific modules, supply one or more module
                                  names, each separated by a space. For example,
                                  'mmpm -U MMM-Simple-Swiper MMM-pages'
-                                 '''
-                            )
+                                 ''')
 
     arg_parser.add_argument("-e",
                             "--enhance-mmpm",
@@ -830,14 +833,12 @@ def main(argv):
                             help='''
                                 Checks is there are enhancements available for
                                 MMPM. Prompts user if upgrade is available.
-                                '''
-                            )
+                                ''')
 
     arg_parser.add_argument("-a",
                             "--all",
                             action="store_true",
-                            help="Lists all currently available modules."
-                            )
+                            help="Lists all currently available modules.")
 
     arg_parser.add_argument("-f",
                             "--force-refresh",
@@ -845,8 +846,7 @@ def main(argv):
                             help='''
                                 Forces a refresh of the modules database
                                 snapshot.
-                                '''
-                            )
+                                ''')
 
     arg_parser.add_argument("-c",
                             "--categories",
@@ -854,8 +854,7 @@ def main(argv):
                             help='''
                                 Lists names of all module categories, ie.
                                 Finance, Weather, etc.
-                                '''
-                            )
+                                ''')
 
     arg_parser.add_argument("-s",
                             "--search",
@@ -878,10 +877,9 @@ def main(argv):
                                 category with a lengthy name, it is best to
                                 copy and paste the exact name from the results
                                 produced by 'mmpm -c' (or the equivalent 'mmpm
-                                --categories'), and surround the name in
+                                    --categories'), and surround the name in
                                 quotations.
-                                '''
-                            )
+                                ''')
 
     arg_parser.add_argument("-d",
                             "--snapshot-details",
@@ -896,11 +894,12 @@ def main(argv):
                             "--magicmirror",
                             action="store_true",
                             help='''
-                                    Installs the most recent version of MagicMirror based on
-                                    instructions from the MagicMirror GitHub repo. First, your
-                                    system will be checked for a an existing installation of
-                                    MagicMirror, and if one is found, it will check for updates.
-                                    Otherwise, it will perform a new installation.
+                                Installs the most recent version of MagicMirror
+                                based on instructions from the MagicMirror
+                                GitHub repo. First, your system will be checked
+                                for a an existing installation of MagicMirror,
+                                and if one is found, it will check for updates.
+                                Otherwise, it will perform a new installation.
                                 '''
                             )
 

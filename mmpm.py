@@ -416,11 +416,14 @@ def install_magicmirror():
     None
     '''
 
+    original_dir = os.getcwd()
+
     if not os.path.exists(HOME_DIR + "/MagicMirror"):
         print(BRIGHT_CYAN +
               "MagicMirror directory not found. " +
               NORMAL_WHITE +
-              "Installing MagicMirror...")
+              "Installing MagicMirror..." +
+              NORMAL_WHITE)
 
         os.system(
             'bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"')
@@ -436,7 +439,6 @@ def install_magicmirror():
             response = input(message)
 
             if response in ("yes", "y"):
-                original_dir = os.getcwd()
                 os.chdir(HOME_DIR + "/MagicMirror")
 
                 print(BRIGHT_CYAN + "Checking for updates..." + NORMAL_WHITE)
@@ -455,17 +457,14 @@ def install_magicmirror():
                 else:
                     print("No updates available for MagicMirror.")
 
-                os.chdir(original_dir)
                 valid_response = True
 
             elif response in ("no", "n"):
+                print(BRIGHT_MAGENTA + "Aborted MagicMirror update.")
                 valid_response = True
 
             else:
                 warning_msg("Respond with yes/no or y/n.")
-
-        original_dir = os.getcwd()
-        os.chdir(HOME_DIR + "/MagicMirror")
 
     os.chdir(original_dir)
 

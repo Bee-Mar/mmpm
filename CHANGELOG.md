@@ -74,3 +74,14 @@
 
 - cleanup
 
+# Version 0.275
+
+- Added new method `install_magicmirror` to handle installation/upgrades of MagicMirror itself
+- Can be called with `mmpm -M` or `mmpm --magicmirror`
+
+# Version 0.3
+
+- Resolved major performance issue with `import pip`. Changed logic to only import when needed to
+  install packages
+- Reduced execution time by a lot, but there is still some issues that can be fixed to speed up more
+- Still in need of more code cleanup

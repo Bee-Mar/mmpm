@@ -199,8 +199,8 @@ def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrad
     if update:
         print(BRIGHT_CYAN + "Checking for updates..." + NORMAL_WHITE)
 
-    for key, value in modules_table.items():
-        for i in range(len(value)):
+    for _, value in modules_table.items():
+        for i, _ in enumerate(value):
             if value[i]["Title"] in dirs:
                 title = value[i]["Title"]
                 curr_module_dir = modules_dir + "/" + title
@@ -240,8 +240,8 @@ def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrad
                   "Updates are available for the following modules:\n" +
                   NORMAL_WHITE)
 
-            for i in range(len(updates_list)):
-                print("{}".format(updates_list[i]))
+            for _, update in enumerate(updates_list):
+                print("{}".format(update))
 
             print(Style.BRIGHT +
                   "\nTo update all modules, execute 'mmpm -U', or you may " +
@@ -273,8 +273,7 @@ def search_modules(modules_table, search):
     try:
         if modules_table[query]:
             search_results[query] = modules_table[query]
-
-        return search_results
+            return search_results
 
     except KeyError:
         pass
@@ -284,7 +283,7 @@ def search_modules(modules_table, search):
         query = query.lower()
 
         for key, value in modules_table.items():
-            for i in range(len(value)):
+            for i, _ in enumerate(value):
                 title = value[i]["Title"]
                 desc = value[i]["Description"]
                 repo = value[i]["Repository"]
@@ -299,10 +298,10 @@ def search_modules(modules_table, search):
                     if entry not in search_results[key]:
                         search_results[key].append(entry)
 
-        return search_results
-
     except KeyError:
         pass
+
+    return search_results
 
 
 def install_modules(modules_table, modules_to_install):
@@ -329,7 +328,7 @@ def install_modules(modules_table, modules_to_install):
 
     successful_installs = []
 
-    for key, value in modules_table.items():
+    for _, value in modules_table.items():
         curr_subdir = os.getcwd()
 
         for i in range(len(value)):
@@ -637,13 +636,12 @@ def display_modules(modules_table, list_all=False, list_categories=False):
         rows = []
 
         for key, value in modules_table.items():
-            for i in range(len(value)):
-                val = value[i]
+            for i, _ in enumerate(value):
                 rows.append([key,
-                             val["Title"],
-                             textwrap.fill(val["Repository"]),
-                             textwrap.fill(val["Author"], width=12),
-                             textwrap.fill(val["Description"], width=15)
+                             value[i]["Title"],
+                             textwrap.fill(value[i]["Repository"]),
+                             textwrap.fill(value[i]["Author"], width=12),
+                             textwrap.fill(value[i]["Description"], width=15)
                              ])
 
         print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))

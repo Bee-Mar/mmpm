@@ -17,7 +17,7 @@ from colorama import Fore, Back, Style, init
 from bs4 import BeautifulSoup
 from tabulate import tabulate
 
-__version__ = 0.31
+__version__ = 0.32
 
 init()
 

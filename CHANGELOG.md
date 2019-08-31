@@ -90,3 +90,7 @@
 
 - Changed error handling and added user help for installing missing modules
 - Planning to convert to module with setup.py file for easier installation
+
+# Version 0.32
+
+- Moved to setup.py format. Initial setup works, will add in system requirements later

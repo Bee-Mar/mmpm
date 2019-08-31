@@ -6,6 +6,7 @@ import sys
 import time
 import json
 import shutil
+import argparse
 import datetime
 import textwrap
 import subprocess
@@ -13,43 +14,49 @@ import urllib.error
 import urllib.request
 from collections import defaultdict
 
+
 FAILED_IMPORTS = []
 
-try:
-    import argparse
-except:
-    FAILED_IMPORTS.append("argparse")
 
 try:
     import bs4
-except:
+except ImportError:
     FAILED_IMPORTS.append("bs4")
 
 try:
     import colorama
-except:
+except ImportError:
     FAILED_IMPORTS.append("colorama")
 
 try:
     import tabulate
-except:
+except ImportError:
     FAILED_IMPORTS.append("tabulate")
 
 if FAILED_IMPORTS:
     import pip
+
     for index, package in enumerate(FAILED_IMPORTS):
         msg = "{} package not found. ".format(package)
-        msg += "Pip installing with --user flag"
+        msg += "Attempting to pip install {} with --user flag".format(package)
         print(msg + "\n" + "=" * len(msg) + "\n")
-        pip.main(["install", "--user", package])
-        print("\n\n")
+
+        try:
+            pip.main(["install", "--user", package])
+            print("\n\n")
+
+        except pip.InstallationError:
+            print("pip failed to install {}".format(package))
+            print("Before creating a new issue at https://github.com/Bee-Mar/mmpm/issues :")
+            print("Trying installing the missing module with 'sudo apt install python3-{}'".format(package))
+
 
 from colorama import Fore, Back, Style
 from bs4 import BeautifulSoup
 from tabulate import tabulate
 import argparse
 
-__version__ = 0.3
+__version__ = 0.31
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
 BRIGHT_GREEN = Style.BRIGHT + Fore.GREEN
@@ -783,7 +790,6 @@ def snapshot_details(modules, curr_snap, next_snap):
           NORMAL_WHITE +
           "\nTo forcibly refresh the snapshot, run 'mmpm -f' or " +
           "'mmpm --force-refresh'\n")
-
 
 def main(argv):
     arg_parser = argparse.ArgumentParser(prog="mmpm",

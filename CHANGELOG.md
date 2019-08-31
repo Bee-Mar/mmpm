@@ -85,3 +85,8 @@
   install packages
 - Reduced execution time by a lot, but there is still some issues that can be fixed to speed up more
 - Still in need of more code cleanup
+
+# Version 0.31
+
+- Changed error handling and added user help for installing missing modules
+- Planning to convert to module with setup.py file for easier installation

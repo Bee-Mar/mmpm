@@ -1,2 +1,5 @@
 *.swp
 *.swo
+build
+dist
+mmpm.egg-info

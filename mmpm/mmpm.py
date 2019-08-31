@@ -13,50 +13,13 @@ import subprocess
 import urllib.error
 import urllib.request
 from collections import defaultdict
-
-
-FAILED_IMPORTS = []
-
-
-try:
-    import bs4
-except ImportError:
-    FAILED_IMPORTS.append("bs4")
-
-try:
-    import colorama
-except ImportError:
-    FAILED_IMPORTS.append("colorama")
-
-try:
-    import tabulate
-except ImportError:
-    FAILED_IMPORTS.append("tabulate")
-
-if FAILED_IMPORTS:
-    import pip
-
-    for index, package in enumerate(FAILED_IMPORTS):
-        msg = "{} package not found. ".format(package)
-        msg += "Attempting to pip install {} with --user flag".format(package)
-        print(msg + "\n" + "=" * len(msg) + "\n")
-
-        try:
-            pip.main(["install", "--user", package])
-            print("\n\n")
-
-        except pip.InstallationError:
-            print("pip failed to install {}".format(package))
-            print("Before creating a new issue at https://github.com/Bee-Mar/mmpm/issues :")
-            print("Trying installing the missing module with 'sudo apt install python3-{}'".format(package))
-
-
-from colorama import Fore, Back, Style
+from colorama import Fore, Back, Style, init
 from bs4 import BeautifulSoup
 from tabulate import tabulate
-import argparse
 
 __version__ = 0.31
+
+init()
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
 BRIGHT_GREEN = Style.BRIGHT + Fore.GREEN
@@ -611,6 +574,7 @@ def display_modules(modules_table, list_all=False, list_categories=False):
                    "AUTHOR",
                    "DESCRIPTION" + NORMAL_WHITE
                    ]
+
         rows = []
 
         for key, value in modules_table.items():
@@ -649,7 +613,7 @@ def get_installed_modules(modules_table):
 
     installed_modules = []
 
-    for key, value in modules_table.items():
+    for _, value in modules_table.items():
         for i in range(len(value)):
             if value[i]["Title"] in module_dirs:
                 installed_modules.append(value[i]["Title"])
@@ -699,7 +663,7 @@ def retrieve_modules():
         modules.update({categories[index]: list()})
 
         for j, _ in enumerate(row):
-            # ignore the cells that contain literally say "Title", "Author", "Description"
+            # ignore cells that literally say "Title", "Author", "Description"
             if j > 0:
                 td_soup = tr_soup[index][j].find_all("td")
 
@@ -767,7 +731,7 @@ def snapshot_details(modules, curr_snap, next_snap):
     num_categories = len(modules.keys())
     num_modules = 0
 
-    for key, value in modules.items():
+    for key, _ in modules.items():
         num_modules += len(modules[key])
 
     print(BRIGHT_YELLOW +
@@ -790,6 +754,7 @@ def snapshot_details(modules, curr_snap, next_snap):
           NORMAL_WHITE +
           "\nTo forcibly refresh the snapshot, run 'mmpm -f' or " +
           "'mmpm --force-refresh'\n")
+
 
 def main(argv):
     arg_parser = argparse.ArgumentParser(prog="mmpm",

@@ -33,30 +33,38 @@ As it stands, this project is entirely dependent on the structure of the [MagicM
 
 ## Installation of MMPM
 
-| System Dependency | Installation                       |
-| ----------------- | ---------------------------------- |
-| `python3`         | `sudo apt install python3`         |
-| `pip3`            | `sudo apt install python3-pip`     |
+| System Dependency | Installation                   |
+| ----------------- | ------------------------------ |
+| `python3`         | `sudo apt install python3`     |
+| `pip3`            | `sudo apt install python3-pip` |
 
-The system requirements are listed above. If you are unsure as to whether or not you have `pip3` installed, open a terminal, and execute `which pip3`. If the program exists within your `$PATH`, then the previous command will display something like `/usr/bin/pip3`. If nothing is printed, then you probably do not have it installed, and you can install it with `sudo apt install python3-pip`. To install `python3`, simply run `sudo apt install python3`, but it is most likely already installed (assuming your version of Raspbian is up to date).
+The system requirements are listed in the table above. See below for verifying the installation of these packages if you are unsure.
 
-Next, clone this repository anywhere you like, and execute `make install` from a terminal. The required Python3 packages will be installed, and the command line program will be placed in `/usr/local/bin`. Moving the executable to `/usr/local/bin` requires `sudo` permission, so depending on your system configuration you may or may not be prompted for the root password. From here, you'll be able to execute any of the `mmpm` commands described in the "Overview of Commands" section.
+Next, clone this repository anywhere you like (I prefer `$HOME/Downloads`), change into the `mmpm` directory, and execute `python3 setup.py install --user` from a terminal. The required Python3 packages will be installed, and the command line program will be placed in `$HOME/.local/bin`. Assuming `$HOME/.local/bin` is already part of your `$PATH`, you'll be able to execute any of the `mmpm` commands described in the "Overview of Commands" section. If you're not sure if `$HOME/.local/bin` is part of your `$PATH` variable, see below:
+
+```sh
+# check if $HOME/.local/bin is in $PATH
+$ echo $PATH | grep -o "$HOME/.local/bin" # if any text is returned from this, then it means you're all set
+
+# only run this if nothing is returned
+$ echo "export PATH=$PATH:$HOME/.local/bin" >> ~/.bashrc
+```
 
 ```sh
 # check for python3 installation
-$ which python3
+$ which python3       # if a file path is returned, you have it installed
 
 # check for the installation of pip3
-$ which pip3
+$ which pip3          # if a file path is returned, you have it installed
 
 # execute inside the mmpm cloned repository
-$ make install
+$ python3 setup.py install --user
 ```
 
 Full Installation:
 
 ```sh
-$ git clone https://github.com/Bee-Mar/mmpm.git && cd mmpm && make install
+$ git clone https://github.com/Bee-Mar/mmpm.git && cd mmpm && python3 setup.py install --user
 ```
 
 Obviously, MagicMirror is required as well. If you do not have it installed, head over to [Magic Mirror](https://github.com/MichMich/MagicMirror)'s home page for instructions. I intend to add an option to install MagicMirror from `mmpm` in the future.

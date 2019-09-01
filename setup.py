@@ -9,7 +9,7 @@ DEPENDENCIES = [
     "tabulate == 0.8.3",
 ]
 
-VERSION = "0.31"
+VERSION = "0.32"
 
 setup(name="mmpm",
       version=VERSION,
@@ -21,5 +21,5 @@ setup(name="mmpm",
       include_package_data=True,
       keywords="MagicMirror magicmirror",
       packages=find_packages(),
-      entry_points={"console_scripts": ["mmpm=mmpm.__main_u:main"]},
+      entry_points={"console_scripts": ["mmpm=mmpm.__main__:main"]},
       install_requires=DEPENDENCIES)

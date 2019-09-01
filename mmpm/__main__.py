@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 import sys
+from colorama import init
 from mmpm import mmpm
+
 
 def main(args=None):
     if args is None:
         args = sys.argv
 
+    init()
     mmpm.main(args)
 
 

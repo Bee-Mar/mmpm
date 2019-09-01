@@ -13,13 +13,12 @@ import subprocess
 import urllib.error
 import urllib.request
 from collections import defaultdict
-from colorama import Fore, Back, Style, init
+from colorama import Fore, Style
 from bs4 import BeautifulSoup
 from tabulate import tabulate
 
 __version__ = 0.32
 
-init()
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
 BRIGHT_GREEN = Style.BRIGHT + Fore.GREEN
@@ -31,8 +30,15 @@ NORMAL_WHITE = Style.NORMAL + Fore.WHITE
 HOME_DIR = os.path.expanduser("~")
 
 
-def plain_print(s):
-    sys.stdout.write(s)
+def plain_print(msg):
+    '''
+    Prints message 's' without a new line
+
+    Arguments
+    =========
+    msg: String
+    '''
+    sys.stdout.write(msg)
     sys.stdout.flush()
 
 

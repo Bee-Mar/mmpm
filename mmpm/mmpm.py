@@ -17,7 +17,7 @@ from colorama import Fore, Style
 from bs4 import BeautifulSoup
 from tabulate import tabulate
 
-__version__ = 0.32
+__version__ = 0.33
 
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN

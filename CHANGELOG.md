@@ -94,3 +94,8 @@
 # Version 0.32
 
 - Moved to setup.py format. Initial setup works, will add in system requirements later
+
+# Version 0.33
+
+- Adding in the makefile again because I didn't think long term about this and probably locked
+  myself into the format of installing with a makefile...

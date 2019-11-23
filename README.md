@@ -354,12 +354,12 @@ $ mmpm --remove MMM-pages MMM-Simple-Swiper MMM-Facial-Recognition
 
 ```
 
-## `-L` or `--list-installed`
+## `-l` or `--list-installed`
 
 This command line option takes no arguments, and lists all the modules you currently have installed within the `~/MagicMirror/modules` directory.
 
 ```sh
-$ mmpm -L
+$ mmpm -l
 
 Module(s) Installed:
 

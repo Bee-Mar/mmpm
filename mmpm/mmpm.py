@@ -10,14 +10,22 @@ import argparse
 import datetime
 import textwrap
 import subprocess
-import urllib.error
-import urllib.request
 from collections import defaultdict
 from colorama import Fore, Style
 from bs4 import BeautifulSoup
 from tabulate import tabulate
 
-__version__ = 0.33
+try:
+    from urllib.error import HTTPError
+except ImportError:
+    from urllib2 import HTTPError
+
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
+
+__version__ = 0.34
 
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
@@ -80,7 +88,7 @@ def check_for_mmpm_enhancements():
     mmpm_file = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm.py"
 
     try:
-        mmpm_file = urllib.request.urlopen(mmpm_file)
+        mmpm_file = urlopen(mmpm_file)
         contents = str(mmpm_file.read())
 
         version_line = re.findall(r"__version__ = \d+\.\d+", contents)
@@ -133,7 +141,7 @@ def check_for_mmpm_enhancements():
         else:
             print("No enhancements available for MMPM.")
 
-    except urllib.error.HTTPError:
+    except HTTPError:
         pass
 
 
@@ -622,7 +630,7 @@ def retrieve_modules():
     modules = {}
 
     mmm_url = "https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules"
-    web_page = urllib.request.urlopen(mmm_url).read()
+    web_page = urlopen(mmm_url).read()
 
     soup = BeautifulSoup(web_page, "html.parser")
     table_soup = soup.find_all("table")
@@ -687,7 +695,7 @@ def retrieve_modules():
                             else:
                                 desc += contents
 
-                        desc = str(desc)
+                        desc = str(desc.encode('utf-8'))
 
                 modules[categories[index]].append({
                     "Title": title,

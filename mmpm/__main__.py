@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 from colorama import init
-from mmpm import mmpm
+import mmpm
 
 
 def main(args=None):

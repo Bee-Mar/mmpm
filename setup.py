@@ -9,7 +9,7 @@ DEPENDENCIES = [
     "tabulate == 0.8.3",
 ]
 
-VERSION = "0.33"
+VERSION = "0.34"
 
 setup(name="mmpm",
       version=VERSION,

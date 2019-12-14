@@ -6,5 +6,5 @@ install:
 	@printf "\n---------------------------------------------------\n"
 
 uninstall:
-	pip3 uninstall mmpm
+	pip uninstall mmpm
 

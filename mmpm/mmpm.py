@@ -25,7 +25,7 @@ try:
 except ImportError:
     from urllib2 import urlopen
 
-__version__ = 0.35
+__version__ = 0.36
 
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
@@ -85,7 +85,7 @@ def check_for_mmpm_enhancements():
     '''
 
     mmpm_repository = "https://github.com/Bee-Mar/mmpm.git"
-    mmpm_file = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm.py"
+    mmpm_file = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
 
     try:
         mmpm_file = urlopen(mmpm_file)
@@ -94,6 +94,7 @@ def check_for_mmpm_enhancements():
         version_line = re.findall(r"__version__ = \d+\.\d+", contents)
         version_number = re.findall(r"\d+\.\d+", version_line[0])
         version_number = float(version_number[0])
+        print(version_number)
 
         if version_number and __version__ < version_number:
             valid_response = False

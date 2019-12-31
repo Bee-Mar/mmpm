@@ -107,3 +107,7 @@
 # Version 0.35
 
 - Bug fixes to installatio
+
+# Version 0.36
+
+- Issue with checking for version number

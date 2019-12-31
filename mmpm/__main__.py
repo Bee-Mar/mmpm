@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 from colorama import init
-import mmpm
+from mmpm.mmpm import main as _main_
 
 
 def main(args=None):
@@ -9,7 +9,7 @@ def main(args=None):
         args = sys.argv
 
     init()
-    mmpm.main(args)
+    _main_(args)
 
 
 if __name__ == "__main__":

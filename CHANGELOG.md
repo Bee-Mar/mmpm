@@ -103,3 +103,7 @@
 # Version 0.34
 
 - Small fix made to urllib import as well as fixed breaking bug in description collection
+
+# Version 0.35
+
+- Bug fixes to installatio

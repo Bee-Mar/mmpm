@@ -1,10 +1,11 @@
 install:
 	sudo rm -f /usr/local/bin/mmpm
-	pip install . --user
+	pip3 install -r requirements.txt --user
+	pip3 install --user -e .
 	@printf "\n---------------------------------------------------"
 	@printf "\n\nNOTE: Ensure \"$$HOME/.local/bin\" is in your PATH\n"
 	@printf "\n---------------------------------------------------\n"
 
 uninstall:
-	pip uninstall mmpm
+	pip3 uninstall mmpm
 

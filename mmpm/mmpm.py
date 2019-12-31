@@ -25,7 +25,7 @@ try:
 except ImportError:
     from urllib2 import urlopen
 
-__version__ = 0.34
+__version__ = 0.35
 
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN

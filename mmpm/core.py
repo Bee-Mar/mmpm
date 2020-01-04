@@ -338,8 +338,7 @@ def install_magicmirror():
               "Installing MagicMirror..." +
               colors.NORMAL_WHITE)
 
-        os.system(
-            'bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"')
+        os.system('bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"')
 
     else:
         message = colors.BRIGHT_CYAN + "MagicMirror directory found. " + colors.NORMAL_WHITE

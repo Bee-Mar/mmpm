@@ -1,3 +1,5 @@
 build
 dist
 mmpm.egg-info
+mmpm/__pycache__
+__pycache__

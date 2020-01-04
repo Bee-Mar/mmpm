@@ -10,8 +10,11 @@ import argparse
 import datetime
 import textwrap
 import subprocess
+<<<<<<< HEAD
 from urllib.error import HTTPError
 from urllib.request import urlopen
+=======
+>>>>>>> 83fca09d399b0b13875d647f8954db993987ed69
 from collections import defaultdict
 from colorama import Fore, Style
 from bs4 import BeautifulSoup
@@ -19,7 +22,17 @@ from tabulate import tabulate
 from .utils import plain_print
 
 
-__version__ = 0.33
+try:
+    from urllib.error import HTTPError
+except ImportError:
+    from urllib2 import HTTPError
+
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
+
+__version__ = 0.36
 
 
 BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
@@ -74,7 +87,7 @@ def check_for_mmpm_enhancements():
     '''
 
     mmpm_repository = "https://github.com/Bee-Mar/mmpm.git"
-    mmpm_file = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm.py"
+    mmpm_file = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
 
     try:
         mmpm_file = urlopen(mmpm_file)
@@ -83,6 +96,7 @@ def check_for_mmpm_enhancements():
         version_line = re.findall(r"__version__ = \d+\.\d+", contents)
         version_number = re.findall(r"\d+\.\d+", version_line[0])
         version_number = float(version_number[0])
+        print(version_number)
 
         if version_number and __version__ < version_number:
             valid_response = False
@@ -622,7 +636,7 @@ def retrieve_modules():
     modules = {}
 
     mmm_url = "https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules"
-    web_page = urllib.request.urlopen(mmm_url).read()
+    web_page = urlopen(mmm_url).read()
 
     soup = BeautifulSoup(web_page, "html.parser")
     table_soup = soup.find_all("table")
@@ -687,7 +701,7 @@ def retrieve_modules():
                             else:
                                 desc += contents
 
-                        desc = str(desc)
+                        desc = str(desc.encode('utf-8'))
 
                 modules[categories[index]].append({
                     "Title": title,

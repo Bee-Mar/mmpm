@@ -40,7 +40,7 @@ As it stands, this project is entirely dependent on the structure of the [MagicM
 
 The system requirements are listed in the table above. See below for verifying the installation of these packages if you are unsure.
 
-Next, clone this repository anywhere you like (I prefer `$HOME/Downloads`), change into the `mmpm` directory, and execute `pip3 install . --user` from a terminal. The required Python3 packages will be installed, and the command line program will be placed in `$HOME/.local/bin`. Assuming `$HOME/.local/bin` is already part of your `$PATH`, you'll be able to execute any of the `mmpm` commands described in the "Overview of Commands" section. If you're not sure if `$HOME/.local/bin` is part of your `$PATH` variable, see below:
+Next, clone this repository anywhere you like (I prefer `$HOME/Downloads`), change into the `mmpm` directory, and execute `make` from a terminal. The required Python3 packages will be installed, and the command line program will be placed in `$HOME/.local/bin`. Assuming `$HOME/.local/bin` is already part of your `$PATH`, you'll be able to execute any of the `mmpm` commands described in the "Overview of Commands" section. If you're not sure if `$HOME/.local/bin` is part of your `$PATH` variable, see below:
 
 ```sh
 # check if $HOME/.local/bin is in $PATH

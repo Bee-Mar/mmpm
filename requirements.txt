@@ -1,0 +1,6 @@
+setuptools
+wheel
+tabulate
+argparse
+bs4
+colorama

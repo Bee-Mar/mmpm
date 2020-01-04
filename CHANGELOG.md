@@ -99,3 +99,15 @@
 
 - Adding in the makefile again because I didn't think long term about this and probably locked
   myself into the format of installing with a makefile...
+
+# Version 0.34
+
+- Small fix made to urllib import as well as fixed breaking bug in description collection
+
+# Version 0.35
+
+- Bug fixes to installatio
+
+# Version 0.36
+
+- Issue with checking for version number

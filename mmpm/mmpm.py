@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os
-import re
 import sys
 import time
 import json
@@ -10,225 +9,14 @@ import argparse
 import datetime
 import textwrap
 import subprocess
-<<<<<<< HEAD
-from urllib.error import HTTPError
 from urllib.request import urlopen
-=======
->>>>>>> 83fca09d399b0b13875d647f8954db993987ed69
 from collections import defaultdict
 from colorama import Fore, Style
 from bs4 import BeautifulSoup
 from tabulate import tabulate
-from .utils import plain_print
-
-
-try:
-    from urllib.error import HTTPError
-except ImportError:
-    from urllib2 import HTTPError
-
-try:
-    from urllib.request import urlopen
-except ImportError:
-    from urllib2 import urlopen
+from mmpm import utils, colors, core
 
 __version__ = 0.36
-
-
-BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
-BRIGHT_GREEN = Style.BRIGHT + Fore.GREEN
-BRIGHT_MAGENTA = Style.BRIGHT + Fore.MAGENTA
-BRIGHT_WHITE = Style.BRIGHT + Fore.WHITE
-BRIGHT_YELLOW = Style.BRIGHT + Fore.YELLOW
-NORMAL_WHITE = Style.NORMAL + Fore.WHITE
-
-HOME_DIR = os.path.expanduser("~")
-
-
-def error_msg(msg):
-    '''
-    Displays error message to user, and exits program.
-
-    Arguments
-    =========
-    msg: String
-    '''
-    print(Fore.RED + Style.BRIGHT + "ERROR: " + Fore.WHITE + msg)
-    exit(0)
-
-
-def warning_msg(msg):
-    '''
-    Displays warning message to user and continues program execution.
-
-    Arguments
-    =========
-    msg: String
-    '''
-    print(BRIGHT_YELLOW + "WARNING: " + Fore.WHITE + msg)
-
-
-def run_cmd(command):
-    proc = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-    stdout, stderr = proc.communicate()
-
-    return proc.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
-
-
-def check_for_mmpm_enhancements():
-    '''
-    Scrapes the main file of MMPM off the github repo, and compares the current
-    version, versus the one available in the master branch. If there is a newer
-    version, the user is prompted for an upgrade.
-
-    Arguments
-    =========
-    None
-    '''
-
-    mmpm_repository = "https://github.com/Bee-Mar/mmpm.git"
-    mmpm_file = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
-
-    try:
-        mmpm_file = urlopen(mmpm_file)
-        contents = str(mmpm_file.read())
-
-        version_line = re.findall(r"__version__ = \d+\.\d+", contents)
-        version_number = re.findall(r"\d+\.\d+", version_line[0])
-        version_number = float(version_number[0])
-        print(version_number)
-
-        if version_number and __version__ < version_number:
-            valid_response = False
-
-            plain_print(BRIGHT_CYAN + "Automated check for MMPM enhancements... " + NORMAL_WHITE)
-
-            while not valid_response:
-                response = input(BRIGHT_GREEN +
-                                 "MMPM enhancements are available. " +
-                                 NORMAL_WHITE +
-                                 "Would you like to upgrade now? " +
-                                 "[yes/no | y/n]: " +
-                                 NORMAL_WHITE)
-
-                if response in ("yes", "y"):
-                    original_dir = os.getcwd()
-
-                    os.chdir(HOME_DIR + "/Downloads")
-
-                    # make sure there isn't a pre-existing version cloned
-                    os.system("rm -rf mmpm")
-
-                    print("\n")
-
-                    return_code, std_out, std_err = run_cmd(['git', 'clone', mmpm_repository])
-
-                    if return_code:
-                        error_msg(std_err)
-
-                    os.chdir("mmpm")
-                    print("\n")
-                    os.system("make")
-
-                    os.chdir(original_dir)
-
-                    print(BRIGHT_GREEN + "\nMMPM Version " +
-                          "{}".format(version_number) +
-                          " installed. " + NORMAL_WHITE +
-                          "You can find the newly cloned repo" +
-                          " in your Downloads folder. Feel " +
-                          " free to remove the directory.")
-
-                    valid_response = True
-
-                elif response in ("no", "n"):
-                    valid_response = True
-                else:
-                    warning_msg("Respond with yes/no or y/n.")
-        else:
-            print("No enhancements available for MMPM.")
-
-    except HTTPError:
-        pass
-
-
-def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrade=None):
-    '''
-    Depending on flags passed in as arguments:
-
-    Checks for available module updates, and alerts the user. Or, pulls latest
-    version of module(s) from the associated repos.
-
-    If upgrading, a user can upgrade all modules that have available upgrades
-    by ommitting additional arguments. Or, upgrade specific modules by
-    supplying their case-sensitive name(s) as an addtional argument.
-
-    Arguments
-    =========
-    modules_table: Dictionary
-    update: Boolean
-    upgrade: Boolean
-    modules_to_upgrade: List
-    '''
-
-    original_dir = os.getcwd()
-    modules_dir = HOME_DIR + "/MagicMirror/modules"
-    os.chdir(modules_dir)
-
-    updates_list = []
-
-    dirs = os.listdir(modules_dir)
-
-    if upgrade and modules_to_upgrade:
-        dirs = modules_to_upgrade
-
-    if update:
-        print(BRIGHT_CYAN + "Checking for updates..." + NORMAL_WHITE)
-
-    for _, value in modules_table.items():
-        for i, _ in enumerate(value):
-            if value[i]["Title"] in dirs:
-                title = value[i]["Title"]
-                curr_module_dir = modules_dir + "/" + title
-
-                os.chdir(curr_module_dir)
-
-                if update:
-                    git_status = subprocess.run(["git", "fetch", "--dry-run"], stdout=subprocess.PIPE)
-
-                    if git_status.stdout:
-                        updates_list.append(title)
-
-                elif upgrade:
-                    print(BRIGHT_CYAN + "Requesting upgrade for {}...".format(title) + NORMAL_WHITE)
-
-                    os.system("git pull")
-
-                    if os.path.isfile(os.getcwd() + "/package.json"):
-                        print(BRIGHT_CYAN + "Found package.json. Installing NodeJS dependencies..." + NORMAL_WHITE)
-                        os.system("$(which npm) install")
-
-                os.chdir(modules_dir)
-
-    os.chdir(original_dir)
-
-    if update:
-        if not updates_list:
-            print(BRIGHT_WHITE + "No updates available." + Style.NORMAL)
-        else:
-            print(BRIGHT_MAGENTA + "Updates are available for the following modules:\n" + NORMAL_WHITE)
-
-            for _, update in enumerate(updates_list):
-                print("{}".format(update))
-
-            print(Style.BRIGHT +
-                  "\nTo update all modules, execute 'mmpm -U', or you may " +
-                  "individual modules\nby executing mmpm -U followed by the" +
-                  "name of the modules(s).' For example:" +
-                  BRIGHT_GREEN +
-                  "\n\n'mmpm -U {}'".format(updates_list[0]) +
-                  NORMAL_WHITE +
-                  "\n")
 
 
 def search_modules(modules_table, search):
@@ -294,13 +82,12 @@ def install_modules(modules_table, modules_to_install):
     modules_to_install: List
     '''
 
-    modules_dir = HOME_DIR + "/MagicMirror/modules"
+    modules_dir = utils.HOME_DIR + "/MagicMirror/modules"
 
     original_dir = os.getcwd()
 
     if not os.path.exists(modules_dir):
-        error_msg("The directory '{}' does not exist. ".format(modules_dir) +
-                  "Have you installed MagicMirror properly?")
+        utils.error_msg("The directory '{}' does not exist. Have you installed MagicMirror properly?".format(modules_dir))
 
     os.chdir(modules_dir)
 
@@ -321,60 +108,52 @@ def install_modules(modules_table, modules_to_install):
                     os.mkdir(target)
 
                 except OSError:
-                    error_msg("The {} module already exists. ".format(title) +
-                              "To remove the module, run " +
-                              "'mmpm -r {}'".format(title))
+                    utils.error_msg("The {0} module already exists. To remove the module, run 'mmpm -r {0}'".format(title))
 
                 os.chdir(target)
 
-                print(BRIGHT_GREEN +
+                print(colors.BRIGHT_GREEN +
                       "Installing {}".format(value[i]["Title"]) +
                       Fore.YELLOW +
                       " @ " +
                       Fore.GREEN +
                       "{}\n".format(target))
 
-                print(BRIGHT_CYAN + "Cloning repository for {}...\n".format(title) + NORMAL_WHITE)
+                utils.plain_print(colors.BRIGHT_CYAN + "Cloning {} repository ... ".format(title) + colors.NORMAL_WHITE)
 
-                return_code, std_out, std_err = run_cmd(['git', 'clone', 'shoe' + repo, target])
-
-                if return_code:
-                    error_msg(std_err)
-
-                elif not return_code:
-                    print(BRIGHT_CYAN + "\nRepository cloned.\n")
+                return_code, std_out, std_err = utils.run_cmd(['git', 'clone', repo, target])
+                utils.handle_warnings(return_code, std_err)
 
                 if os.path.isfile(os.getcwd() + "/package.json"):
-                    print("Found package.json. Installing NodeJS dependencies..." + NORMAL_WHITE)
-                    os.system("$(which npm) install")
+                    utils.plain_print(colors.BRIGHT_CYAN + "Found package.json. Installing NodeJS dependencies... ")
+                    return_code, std_out, std_err = utils.run_cmd(['npm', 'install'])
+                    utils.handle_warnings(return_code, std_err)
+
+                if os.path.isfile(os.getcwd() + '/Makefile') or os.path.isfile(os.getcwd() + '/makefile'):
+                    utils.plain_print(colors.BRIGHT_CYAN + "Found Makefile. Attempting to run 'make'... ")
+                    return_code, std_out, std_err = utils.run_cmd(['make'])
+                    utils.handle_warnings(return_code, std_err)
+
+                if os.path.isfile(os.getcwd() + '/CMakeLists.txt'):
+                    utils.plain_print(colors.BRIGHT_CYAN + "Found CMakeLists.txt. Attempting to run 'cmake'... ")
+                    os.system('mkdir -p build')
+                    os.chdir('build')
+                    return_code, std_out, std_err = utils.run_cmd(['cmake', '..'])
+                    utils.handle_warnings(return_code, std_err)
+
+                    os.chdir('..')
 
                 os.chdir(curr_subdir)
 
-                print("\n")
-
     os.chdir(original_dir)
 
-    for _, module in enumerate(modules_to_install):
+    for module in modules_to_install:
         if module not in successful_installs:
-            warning_msg("Unable to match '{}' with installation candidate. Is the title casing correct?\n".format(module))
+            utils.warning_msg("Unable to match '{}' with installation candidate. Is the title casing correct?\n".format(module))
 
-    print(BRIGHT_GREEN +
-          "To finish installation, populate " +
-          Fore.WHITE +
-          "'~/MagicMirror/config/config.js'" +
-          Fore.GREEN +
-          "\nwith the necessary configurations for each of the " +
-          "newly installed modules.\n" +
-          NORMAL_WHITE +
-          "\nWhile I did my best to install " +
-          "dependencies for you, there may " +
-          "be additional steps required\n" +
-          "to fully setup each of the modules " +
-          "(ie. running 'make' for specific targets " +
-          "within each directory).\n\n" +
-          "Review the GitHub pages for each of the " +
-          "newly installed modules " +
-          "for any additional instructions.\n")
+    utils.plain_print(colors.BRIGHT_GREEN + "\nTo complete installation, populate " + colors.BRIGHT_WHITE)
+    print(colors.BRIGHT_WHITE + "'~/MagicMirror/config/config.js'" + colors.BRIGHT_GREEN + " with the necessary configurations for each of the newly installed modules\n")
+    print(colors.NORMAL_WHITE + "There may be additional installation steps required. Review the associated GitHub pages for each newly installed module")
 
 
 def install_magicmirror():
@@ -392,18 +171,18 @@ def install_magicmirror():
 
     original_dir = os.getcwd()
 
-    if not os.path.exists(HOME_DIR + "/MagicMirror"):
-        print(BRIGHT_CYAN +
+    if not os.path.exists(utils.HOME_DIR + "/MagicMirror"):
+        print(colors.BRIGHT_CYAN +
               "MagicMirror directory not found. " +
-              NORMAL_WHITE +
+              colors.NORMAL_WHITE +
               "Installing MagicMirror..." +
-              NORMAL_WHITE)
+              colors.NORMAL_WHITE)
 
         os.system(
             'bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"')
 
     else:
-        message = BRIGHT_CYAN + "MagicMirror directory found. " + NORMAL_WHITE
+        message = colors.BRIGHT_CYAN + "MagicMirror directory found. " + colors.NORMAL_WHITE
         message += "Would you like to check for updates? "
         message += "[yes/no | y/n]: "
 
@@ -413,19 +192,18 @@ def install_magicmirror():
             response = input(message)
 
             if response in ("yes", "y"):
-                os.chdir(HOME_DIR + "/MagicMirror")
+                os.chdir(utils.HOME_DIR + "/MagicMirror")
 
-                print(BRIGHT_CYAN + "Checking for updates..." + NORMAL_WHITE)
+                print(colors.BRIGHT_CYAN + "Checking for updates..." + colors.NORMAL_WHITE)
                 git_status = subprocess.run(["git", "fetch", "--dry-run"], stdout=subprocess.PIPE)
 
                 if git_status.stdout:
-                    print(BRIGHT_CYAN + "Updates found for MagicMirror. " + NORMAL_WHITE + "Requesting upgrades...")
-                    return_code, std_out, std_err = run_cmd(['git', 'pull'])
+                    print(colors.BRIGHT_CYAN + "Updates found for MagicMirror. " + colors.NORMAL_WHITE + "Requesting upgrades...")
+                    return_code, std_out, std_err = utils.run_cmd(['git', 'pull'])
 
-                    if return_code:
-                        error_msg(std_err)
+                    utils.handle_warnings(return_code, std_err)
 
-                    elif not return_code:
+                    if not return_code:
                         os.system("$(which npm) install")
 
                 else:
@@ -434,11 +212,11 @@ def install_magicmirror():
                 valid_response = True
 
             elif response in ("no", "n"):
-                print(BRIGHT_MAGENTA + "Aborted MagicMirror update.")
+                print(colors.BRIGHT_MAGENTA + "Aborted MagicMirror update.")
                 valid_response = True
 
             else:
-                warning_msg("Respond with yes/no or y/n.")
+                utils.warning_msg("Respond with yes/no or y/n.")
 
     os.chdir(original_dir)
 
@@ -453,23 +231,23 @@ def remove_modules(installed_modules, modules_to_remove):
     Arguments
     =========
     modules_table: Dictionary
-    modules_to_install: List
+    modules_to_remove: List
     '''
 
     if not installed_modules:
-        error_msg("No modules are currently installed.")
+        utils.error_msg("No modules are currently installed.")
 
-    modules_dir = HOME_DIR + "/MagicMirror/modules"
+    modules_dir = utils.HOME_DIR + "/MagicMirror/modules"
     original_dir = os.getcwd()
 
     if not os.path.exists(modules_dir):
-        error_msg("The '{}' directory doesn't exist. Have you installed MagicMirror?".format(modules_dir))
+        utils.error_msg("The '{}' directory doesn't exist. Have you installed MagicMirror?".format(modules_dir))
 
     os.chdir(modules_dir)
     successful_removals = []
     curr_dir = os.getcwd()
 
-    for _, module in enumerate(modules_to_remove):
+    for module in modules_to_remove:
         dir_to_rm = curr_dir + "/" + module
 
         try:
@@ -477,16 +255,16 @@ def remove_modules(installed_modules, modules_to_remove):
             successful_removals.append(module)
 
         except OSError:
-            warning_msg("The directory for '{}' does not exist.".format(module))
+            utils.warning_msg("The directory for '{}' does not exist.".format(module))
 
     if successful_removals:
-        print(BRIGHT_GREEN + "The following modules were successfully deleted:" + Style.NORMAL)
+        print(colors.BRIGHT_GREEN + "The following modules were successfully deleted:" + Style.NORMAL)
 
-        for _, removal in enumerate(successful_removals):
-            print(NORMAL_WHITE + "{}".format(removal))
+        for removal in successful_removals:
+            print(colors.NORMAL_WHITE + "{}".format(removal))
 
     else:
-        error_msg("Unable to remove modules.")
+        utils.error_msg("Unable to remove modules.")
 
     os.chdir(original_dir)
 
@@ -518,21 +296,21 @@ def load_modules(snapshot_file, force_refresh=False):
 
     # if the snapshot has expired, or doesn't exist, get a new one
     if not file_exists or force_refresh or next_snap - time.time() <= 0.0:
-        plain_print(BRIGHT_CYAN + "Snapshot expired, retrieving modules... ")
+        utils.plain_print(colors.BRIGHT_CYAN + "Snapshot expired, retrieving modules... ")
 
         modules = retrieve_modules()
 
         with open(snapshot_file, "w") as f:  # save the new snapshot
             json.dump(modules, f)
 
-        plain_print(NORMAL_WHITE + "Retrieval complete.\n")
+        utils.plain_print(colors.NORMAL_WHITE + "Retrieval complete.\n")
 
         curr_snap = os.path.getmtime(snapshot_file)
         next_snap = curr_snap + refresh_interval * 60 * 60
 
-        plain_print(BRIGHT_CYAN + "Automated check for MMPM enhancements... " + NORMAL_WHITE)
+        utils.plain_print(colors.BRIGHT_CYAN + "Automated check for MMPM enhancements... " + colors.NORMAL_WHITE)
 
-        check_for_mmpm_enhancements()
+        core.check_for_mmpm_enhancements()
         checked_for_enhancements = True
 
     else:
@@ -559,18 +337,18 @@ def display_modules(modules_table, list_all=False, list_categories=False):
     '''
 
     if list_categories:
-        headers = [BRIGHT_CYAN + "CATEGORY", BRIGHT_CYAN + "NUMBER OF MODULES" + NORMAL_WHITE]
+        headers = [colors.BRIGHT_CYAN + "CATEGORY", colors.BRIGHT_CYAN + "NUMBER OF MODULES" + colors.NORMAL_WHITE]
         rows = [[key, len(modules_table[key])] for key in modules_table.keys()]
         print(tabulate(rows, headers, tablefmt="fancy_grid"))
 
     elif list_all:
 
         headers = [
-            BRIGHT_CYAN + "CATEGORY",
+            colors.BRIGHT_CYAN + "CATEGORY",
             "TITLE",
             "REPOSITORY",
             "AUTHOR",
-            "DESCRIPTION" + NORMAL_WHITE
+            "DESCRIPTION" + colors.NORMAL_WHITE
         ]
 
         rows = []
@@ -600,10 +378,10 @@ def get_installed_modules(modules_table):
     '''
 
     original_dir = os.getcwd()
-    modules_dir = HOME_DIR + "/MagicMirror/modules"
+    modules_dir = utils.HOME_DIR + "/MagicMirror/modules"
 
     if not os.path.exists(modules_dir):
-        error_msg("The directory '{}' does not exist. ".format(modules_dir) +
+        utils.error_msg("The directory '{}' does not exist. ".format(modules_dir) +
                   "Have you installed MagicMirror properly?")
 
     os.chdir(modules_dir)
@@ -712,47 +490,6 @@ def retrieve_modules():
 
     return modules
 
-
-def snapshot_details(modules, curr_snap, next_snap):
-    '''
-    Displays information regarding the most recent 'snapshot_file', ie. when it
-    was taken, when the next scheduled snapshot will be taken, how many module
-    categories exist, and the total number of modules available. Additionally,
-    tells user how to forcibly request a new snapshot be taken.
-
-    Arguments
-    =========
-    modules: Dictionary
-    curr_snap: String (timestamp)
-    next_snap: String (timestamp)
-    '''
-
-    num_categories = len(modules.keys())
-    num_modules = 0
-
-    for value in modules.values():
-        num_modules += len(value)
-
-    print(BRIGHT_YELLOW +
-          "\nMost recent snapshot of MagicMirror Modules taken @ " +
-          NORMAL_WHITE +
-          "{}.".format(curr_snap) +
-          BRIGHT_YELLOW +
-          "\n"
-          "The next snapshot will be taken on or after " +
-          NORMAL_WHITE +
-          "{}.\n".format(next_snap) +
-          Style.BRIGHT +
-          "\nModule Categories: " +
-          Fore.GREEN +
-          "{}\n".format(num_categories) +
-          Fore.WHITE +
-          "Modules Available: " +
-          Fore.GREEN +
-          "{}\n".format(num_modules) +
-          NORMAL_WHITE +
-          "\nTo forcibly refresh the snapshot, run 'mmpm -f' or " +
-          "'mmpm --force-refresh'\n")
 
 
 def main(argv):
@@ -910,7 +647,7 @@ def main(argv):
 
     modules_table = {}
 
-    snapshot_file = HOME_DIR + "/.magic_mirror_modules_snapshot.json"
+    snapshot_file = utils.HOME_DIR + "/.magic_mirror_modules_snapshot.json"
 
     modules_table, curr_snap, next_snap, checked_enhancements = load_modules(snapshot_file, args.force_refresh)
 
@@ -937,30 +674,31 @@ def main(argv):
         installed_modules = get_installed_modules(modules_table)
 
         if not installed_modules:
-            error_msg("No modules are currently installed")
+            utils.error_msg("No modules are currently installed")
 
-        print(BRIGHT_CYAN + "Module(s) Installed:\n" + NORMAL_WHITE)
+        print(colors.BRIGHT_CYAN + "Module(s) Installed:\n" + colors.NORMAL_WHITE)
+
         for module in installed_modules:
             print(module)
 
     elif args.snapshot_details or args.force_refresh:
-        snapshot_details(modules_table, curr_snap, next_snap)
+        core.snapshot_details(modules_table, curr_snap, next_snap)
 
     elif args.update:
-        enhance_modules(modules_table, update=True, upgrade=False, modules_to_upgrade=None)
+        core.enhance_modules(modules_table, update=True, upgrade=False, modules_to_upgrade=None)
 
     elif args.upgrade:
-        enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrade=args.upgrade[0])
+        core.enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrade=args.upgrade[0])
 
     elif args.enhance_mmpm and not checked_enhancements:
-        check_for_mmpm_enhancements()
+        core.check_for_mmpm_enhancements()
 
     elif args.version:
-        print(BRIGHT_CYAN + "MMPM Version: " + NORMAL_WHITE + "{}".format(__version__))
+        print(colors.BRIGHT_CYAN + "MMPM Version: " + colors.BRIGHT_WHITE + "{}".format(__version__))
 
 
 if __name__ == "__main__":
     try:
         main(sys.argv)
     except KeyboardInterrupt:
-        error_msg("Caught keyboard interrupt. Exiting")
+        utils.error_msg("Caught keyboard interrupt. Exiting")

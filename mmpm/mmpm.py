@@ -10,13 +10,13 @@ import argparse
 import datetime
 import textwrap
 import subprocess
-import urllib.error
-import urllib.request
+from urllib.error import HTTPError
+from urllib.request import urlopen
 from collections import defaultdict
 from colorama import Fore, Style
 from bs4 import BeautifulSoup
 from tabulate import tabulate
-import typing
+from .utils import plain_print
 
 
 __version__ = 0.33
@@ -32,19 +32,7 @@ NORMAL_WHITE = Style.NORMAL + Fore.WHITE
 HOME_DIR = os.path.expanduser("~")
 
 
-def plain_print(msg: str) -> None:
-    '''
-    Prints message 'msg' without a new line
-
-    Arguments
-    =========
-    msg: String
-    '''
-    sys.stdout.write(msg)
-    sys.stdout.flush()
-
-
-def error_msg(msg: str) -> None:
+def error_msg(msg):
     '''
     Displays error message to user, and exits program.
 
@@ -56,7 +44,7 @@ def error_msg(msg: str) -> None:
     exit(0)
 
 
-def warning_msg(msg: str) -> None:
+def warning_msg(msg):
     '''
     Displays warning message to user and continues program execution.
 
@@ -67,14 +55,14 @@ def warning_msg(msg: str) -> None:
     print(BRIGHT_YELLOW + "WARNING: " + Fore.WHITE + msg)
 
 
-def run_cmd(command: list) -> typing.Tuple:
+def run_cmd(command):
     proc = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     stdout, stderr = proc.communicate()
 
     return proc.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
 
 
-def check_for_mmpm_enhancements() -> None:
+def check_for_mmpm_enhancements():
     '''
     Scrapes the main file of MMPM off the github repo, and compares the current
     version, versus the one available in the master branch. If there is a newer
@@ -89,7 +77,7 @@ def check_for_mmpm_enhancements() -> None:
     mmpm_file = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm.py"
 
     try:
-        mmpm_file = urllib.request.urlopen(mmpm_file)
+        mmpm_file = urlopen(mmpm_file)
         contents = str(mmpm_file.read())
 
         version_line = re.findall(r"__version__ = \d+\.\d+", contents)
@@ -146,11 +134,11 @@ def check_for_mmpm_enhancements() -> None:
         else:
             print("No enhancements available for MMPM.")
 
-    except urllib.error.HTTPError:
+    except HTTPError:
         pass
 
 
-def enhance_modules(modules_table: dict, update=False, upgrade=True, modules_to_upgrade=None):
+def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrade=None):
     '''
     Depending on flags passed in as arguments:
 
@@ -229,7 +217,7 @@ def enhance_modules(modules_table: dict, update=False, upgrade=True, modules_to_
                   "\n")
 
 
-def search_modules(modules_table: dict, search: str) -> None:
+def search_modules(modules_table, search):
     '''
     Used to search the 'modules_table' for either a category, or keyword/phrase
     appearing within module descriptions. If the argument supplied is a
@@ -280,7 +268,7 @@ def search_modules(modules_table: dict, search: str) -> None:
     return search_results
 
 
-def install_modules(modules_table: dict, modules_to_install: list):
+def install_modules(modules_table, modules_to_install):
     '''
     Compares list of 'modules_to_install' to modules found within the
     'modules_table', clones the repository within the ~/MagicMirror/modules
@@ -375,7 +363,7 @@ def install_modules(modules_table: dict, modules_to_install: list):
           "for any additional instructions.\n")
 
 
-def install_magicmirror() -> None:
+def install_magicmirror():
     '''
     Installs MagicMirror. First checks if a MagicMirror installation can be
     found, and if one is found, prompts user to update the MagicMirror.
@@ -441,7 +429,7 @@ def install_magicmirror() -> None:
     os.chdir(original_dir)
 
 
-def remove_modules(installed_modules: dict, modules_to_remove: list) -> None:
+def remove_modules(installed_modules, modules_to_remove):
     '''
     Gathers list of modules currently installed in the ~/MagicMirror/modules
     directory, and removes each of the modules from the folder, if modules are
@@ -489,7 +477,7 @@ def remove_modules(installed_modules: dict, modules_to_remove: list) -> None:
     os.chdir(original_dir)
 
 
-def load_modules(snapshot_file: str, force_refresh=False):
+def load_modules(snapshot_file, force_refresh=False):
     '''
     Reads in modules from the hiddent 'snapshot_file' stored in the users home
     directory, and checks if the file is out of date. If so, the modules are
@@ -543,7 +531,7 @@ def load_modules(snapshot_file: str, force_refresh=False):
     return modules, curr_snap, next_snap, checked_for_enhancements
 
 
-def display_modules(modules_table: dict, list_all=False, list_categories=False) -> None:
+def display_modules(modules_table, list_all=False, list_categories=False):
     '''
     Depending on the user flags passed in from the command line, either all
     existing modules may be displayed, or the names of all categories of
@@ -586,7 +574,7 @@ def display_modules(modules_table: dict, list_all=False, list_categories=False) 
         print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))
 
 
-def get_installed_modules(modules_table: dict) -> typing.Dict:
+def get_installed_modules(modules_table):
     '''
     Saves a list of all currently installed modules in the
     ~/MagicMirror/modules directory, and compares against the known modules
@@ -620,7 +608,7 @@ def get_installed_modules(modules_table: dict) -> typing.Dict:
     return installed_modules
 
 
-def retrieve_modules() -> None:
+def retrieve_modules():
     '''
     Scrapes the MagicMirror 3rd Party Wiki, and saves all modules along with
     their full, available descriptions in a hidden JSON file in the users home
@@ -711,7 +699,7 @@ def retrieve_modules() -> None:
     return modules
 
 
-def snapshot_details(modules, curr_snap, next_snap) -> None:
+def snapshot_details(modules, curr_snap, next_snap):
     '''
     Displays information regarding the most recent 'snapshot_file', ie. when it
     was taken, when the next scheduled snapshot will be taken, how many module

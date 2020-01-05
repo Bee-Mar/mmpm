@@ -115,3 +115,7 @@
 # Version 0.37
 
 - Added env variable to allow for non-traditional installation location of MagicMirror
+
+# Version 0.38
+
+- Bug with upgrading module

@@ -112,7 +112,7 @@ def check_for_mmpm_enhancements():
         pass
 
 
-def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrade=None):
+def enhance_modules(modules_table, update=False, upgrade=False, modules_to_upgrade=None):
     '''
     Depending on flags passed in as arguments:
 
@@ -132,7 +132,7 @@ def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrad
     '''
 
     original_dir = os.getcwd()
-    modules_dir = utils.HOME_DIR + "/MagicMirror/modules"
+    modules_dir = os.path.join(utils.get_magicmirror_root(), 'modules')
     os.chdir(modules_dir)
 
     updates_list = []
@@ -146,11 +146,10 @@ def enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrad
         utils.plain_print(colors.BRIGHT_CYAN + "Checking for updates... " + colors.NORMAL_WHITE)
 
     for _, value in modules_table.items():
-        for i, _ in enumerate(value):
-            if value[i]["Title"] in dirs:
-                title = value[i]["Title"]
-                curr_module_dir = modules_dir + "/" + title
-
+        for index, _ in enumerate(value):
+            if value[index]["Title"] in dirs:
+                title = value[index]["Title"]
+                curr_module_dir = os.path.join(modules_dir, title)
                 os.chdir(curr_module_dir)
 
                 if update:
@@ -212,11 +211,11 @@ def search_modules(modules_table, search):
         query = query.lower()
 
         for key, value in modules_table.items():
-            for i, _ in enumerate(value):
-                title = value[i]["Title"]
-                desc = value[i]["Description"]
-                repo = value[i]["Repository"]
-                author = value[i]["Author"]
+            for index, _ in enumerate(value):
+                title = value[index]["Title"]
+                desc = value[index]["Description"]
+                repo = value[index]["Repository"]
+                author = value[index]["Author"]
 
                 if query in title.lower() or query in desc.lower() or query in author.lower():
                     entry = {"Title": title,
@@ -246,24 +245,22 @@ def install_modules(modules_table, modules_to_install):
     '''
 
     modules_dir = os.path.join(utils.get_magicmirror_root(), 'modules')
-
     original_dir = os.getcwd()
 
     if not os.path.exists(modules_dir):
         utils.error_msg("The directory '{}' does not exist. Have you installed MagicMirror properly?".format(modules_dir))
 
     os.chdir(modules_dir)
-
     successful_installs = []
 
     for value in modules_table.values():
         curr_subdir = os.getcwd()
 
-        for i in range(len(value)):
-            if value[i]["Title"] in modules_to_install:
-                title = value[i]["Title"]
-                target = os.getcwd() + "/" + title
-                repo = value[i]["Repository"]
+        for index in range(len(value)):
+            if value[index]["Title"] in modules_to_install:
+                title = value[index]["Title"]
+                target = os.path.join(os.getcwd(), title)
+                repo = value[index]["Repository"]
 
                 successful_installs.append(title)
 
@@ -275,7 +272,7 @@ def install_modules(modules_table, modules_to_install):
 
                 os.chdir(target)
 
-                print(colors.BRIGHT_GREEN + "Installing {}".format(value[i]["Title"]) +
+                print(colors.BRIGHT_GREEN + "Installing {}".format(value[index]["Title"]) +
                       colors.BRIGHT_YELLOW + " @ " +
                       colors.BRIGHT_GREEN + "{}\n".format(target))
 
@@ -331,11 +328,9 @@ def install_magicmirror():
 
     original_dir = os.getcwd()
 
-    if not os.path.exists(utils.HOME_DIR + "/MagicMirror"):
-        print(colors.BRIGHT_CYAN +
-              "MagicMirror directory not found. " +
-              colors.NORMAL_WHITE +
-              "Installing MagicMirror..." +
+    if not os.path.exists(os.path.join(utils.get_magicmirror_root())):
+        print(colors.BRIGHT_CYAN + "MagicMirror directory not found. " +
+              colors.NORMAL_WHITE + "Installing MagicMirror..." +
               colors.NORMAL_WHITE)
 
         os.system('bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"')
@@ -351,7 +346,7 @@ def install_magicmirror():
             response = input(message)
 
             if response in ("yes", "y"):
-                os.chdir(utils.HOME_DIR + "/MagicMirror")
+                os.chdir(os.path.join(utils.HOME_DIR, 'MagicMirror'))
 
                 print(colors.BRIGHT_CYAN + "Checking for updates..." + colors.NORMAL_WHITE)
                 git_status = subprocess.run(["git", "fetch", "--dry-run"], stdout=subprocess.PIPE)
@@ -407,7 +402,7 @@ def remove_modules(installed_modules, modules_to_remove):
     curr_dir = os.getcwd()
 
     for module in modules_to_remove:
-        dir_to_rm = curr_dir + "/" + module
+        dir_to_rm = os.path.join(curr_dir, module)
 
         try:
             shutil.rmtree(dir_to_rm)
@@ -603,14 +598,14 @@ def display_modules(modules_table, list_all=False, list_categories=False):
 
         rows = []
 
-        for key, value in modules_table.items():
-            for index, _ in enumerate(value):
+        for category, details in modules_table.items():
+            for index, _ in enumerate(details):
                 rows.append([
-                    key,
-                    value[index]["Title"],
-                    fill(value[index]["Repository"]),
-                    fill(value[index]["Author"], width=12),
-                    fill(value[index]["Description"], width=15)
+                    category,
+                    details[index]["Title"],
+                    fill(details[index]["Repository"]),
+                    fill(details[index]["Author"], width=12),
+                    fill(details[index]["Description"], width=15)
                 ])
 
         print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-
 import sys
 from mmpm import utils, colors, core, opts
 
-__version__ = 0.37
+__version__ = 0.38
+
 
 def main(argv):
     args = opts.get_user_args()
@@ -15,13 +15,13 @@ def main(argv):
     modules_table, curr_snap, next_snap, checked_enhancements = core.load_modules(snapshot_file, args.force_refresh)
 
     if args.all:
-        core.display_modules(modules_table, list_all=True, list_categories=False)
+        core.display_modules(modules_table, list_all=True)
 
     elif args.categories:
-        core.display_modules(modules_table, list_all=False, list_categories=True)
+        core.display_modules(modules_table, list_categories=True)
 
     elif args.search:
-        core.display_modules(core.search_modules(modules_table, args.search), list_all=True, list_categories=False)
+        core.display_modules(core.search_modules(modules_table, args.search), list_all=True)
 
     elif args.install:
         core.install_modules(modules_table, args.install)
@@ -48,10 +48,10 @@ def main(argv):
         core.snapshot_details(modules_table, curr_snap, next_snap)
 
     elif args.update:
-        core.enhance_modules(modules_table, update=True, upgrade=False, modules_to_upgrade=None)
+        core.enhance_modules(modules_table, update=True)
 
     elif args.upgrade:
-        core.enhance_modules(modules_table, update=False, upgrade=True, modules_to_upgrade=args.upgrade[0])
+        core.enhance_modules(modules_table, upgrade=True, modules_to_upgrade=args.upgrade[0])
 
     elif args.enhance_mmpm and not checked_enhancements:
         core.check_for_mmpm_enhancements()

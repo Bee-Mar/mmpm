@@ -245,7 +245,7 @@ def install_modules(modules_table, modules_to_install):
     modules_to_install: List
     '''
 
-    modules_dir = utils.HOME_DIR + "/MagicMirror/modules"
+    modules_dir = os.path.join(utils.get_magicmirror_root(), 'modules')
 
     original_dir = os.getcwd()
 
@@ -396,7 +396,7 @@ def remove_modules(installed_modules, modules_to_remove):
     if not installed_modules:
         utils.error_msg("No modules are currently installed.")
 
-    modules_dir = utils.HOME_DIR + "/MagicMirror/modules"
+    modules_dir = os.path.join(utils.get_magicmirror_root(), 'modules')
     original_dir = os.getcwd()
 
     if not os.path.exists(modules_dir):
@@ -627,8 +627,8 @@ def get_installed_modules(modules_table):
     modules_table: Dictionary
     '''
 
+    modules_dir = os.path.join(utils.get_magicmirror_root(), 'modules')
     original_dir = os.getcwd()
-    modules_dir = utils.HOME_DIR + "/MagicMirror/modules"
 
     if not os.path.exists(modules_dir):
         utils.error_msg("The directory '{}' does not exist. Have you installed MagicMirror properly?".format(modules_dir))
@@ -647,5 +647,4 @@ def get_installed_modules(modules_table):
     os.chdir(original_dir)
 
     return installed_modules
-
 

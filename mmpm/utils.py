@@ -55,3 +55,6 @@ def handle_warnings(return_code, std_err, success='done\n'):
     else:
         utils.plain_print(colors.BRIGHT_WHITE + success)
 
+
+def get_magicmirror_root():
+    return os.environ['MMPM_MAGICMIRROR_ROOT'] if 'MMPM_MAGICMIRROR_ROOT' in os.environ else os.path.join(HOME_DIR, 'MagicMirror')

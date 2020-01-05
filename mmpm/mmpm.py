@@ -3,7 +3,7 @@
 import sys
 from mmpm import utils, colors, core, opts
 
-__version__ = 0.36
+__version__ = 0.37
 
 def main(argv):
     args = opts.get_user_args()

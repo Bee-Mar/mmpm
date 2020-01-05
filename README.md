@@ -107,6 +107,18 @@ $ sudo rm /usr/local/bin/mmpm
 $ rm ~/.magic_mirror_modules_snapshot.json
 ```
 
+# MagicMirror Root Directory
+
+If you choose to install MagicMirror in a location other than ~/MagicMirror, you should set an
+environment variable named `MMPM_MAGICMIRROR_ROOT` to the location of your MagicMirror installation.
+This environment variable must be an absolute path.
+
+```sh
+# within your bashrc
+export MMPM_MAGICMIRROR_ROOT='/home/pi/some_directory/MagicMirror'
+
+```
+
 # Overview of Commands
 
 ## `-h` or `--help`

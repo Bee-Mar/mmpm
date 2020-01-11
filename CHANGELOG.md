@@ -119,3 +119,7 @@
 # Version 0.38
 
 - Bug with upgrading module
+
+# Version 0.39
+
+- Readme update and bug fix

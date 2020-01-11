@@ -5,6 +5,7 @@ import subprocess
 from mmpm import colors, utils
 
 HOME_DIR = os.path.expanduser("~")
+MMPM_ENV_VAR = 'MMPM_MAGICMIRROR_ROOT'
 
 
 def plain_print(msg):
@@ -57,4 +58,4 @@ def handle_warnings(return_code, std_err, success='done\n'):
 
 
 def get_magicmirror_root():
-    return os.environ['MMPM_MAGICMIRROR_ROOT'] if 'MMPM_MAGICMIRROR_ROOT' in os.environ else os.path.join(HOME_DIR, 'MagicMirror')
+    return os.environ[MMPM_ENV_VAR] if MMPM_ENV_VAR in os.environ else os.path.join(HOME_DIR, 'MagicMirror')

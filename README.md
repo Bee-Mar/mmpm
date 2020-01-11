@@ -31,6 +31,12 @@ Ideally, this project will become the official package manager of [Magic Mirror]
 
 As it stands, this project is entirely dependent on the structure of the [MagicMirror 3rd Party Modules](https://github.com/MichMich/MagicMirror/wiki/3rd-Party-Modules) page. The HTML is parsed, and the appropriate text of each module is extracted. If for some reason any of the information is not displayed correctly, it is most likely due to someone changing the structure of the page. Ideally, in the future, a database will be constructed, and things will be handeled in a more formal, predictable way. So, think of this currently as a shim, just to get the project going.
 
+## Font Size
+
+The `tabulate` package is used to format output, and it is expected the user will be ssh'ing into
+their Pi. However, if viewing on the your Pi, reduce your font-size to **at most** 7 so the output is
+displayed more properly. This is not intended to be the long-term solution.
+
 ## Installation of MMPM
 
 | System Dependency | Installation                   |
@@ -58,13 +64,13 @@ $ which python3       # if a file path is returned, you have it installed
 $ which pip3          # if a file path is returned, you have it installed
 
 # execute inside the mmpm cloned repository
-$ python3 setup.py install --user
+$ make
 ```
 
 Full Installation:
 
 ```sh
-$ git clone https://github.com/Bee-Mar/mmpm.git && cd mmpm && python3 setup.py install --user
+$ git clone https://github.com/Bee-Mar/mmpm.git && cd mmpm && make
 ```
 
 Obviously, MagicMirror is required as well. If you do not have it installed, head over to [Magic Mirror](https://github.com/MichMich/MagicMirror)'s home page for instructions. I intend to add an option to install MagicMirror from `mmpm` in the future.

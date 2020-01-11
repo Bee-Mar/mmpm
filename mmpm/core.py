@@ -248,7 +248,9 @@ def install_modules(modules_table, modules_to_install):
     original_dir = os.getcwd()
 
     if not os.path.exists(modules_dir):
-        utils.error_msg("The directory '{}' does not exist. Have you installed MagicMirror properly?".format(modules_dir))
+        msg = "Failed to find MagicMirror root. Have you installed MagicMirror properly? ".format(modules_dir)
+        msg += "You may also set the env variable 'MMPM_MAGICMIRROR_ROOT' to the MagicMirror root directory."
+        utils.error_msg(msg)
 
     os.chdir(modules_dir)
     successful_installs = []
@@ -395,7 +397,9 @@ def remove_modules(installed_modules, modules_to_remove):
     original_dir = os.getcwd()
 
     if not os.path.exists(modules_dir):
-        utils.error_msg("The '{}' directory doesn't exist. Have you installed MagicMirror?".format(modules_dir))
+        msg = "Failed to find MagicMirror root. Have you installed MagicMirror properly? ".format(modules_dir)
+        msg += "You may also set the env variable 'MMPM_MAGICMIRROR_ROOT' to the MagicMirror root directory."
+        utils.error_msg(msg)
 
     os.chdir(modules_dir)
     successful_removals = []
@@ -626,7 +630,9 @@ def get_installed_modules(modules_table):
     original_dir = os.getcwd()
 
     if not os.path.exists(modules_dir):
-        utils.error_msg("The directory '{}' does not exist. Have you installed MagicMirror properly?".format(modules_dir))
+        msg = "Failed to find MagicMirror root. Have you installed MagicMirror properly? ".format(modules_dir)
+        msg += "You may also set the env variable 'MMPM_MAGICMIRROR_ROOT' to the MagicMirror root directory."
+        utils.error_msg(msg)
 
     os.chdir(modules_dir)
 

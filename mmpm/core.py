@@ -22,11 +22,13 @@ def snapshot_details(modules, curr_snap, next_snap):
     categories exist, and the total number of modules available. Additionally,
     tells user how to forcibly request a new snapshot be taken.
 
-    Arguments
-    =========
-    modules: Dictionary
-    curr_snap: String (timestamp)
-    next_snap: String (timestamp)
+    Parameters:
+        modules (dict): Dictionary of MagicMirror modules
+        curr_snap (str): Timestamp of current snapshot
+        next_snap (str): Timestamp of when next snapshot will be taken
+
+    Returns:
+        None
     '''
 
     num_categories = len(modules.keys())
@@ -48,9 +50,11 @@ def check_for_mmpm_enhancements():
     version, versus the one available in the master branch. If there is a newer
     version, the user is prompted for an upgrade.
 
-    Arguments
-    =========
-    None
+    Parameters:
+        None
+
+    Returns:
+        None
     '''
 
     MMPM_REPO = "https://github.com/Bee-Mar/mmpm.git"
@@ -123,12 +127,14 @@ def enhance_modules(modules_table, update=False, upgrade=False, modules_to_upgra
     by ommitting additional arguments. Or, upgrade specific modules by
     supplying their case-sensitive name(s) as an addtional argument.
 
-    Arguments
-    =========
-    modules_table: Dictionary
-    update: Boolean
-    upgrade: Boolean
-    modules_to_upgrade: List
+    Parameters:
+        modules_table (dict): Dictionary of MagicMirror modules
+        update (bool): Flag to update modules
+        upgrade (bool): Flag to upgrade modules
+        modules_to_upgrade (list): List of modules to update/upgrade
+
+    Returns:
+        None
     '''
 
     original_dir = os.getcwd()
@@ -189,10 +195,12 @@ def search_modules(modules_table, search):
     all modules whose descriptions contain the keyword/phrase will be
     displayed.
 
-    Arguments
-    =========
-    modules_table: Dictionary
-    search: String
+    Parameters:
+        modules_table (dict): Dictionary of MagicMirror modules
+        search (str): Search query
+
+    Returns:
+        None
     '''
 
     search_results = {}
@@ -238,10 +246,12 @@ def install_modules(modules_table, modules_to_install):
     'modules_table', clones the repository within the ~/MagicMirror/modules
     directory, and runs 'npm install' for each newly installed module.
 
-    Arguments
-    =========
-    modules_table: Dictionary
-    modules_to_install: List
+    Parameters:
+        modules_table (dict): Dictionary of MagicMirror modules
+        modules_to_install (list): List of modules to install
+
+    Returns:
+        None
     '''
 
     modules_dir = os.path.join(utils.get_magicmirror_root(), 'modules')
@@ -323,9 +333,11 @@ def install_magicmirror():
     found, the MagicMirror is then installed. If an old version of NodeJS is
     found, a newer version is installed before installing MagicMirror.
 
-    Arguments
-    =========
-    None
+    Parameters:
+        None
+
+    Returns:
+        None
     '''
 
     original_dir = os.getcwd()
@@ -384,10 +396,12 @@ def remove_modules(installed_modules, modules_to_remove):
     currently installed. Otherwise, the user is shown an error message alerting
     them no modules are currently installed.
 
-    Arguments
-    =========
-    modules_table: Dictionary
-    modules_to_remove: List
+    Parameters:
+        modules_table (dict): Dictionary of MagicMirror modules
+        modules_to_remove (list): List of modules to remove
+
+    Returns:
+        None
     '''
 
     if not installed_modules:
@@ -433,10 +447,12 @@ def load_modules(snapshot_file, force_refresh=False):
     directory, and checks if the file is out of date. If so, the modules are
     gathered again from the MagicMirror 3rd Party Modules wiki.
 
-    Arguments
-    =========
-    snapshot_file: Path to file
-    force_refresh: Boolean
+    Parameters:
+        snapshot_file (str): Path of snapshot file
+        force_refresh (bool): Boolean flag to force refresh of snapshot
+
+    Returns:
+        None
     '''
 
     modules = {}
@@ -487,9 +503,11 @@ def retrieve_modules():
     their full, available descriptions in a hidden JSON file in the users home
     directory.
 
-    Arguments
-    =========
-    None
+    Parameters:
+        None
+
+    Returns:
+        None
     '''
 
     modules = {}
@@ -578,11 +596,13 @@ def display_modules(modules_table, list_all=False, list_categories=False):
     existing modules may be displayed, or the names of all categories of
     modules may be displayed.
 
-    Arguments
-    =========
-    modules_table: Dictionary
-    list_all: Boolean
-    list_categories: Boolean
+    Parameters:
+        modules_table (dict): Dictionary of MagicMirror modules
+        list_all (bool): Boolean flag to list all modules
+        list_categories (bool): Boolean flag to list categories
+
+    Returns:
+        None
     '''
 
     if list_categories:
@@ -621,9 +641,11 @@ def get_installed_modules(modules_table):
     ~/MagicMirror/modules directory, and compares against the known modules
     from the MagicMirror 3rd Party Wiki.
 
-    Arguments
-    =========
-    modules_table: Dictionary
+    Parameters:
+        modules_table (dict): Dictionary of MagicMirror modules
+
+    Returns:
+        None
     '''
 
     modules_dir = os.path.join(utils.get_magicmirror_root(), 'modules')

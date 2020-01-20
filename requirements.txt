@@ -1,6 +1,6 @@
-setuptools
-wheel
-tabulate
-argparse
-bs4
-colorama
+setuptools==45.0.0
+wheel==0.33.6
+tabulate==0.8.6
+argparse==1.1
+bs4==4.6.0
+colorama==0.4.3

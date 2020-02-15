@@ -58,7 +58,8 @@ def run_cmd(command):
         stdout (str): The stdout output of the executed subprocess
         stderr (str): The stderr output of the executed subprocess
     '''
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(
+        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
     return proc.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
 
@@ -69,8 +70,12 @@ def handle_warnings(return_code, std_err, success='done\n'):
     produced, otherwise the command's stdout is printed
 
     Parameters:
-        return_code (int): The return code produced by the subprocess executed within 'run_cmd'
-        std_err (int): The stderr output produced from the subprocess executed within 'run_cmd'
+        return_code (int): The return code produced by the subprocess executed
+                           within 'run_cmd'
+
+        std_err (int): The stderr output produced from the subprocess executed
+                           within 'run_cmd'
+
         success (str): The success message to display to the user
 
     Returns:

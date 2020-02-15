@@ -14,7 +14,7 @@ def get_user_args():
                                                     maintenance of MagicMirror
                                                     modules.
                                                     '''
-                                        )
+                                         )
 
     arg_parser.add_argument('-u',
                             '--update',

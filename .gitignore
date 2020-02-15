@@ -1,5 +1,8 @@
+mmpm/__pycache__
+__pycache__
 build
 dist
 mmpm.egg-info
-mmpm/__pycache__
-__pycache__
+gui/build
+gui/.clangd
+gui/src/.clang-format

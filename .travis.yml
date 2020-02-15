@@ -3,16 +3,14 @@ python:
   - "3.5"
   - "3.6"
   - "3.7"
-  - "3.8"
 
 before_install:
     - python --version
     - pip install -U pip
     - pip --version
-    - pip install codecov
+    - pip install codecov pytest pylint
 
 install:
-  - pip install codecov
   - pip install -r requirements.txt
   - pip install .
 

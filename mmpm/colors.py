@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
 from colorama import Fore, Style
 
-NORMAL_RED = Style.NORMAL + Fore.RED
-BRIGHT_RED = Style.BRIGHT + Fore.RED
+N = Style.NORMAL
+B = Style.BRIGHT
 
-BRIGHT_MAGENTA = Style.NORMAL + Fore.MAGENTA
-BRIGHT_MAGENTA = Style.BRIGHT + Fore.MAGENTA
+N_RED = N + Fore.RED
+B_RED = B + Fore.RED
 
-NORMAL_CYAN = Style.NORMAL + Fore.CYAN
-BRIGHT_CYAN = Style.BRIGHT + Fore.CYAN
+B_MAGENTA = N + Fore.MAGENTA
+B_MAGENTA = B + Fore.MAGENTA
 
-NORMAL_YELLOW = Style.NORMAL + Fore.YELLOW
-BRIGHT_YELLOW = Style.BRIGHT + Fore.YELLOW
+N_CYAN = N + Fore.CYAN
+B_CYAN = B + Fore.CYAN
 
-NORMAL_WHITE = Style.NORMAL + Fore.WHITE
-BRIGHT_WHITE = Style.BRIGHT + Fore.WHITE
+N_YELLOW = N + Fore.YELLOW
+B_YELLOW = B + Fore.YELLOW
 
-NORMAL_GREEN = Style.NORMAL + Fore.GREEN
-BRIGHT_GREEN = Style.BRIGHT + Fore.GREEN
+N_WHITE = N + Fore.WHITE
+B_WHITE = B + Fore.WHITE
 
-NORMAL = Style.NORMAL
-BRIGHT = Style.BRIGHT
+N_GREEN = N + Fore.GREEN
+B_GREEN = B + Fore.GREEN
+

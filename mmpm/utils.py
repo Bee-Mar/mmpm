@@ -4,8 +4,16 @@ import os
 import subprocess
 from mmpm import colors, utils
 
-HOME_DIR = os.path.expanduser("~")
+# String constants
 MMPM_ENV_VAR = 'MMPM_MAGICMIRROR_ROOT'
+MMPM_REPO = "https://github.com/Bee-Mar/mmpm.git"
+MMPM_FILE = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
+
+HOME_DIR = os.path.expanduser("~")
+TITLE = 'Title'
+REPOSITORY = 'Repository'
+DESCRIPTION = 'Description'
+AUTHOR = 'Author'
 
 
 def plain_print(msg):
@@ -29,7 +37,7 @@ def error_msg(msg):
     Parameters:
         msg (str): The error message to be printed to stdout
     '''
-    print(colors.BRIGHT_RED + "ERROR: " + colors.BRIGHT_WHITE + msg)
+    print(colors.B_RED + "ERROR: " + colors.B_WHITE + msg)
     exit(0)
 
 
@@ -43,7 +51,7 @@ def warning_msg(msg):
     Returns:
         None
     '''
-    print(colors.BRIGHT_YELLOW + "WARNING: " + colors.NORMAL_WHITE + msg)
+    print(colors.B_YELLOW + "WARNING: " + colors.N_WHITE + msg)
 
 
 def run_cmd(command):
@@ -85,7 +93,7 @@ def handle_warnings(return_code, std_err, success='done\n'):
         print('\n')
         utils.warning_msg(std_err)
     else:
-        utils.plain_print(colors.BRIGHT_WHITE + success)
+        utils.plain_print(colors.B_WHITE + success)
 
 
 def get_magicmirror_root():

@@ -43,7 +43,7 @@ def main(argv):
         if not installed_modules:
             utils.error_msg("No modules are currently installed")
 
-        print(colors.BRIGHT_CYAN + "Module(s) Installed:\n" + colors.NORMAL_WHITE)
+        print(colors.B_CYAN + "Module(s) Installed:\n" + colors.N_WHITE)
 
         for module in installed_modules:
             print(module)
@@ -55,14 +55,15 @@ def main(argv):
         core.enhance_modules(modules_table, update=True)
 
     elif args.upgrade:
-        core.enhance_modules(modules_table, upgrade=True,
+        core.enhance_modules(modules_table,
+                             upgrade=True,
                              modules_to_upgrade=args.upgrade[0])
 
     elif args.enhance_mmpm and not checked_enhancements:
         core.check_for_mmpm_enhancements()
 
     elif args.version:
-        print(colors.BRIGHT_CYAN + "MMPM Version: " + colors.BRIGHT_WHITE + f"{__version__}")
+        print(colors.B_CYAN + "MMPM Version: " + colors.B_WHITE + f"{__version__}")
 
 
 if __name__ == "__main__":

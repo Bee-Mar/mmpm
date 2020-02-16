@@ -13,6 +13,7 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 from collections import defaultdict
 from bs4 import BeautifulSoup
+from mmpm.utils import (TITLE, REPOSITORY, AUTHOR, DESCRIPTION, MMPM_REPO, MMPM_FILE)
 
 
 def snapshot_details(modules, curr_snap, next_snap):
@@ -37,11 +38,11 @@ def snapshot_details(modules, curr_snap, next_snap):
     for value in modules.values():
         num_modules += len(value)
 
-    print(colors.BRIGHT_YELLOW + "\nMost recent snapshot of MagicMirror Modules taken: " + colors.BRIGHT_WHITE + f"{curr_snap}")
-    print(colors.BRIGHT_YELLOW + "The next snapshot will be taken on or after: " + colors.BRIGHT_WHITE + f" {next_snap}\n")
-    print(colors.BRIGHT_GREEN + "Module Categories: " + colors.BRIGHT_WHITE + f"{num_categories}")
-    print(colors.BRIGHT_GREEN + "Modules Available: " + colors.BRIGHT_WHITE + f"{num_modules}")
-    print(colors.BRIGHT_WHITE + "\nTo forcibly refresh the snapshot, run 'mmpm -f' or 'mmpm --force-refresh'\n")
+    print(colors.B_YELLOW + "\nMost recent snapshot of MagicMirror Modules taken: " + colors.B_WHITE + f"{curr_snap}")
+    print(colors.B_YELLOW + "The next snapshot will be taken on or after: " + colors.B_WHITE + f" {next_snap}\n")
+    print(colors.B_GREEN + "Module Categories: " + colors.B_WHITE + f"{num_categories}")
+    print(colors.B_GREEN + "Modules Available: " + colors.B_WHITE + f"{num_modules}")
+    print(colors.B_WHITE + "\nTo forcibly refresh the snapshot, run 'mmpm -f' or 'mmpm --force-refresh'\n")
 
 
 def check_for_mmpm_enhancements():
@@ -57,9 +58,6 @@ def check_for_mmpm_enhancements():
         None
     '''
 
-    MMPM_REPO = "https://github.com/Bee-Mar/mmpm.git"
-    MMPM_FILE = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
-
     try:
         MMPM_FILE = urlopen(MMPM_FILE)
         contents = str(MMPM_FILE.read())
@@ -72,12 +70,12 @@ def check_for_mmpm_enhancements():
             valid_response = False
 
             utils.plain_print(
-                colors.BRIGHT_CYAN + "Automated check for MMPM enhancements... " + colors.NORMAL_WHITE)
+                colors.B_CYAN + "Automated check for MMPM enhancements... " + colors.N_WHITE)
 
             while not valid_response:
-                response = input(colors.BRIGHT_GREEN + "MMPM enhancements are available. " +
-                                 colors.BRIGHT_WHITE + "Would you like to upgrade now? [yes/no | y/n]: " +
-                                 colors.NORMAL)
+                response = input(colors.B_GREEN + "MMPM enhancements are available. " +
+                                 colors.B_WHITE + "Would you like to upgrade now? [yes/no | y/n]: " +
+                                 colors.N)
 
                 if response in ("yes", "y"):
                     original_dir = os.getcwd()
@@ -89,8 +87,7 @@ def check_for_mmpm_enhancements():
 
                     print("\n")
 
-                    return_code, std_out, std_err = utils.run_cmd(
-                        ['git', 'clone', MMPM_REPO])
+                    return_code, _, std_err = utils.run_cmd(['git', 'clone', MMPM_REPO])
 
                     if return_code:
                         utils.error_msg(std_err)
@@ -98,14 +95,13 @@ def check_for_mmpm_enhancements():
                     os.chdir("mmpm")
                     print("\n")
 
-                    return_code, std_out, std_err = utils.run_cmd(['make'])
+                    return_code, _, std_err = utils.run_cmd(['make'])
 
                     if return_code:
                         utils.error_msg(std_err)
 
                     os.chdir(original_dir)
-                    print(colors.BRIGHT_GREEN +
-                          f"\nMMPM Version {version_number} installed.")
+                    print(colors.B_GREEN + f"\nMMPM Version: {version_number}")
                     valid_response = True
 
                 elif response in ("no", "n"):
@@ -152,32 +148,31 @@ def enhance_modules(modules_table, update=False, upgrade=False, modules_to_upgra
         dirs = modules_to_upgrade
 
     if update:
-        utils.plain_print(colors.BRIGHT_CYAN +
-                          "Checking for updates... " + colors.NORMAL_WHITE)
+        utils.plain_print(colors.B_CYAN + "Checking for updates... " + colors.N_WHITE)
 
     for _, value in modules_table.items():
         for index, _ in enumerate(value):
-            if value[index]["Title"] in dirs:
-                title = value[index]["Title"]
+            if value[index][TITLE] in dirs:
+                title = value[index][TITLE]
                 curr_module_dir = os.path.join(modules_dir, title)
                 os.chdir(curr_module_dir)
 
                 if update:
                     git_status = subprocess.run(
-                        ["git", "fetch", "--dry-run"], stdout=subprocess.PIPE)
+                        ["git", "fetch", "--dry-run"],
+                        stdout=subprocess.PIPE)
 
                     if git_status.stdout:
                         updates_list.append(title)
 
                 elif upgrade:
                     utils.plain_print(
-                        colors.BRIGHT_CYAN + f"Requesting upgrade for {title}... " + colors.NORMAL_WHITE)
+                        colors.B_CYAN + f"Requesting upgrade for {title}... " + colors.N_WHITE)
 
                     os.system("git pull")
 
-                    if os.path.isfile(os.getcwd() + "/package.json"):
-                        print(
-                            colors.BRIGHT_CYAN + "Found package.json. Installing NodeJS dependencies... " + colors.NORMAL_WHITE)
+                    if os.path.isfile(os.path.join(os.getcwd(), "package.json")):
+                        print(colors.B_CYAN + "Found package.json. Installing NodeJS dependencies... " + colors.N_WHITE)
                         os.system("$(which npm) install")
 
                 os.chdir(modules_dir)
@@ -186,11 +181,9 @@ def enhance_modules(modules_table, update=False, upgrade=False, modules_to_upgra
 
     if update:
         if not updates_list:
-            utils.plain_print(colors.BRIGHT_WHITE +
-                              "No updates available.\n" + colors.NORMAL)
+            utils.plain_print(colors.B_WHITE + "No updates available.\n" + colors.N)
         else:
-            utils.plain_print(
-                colors.BRIGHT_MAGENTA + "Updates are available for the following modules:\n" + colors.NORMAL_WHITE)
+            utils.plain_print(colors.B_MAGENTA + "Updates are available for the following modules:\n" + colors.N_WHITE)
 
             for update in updates_list:
                 print(f"{update}")
@@ -229,16 +222,18 @@ def search_modules(modules_table, search):
 
         for key, value in modules_table.items():
             for index, _ in enumerate(value):
-                title = value[index]["Title"]
-                desc = value[index]["Description"]
-                repo = value[index]["Repository"]
-                author = value[index]["Author"]
+                title = value[index][TITLE]
+                desc = value[index][DESCRIPTION]
+                repo = value[index][REPOSITORY]
+                author = value[index][AUTHOR]
 
                 if query in title.lower() or query in desc.lower() or query in author.lower():
-                    entry = {"Title": title,
-                             "Repository": repo,
-                             "Author": author,
-                             "Description": desc}
+                    entry = {
+                        TITLE: title,
+                        REPOSITORY: repo,
+                        AUTHOR: author,
+                        DESCRIPTION: desc
+                    }
 
                     if entry not in search_results[key]:
                         search_results[key].append(entry)
@@ -278,53 +273,43 @@ def install_modules(modules_table, modules_to_install):
         curr_subdir = os.getcwd()
 
         for index in range(len(value)):
-            if value[index]["Title"] in modules_to_install:
-                title = value[index]["Title"]
+            if value[index][TITLE] in modules_to_install:
+                title = value[index][TITLE]
                 target = os.path.join(os.getcwd(), title)
-                repo = value[index]["Repository"]
+                repo = value[index][REPOSITORY]
 
                 successful_installs.append(title)
 
                 try:
                     os.mkdir(target)
-
                 except OSError:
-                    utils.error_msg(
-                        f"The {title} module already exists. To remove the module, run 'mmpm -r {title}'")
+                    utils.error_msg(f"The {title} module already exists. To remove the module, run 'mmpm -r {title}'")
 
                 os.chdir(target)
 
-                print(colors.BRIGHT_GREEN + f"Installing {value[index]['Title']}" +
-                      colors.BRIGHT_YELLOW + " @ " +
-                      colors.BRIGHT_GREEN + f"{target}\n")
+                print(colors.B_GREEN + f"Installing {title}" + colors.B_YELLOW + " @ " + colors.B_GREEN + f"{target}\n")
 
                 utils.plain_print(
-                    colors.BRIGHT_CYAN + f"Cloning {title} repository ... " + colors.NORMAL_WHITE)
+                    colors.B_CYAN + f"Cloning {title} repository ... " + colors.N_WHITE)
 
-                return_code, std_out, std_err = utils.run_cmd(
-                    ['git', 'clone', repo, target])
+                return_code, _, std_err = utils.run_cmd(['git', 'clone', repo, target])
                 utils.handle_warnings(return_code, std_err)
 
                 if os.path.isfile(os.getcwd() + "/package.json"):
-                    utils.plain_print(
-                        colors.BRIGHT_CYAN + "Found package.json. Installing NodeJS dependencies... ")
-                    return_code, std_out, std_err = utils.run_cmd(
-                        ['npm', 'install'])
+                    utils.plain_print(colors.B_CYAN + "Found package.json. Installing NodeJS dependencies... ")
+                    return_code, _, std_err = utils.run_cmd(['npm', 'install'])
                     utils.handle_warnings(return_code, std_err)
 
                 if os.path.isfile(os.getcwd() + '/Makefile') or os.path.isfile(os.getcwd() + '/makefile'):
-                    utils.plain_print(
-                        colors.BRIGHT_CYAN + "Found Makefile. Attempting to run 'make'... ")
-                    return_code, std_out, std_err = utils.run_cmd(['make'])
+                    utils.plain_print(colors.B_CYAN + "Found Makefile. Attempting to run 'make'... ")
+                    return_code, _, std_err = utils.run_cmd(['make'])
                     utils.handle_warnings(return_code, std_err)
 
                 if os.path.isfile(os.getcwd() + '/CMakeLists.txt'):
-                    utils.plain_print(
-                        colors.BRIGHT_CYAN + "Found CMakeLists.txt. Attempting to run 'cmake'... ")
+                    utils.plain_print(colors.B_CYAN + "Found CMakeLists.txt. Attempting to run 'cmake'... ")
                     os.system('mkdir -p build')
                     os.chdir('build')
-                    return_code, std_out, std_err = utils.run_cmd(
-                        ['cmake', '..'])
+                    return_code, _, std_err = utils.run_cmd(['cmake', '..'])
                     utils.handle_warnings(return_code, std_err)
 
                     os.chdir('..')
@@ -338,11 +323,11 @@ def install_modules(modules_table, modules_to_install):
             utils.warning_msg(
                 f"Unable to match '{module}' with installation candidate. Is the title casing correct?\n")
 
-    utils.plain_print(colors.BRIGHT_GREEN +
-                      "\nTo complete installation, populate " + colors.BRIGHT_WHITE)
-    print(colors.BRIGHT_WHITE + "'~/MagicMirror/config/config.js'" + colors.BRIGHT_GREEN +
+    utils.plain_print(colors.B_GREEN +
+                      "\nTo complete installation, populate " + colors.B_WHITE)
+    print(colors.B_WHITE + "'~/MagicMirror/config/config.js'" + colors.B_GREEN +
           " with the necessary configurations for each of the newly installed modules\n")
-    print(colors.NORMAL_WHITE + "There may be additional installation steps required. Review the associated GitHub pages for each newly installed module")
+    print(colors.N_WHITE + "There may be additional installation steps required. Review the associated GitHub pages for each newly installed module")
 
 
 def install_magicmirror():
@@ -363,15 +348,15 @@ def install_magicmirror():
     original_dir = os.getcwd()
 
     if not os.path.exists(os.path.join(utils.get_magicmirror_root())):
-        print(colors.BRIGHT_CYAN + "MagicMirror directory not found. " +
-              colors.NORMAL_WHITE + "Installing MagicMirror..." +
-              colors.NORMAL_WHITE)
+        print(colors.B_CYAN + "MagicMirror directory not found. " +
+              colors.N_WHITE + "Installing MagicMirror..." +
+              colors.N_WHITE)
 
         os.system(
             'bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"')
 
     else:
-        message = colors.BRIGHT_CYAN + "MagicMirror directory found. " + colors.NORMAL_WHITE
+        message = colors.B_CYAN + "MagicMirror directory found. " + colors.N_WHITE
         message += "Would you like to check for updates? "
         message += "[yes/no | y/n]: "
 
@@ -383,16 +368,12 @@ def install_magicmirror():
             if response in ("yes", "y"):
                 os.chdir(os.path.join(utils.HOME_DIR, 'MagicMirror'))
 
-                print(colors.BRIGHT_CYAN +
-                      "Checking for updates..." + colors.NORMAL_WHITE)
-                git_status = subprocess.run(
-                    ["git", "fetch", "--dry-run"], stdout=subprocess.PIPE)
+                print(colors.B_CYAN + "Checking for updates..." + colors.N_WHITE)
+                git_status = subprocess.run(["git", "fetch", "--dry-run"], stdout=subprocess.PIPE)
 
                 if git_status.stdout:
-                    print(colors.BRIGHT_CYAN + "Updates found for MagicMirror. " +
-                          colors.NORMAL_WHITE + "Requesting upgrades...")
-                    return_code, std_out, std_err = utils.run_cmd(
-                        ['git', 'pull'])
+                    print(colors.B_CYAN + "Updates found for MagicMirror. " + colors.N_WHITE + "Requesting upgrades...")
+                    return_code, _, std_err = utils.run_cmd(['git', 'pull'])
 
                     utils.handle_warnings(return_code, std_err)
 
@@ -405,7 +386,7 @@ def install_magicmirror():
                 valid_response = True
 
             elif response in ("no", "n"):
-                print(colors.BRIGHT_MAGENTA + "Aborted MagicMirror update.")
+                print(colors.B_MAGENTA + "Aborted MagicMirror update.")
                 valid_response = True
 
             else:
@@ -452,15 +433,15 @@ def remove_modules(installed_modules, modules_to_remove):
             successful_removals.append(module)
 
         except OSError:
-            utils.warning_msg(
-                f"The directory for '{module}' does not exist.")
+            utils.warning_msg(f"The directory for '{module}' does not exist.")
 
     if successful_removals:
-        print(colors.BRIGHT_GREEN +
-              "The following modules were successfully deleted:" + colors.NORMAL)
+        print(colors.B_GREEN +
+              "The following modules were successfully deleted:" +
+              colors.N)
 
         for removal in successful_removals:
-            print(colors.NORMAL_WHITE + f"{removal}")
+            print(colors.N_WHITE + f"{removal}")
 
     else:
         utils.error_msg("Unable to remove modules.")
@@ -497,21 +478,19 @@ def load_modules(snapshot_file, force_refresh=False):
 
     # if the snapshot has expired, or doesn't exist, get a new one
     if not file_exists or force_refresh or next_snap - time.time() <= 0.0:
-        utils.plain_print(colors.BRIGHT_CYAN +
-                          "Snapshot expired, retrieving modules... ")
+        utils.plain_print(colors.B_CYAN + "Snapshot expired, retrieving modules... ")
 
         modules = retrieve_modules()
 
         with open(snapshot_file, "w") as f:  # save the new snapshot
             json.dump(modules, f)
 
-        utils.plain_print(colors.NORMAL_WHITE + "Retrieval complete.\n")
+        utils.plain_print(colors.N_WHITE + "Retrieval complete.\n")
 
         curr_snap = os.path.getmtime(snapshot_file)
         next_snap = curr_snap + refresh_interval * 60 * 60
 
-        utils.plain_print(
-            colors.BRIGHT_CYAN + "Automated check for MMPM enhancements... " + colors.NORMAL_WHITE)
+        utils.plain_print(colors.B_CYAN + "Automated check for MMPM enhancements... " + colors.N_WHITE)
 
         check_for_mmpm_enhancements()
         checked_for_enhancements = True
@@ -542,7 +521,11 @@ def retrieve_modules():
     modules = {}
 
     mmm_url = "https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules"
-    web_page = urlopen(mmm_url).read()
+
+    try:
+        web_page = urlopen(mmm_url).read()
+    except HTTPError as err:
+        error_msg("Unable to retrieve MagicMirror modules. Is your internet connection up?")
 
     soup = BeautifulSoup(web_page, "html.parser")
     table_soup = soup.find_all("table")
@@ -610,10 +593,10 @@ def retrieve_modules():
                         desc = str(desc.encode('utf-8'))
 
                 modules[categories[index]].append({
-                    "Title": title,
-                    "Repository": repo,
-                    "Author": author,
-                    "Description": desc
+                    TITLE: title,
+                    REPOSITORY: repo,
+                    AUTHOR: author,
+                    DESCRIPTION: desc
                 })
 
     return modules
@@ -635,19 +618,19 @@ def display_modules(modules_table, list_all=False, list_categories=False):
     '''
 
     if list_categories:
-        headers = [colors.BRIGHT_CYAN + "CATEGORY",
-                   colors.BRIGHT_CYAN + "NUMBER OF MODULES" + colors.NORMAL_WHITE]
+        headers = [colors.B_CYAN + "Category",
+                   colors.B_CYAN + "Number of Modules" + colors.N_WHITE]
         rows = [[key, len(modules_table[key])] for key in modules_table.keys()]
         print(tabulate(rows, headers, tablefmt="fancy_grid"))
 
     elif list_all:
 
         headers = [
-            colors.BRIGHT_CYAN + "CATEGORY",
-            "TITLE",
-            "REPOSITORY",
-            "AUTHOR",
-            "DESCRIPTION" + colors.NORMAL_WHITE
+            colors.B_CYAN + "Category",
+            TITLE,
+            REPOSITORY,
+            AUTHOR,
+            DESCRIPTION + colors.N_WHITE
         ]
 
         rows = []
@@ -656,10 +639,10 @@ def display_modules(modules_table, list_all=False, list_categories=False):
             for index, _ in enumerate(details):
                 rows.append([
                     category,
-                    details[index]["Title"],
-                    fill(details[index]["Repository"]),
-                    fill(details[index]["Author"], width=12),
-                    fill(details[index]["Description"], width=15)
+                    details[index][TITLE],
+                    fill(details[index][REPOSITORY]),
+                    fill(details[index][AUTHOR], width=12),
+                    fill(details[index][DESCRIPTION], width=15)
                 ])
 
         print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))
@@ -689,13 +672,7 @@ def get_installed_modules(modules_table):
     os.chdir(modules_dir)
 
     module_dirs = os.listdir(os.getcwd())
-
-    installed_modules = []
-
-    for values in modules_table.values():
-        for value in values:
-            if value['Title'] in module_dirs:
-                installed_modules.append(value['Title'])
+    installed_modules = [value[TITLE] for values in modules_table.values() for value in values if value[TITLE] in module_dirs]
 
     os.chdir(original_dir)
 

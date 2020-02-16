@@ -6,8 +6,10 @@ from mmpm import colors, utils
 
 # String constants
 MMPM_ENV_VAR = 'MMPM_MAGICMIRROR_ROOT'
-MMPM_REPO = "https://github.com/Bee-Mar/mmpm.git"
-MMPM_FILE = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
+MMPM_REPO_URL = "https://github.com/Bee-Mar/mmpm.git"
+MMPM_FILE_URL = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
+MMPM_WIKI_URL = 'http://github.com/Bee-Mar/mmpm/wiki/MMPM-Command-Line-Options'
+MAGICMIRROR_MODULES_URL = "https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules"
 
 HOME_DIR = os.path.expanduser("~")
 TITLE = 'Title'
@@ -66,8 +68,7 @@ def run_cmd(command):
         stdout (str): The stdout output of the executed subprocess
         stderr (str): The stderr output of the executed subprocess
     '''
-    proc = subprocess.Popen(
-        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
     return proc.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
 

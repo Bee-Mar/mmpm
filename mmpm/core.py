@@ -6,14 +6,13 @@ import json
 import datetime
 import subprocess
 import shutil
-from tabulate import tabulate
 from textwrap import fill
-from mmpm import colors, utils, mmpm
+from tabulate import tabulate
 from urllib.error import HTTPError
 from urllib.request import urlopen
 from collections import defaultdict
 from bs4 import BeautifulSoup
-from mmpm.utils import (TITLE, REPOSITORY, AUTHOR, DESCRIPTION, MMPM_REPO, MMPM_FILE)
+from mmpm import colors, utils, mmpm
 
 
 def snapshot_details(modules, curr_snap, next_snap):
@@ -41,9 +40,7 @@ def snapshot_details(modules, curr_snap, next_snap):
     print(colors.B_YELLOW + "\nMost recent snapshot of MagicMirror Modules taken: " + colors.B_WHITE + f"{curr_snap}")
     print(colors.B_YELLOW + "The next snapshot will be taken on or after: " + colors.B_WHITE + f" {next_snap}\n")
     print(colors.B_GREEN + "Module Categories: " + colors.B_WHITE + f"{num_categories}")
-    print(colors.B_GREEN + "Modules Available: " + colors.B_WHITE + f"{num_modules}")
-    print(colors.B_WHITE + "\nTo forcibly refresh the snapshot, run 'mmpm -f' or 'mmpm --force-refresh'\n")
-
+    print(colors.B_GREEN + "Modules Available: " + colors.B_WHITE + f"{num_modules}\n")
 
 def check_for_mmpm_enhancements():
     '''
@@ -59,7 +56,7 @@ def check_for_mmpm_enhancements():
     '''
 
     try:
-        MMPM_FILE = urlopen(MMPM_FILE)
+        MMPM_FILE = urlopen(utils.MMPM_FILE_URL)
         contents = str(MMPM_FILE.read())
 
         version_line = re.findall(r"__version__ = \d+\.\d+", contents)
@@ -87,7 +84,7 @@ def check_for_mmpm_enhancements():
 
                     print("\n")
 
-                    return_code, _, std_err = utils.run_cmd(['git', 'clone', MMPM_REPO])
+                    return_code, _, std_err = utils.run_cmd(['git', 'clone', utils.MMPM_REPO_URL])
 
                     if return_code:
                         utils.error_msg(std_err)
@@ -152,8 +149,8 @@ def enhance_modules(modules_table, update=False, upgrade=False, modules_to_upgra
 
     for _, value in modules_table.items():
         for index, _ in enumerate(value):
-            if value[index][TITLE] in dirs:
-                title = value[index][TITLE]
+            if value[index][utils.TITLE] in dirs:
+                title = value[index][utils.TITLE]
                 curr_module_dir = os.path.join(modules_dir, title)
                 os.chdir(curr_module_dir)
 
@@ -222,17 +219,17 @@ def search_modules(modules_table, search):
 
         for key, value in modules_table.items():
             for index, _ in enumerate(value):
-                title = value[index][TITLE]
-                desc = value[index][DESCRIPTION]
-                repo = value[index][REPOSITORY]
-                author = value[index][AUTHOR]
+                title = value[index][utils.TITLE]
+                desc = value[index][utils.DESCRIPTION]
+                repo = value[index][utils.REPOSITORY]
+                author = value[index][utils.AUTHOR]
 
                 if query in title.lower() or query in desc.lower() or query in author.lower():
                     entry = {
-                        TITLE: title,
-                        REPOSITORY: repo,
-                        AUTHOR: author,
-                        DESCRIPTION: desc
+                        utils.TITLE: title,
+                        utils.REPOSITORY: repo,
+                        utils.AUTHOR: author,
+                        utils.DESCRIPTION: desc
                     }
 
                     if entry not in search_results[key]:
@@ -273,10 +270,10 @@ def install_modules(modules_table, modules_to_install):
         curr_subdir = os.getcwd()
 
         for index in range(len(value)):
-            if value[index][TITLE] in modules_to_install:
-                title = value[index][TITLE]
+            if value[index][utils.TITLE] in modules_to_install:
+                title = value[index][utils.TITLE]
                 target = os.path.join(os.getcwd(), title)
-                repo = value[index][REPOSITORY]
+                repo = value[index][utils.REPOSITORY]
 
                 successful_installs.append(title)
 
@@ -352,14 +349,10 @@ def install_magicmirror():
               colors.N_WHITE + "Installing MagicMirror..." +
               colors.N_WHITE)
 
-        os.system(
-            'bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"')
+        os.system('bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"')
 
     else:
-        message = colors.B_CYAN + "MagicMirror directory found. " + colors.N_WHITE
-        message += "Would you like to check for updates? "
-        message += "[yes/no | y/n]: "
-
+        message = colors.B_CYAN + "MagicMirror directory found. " + colors.N_WHITE + "Would you like to check for updates? [yes/no | y/n]: "
         valid_response = False
 
         while not valid_response:
@@ -374,7 +367,6 @@ def install_magicmirror():
                 if git_status.stdout:
                     print(colors.B_CYAN + "Updates found for MagicMirror. " + colors.N_WHITE + "Requesting upgrades...")
                     return_code, _, std_err = utils.run_cmd(['git', 'pull'])
-
                     utils.handle_warnings(return_code, std_err)
 
                     if not return_code:
@@ -436,13 +428,10 @@ def remove_modules(installed_modules, modules_to_remove):
             utils.warning_msg(f"The directory for '{module}' does not exist.")
 
     if successful_removals:
-        print(colors.B_GREEN +
-              "The following modules were successfully deleted:" +
-              colors.N)
+        print(colors.B_GREEN + "The following modules were successfully deleted:" + colors.N)
 
         for removal in successful_removals:
             print(colors.N_WHITE + f"{removal}")
-
     else:
         utils.error_msg("Unable to remove modules.")
 
@@ -478,8 +467,7 @@ def load_modules(snapshot_file, force_refresh=False):
 
     # if the snapshot has expired, or doesn't exist, get a new one
     if not file_exists or force_refresh or next_snap - time.time() <= 0.0:
-        utils.plain_print(colors.B_CYAN + "Snapshot expired, retrieving modules... ")
-
+        utils.plain_print(colors.B_CYAN + "Refreshing MagicMirror module snapshot... ")
         modules = retrieve_modules()
 
         with open(snapshot_file, "w") as f:  # save the new snapshot
@@ -520,12 +508,10 @@ def retrieve_modules():
 
     modules = {}
 
-    mmm_url = "https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules"
-
     try:
-        web_page = urlopen(mmm_url).read()
+        web_page = urlopen(utils.MAGICMIRROR_MODULES_URL).read()
     except HTTPError as err:
-        error_msg("Unable to retrieve MagicMirror modules. Is your internet connection up?")
+        error_msg("Unable to retrieve MagicMirror modules. Is your internet connection down?")
 
     soup = BeautifulSoup(web_page, "html.parser")
     table_soup = soup.find_all("table")
@@ -550,30 +536,30 @@ def retrieve_modules():
     for index, row in enumerate(tr_soup):
         modules.update({categories[index]: list()})
 
-        for j, _ in enumerate(row):
+        for column_number, _ in enumerate(row):
             # ignore cells that literally say "Title", "Author", "Description"
-            if j > 0:
-                td_soup = tr_soup[index][j].find_all("td")
+            if column_number > 0:
+                td_soup = tr_soup[index][column_number].find_all("td")
 
                 title = ""
                 repo = "N/A"
                 author = ""
                 desc = ""
 
-                for k in range(len(td_soup)):
-                    if k == 0:
-                        for td in td_soup[k]:
+                for idx in range(len(td_soup)):
+                    if idx == 0:
+                        for td in td_soup[idx]:
                             title = td.contents[0]
 
-                        for a in td_soup[k].find_all("a"):
+                        for a in td_soup[idx].find_all("a"):
                             if a.has_attr("href"):
                                 repo = a["href"]
 
                         repo = str(repo)
                         title = str(title)
 
-                    elif k == 1:
-                        for contents in td_soup[k].contents:
+                    elif idx == 1:
+                        for contents in td_soup[idx].contents:
                             if type(contents).__name__ == "Tag":
                                 for tag in contents:
                                     author = tag.strip()
@@ -583,7 +569,7 @@ def retrieve_modules():
                         author = str(author)
 
                     else:
-                        for contents in td_soup[k].contents:
+                        for contents in td_soup[idx].contents:
                             if type(contents).__name__ == "Tag":
                                 for content in contents:
                                     desc += content
@@ -593,10 +579,10 @@ def retrieve_modules():
                         desc = str(desc.encode('utf-8'))
 
                 modules[categories[index]].append({
-                    TITLE: title,
-                    REPOSITORY: repo,
-                    AUTHOR: author,
-                    DESCRIPTION: desc
+                    utils.TITLE: title,
+                    utils.REPOSITORY: repo,
+                    utils.AUTHOR: author,
+                    utils.DESCRIPTION: desc
                 })
 
     return modules
@@ -618,8 +604,11 @@ def display_modules(modules_table, list_all=False, list_categories=False):
     '''
 
     if list_categories:
-        headers = [colors.B_CYAN + "Category",
-                   colors.B_CYAN + "Number of Modules" + colors.N_WHITE]
+        headers = [
+            colors.B_CYAN + "Category",
+            colors.B_CYAN + "Number of Modules" + colors.N_WHITE
+        ]
+
         rows = [[key, len(modules_table[key])] for key in modules_table.keys()]
         print(tabulate(rows, headers, tablefmt="fancy_grid"))
 
@@ -627,10 +616,10 @@ def display_modules(modules_table, list_all=False, list_categories=False):
 
         headers = [
             colors.B_CYAN + "Category",
-            TITLE,
-            REPOSITORY,
-            AUTHOR,
-            DESCRIPTION + colors.N_WHITE
+            utils.TITLE,
+            utils.REPOSITORY,
+            utils.AUTHOR,
+            utils.DESCRIPTION + colors.N_WHITE
         ]
 
         rows = []
@@ -639,10 +628,10 @@ def display_modules(modules_table, list_all=False, list_categories=False):
             for index, _ in enumerate(details):
                 rows.append([
                     category,
-                    details[index][TITLE],
-                    fill(details[index][REPOSITORY]),
-                    fill(details[index][AUTHOR], width=12),
-                    fill(details[index][DESCRIPTION], width=15)
+                    details[index][utils.TITLE],
+                    fill(details[index][utils.REPOSITORY]),
+                    fill(details[index][utils.AUTHOR], width=12),
+                    fill(details[index][utils.DESCRIPTION], width=15)
                 ])
 
         print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))
@@ -672,7 +661,7 @@ def get_installed_modules(modules_table):
     os.chdir(modules_dir)
 
     module_dirs = os.listdir(os.getcwd())
-    installed_modules = [value[TITLE] for values in modules_table.values() for value in values if value[TITLE] in module_dirs]
+    installed_modules = [value[utils.TITLE] for values in modules_table.values() for value in values if value[utils.TITLE] in module_dirs]
 
     os.chdir(original_dir)
 

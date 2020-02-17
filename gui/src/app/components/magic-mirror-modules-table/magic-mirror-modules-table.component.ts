@@ -3,23 +3,24 @@ import { MatTableDataSource } from "@angular/material/table";
 import { SelectionModel } from "@angular/cdk/collections";
 
 export interface MagicMirrorPackage {
-  name: string;
-  position: number;
-  weight: number;
-  symbol: string;
+  title: string;
+  category: number;
+  repository: number;
+  author: string;
+  description: string;
 }
 
-const ELEMENT_DATA: MagicMirrorPackage[] = [
-  { position: 1, name: "Hydrogen", weight: 1.0079, symbol: "H" },
-  { position: 2, name: "Helium", weight: 4.0026, symbol: "He" },
-  { position: 3, name: "Lithium", weight: 6.941, symbol: "Li" },
-  { position: 4, name: "Beryllium", weight: 9.0122, symbol: "Be" },
-  { position: 5, name: "Boron", weight: 10.811, symbol: "B" },
-  { position: 6, name: "Carbon", weight: 12.0107, symbol: "C" },
-  { position: 7, name: "Nitrogen", weight: 14.0067, symbol: "N" },
-  { position: 8, name: "Oxygen", weight: 15.9994, symbol: "O" },
-  { position: 9, name: "Fluorine", weight: 18.9984, symbol: "F" },
-  { position: 10, name: "Neon", weight: 20.1797, symbol: "Ne" }
+const PACKAGES: MagicMirrorPackage[] = [
+  { category: 1, title: "Hydrogen", repository: 1.0079, author: "H", description: "Desc"},
+  { category: 2, title: "Helium", repository: 4.0026, author: "He", description: "Desc" },
+  { category: 3, title: "Lithium", repository: 6.941, author: "Li", description: "Desc" },
+  { category: 4, title: "Beryllium", repository: 9.0122, author: "Be", description: "Desc" },
+  { category: 5, title: "Boron", repository: 10.811, author: "B", description: "Desc" },
+  { category: 6, title: "Carbon", repository: 12.0107, author: "C", description: "Desc" },
+  { category: 7, title: "Nitrogen", repository: 14.0067, author: "N", description: "Desc" },
+  { category: 8, title: "Oxygen", repository: 15.9994, author: "O", description: "Desc" },
+  { category: 9, title: "Fluorine", repository: 18.9984, author: "F", description: "Desc" },
+  { category: 10, title: "Neon", repository: 20.1797, author: "Ne", description: "Desc" }
 ];
 
 @Component({
@@ -30,15 +31,17 @@ const ELEMENT_DATA: MagicMirrorPackage[] = [
 export class MagicMirrorModulesTableComponent {
   displayedColumns: string[] = [
     "select",
-    "position",
-    "name",
-    "weight",
-    "symbol"
+    "category",
+    "title",
+    "repository",
+    "author",
+    "description"
   ];
-  dataSource = new MatTableDataSource<MagicMirrorPackage>(ELEMENT_DATA);
+
+  dataSource = new MatTableDataSource<MagicMirrorPackage>(PACKAGES);
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
 
-  applyFilter(event: Event) {
+  public applyFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
@@ -50,17 +53,11 @@ export class MagicMirrorModulesTableComponent {
   }
 
   public masterToggle(): void {
-    this.isAllSelected()
-      ? this.selection.clear()
-      : this.dataSource.data.forEach((row) => this.selection.select(row));
+    this.isAllSelected() ? this.selection.clear() : this.dataSource.data.forEach((row) => this.selection.select(row));
   }
 
   public checkboxLabel(row?: MagicMirrorPackage): string {
-    if (!row) {
-      return `${this.isAllSelected() ? "select" : "deselect"} all`;
-    }
-    return `${
-      this.selection.isSelected(row) ? "deselect" : "select"
-    } row ${row.position + 1}`;
+    if (!row) return `${this.isAllSelected() ? "select" : "deselect"} all`;
+    return `${this.selection.isSelected(row) ? "deselect" : "select"} row ${row.category + 1}`;
   }
 }

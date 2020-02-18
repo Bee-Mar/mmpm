@@ -2,87 +2,18 @@ import { Component } from "@angular/core";
 import { MatTableDataSource } from "@angular/material/table";
 import { SelectionModel } from "@angular/cdk/collections";
 import { RestApiService } from "src/app/services/rest-api.service";
+import {Sort} from '@angular/material/sort';
 
-export interface MMPackage {
+export interface MagicMirrorPackage {
   title: string;
-  category: number;
-  repository: number;
+  category: string;
+  repository: string;
   author: string;
   description: string;
 }
 
-const PACKAGES: MMPackage[] = [
-  {
-    category: 1,
-    title: "Hydrogen",
-    repository: 1.0079,
-    author: "H",
-    description: "Desc"
-  },
-  {
-    category: 2,
-    title: "Helium",
-    repository: 4.0026,
-    author: "He",
-    description: "Desc"
-  },
-  {
-    category: 3,
-    title: "Lithium",
-    repository: 6.941,
-    author: "Li",
-    description: "Desc"
-  },
-  {
-    category: 4,
-    title: "Beryllium",
-    repository: 9.0122,
-    author: "Be",
-    description: "Desc"
-  },
-  {
-    category: 5,
-    title: "Boron",
-    repository: 10.811,
-    author: "B",
-    description: "Desc"
-  },
-  {
-    category: 6,
-    title: "Carbon",
-    repository: 12.0107,
-    author: "C",
-    description: "Desc"
-  },
-  {
-    category: 7,
-    title: "Nitrogen",
-    repository: 14.0067,
-    author: "N",
-    description: "Desc"
-  },
-  {
-    category: 8,
-    title: "Oxygen",
-    repository: 15.9994,
-    author: "O",
-    description: "Desc"
-  },
-  {
-    category: 9,
-    title: "Fluorine",
-    repository: 18.9984,
-    author: "F",
-    description: "Desc"
-  },
-  {
-    category: 10,
-    title: "Neon",
-    repository: 20.1797,
-    author: "Ne",
-    description: "Desc"
-  }
-];
+let PACKAGES: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
+let SORTED_PACKAGES: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
 
 @Component({
   selector: "app-magic-mirror-modules-table",
@@ -101,31 +32,72 @@ export class MagicMirrorModulesTableComponent {
     "description"
   ];
 
-  dataSource = new MatTableDataSource<MMPackage>(PACKAGES);
-  selection = new SelectionModel<MMPackage>(true, []);
+  dataSource: MatTableDataSource<MagicMirrorPackage>;
+  selection = new SelectionModel<MagicMirrorPackage>(true, []);
 
   ngOnInit() {
-    this.api.getMagicMirrorPackages().subscribe(data => {
-      console.log(data);
+    this.api.getMagicMirrorPackages().subscribe(packages => {
+      Object.keys(packages).forEach(category => {
+        for (let pkg of packages[category]) {
+          PACKAGES.push({
+            category: category,
+            title: pkg["Title"],
+            description: pkg["Description"],
+            author: pkg["Author"],
+            repository: pkg["Repository"]
+          });
+        }
+      });
+
+      this.dataSource = new MatTableDataSource<MagicMirrorPackage>(PACKAGES);
     });
   }
 
-  public applyFilter(event: Event): void {
+  public compare(a: number | string, b: number | string, isAsc: boolean) {
+    return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+  }
+
+  public sort(sort: Sort) {
+    const data = PACKAGES.slice();
+    if (!sort.active || sort.direction === "") {
+      SORTED_PACKAGES = data;
+      return;
+    }
+
+    SORTED_PACKAGES = data.sort((a, b) => {
+      const isAsc = sort.direction === "asc";
+      switch (sort.active) {
+        case "category":
+          return this.compare(a.category, b.category, isAsc);
+        case "title":
+          return this.compare(a.title, b.title, isAsc);
+        case "author":
+          return this.compare(a.author, b.author, isAsc);
+        default:
+          return 0;
+      }
+    });
+
+    PACKAGES = SORTED_PACKAGES;
+    this.dataSource = new MatTableDataSource<MagicMirrorPackage>(PACKAGES);
+  }
+
+  public searchFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
   public isAllSelected(): boolean {
-    return this.selection.selected.length === this.dataSource.data.length;
+    return this.dataSource?.data.length == this.selection.selected.length;
   }
 
-  public masterToggle(): void {
+  public toggleSelectAll(): void {
     this.isAllSelected()
       ? this.selection.clear()
-      : this.dataSource.data.forEach((row) => this.selection.select(row));
+      : this.dataSource?.data.forEach(row => this.selection.select(row));
   }
 
-  public checkboxLabel(row?: MMPackage): string {
+  public checkboxLabel(row?: MagicMirrorPackage): string {
     if (!row) return `${this.isAllSelected() ? "select" : "deselect"} all`;
     return `${
       this.selection.isSelected(row) ? "deselect" : "select"

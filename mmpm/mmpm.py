@@ -14,8 +14,7 @@ def main(argv):
 
     snapshot_file = utils.HOME_DIR + "/.magic_mirror_modules_snapshot.json"
 
-    modules_table, curr_snap, next_snap, checked_enhancements = core.load_modules(
-        snapshot_file, args.force_refresh)
+    modules_table, curr_snap, next_snap, checked_enhancements = core.load_modules(snapshot_file, args.force_refresh)
 
     if args.all:
         core.display_modules(modules_table, list_all=True)
@@ -55,9 +54,7 @@ def main(argv):
         core.enhance_modules(modules_table, update=True)
 
     elif args.upgrade:
-        core.enhance_modules(modules_table,
-                             upgrade=True,
-                             modules_to_upgrade=args.upgrade[0])
+        core.enhance_modules(modules_table, upgrade=True, modules_to_upgrade=args.upgrade[0])
 
     elif args.enhance_mmpm and not checked_enhancements:
         core.check_for_mmpm_enhancements()

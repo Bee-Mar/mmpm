@@ -42,6 +42,7 @@ def snapshot_details(modules, curr_snap, next_snap):
     print(colors.B_GREEN + "Module Categories: " + colors.B_WHITE + f"{num_categories}")
     print(colors.B_GREEN + "Modules Available: " + colors.B_WHITE + f"{num_modules}\n")
 
+
 def check_for_mmpm_enhancements():
     '''
     Scrapes the main file of MMPM off the github repo, and compares the current
@@ -572,11 +573,9 @@ def retrieve_modules():
                         for contents in td_soup[idx].contents:
                             if type(contents).__name__ == "Tag":
                                 for content in contents:
-                                    desc += content
+                                    desc += content.string
                             else:
-                                desc += contents
-
-                        desc = str(desc.encode('utf-8'))
+                                desc += contents.string
 
                 modules[categories[index]].append({
                     utils.TITLE: title,

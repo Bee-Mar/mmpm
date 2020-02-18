@@ -1,14 +1,15 @@
 <mat-form-field
-     style="font-size: 14px; width: 85%; margin: 0 auto; border-style: solid;"
-     >
-     <input matInput (keyup)="applyFilter($event)" placeholder="Search ..." />
+       style="font-size: 14px; width: 90vw; margin: 0 auto;"
+       >
+       <input matInput (keyup)="applyFilter($event)" placeholder="Search ..." />
 </mat-form-field>
 
   <table
     mat-table
+    matSort
     [dataSource]="dataSource"
     class="mat-elevation-z8"
-    style="margin: 0 auto; width: 85%"
+    style="margin: 0 auto; width: 90vw; overflow: auto; max-height: 50vh;"
     >
     <ng-container matColumnDef="select">
       <th mat-header-cell *matHeaderCellDef>
@@ -33,31 +34,31 @@
     </ng-container>
 
     <ng-container matColumnDef="category">
-      <th mat-header-cell *matHeaderCellDef>Category</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
       <td mat-cell *matCellDef="let package">{{package.category}}</td>
     </ng-container>
 
     <ng-container matColumnDef="title">
-      <th mat-header-cell *matHeaderCellDef>Title</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Title</th>
       <td mat-cell *matCellDef="let package">{{package.title}}</td>
     </ng-container>
 
     <ng-container matColumnDef="repository">
-      <th mat-header-cell *matHeaderCellDef>Repository</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Repository</th>
       <td mat-cell *matCellDef="let package">{{package.repository}}</td>
     </ng-container>
 
     <ng-container matColumnDef="author">
-      <th mat-header-cell *matHeaderCellDef>Author</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Author</th>
       <td mat-cell *matCellDef="let package">{{package.author}}</td>
     </ng-container>
 
     <ng-container matColumnDef="description">
-      <th mat-header-cell *matHeaderCellDef>Description</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
       <td mat-cell *matCellDef="let package">{{package.description}}</td>
     </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
     <tr
       mat-row
       *matRowDef="let row; columns: displayedColumns;"

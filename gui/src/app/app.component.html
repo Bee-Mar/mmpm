@@ -1,5 +1,9 @@
-<mat-toolbar color="secondary">
+<mat-toolbar color="primary">
   <span>MagicMirror Package Manager</span>
 </mat-toolbar>
-<app-magic-mirror-modules-table></app-magic-mirror-modules-table>
+
+<mat-card style="width: 90vw; height: 66vh; margin: 0 auto;">
+  <app-magic-mirror-modules-table></app-magic-mirror-modules-table>
+  <! -- terminal component to be placed here -->
+</mat-card>
 <router-outlet></router-outlet>

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 import sys
+import signal
+import time
+import threading
 from mmpm import utils, colors, core, opts
 
 __version__ = 0.39
@@ -8,13 +11,13 @@ __version__ = 0.39
 def main(argv):
     ''' Main entry point for CLI '''
 
+    signal.signal(signal.SIGINT, utils.signal_handler)
+    thread = threading.Event()
+    thread.wait()
+
     args = opts.get_user_args()
-
     modules_table = {}
-
-    snapshot_file = utils.HOME_DIR + "/.magic_mirror_modules_snapshot.json"
-
-    modules_table, curr_snap, next_snap, checked_enhancements = core.load_modules(snapshot_file, args.force_refresh)
+    modules_table, curr_snap, next_snap, checked_enhancements = core.load_modules(utils.SNAPSHOT_FILE, args.force_refresh)
 
     if args.all:
         core.display_modules(modules_table, list_all=True)
@@ -61,6 +64,9 @@ def main(argv):
 
     elif args.version:
         print(colors.B_CYAN + "MMPM Version: " + colors.B_WHITE + f"{__version__}")
+
+    elif args.add_ext_module_src:
+        core.add_external_module_source()
 
 
 if __name__ == "__main__":

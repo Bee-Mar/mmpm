@@ -3,6 +3,7 @@ import sys
 import os
 import subprocess
 from mmpm import colors, utils
+from os.path import join
 
 # String constants
 MMPM_ENV_VAR = 'MMPM_MAGICMIRROR_ROOT'
@@ -16,6 +17,10 @@ TITLE = 'Title'
 REPOSITORY = 'Repository'
 DESCRIPTION = 'Description'
 AUTHOR = 'Author'
+CATEGORY = 'Category'
+SNAPSHOT_FILE = join(utils.HOME_DIR, '.magic_mirror_modules_snapshot.json')
+MMPM_CONFIG_FILE = join(utils.HOME_DIR, '.mmpm_config.json')
+EXTERNAL_MODULES = 'external_modules'
 
 
 def plain_print(msg):

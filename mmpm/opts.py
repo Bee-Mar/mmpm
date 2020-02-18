@@ -119,6 +119,11 @@ def get_user_args():
                             action='store_true',
                             help='Display MMPM version')
 
+    arg_parser.add_argument('-X',
+                            '--add-ext-module-src',
+                            action='store_true',
+                            help='Register external module source')
+
     if len(argv) < 2:
         arg_parser.print_help()
         exit(0)

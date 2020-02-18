@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from colorama import Fore, Style
 
+RESET = Style.RESET_ALL
+
 N = Style.NORMAL
 B = Style.BRIGHT
 
@@ -21,4 +23,3 @@ B_WHITE = B + Fore.WHITE
 
 N_GREEN = N + Fore.GREEN
 B_GREEN = B + Fore.GREEN
-

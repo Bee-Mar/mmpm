@@ -8,7 +8,7 @@ from mmpm import colors, utils
 MMPM_ENV_VAR = 'MMPM_MAGICMIRROR_ROOT'
 MMPM_REPO_URL = "https://github.com/Bee-Mar/mmpm.git"
 MMPM_FILE_URL = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
-MMPM_WIKI_URL = 'http://github.com/Bee-Mar/mmpm/wiki/MMPM-Command-Line-Options'
+MMPM_WIKI_URL = 'https://github.com/Bee-Mar/mmpm/wiki/MMPM-Command-Line-Options'
 MAGICMIRROR_MODULES_URL = "https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules"
 
 HOME_DIR = os.path.expanduser("~")
@@ -79,12 +79,8 @@ def handle_warnings(return_code, std_err, success='done\n'):
     produced, otherwise the command's stdout is printed
 
     Parameters:
-        return_code (int): The return code produced by the subprocess executed
-                           within 'run_cmd'
-
-        std_err (int): The stderr output produced from the subprocess executed
-                           within 'run_cmd'
-
+        return_code (int): The return code produced by the subprocess executed within 'run_cmd'
+        std_err (int): The stderr output produced from the subprocess executed within 'run_cmd'
         success (str): The success message to display to the user
 
     Returns:

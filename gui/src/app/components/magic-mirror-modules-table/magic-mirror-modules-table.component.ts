@@ -1,8 +1,9 @@
-import { Component } from "@angular/core";
+import { Component, ViewChild } from "@angular/core";
 import { MatTableDataSource } from "@angular/material/table";
 import { SelectionModel } from "@angular/cdk/collections";
 import { RestApiService } from "src/app/services/rest-api.service";
-import {Sort} from '@angular/material/sort';
+import { Sort } from "@angular/material/sort";
+import { MatPaginator } from "@angular/material/paginator";
 
 export interface MagicMirrorPackage {
   title: string;
@@ -13,7 +14,9 @@ export interface MagicMirrorPackage {
 }
 
 let PACKAGES: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
-let SORTED_PACKAGES: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
+let SORTED_PACKAGES: Array<MagicMirrorPackage> = new Array<
+  MagicMirrorPackage
+>();
 
 @Component({
   selector: "app-magic-mirror-modules-table",
@@ -21,6 +24,8 @@ let SORTED_PACKAGES: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>()
   templateUrl: "./magic-mirror-modules-table.component.html"
 })
 export class MagicMirrorModulesTableComponent {
+  @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
+
   constructor(private api: RestApiService) {}
 
   displayedColumns: string[] = [
@@ -32,12 +37,13 @@ export class MagicMirrorModulesTableComponent {
     "description"
   ];
 
+
   dataSource: MatTableDataSource<MagicMirrorPackage>;
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
 
   ngOnInit() {
-    this.api.getMagicMirrorPackages().subscribe(packages => {
-      Object.keys(packages).forEach(category => {
+    this.api.getMagicMirrorPackages().subscribe((packages) => {
+      Object.keys(packages).forEach((category) => {
         for (let pkg of packages[category]) {
           PACKAGES.push({
             category: category,
@@ -50,6 +56,7 @@ export class MagicMirrorModulesTableComponent {
       });
 
       this.dataSource = new MatTableDataSource<MagicMirrorPackage>(PACKAGES);
+      this.dataSource.paginator = this.paginator;
     });
   }
 
@@ -92,9 +99,7 @@ export class MagicMirrorModulesTableComponent {
   }
 
   public toggleSelectAll(): void {
-    this.isAllSelected()
-      ? this.selection.clear()
-      : this.dataSource?.data.forEach(row => this.selection.select(row));
+    this.isAllSelected() ? this.selection.clear() : this.dataSource?.data.forEach((row) => this.selection.select(row));
   }
 
   public checkboxLabel(row?: MagicMirrorPackage): string {
@@ -103,4 +108,5 @@ export class MagicMirrorModulesTableComponent {
       this.selection.isSelected(row) ? "deselect" : "select"
     } row ${row.category + 1}`;
   }
+
 }

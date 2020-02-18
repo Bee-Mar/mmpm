@@ -1,0 +1,16 @@
+mat-card {
+  width: 95vw;
+  height: 89vh;
+  margin: 0 auto;
+  overflow-y: scroll;
+  text-align: center;
+}
+
+mat-form-field {
+  font-size: 14px;
+  width: 90vw;
+  margin: 0 auto;
+  position: sticky;
+  top: 0;
+  position: -webkit-sticky;
+}

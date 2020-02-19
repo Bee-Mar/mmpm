@@ -460,6 +460,15 @@ def load_modules(snapshot_file, force_refresh=False):
     checked_for_enhancements = False
     snapshot_exists = os.path.exists(snapshot_file)
 
+<<<<<<< HEAD
+=======
+    if not snapshot_exists:
+        try:
+            os.mkdir(os.path.dirname(snapshot_file))
+        except OSError:
+            error_msg('Failed to create directory for snapshot')
+
+>>>>>>> 11a53031d8af3f43ac642397880cc2b9f6abba48
     if not force_refresh and snapshot_exists:
         curr_snap = os.path.getmtime(snapshot_file)
         next_snap = curr_snap + refresh_interval * 60 * 60
@@ -488,9 +497,18 @@ def load_modules(snapshot_file, force_refresh=False):
         with open(snapshot_file, "r") as f:
             modules = json.load(f)
 
+<<<<<<< HEAD
         if os.path.exists(utils.MMPM_CONFIG_FILE):
             with open(utils.MMPM_CONFIG_FILE, "r") as f:
                 modules[utils.EXTERNAL_MODULE_SOURCES] = json.load(f)[utils.EXTERNAL_MODULE_SOURCES]
+=======
+        if os.path.exists(utils.MMPM_CONFIG_FILE) and os.stat(utils.MMPM_CONFIG_FILE).st_size:
+            try:
+                with open(utils.MMPM_CONFIG_FILE, "r") as f:
+                    modules[utils.EXTERNAL_MODULE_SOURCES] = json.load(f)[utils.EXTERNAL_MODULE_SOURCES]
+            except Exception:
+                utils.warning_msg(f'Failed to load data from {utils.MMPM_CONFIG_FILE}.')
+>>>>>>> 11a53031d8af3f43ac642397880cc2b9f6abba48
 
     curr_snap = datetime.datetime.fromtimestamp(int(curr_snap))
     next_snap = datetime.datetime.fromtimestamp(int(next_snap))
@@ -516,7 +534,7 @@ def retrieve_modules():
     try:
         web_page = urlopen(utils.MAGICMIRROR_MODULES_URL).read()
     except HTTPError as err:
-        error_msg("Unable to retrieve MagicMirror modules. Is your internet connection down?")
+        utils.error_msg("Unable to retrieve MagicMirror modules. Is your internet connection down?")
 
     soup = BeautifulSoup(web_page, "html.parser")
     table_soup = soup.find_all("table")
@@ -689,6 +707,7 @@ def add_external_module_source():
         exit(1)
 
     try:
+<<<<<<< HEAD
         if os.path.exists(utils.MMPM_CONFIG_FILE):
             config = {}
             with open(utils.MMPM_CONFIG_FILE, 'r') as mmpm_config:
@@ -701,6 +720,21 @@ def add_external_module_source():
             with open(utils.MMPM_CONFIG_FILE, 'w') as mmpm_config:
                 json.dump({utils.EXTERNAL_MODULE_SOURCES: [new_source]}, mmpm_config)
 
+=======
+        if os.path.exists(utils.MMPM_CONFIG_FILE) and os.stat(utils.MMPM_CONFIG_FILE).st_size:
+            config = {}
+
+            with open(utils.MMPM_CONFIG_FILE, 'r') as mmpm_config:
+                config[utils.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_config)[utils.EXTERNAL_MODULE_SOURCES]
+
+            with open(utils.MMPM_CONFIG_FILE, 'w') as mmpm_config:
+                config[utils.EXTERNAL_MODULE_SOURCES].append(new_source)
+                json.dump(config, mmpm_config)
+        else:
+            with open(utils.MMPM_CONFIG_FILE, 'w') as mmpm_config:
+                json.dump({utils.EXTERNAL_MODULE_SOURCES: [new_source]}, mmpm_config)
+
+>>>>>>> 11a53031d8af3f43ac642397880cc2b9f6abba48
         print(colors.B_WHITE + f'\nSuccessfully added external module to {utils.MMPM_CONFIG_FILE}\n' + colors.RESET)
     except IOError:
         error_msg('Failed to save external module')

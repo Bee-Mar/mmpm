@@ -9,7 +9,7 @@ from os.path import join
 MMPM_ENV_VAR = 'MMPM_MAGICMIRROR_ROOT'
 MMPM_REPO_URL = "https://github.com/Bee-Mar/mmpm.git"
 MMPM_FILE_URL = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
-MMPM_WIKI_URL = 'http://github.com/Bee-Mar/mmpm/wiki/MMPM-Command-Line-Options'
+MMPM_WIKI_URL = 'https://github.com/Bee-Mar/mmpm/wiki/MMPM-Command-Line-Options'
 MAGICMIRROR_MODULES_URL = "https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules"
 
 HOME_DIR = os.path.expanduser("~")
@@ -20,7 +20,7 @@ AUTHOR = 'Author'
 CATEGORY = 'Category'
 SNAPSHOT_FILE = join(utils.HOME_DIR, '.magic_mirror_modules_snapshot.json')
 MMPM_CONFIG_FILE = join(utils.HOME_DIR, '.mmpm_config.json')
-EXTERNAL_MODULES = 'external_modules'
+EXTERNAL_MODULE_SOURCES = 'External Module Sources'
 
 
 def plain_print(msg):
@@ -44,8 +44,8 @@ def error_msg(msg):
     Parameters:
         msg (str): The error message to be printed to stdout
     '''
-    print(colors.B_RED + "ERROR: " + colors.B_WHITE + msg)
-    exit(0)
+    print(colors.B_RED + "ERROR: " + colors.RESET + msg)
+    exit(1)
 
 
 def warning_msg(msg):
@@ -58,7 +58,7 @@ def warning_msg(msg):
     Returns:
         None
     '''
-    print(colors.B_YELLOW + "WARNING: " + colors.N_WHITE + msg)
+    print(colors.B_YELLOW + "WARNING: " + colors.RESET + msg)
 
 
 def run_cmd(command):
@@ -84,12 +84,8 @@ def handle_warnings(return_code, std_err, success='done\n'):
     produced, otherwise the command's stdout is printed
 
     Parameters:
-        return_code (int): The return code produced by the subprocess executed
-                           within 'run_cmd'
-
-        std_err (int): The stderr output produced from the subprocess executed
-                           within 'run_cmd'
-
+        return_code (int): The return code produced by the subprocess executed within 'run_cmd'
+        std_err (int): The stderr output produced from the subprocess executed within 'run_cmd'
         success (str): The success message to display to the user
 
     Returns:

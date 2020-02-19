@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask import Flask, request
 from os.path import expanduser, join
 import mmpm.utils
+import mmpm.core
 import json
 
 app = Flask(__name__)
@@ -14,12 +15,10 @@ BASE_CMD = ['mmpm']
 @app.route('/modules')
 def get_magic_mirror_modules():
     try:
-        with open(join(expanduser('~'), '.magic_mirror_modules_snapshot.json')) as data:
-            module_data = json.load(data)
-    except IOError:
+        modules, _, _, _ = mmpm.core.load_modules(mmpm.utils.SNAPSHOT_FILE)
+    except Exception:
         pass
-
-    return module_data
+    return modules
 
 
 @app.route('/install')
@@ -42,8 +41,11 @@ def get_installed_magic_mirror_modules():
 
 @app.route('/refresh', methods=['GET'])
 def force_refresh_magic_mirror_modules():
-    return_code, std_out, std_err = mmpm.utils.run_cmd(BASE_CMD + ['-f'])
-    return std_err if return_code else std_out
+    try:
+        modules, _, _, _ = mmpm.core.load_modules(mmpm.utils.SNAPSHOT_FILE, force_refresh=True)
+    except Exception:
+        pass
+    return modules
 
 
 if __name__ == '__main__':

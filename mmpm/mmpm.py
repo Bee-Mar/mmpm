@@ -2,13 +2,18 @@
 import sys
 from mmpm import utils, colors, core, opts
 
-__version__ = 0.39
+__version__ = 0.50
 
 
 def main(argv):
     ''' Main entry point for CLI '''
 
     args = opts.get_user_args()
+
+    if args.version:
+        print(colors.B_CYAN + "MMPM Version: " + colors.B_WHITE + f"{__version__}")
+        exit(0)
+
     modules = {}
     modules, curr_snap, next_snap, checked_enhancements = core.load_modules(utils.SNAPSHOT_FILE, args.force_refresh)
 
@@ -19,8 +24,7 @@ def main(argv):
         core.display_modules(modules, list_categories=True)
 
     elif args.search:
-        core.display_modules(core.search_modules(
-            modules, args.search), list_all=True)
+        core.display_modules(core.search_modules(modules, args.search), list_all=True)
 
     elif args.install:
         core.install_modules(modules, args.install)
@@ -29,8 +33,7 @@ def main(argv):
         core.install_magicmirror()
 
     elif args.remove:
-        installed_modules = core.get_installed_modules(modules)
-        core.remove_modules(installed_modules, args.remove)
+        core.remove_modules(core.get_installed_modules(modules), args.remove)
 
     elif args.list_installed:
         installed_modules = core.get_installed_modules(modules)
@@ -42,7 +45,6 @@ def main(argv):
 
         for module in installed_modules:
             print(module)
-        print('\n')
 
     elif args.snapshot_details or args.force_refresh:
         core.snapshot_details(modules, curr_snap, next_snap)
@@ -55,9 +57,6 @@ def main(argv):
 
     elif args.enhance_mmpm and not checked_enhancements:
         core.check_for_mmpm_enhancements()
-
-    elif args.version:
-        print(colors.B_CYAN + "MMPM Version: " + colors.B_WHITE + f"{__version__}")
 
     elif args.add_ext_module_src:
         core.add_external_module_source()

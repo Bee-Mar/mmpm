@@ -113,7 +113,7 @@ def check_for_mmpm_enhancements():
         pass
 
 
-def enhance_modules(modules_table, update=False, upgrade=False, modules_to_upgrade=None):
+def enhance_modules(modules, update=False, upgrade=False, modules_to_upgrade=None):
     '''
     Depending on flags passed in as arguments:
 
@@ -125,7 +125,7 @@ def enhance_modules(modules_table, update=False, upgrade=False, modules_to_upgra
     supplying their case-sensitive name(s) as an addtional argument.
 
     Parameters:
-        modules_table (dict): Dictionary of MagicMirror modules
+        modules (dict): Dictionary of MagicMirror modules
         update (bool): Flag to update modules
         upgrade (bool): Flag to upgrade modules
         modules_to_upgrade (list): List of modules to update/upgrade
@@ -148,7 +148,7 @@ def enhance_modules(modules_table, update=False, upgrade=False, modules_to_upgra
     if update:
         utils.plain_print(colors.B_CYAN + "Checking for updates... " + colors.RESET)
 
-    for _, value in modules_table.items():
+    for _, value in modules.items():
         for index, _ in enumerate(value):
             if value[index][utils.TITLE] in dirs:
                 title = value[index][utils.TITLE]
@@ -187,16 +187,16 @@ def enhance_modules(modules_table, update=False, upgrade=False, modules_to_upgra
                 print(f"{update}")
 
 
-def search_modules(modules_table, search):
+def search_modules(modules, search):
     '''
-    Used to search the 'modules_table' for either a category, or keyword/phrase
+    Used to search the 'modules' for either a category, or keyword/phrase
     appearing within module descriptions. If the argument supplied is a
     category name, all modules from that category will be listed. Otherwise,
     all modules whose descriptions contain the keyword/phrase will be
     displayed.
 
     Parameters:
-        modules_table (dict): Dictionary of MagicMirror modules
+        modules (dict): Dictionary of MagicMirror modules
         search (str): Search query
 
     Returns:
@@ -207,8 +207,8 @@ def search_modules(modules_table, search):
     query = search[0]
 
     try:
-        if modules_table[query]:
-            search_results[query] = modules_table[query]
+        if modules[query]:
+            search_results[query] = modules[query]
             return search_results
 
     except KeyError:
@@ -218,7 +218,7 @@ def search_modules(modules_table, search):
         search_results = defaultdict(list)
         query = query.lower()
 
-        for key, value in modules_table.items():
+        for key, value in modules.items():
             for index, _ in enumerate(value):
                 title = value[index][utils.TITLE]
                 desc = value[index][utils.DESCRIPTION]
@@ -242,14 +242,14 @@ def search_modules(modules_table, search):
     return search_results
 
 
-def install_modules(modules_table, modules_to_install):
+def install_modules(modules, modules_to_install):
     '''
     Compares list of 'modules_to_install' to modules found within the
-    'modules_table', clones the repository within the ~/MagicMirror/modules
+    'modules', clones the repository within the ~/MagicMirror/modules
     directory, and runs 'npm install' for each newly installed module.
 
     Parameters:
-        modules_table (dict): Dictionary of MagicMirror modules
+        modules (dict): Dictionary of MagicMirror modules
         modules_to_install (list): List of modules to install
 
     Returns:
@@ -267,7 +267,7 @@ def install_modules(modules_table, modules_to_install):
     os.chdir(modules_dir)
     successful_installs = []
 
-    for value in modules_table.values():
+    for value in modules.values():
         curr_subdir = os.getcwd()
 
         for index in range(len(value)):
@@ -396,7 +396,7 @@ def remove_modules(installed_modules, modules_to_remove):
     them no modules are currently installed.
 
     Parameters:
-        modules_table (dict): Dictionary of MagicMirror modules
+        modules (dict): Dictionary of MagicMirror modules
         modules_to_remove (list): List of modules to remove
 
     Returns:
@@ -458,16 +458,16 @@ def load_modules(snapshot_file, force_refresh=False):
     refresh_interval = 6
 
     checked_for_enhancements = False
-    file_exists = os.path.exists(snapshot_file)
+    snapshot_exists = os.path.exists(snapshot_file)
 
-    if not force_refresh and file_exists:
+    if not force_refresh and snapshot_exists:
         curr_snap = os.path.getmtime(snapshot_file)
         next_snap = curr_snap + refresh_interval * 60 * 60
     else:
         next_snap = curr_snap = time.time()
 
     # if the snapshot has expired, or doesn't exist, get a new one
-    if not file_exists or force_refresh or next_snap - time.time() <= 0.0:
+    if not snapshot_exists or force_refresh or next_snap - time.time() <= 0.0:
         utils.plain_print(colors.B_CYAN + "Refreshing MagicMirror module snapshot... ")
         modules = retrieve_modules()
 
@@ -487,6 +487,10 @@ def load_modules(snapshot_file, force_refresh=False):
     else:
         with open(snapshot_file, "r") as f:
             modules = json.load(f)
+
+        if os.path.exists(utils.MMPM_CONFIG_FILE):
+            with open(utils.MMPM_CONFIG_FILE, "r") as f:
+                modules[utils.EXTERNAL_MODULE_SOURCES] = json.load(f)[utils.EXTERNAL_MODULE_SOURCES]
 
     curr_snap = datetime.datetime.fromtimestamp(int(curr_snap))
     next_snap = datetime.datetime.fromtimestamp(int(next_snap))
@@ -587,14 +591,14 @@ def retrieve_modules():
     return modules
 
 
-def display_modules(modules_table, list_all=False, list_categories=False):
+def display_modules(modules, list_all=False, list_categories=False):
     '''
     Depending on the user flags passed in from the command line, either all
     existing modules may be displayed, or the names of all categories of
     modules may be displayed.
 
     Parameters:
-        modules_table (dict): Dictionary of MagicMirror modules list_all (bool): Boolean flag to list all modules
+        modules (dict): Dictionary of MagicMirror modules list_all (bool): Boolean flag to list all modules
         list_categories (bool): Boolean flag to list categories
 
     Returns:
@@ -607,7 +611,7 @@ def display_modules(modules_table, list_all=False, list_categories=False):
             colors.B_CYAN + "Number of Modules" + colors.RESET
         ]
 
-        rows = [[key, len(modules_table[key])] for key in modules_table.keys()]
+        rows = [[key, len(modules[key])] for key in modules.keys()]
         print(tabulate(rows, headers, tablefmt="fancy_grid"))
 
     elif list_all:
@@ -622,7 +626,7 @@ def display_modules(modules_table, list_all=False, list_categories=False):
 
         rows = []
 
-        for category, details in modules_table.items():
+        for category, details in modules.items():
             for index, _ in enumerate(details):
                 rows.append([
                     category,
@@ -635,14 +639,14 @@ def display_modules(modules_table, list_all=False, list_categories=False):
         print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))
 
 
-def get_installed_modules(modules_table):
+def get_installed_modules(modules):
     '''
     Saves a list of all currently installed modules in the
     ~/MagicMirror/modules directory, and compares against the known modules
     from the MagicMirror 3rd Party Wiki.
 
     Parameters:
-        modules_table (dict): Dictionary of MagicMirror modules
+        modules (dict): Dictionary of MagicMirror modules
 
     Returns:
         None
@@ -659,10 +663,8 @@ def get_installed_modules(modules_table):
     os.chdir(modules_dir)
 
     module_dirs = os.listdir(os.getcwd())
-    installed_modules = [value[utils.TITLE] for values in modules_table.values() for value in values if value[utils.TITLE] in module_dirs]
-
+    installed_modules = [value[utils.TITLE] for values in modules.values() for value in values if value[utils.TITLE] in module_dirs]
     os.chdir(original_dir)
-
     return installed_modules
 
 
@@ -670,14 +672,12 @@ def add_external_module_source():
     print(colors.B_GREEN + "Register external module source\n" + colors.RESET)
 
     try:
-        category = input("Category: ")
         title = input("Title: ")
         author = input("Author: ")
         repo = input("Repository: ")
         desc = input("Description: ")
 
         new_source = {
-            utils.CATEGORY: category,
             utils.TITLE: title,
             utils.REPOSITORY: repo,
             utils.AUTHOR: author,
@@ -688,13 +688,19 @@ def add_external_module_source():
         print('\n')
         exit(1)
 
-    if os.path.exists(utils.MMPM_CONFIG_FILE):
-        with open(utils.MMPM_CONFIG_FILE, 'r') as mmpm_config:
-            config = json.load(mmpm_config)
+    try:
+        if os.path.exists(utils.MMPM_CONFIG_FILE):
+            config = {}
+            with open(utils.MMPM_CONFIG_FILE, 'r') as mmpm_config:
+                config[utils.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_config)[utils.EXTERNAL_MODULE_SOURCES]
 
-        with open(utils.MMPM_CONFIG_FILE, 'w') as mmpm_config:
-            config[utils.EXTERNAL_MODULES].append(new_source)
-            json.dump(config, mmpm_config)
-    else:
-        with open(utils.MMPM_CONFIG_FILE, 'w') as mmpm_config:
-            json.dump({utils.EXTERNAL_MODULES: [new_source]}, mmpm_config)
+            with open(utils.MMPM_CONFIG_FILE, 'w') as mmpm_config:
+                config[utils.EXTERNAL_MODULE_SOURCES].append(new_source)
+                json.dump(config, mmpm_config)
+        else:
+            with open(utils.MMPM_CONFIG_FILE, 'w') as mmpm_config:
+                json.dump({utils.EXTERNAL_MODULE_SOURCES: [new_source]}, mmpm_config)
+
+        print(colors.B_WHITE + f'\nSuccessfully added external module to {utils.MMPM_CONFIG_FILE}\n' + colors.RESET)
+    except IOError:
+        error_msg('Failed to save external module')

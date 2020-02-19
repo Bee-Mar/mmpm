@@ -20,7 +20,7 @@ AUTHOR = 'Author'
 CATEGORY = 'Category'
 SNAPSHOT_FILE = join(utils.HOME_DIR, '.magic_mirror_modules_snapshot.json')
 MMPM_CONFIG_FILE = join(utils.HOME_DIR, '.mmpm_config.json')
-EXTERNAL_MODULES = 'external_modules'
+EXTERNAL_MODULE_SOURCES = 'External Module Sources'
 
 
 def plain_print(msg):
@@ -44,7 +44,7 @@ def error_msg(msg):
     Parameters:
         msg (str): The error message to be printed to stdout
     '''
-    print(colors.B_RED + "ERROR: " + colors.B_WHITE + msg)
+    print(colors.B_RED + "ERROR: " + colors.RESET + msg)
     exit(1)
 
 
@@ -58,7 +58,7 @@ def warning_msg(msg):
     Returns:
         None
     '''
-    print(colors.B_YELLOW + "WARNING: " + colors.N_WHITE + msg)
+    print(colors.B_YELLOW + "WARNING: " + colors.RESET + msg)
 
 
 def run_cmd(command):

@@ -1,0 +1,12 @@
+[Unit]
+Descripiton=MMPM uWSGI server instance
+After=network.target
+
+[Service]
+Group=www-data
+WorkingDirectory=/home/sammy/myproject
+Environment="PATH=/home/$USER/.local/lib/python3.6/site-packages/mmpm"
+ExecStart=/home/$USER/.config/.local/lib/python3.6/site-packages/mmpm --ini mmpm.ini
+
+[Install]
+WantedBy=multi-user.target

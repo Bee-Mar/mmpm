@@ -8,7 +8,7 @@ import { retry, catchError } from "rxjs/operators";
   providedIn: "root"
 })
 export class RestApiService {
-  url = "http://0.0.0.0:8008";
+  MMPM_API_URL = "http://0.0.0.0:8008";
 
   constructor(private http: HttpClient) {}
 
@@ -18,8 +18,8 @@ export class RestApiService {
     })
   };
 
-  public getMagicMirrorPackages(): Observable<any> {
-    return this.http.get<any>(this.url + "/modules").pipe(retry(1), catchError(this.handleError));
+  public mmpmApiRequest(path: string): Observable<any> {
+    return this.http.get<any>(this.MMPM_API_URL + `${path}`).pipe(retry(1), catchError(this.handleError));
   }
 
   public handleError(error) {

@@ -24,7 +24,7 @@ let SORTED_PACKAGES: Array<MagicMirrorPackage> = new Array<
   templateUrl: "./magic-mirror-modules-table.component.html"
 })
 export class MagicMirrorModulesTableComponent {
-  @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
+  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
 
   constructor(private api: RestApiService) {}
 
@@ -37,12 +37,11 @@ export class MagicMirrorModulesTableComponent {
     "description"
   ];
 
-
   dataSource: MatTableDataSource<MagicMirrorPackage>;
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
 
   ngOnInit() {
-    this.api.getMagicMirrorPackages().subscribe((packages) => {
+    this.api.mmpmApiRequest("/modules").subscribe((packages) => {
       Object.keys(packages).forEach((category) => {
         for (let pkg of packages[category]) {
           PACKAGES.push({
@@ -99,7 +98,9 @@ export class MagicMirrorModulesTableComponent {
   }
 
   public toggleSelectAll(): void {
-    this.isAllSelected() ? this.selection.clear() : this.dataSource?.data.forEach((row) => this.selection.select(row));
+    this.isAllSelected()
+      ? this.selection.clear()
+      : this.dataSource?.data.forEach((row) => this.selection.select(row));
   }
 
   public checkboxLabel(row?: MagicMirrorPackage): string {
@@ -108,5 +109,4 @@ export class MagicMirrorModulesTableComponent {
       this.selection.isSelected(row) ? "deselect" : "select"
     } row ${row.category + 1}`;
   }
-
 }

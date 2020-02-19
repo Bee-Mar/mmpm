@@ -123,3 +123,9 @@
 # Version 0.39
 
 - Readme update and bug fix
+
+# Version 0.5
+
+- Added ability for user to configure external sources for modules
+- Bug fixes
+- Code cleanup

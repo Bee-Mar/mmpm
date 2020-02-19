@@ -124,7 +124,7 @@
 
 - Readme update and bug fix
 
-# Version 0.5
+# Version 0.50
 
 - Added ability for user to configure external sources for modules
 - Bug fixes

@@ -1,0 +1,14 @@
+server {
+	listen 8081 default_server;
+	listen [::]:8081 default_server;
+
+	root /var/www/mmpm/gui;
+	index index.html
+
+	server_name 0.0.0.0;
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+}
+

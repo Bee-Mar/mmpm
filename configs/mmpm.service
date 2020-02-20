@@ -1,0 +1,16 @@
+[Unit]
+Description=MMPM Gunicorn daemon server
+After=network.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=notify
+User=bpm
+Group=bpm
+ExecStart=/home/bpm/.local/bin/gunicorn -c /home/bpm/.config/mmpm/configs/gunicorn.conf.py mmpm.wsgi:app
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true

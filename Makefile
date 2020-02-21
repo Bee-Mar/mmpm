@@ -1,9 +1,6 @@
-all:
-	# adding this to protect against anynone wanting to run it in parallel
-	$(MAKE) clean
-	$(MAKE) dependencies
-	$(MAKE) build
-	$(MAKE) install
+.NOTPARALLEL:
+
+all: clean dependencies build install
 
 clean:
 	@printf -- "-----------------------------------------"
@@ -11,9 +8,7 @@ clean:
 	@printf "\n-----------------------------------------\n"
 	sudo rm -f /usr/local/bin/mmpm
 
-dependencies:
-	$(MAKE) dependencies-cli
-	$(MAKE) dependencies-gui
+dependencies: dependencies-cli dependencies-gui
 
 dependencies-cli:
 	@printf -- "------------------------------"
@@ -30,9 +25,7 @@ dependencies-gui:
 	@npm install -g @angular/cli
 	@npm install --prefix gui
 
-build:
-	$(MAKE) build-cli
-	$(MAKE) build-gui
+build: build-cli build-gui
 
 build-cli:
 	# nothing yet for this, but keeping for consistency sake
@@ -43,16 +36,14 @@ build-gui:
 	@printf "\n---------------------\n"
 	@cd gui && ng build --prod
 
-install:
-	$(MAKE) install-cli
-	$(MAKE) install-gui
+install: install-cli install-gui
 
 install-cli:
 	@printf -- "------------------------"
 	@printf "\n| \e[92mInstalling MMPM CLI \e[0m |"
 	@printf "\n------------------------\n"
 	@pip3 install --user .
-	@printf -- "-------------------------------------------------------\n"
+	@printf -- "-------------------------------------------------------"
 	@printf "\n| \e[92mNOTE: Ensure \"${HOME}/.local/bin\" is in your PATH\e[0m |"
 	@printf "\n-------------------------------------------------------\n"
 
@@ -72,13 +63,15 @@ install-gui:
 		sudo ln -sf /etc/nginx/sites-available/mmpm-gui /etc/nginx/sites-enabled && \
 		sudo mkdir -p /var/www/mmpm && \
 		sudo cp -r gui/dist/gui /var/www/mmpm
+	@sudo ufw allow 8008 && sudo ufw allow 8081
 	@[ ! $? ] && printf "\n\033[1;36mMMPM Successfully Installed \e[0m\n"
 	@[ ! $? ] && printf "\nThe MMPM GUI is being served the IP address of your default interface at port 8081"
 	@[ ! $? ] && printf "\nBest guess: http://$$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):8081\n\n"
+	@printf -- "------------------------------------------------------------------------"
+	@printf "\n| \e[92mNOTE: Ensure your ufw (firewall) settings allow ports 8008 and 8081 \e[0m |"
+	@printf "\n------------------------------------------------------------------------\n"
 
-uninstall:
-	$(MAKE) uninstall-cli
-	$(MAKE) uninstall-gui
+uninstall: uninstall-cli uninstall-gui
 
 uninstall-cli:
 	@printf -- "----------------------"

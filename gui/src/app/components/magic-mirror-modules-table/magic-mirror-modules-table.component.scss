@@ -1,8 +1,7 @@
 mat-card {
   width: 95vw;
-  height: 89vh;
-  margin: 0 auto;
-  overflow-y: scroll;
+  height: 72vh;
+  margin: 7vh auto;
   text-align: center;
 }
 
@@ -12,5 +11,8 @@ mat-form-field {
   margin: 0 auto;
   position: sticky;
   top: 0;
-  position: -webkit-sticky;
+}
+
+td {
+  text-align: left !important;
 }

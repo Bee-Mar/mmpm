@@ -2,7 +2,7 @@ import { Component, ViewChild } from "@angular/core";
 import { MatTableDataSource } from "@angular/material/table";
 import { SelectionModel } from "@angular/cdk/collections";
 import { RestApiService } from "src/app/services/rest-api.service";
-import { Sort } from "@angular/material/sort";
+import { MatSort } from "@angular/material/sort";
 import { MatPaginator } from "@angular/material/paginator";
 
 export interface MagicMirrorPackage {
@@ -25,6 +25,7 @@ let SORTED_PACKAGES: Array<MagicMirrorPackage> = new Array<
 })
 export class MagicMirrorModulesTableComponent {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatSort) sort: MatSort;
 
   constructor(private api: RestApiService) {}
 
@@ -56,9 +57,9 @@ export class MagicMirrorModulesTableComponent {
         }
       });
 
-
       this.dataSource = new MatTableDataSource<MagicMirrorPackage>(PACKAGES);
       this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
     });
   }
 
@@ -66,8 +67,9 @@ export class MagicMirrorModulesTableComponent {
     return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
   }
 
-  public sort(sort: Sort) {
+  public onSort(sort: MatSort) {
     const data = PACKAGES.slice();
+
     if (!sort.active || sort.direction === "") {
       SORTED_PACKAGES = data;
       return;
@@ -88,7 +90,6 @@ export class MagicMirrorModulesTableComponent {
     });
 
     PACKAGES = SORTED_PACKAGES;
-    this.dataSource = new MatTableDataSource<MagicMirrorPackage>(PACKAGES);
   }
 
   public searchFilter(event: Event): void {

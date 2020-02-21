@@ -2,6 +2,17 @@
   <span>MagicMirror Package Manager</span>
 </mat-toolbar>
 
-<app-magic-mirror-modules-table></app-magic-mirror-modules-table>
+<mat-tab-group>
+  <mat-tab label="Marketplace">
+    <app-magic-mirror-modules-table></app-magic-mirror-modules-table>
+  </mat-tab>
+  <mat-tab label="Installed">
+    <app-magic-mirror-modules-table></app-magic-mirror-modules-table>
+  </mat-tab>
+  <mat-tab label="Register External Source">
+  </mat-tab>
+  <mat-tab label="Terminal">
+  </mat-tab>
+</mat-tab-group>
 <! -- terminal component to be placed here -->
 <router-outlet></router-outlet>

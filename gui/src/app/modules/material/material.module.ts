@@ -8,6 +8,7 @@ import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatSortModule } from "@angular/material/sort";
 import { MatCardModule } from "@angular/material/card";
 import { MatPaginatorModule } from "@angular/material/paginator";
+import { MatTabsModule } from "@angular/material/tabs";
 
 @NgModule({
   declarations: [],
@@ -20,7 +21,8 @@ import { MatPaginatorModule } from "@angular/material/paginator";
     MatCheckboxModule,
     MatSortModule,
     MatCardModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatTabsModule
   ],
   exports: [
     CommonModule,
@@ -31,7 +33,8 @@ import { MatPaginatorModule } from "@angular/material/paginator";
     MatCheckboxModule,
     MatSortModule,
     MatCardModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatTabsModule
   ]
 })
 export class MaterialModule {}

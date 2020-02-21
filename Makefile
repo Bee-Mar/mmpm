@@ -1,4 +1,9 @@
-all: clean dependencies build install
+all:
+	# adding this to protect against anynone wanting to run it in parallel
+	$(MAKE) clean
+	$(MAKE) dependencies
+	$(MAKE) build
+	$(MAKE) install
 
 clean:
 	@printf -- "-----------------------------------------"
@@ -6,7 +11,15 @@ clean:
 	@printf "\n-----------------------------------------\n"
 	sudo rm -f /usr/local/bin/mmpm
 
-dependencies: dependencies-cli dependencies-gui
+dependencies:
+	$(MAKE) dependencies-cli
+	$(MAKE) dependencies-gui
+
+dependencies-cli:
+	@printf -- "------------------------------"
+	@printf "\n| \e[92mGathering CLI dependencies\e[0m |"
+	@printf "\n------------------------------\n"
+	@pip3 install -r requirements.txt --user
 
 dependencies-gui:
 	@printf -- "------------------------------"
@@ -17,13 +30,9 @@ dependencies-gui:
 	@npm install -g @angular/cli
 	@npm install --prefix gui
 
-dependencies-cli:
-	@printf -- "------------------------------"
-	@printf "\n| \e[92mGathering CLI dependencies\e[0m |"
-	@printf "\n------------------------------\n"
-	@pip3 install -r requirements.txt --user
-
-build: build-cli build-gui
+build:
+	$(MAKE) build-cli
+	$(MAKE) build-gui
 
 build-cli:
 	# nothing yet for this, but keeping for consistency sake
@@ -34,7 +43,9 @@ build-gui:
 	@printf "\n---------------------\n"
 	@cd gui && ng build --prod
 
-install: install-cli install-gui
+install:
+	$(MAKE) install-cli
+	$(MAKE) install-gui
 
 install-cli:
 	@printf -- "------------------------"
@@ -44,9 +55,6 @@ install-cli:
 	@printf -- "-------------------------------------------------------\n"
 	@printf "\n| \e[92mNOTE: Ensure \"${HOME}/.local/bin\" is in your PATH\e[0m |"
 	@printf "\n-------------------------------------------------------\n"
-	@[ ! $? ] && printf "\n\033[1;36mMMPM Successfully Installed \e[0m\n"
-	@[ ! $? ] && printf "\nThe MMPM GUI is being served the IP address of your default interface at port 8081"
-	@[ ! $? ] && printf "\nBest guess: http://$$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):8081\n\n"
 
 install-gui:
 	@printf -- "------------------------"
@@ -64,9 +72,13 @@ install-gui:
 		sudo ln -sf /etc/nginx/sites-available/mmpm-gui /etc/nginx/sites-enabled && \
 		sudo mkdir -p /var/www/mmpm && \
 		sudo cp -r gui/dist/gui /var/www/mmpm
+	@[ ! $? ] && printf "\n\033[1;36mMMPM Successfully Installed \e[0m\n"
+	@[ ! $? ] && printf "\nThe MMPM GUI is being served the IP address of your default interface at port 8081"
+	@[ ! $? ] && printf "\nBest guess: http://$$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):8081\n\n"
 
-uninstall: uninstall-cli uninstall-gui
-	@[ ! $? ] && printf "\n\033[1;36mSuccessfully Removed MMPM \e[0m\n"
+uninstall:
+	$(MAKE) uninstall-cli
+	$(MAKE) uninstall-gui
 
 uninstall-cli:
 	@printf -- "----------------------"
@@ -86,4 +98,4 @@ uninstall-gui:
 	sudo rm -rf /var/www/mmpm \
 		/etc/nginx/sites-enabled/mmpm-gui \
 		/etc/nginx/sites-available/mmpm-gui
-
+	@[ ! $? ] && printf "\n\033[1;36mSuccessfully Removed MMPM \e[0m\n"

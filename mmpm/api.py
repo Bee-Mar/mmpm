@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from flask_cors import CORS
 from flask import Flask, request
-from . import core, utils
+from mmpm import core, utils
 
 app = Flask(__name__)
 CORS(app)

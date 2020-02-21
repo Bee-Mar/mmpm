@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 import os
 import multiprocessing
+import site
 
-_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+_ROOT = os.path.abspath(os.path.join(site.getusersitepackages(), 'mmpm'))
 _VAR = os.path.join(_ROOT, 'var')
 _ETC = os.path.join(_ROOT, 'etc')
 
 loglevel = 'info'
-# errorlog = os.path.join(_VAR, 'log/api-error.log')
-# accesslog = os.path.join(_VAR, 'log/api-access.log')
 errorlog = "-"
 accesslog = "-"
 bind = '0.0.0.0:8008'

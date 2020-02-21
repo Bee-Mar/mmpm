@@ -1,7 +1,3 @@
-# GREEN = "\e[92m"
-# CYAN = "\e[46m"
-# RESET = "\e[0m"
-
 all: clean dependencies build install
 
 clean:
@@ -65,14 +61,19 @@ install-cli:
 	@printf -- "-------------------------------------------------------\n"
 	@printf "\n| \e[92mNOTE: Ensure \"${HOME}/.local/bin\" is in your PATH\e[0m |"
 	@printf "\n-------------------------------------------------------\n"
-	@printf "\n\033[1;36mMMPM Successfully Installed \e[0m\n"
-	@printf "\nThe MMPM GUI is being served the IP address of your default interface at port 8081"
-	@printf "\nBest guess: http://$$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):8081\n\n"
+	@[ ! $? ] && printf "\n\033[1;36mMMPM Successfully Installed \e[0m\n"
+	@[ ! $? ] && printf "\nThe MMPM GUI is being served the IP address of your default interface at port 8081"
+	@[ ! $? ] && printf "\nBest guess: http://$$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):8081\n\n"
 
 uninstall:
 	@printf -- "---------------------------------"
 	@printf "\n| \e[92mRemoving MMPM CLI and GUI \e[0m |"
 	@printf "\n---------------------------------\n"
 	@pip3 uninstall mmpm -y
+	@sudo systemctl stop mmpm && \
+		sudo systemctl disable mmpm && \
+		sudo rm /etc/systemd/system/mmpm.service && \
+		sudo systemctl daemon-reload && \
+		sudo systemctl reset-failed
 	sudo rm -rf /var/www/mmpm /etc/nginx/sites-enabled/mmpm-gui /etc/nginx/sites-available/mmpm-gui
-
+	@[ ! $? ] && printf "\n\033[1;36mSuccessfully Removed MMPM \e[0m\n"

@@ -14,8 +14,7 @@ def main(argv):
         print(colors.B_CYAN + "MMPM Version: " + colors.B_WHITE + f"{__version__}")
         exit(0)
 
-    modules = {}
-    modules, curr_snap, next_snap, checked_enhancements = core.load_modules(utils.SNAPSHOT_FILE, args.force_refresh)
+    modules, curr_snap, next_snap, checked_enhancements = core.load_modules(args.force_refresh)
 
     if args.all:
         core.display_modules(modules, list_all=True)

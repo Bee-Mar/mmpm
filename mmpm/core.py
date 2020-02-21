@@ -438,14 +438,13 @@ def remove_modules(installed_modules, modules_to_remove):
     os.chdir(original_dir)
 
 
-def load_modules(snapshot_file, force_refresh=False):
+def load_modules(force_refresh=False):
     '''
-    Reads in modules from the hiddent 'snapshot_file' stored in the users home
-    directory, and checks if the file is out of date. If so, the modules are
-    gathered again from the MagicMirror 3rd Party Modules wiki.
+    Reads in modules from the hidden 'snapshot_file'  and checks if the file is
+    out of date. If so, the modules are gathered again from the MagicMirror 3rd
+    Party Modules wiki.
 
     Parameters:
-        snapshot_file (str): Path of snapshot file
         force_refresh (bool): Boolean flag to force refresh of snapshot
 
     Returns:
@@ -457,16 +456,16 @@ def load_modules(snapshot_file, force_refresh=False):
     refresh_interval = 6
 
     checked_for_enhancements = False
-    snapshot_exists = os.path.exists(snapshot_file)
+    snapshot_exists = os.path.exists(utils.SNAPSHOT_FILE)
 
     if not snapshot_exists:
         try:
-            os.mkdir(os.path.dirname(snapshot_file))
+            os.mkdir(os.path.dirname(utils.SNAPSHOT_FILE))
         except OSError:
             error_msg('Failed to create directory for snapshot')
 
     if not force_refresh and snapshot_exists:
-        curr_snap = os.path.getmtime(snapshot_file)
+        curr_snap = os.path.getmtime(utils.SNAPSHOT_FILE)
         next_snap = curr_snap + refresh_interval * 60 * 60
     else:
         next_snap = curr_snap = time.time()
@@ -476,12 +475,12 @@ def load_modules(snapshot_file, force_refresh=False):
         utils.plain_print(colors.B_CYAN + "Refreshing MagicMirror module snapshot... ")
         modules = retrieve_modules()
 
-        with open(snapshot_file, "w") as f:  # save the new snapshot
+        with open(utils.SNAPSHOT_FILE, "w") as f:  # save the new snapshot
             json.dump(modules, f)
 
         utils.plain_print(colors.RESET + "Retrieval complete.\n")
 
-        curr_snap = os.path.getmtime(snapshot_file)
+        curr_snap = os.path.getmtime(utils.SNAPSHOT_FILE)
         next_snap = curr_snap + refresh_interval * 60 * 60
 
         utils.plain_print(colors.B_CYAN + "Automated check for MMPM enhancements... " + colors.RESET)
@@ -490,15 +489,15 @@ def load_modules(snapshot_file, force_refresh=False):
         checked_for_enhancements = True
 
     else:
-        with open(snapshot_file, "r") as f:
+        with open(utils.SNAPSHOT_FILE, "r") as f:
             modules = json.load(f)
 
-        if os.path.exists(utils.MMPM_CONFIG_FILE) and os.stat(utils.MMPM_CONFIG_FILE).st_size:
-            try:
-                with open(utils.MMPM_CONFIG_FILE, "r") as f:
-                    modules[utils.EXTERNAL_MODULE_SOURCES] = json.load(f)[utils.EXTERNAL_MODULE_SOURCES]
-            except Exception:
-                utils.warning_msg(f'Failed to load data from {utils.MMPM_CONFIG_FILE}.')
+    if os.path.exists(utils.MMPM_CONFIG_FILE) and os.stat(utils.MMPM_CONFIG_FILE).st_size:
+        try:
+            with open(utils.MMPM_CONFIG_FILE, "r") as f:
+                modules[utils.EXTERNAL_MODULE_SOURCES] = json.load(f)[utils.EXTERNAL_MODULE_SOURCES]
+        except Exception:
+            utils.warning_msg(f'Failed to load data from {utils.MMPM_CONFIG_FILE}.')
 
     curr_snap = datetime.datetime.fromtimestamp(int(curr_snap))
     next_snap = datetime.datetime.fromtimestamp(int(next_snap))

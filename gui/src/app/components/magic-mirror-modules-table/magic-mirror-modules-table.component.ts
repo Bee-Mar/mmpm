@@ -41,6 +41,8 @@ export class MagicMirrorModulesTableComponent {
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
 
   ngOnInit() {
+    this.paginator.pageSize = 10;
+
     this.api.mmpmApiRequest("/modules").subscribe((packages) => {
       Object.keys(packages).forEach((category) => {
         for (let pkg of packages[category]) {
@@ -53,6 +55,7 @@ export class MagicMirrorModulesTableComponent {
           });
         }
       });
+
 
       this.dataSource = new MatTableDataSource<MagicMirrorPackage>(PACKAGES);
       this.dataSource.paginator = this.paginator;

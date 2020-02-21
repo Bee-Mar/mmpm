@@ -7,12 +7,12 @@ app = Flask(__name__)
 CORS(app)
 
 BASE_CMD = ['mmpm']
-MODULES, _, _, _ = core.load_modules(utils.SNAPSHOT_FILE)
 
 
 @app.route('/modules', methods=['GET'])
 def get_magic_mirror_modules():
-    return MODULES
+    modules, _, _, _ = core.load_modules()
+    return modules
 
 
 @app.route('/install', methods=['POST'])
@@ -45,8 +45,5 @@ def add_external_module_source():
 
 @app.route('/refresh', methods=['GET'])
 def force_refresh_magic_mirror_modules():
-    try:
-        MODULES, _, _, _ = core.load_modules(utils.SNAPSHOT_FILE, force_refresh=True)
-    except Exception:
-        pass
-    return MODULES
+    modules, _, _, _ = core.load_modules(force_refresh=True)
+    return modules

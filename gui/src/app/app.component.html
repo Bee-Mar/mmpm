@@ -9,9 +9,11 @@
   <mat-tab label="Installed">
     <app-magic-mirror-modules-table></app-magic-mirror-modules-table>
   </mat-tab>
-  <mat-tab label="Register External Source">
-  </mat-tab>
+  <mat-tab label="Register External Source"> </mat-tab>
   <mat-tab label="Terminal">
+    <mat-card style="margin: 5vh auto; height: 72vh; width: 95vw;">
+      <ng-terminal #term></ng-terminal>
+    </mat-card>
   </mat-tab>
 </mat-tab-group>
 <! -- terminal component to be placed here -->

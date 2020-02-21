@@ -6,15 +6,22 @@ import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { MaterialModule } from "./modules/material/material.module";
 import { MagicMirrorModulesTableComponent } from "./components/magic-mirror-modules-table/magic-mirror-modules-table.component";
 import { HttpClientModule } from "@angular/common/http";
+import { EmbeddedTerminalComponent } from "./components/embedded-terminal/embedded-terminal.component";
+import { NgTerminalModule } from "ng-terminal";
 
 @NgModule({
-  declarations: [AppComponent, MagicMirrorModulesTableComponent],
+  declarations: [
+    AppComponent,
+    MagicMirrorModulesTableComponent,
+    EmbeddedTerminalComponent
+  ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     MaterialModule,
-    HttpClientModule
+    HttpClientModule,
+    NgTerminalModule
   ],
   providers: [],
   bootstrap: [AppComponent]

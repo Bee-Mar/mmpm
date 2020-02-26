@@ -8,18 +8,21 @@ import { retry, catchError } from "rxjs/operators";
   providedIn: "root"
 })
 export class RestApiService {
-  MMPM_API_URL = "http://0.0.0.0:8008";
+  MMPM_API_URL = "http://0.0.0.0:8090";
 
   constructor(private http: HttpClient) {}
 
   public httpOptions = {
     headers: new HttpHeaders({
+      "Access-Control-Allow-Origin": "*",
       "Content-Type": "application/json"
     })
   };
 
   public mmpmApiRequest(path: string): Observable<any> {
-    return this.http.get<any>(this.MMPM_API_URL + `${path}`).pipe(retry(1), catchError(this.handleError));
+    return this.http
+      .get<any>(this.MMPM_API_URL + `${path}`)
+      .pipe(retry(1), catchError(this.handleError));
   }
 
   public handleError(error) {

@@ -22,7 +22,7 @@ import { MatTabsModule } from "@angular/material/tabs";
     MatSortModule,
     MatCardModule,
     MatPaginatorModule,
-    MatTabsModule
+    MatTabsModule,
   ],
   exports: [
     CommonModule,
@@ -34,7 +34,7 @@ import { MatTabsModule } from "@angular/material/tabs";
     MatSortModule,
     MatCardModule,
     MatPaginatorModule,
-    MatTabsModule
+    MatTabsModule,
   ]
 })
 export class MaterialModule {}

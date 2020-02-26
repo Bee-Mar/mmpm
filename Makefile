@@ -22,6 +22,7 @@ dependencies-gui:
 	@printf "\n------------------------------\n"
 	@sudo apt install nginx -y
 	@sudo service nginx start
+	@sudo systemctl status --no-pager nginx
 	@npm install -g @angular/cli
 	@npm install --prefix gui
 
@@ -59,16 +60,17 @@ install-gui:
 	@sudo systemctl enable mmpm && \
 		sudo systemctl start mmpm && \
 		sudo systemctl status --no-pager mmpm
-	@sudo cp configs/mmpm-gui /etc/nginx/sites-available && \
-		sudo ln -sf /etc/nginx/sites-available/mmpm-gui /etc/nginx/sites-enabled && \
+	@sudo cp configs/mmpm.conf /etc/nginx/sites-available && \
+		sudo ln -sf /etc/nginx/sites-available/mmpm.conf /etc/nginx/sites-enabled && \
 		sudo mkdir -p /var/www/mmpm && \
 		sudo cp -r gui/dist/gui /var/www/mmpm
-	@sudo ufw allow 8008 && sudo ufw allow 8081
+	@sudo service nginx restart
+	@sudo ufw allow 'Nginx Full' && sudo service ufw restart
 	@[ ! $? ] && printf "\n\033[1;36mMMPM Successfully Installed \e[0m\n"
-	@[ ! $? ] && printf "\nThe MMPM GUI is being served the IP address of your default interface at port 8081"
-	@[ ! $? ] && printf "\nBest guess: http://$$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):8081\n\n"
+	@[ ! $? ] && printf "\nThe MMPM GUI is being served the IP address of your default interface at port 8091"
+	@[ ! $? ] && printf "\nBest guess: http://$$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):8091\n\n"
 	@printf -- "------------------------------------------------------------------------"
-	@printf "\n| \e[92mNOTE: Ensure your ufw (firewall) settings allow ports 8008 and 8081 \e[0m |"
+	@printf "\n| \e[92mNOTE: Ensure your ufw (firewall) settings allow ports 8090 and 8091 \e[0m |"
 	@printf "\n------------------------------------------------------------------------\n"
 
 uninstall: uninstall-cli uninstall-gui
@@ -83,12 +85,14 @@ uninstall-gui:
 	@printf -- "----------------------"
 	@printf "\n| \e[92mRemoving MMPM GUI \e[0m |"
 	@printf "\n----------------------\n"
-	sudo systemctl stop mmpm && \
-		sudo systemctl disable mmpm && \
-		sudo rm /etc/systemd/system/mmpm.service && \
-		sudo systemctl daemon-reload && \
-		sudo systemctl reset-failed
-	sudo rm -rf /var/www/mmpm \
-		/etc/nginx/sites-enabled/mmpm-gui \
-		/etc/nginx/sites-available/mmpm-gui
+	rm $$HOME/.config/mmpm/configs/gunicorn.conf.py
+	sudo systemctl stop mmpm.service
+	sudo systemctl disable mmpm.service
+	sudo rm /etc/systemd/system/mmpm.service
+	sudo systemctl daemon-reload
+	sudo systemctl reset-failed
+	sudo rm -rf /var/www/mmpm
+	sudo rm -rf /etc/nginx/sites-enabled/mmpm.conf
+	sudo rm -rf /etc/nginx/sites-available/mmpm.conf
+	sudo service nginx restart
 	@[ ! $? ] && printf "\n\033[1;36mSuccessfully Removed MMPM \e[0m\n"

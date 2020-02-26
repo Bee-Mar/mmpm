@@ -8,12 +8,15 @@ import { MagicMirrorModulesTableComponent } from "./components/magic-mirror-modu
 import { HttpClientModule } from "@angular/common/http";
 import { EmbeddedTerminalComponent } from "./components/embedded-terminal/embedded-terminal.component";
 import { NgTerminalModule } from "ng-terminal";
+import { ExternalSourceRegistrationFormComponent } from "./components/external-source-registration-form/external-source-registration-form.component";
+import { ReactiveFormsModule, FormsModule } from "@angular/forms";
 
 @NgModule({
   declarations: [
     AppComponent,
     MagicMirrorModulesTableComponent,
-    EmbeddedTerminalComponent
+    EmbeddedTerminalComponent,
+    ExternalSourceRegistrationFormComponent
   ],
   imports: [
     BrowserModule,
@@ -21,7 +24,9 @@ import { NgTerminalModule } from "ng-terminal";
     BrowserAnimationsModule,
     MaterialModule,
     HttpClientModule,
-    NgTerminalModule
+    NgTerminalModule,
+    ReactiveFormsModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

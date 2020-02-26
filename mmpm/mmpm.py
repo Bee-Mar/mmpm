@@ -17,13 +17,13 @@ def main(argv):
     modules, curr_snap, next_snap, checked_enhancements = core.load_modules(args.force_refresh)
 
     if args.all:
-        core.display_modules(modules, list_all=True)
+        core.display_modules(modules)
 
     elif args.categories:
         core.display_modules(modules, list_categories=True)
 
     elif args.search:
-        core.display_modules(core.search_modules(modules, args.search), list_all=True)
+        core.display_modules(core.search_modules(modules, args.search))
 
     elif args.install:
         core.install_modules(modules, args.install)
@@ -40,10 +40,7 @@ def main(argv):
         if not installed_modules:
             utils.error_msg("No modules are currently installed")
 
-        print(colors.B_CYAN + "Module(s) Installed:\n" + colors.RESET)
-
-        for module in installed_modules:
-            print(module)
+        core.display_modules(installed_modules)
 
     elif args.snapshot_details or args.force_refresh:
         core.snapshot_details(modules, curr_snap, next_snap)

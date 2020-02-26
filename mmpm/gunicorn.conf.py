@@ -10,7 +10,7 @@ _ETC = os.path.join(_ROOT, 'etc')
 loglevel = 'info'
 errorlog = "-"
 accesslog = "-"
-bind = '0.0.0.0:8008'
+bind = '0.0.0.0:8090'
 workers = multiprocessing.cpu_count() // 2
 
 timeout = 3 * 60  # 3 minutes

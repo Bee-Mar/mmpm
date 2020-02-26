@@ -1,4 +1,4 @@
-import { Component, ViewChild } from "@angular/core";
+import { Component, ViewChild, Input } from "@angular/core";
 import { MatTableDataSource } from "@angular/material/table";
 import { SelectionModel } from "@angular/cdk/collections";
 import { RestApiService } from "src/app/services/rest-api.service";
@@ -26,6 +26,7 @@ let SORTED_PACKAGES: Array<MagicMirrorPackage> = new Array<
 export class MagicMirrorModulesTableComponent {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
+  @Input() url: string;
 
   constructor(private api: RestApiService) {}
 
@@ -44,7 +45,7 @@ export class MagicMirrorModulesTableComponent {
   ngOnInit() {
     this.paginator.pageSize = 10;
 
-    this.api.mmpmApiRequest("/modules").subscribe((packages) => {
+    this.api.mmpmApiRequest(`/${this.url}`).subscribe((packages) => {
       Object.keys(packages).forEach((category) => {
         for (let pkg of packages[category]) {
           PACKAGES.push({
@@ -63,8 +64,8 @@ export class MagicMirrorModulesTableComponent {
     });
   }
 
-  public compare(a: number | string, b: number | string, isAsc: boolean) {
-    return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+  public compare(a: number | string, b: number | string, ascending: boolean) {
+    return (a < b ? -1 : 1) * (ascending ? 1 : -1);
   }
 
   public onSort(sort: MatSort) {
@@ -76,14 +77,14 @@ export class MagicMirrorModulesTableComponent {
     }
 
     SORTED_PACKAGES = data.sort((a, b) => {
-      const isAsc = sort.direction === "asc";
+      const ascending = sort.direction === "asc";
       switch (sort.active) {
         case "category":
-          return this.compare(a.category, b.category, isAsc);
+          return this.compare(a.category, b.category, ascending);
         case "title":
-          return this.compare(a.title, b.title, isAsc);
+          return this.compare(a.title, b.title, ascending);
         case "author":
-          return this.compare(a.author, b.author, isAsc);
+          return this.compare(a.author, b.author, ascending);
         default:
           return 0;
       }

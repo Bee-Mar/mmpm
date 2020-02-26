@@ -598,14 +598,14 @@ def retrieve_modules():
     return modules
 
 
-def display_modules(modules, list_all=False, list_categories=False):
+def display_modules(modules, list_categories=False):
     '''
     Depending on the user flags passed in from the command line, either all
     existing modules may be displayed, or the names of all categories of
     modules may be displayed.
 
     Parameters:
-        modules (dict): Dictionary of MagicMirror modules list_all (bool): Boolean flag to list all modules
+        modules (dict): Dictionary of MagicMirror modules list_all
         list_categories (bool): Boolean flag to list categories
 
     Returns:
@@ -620,30 +620,29 @@ def display_modules(modules, list_all=False, list_categories=False):
 
         rows = [[key, len(modules[key])] for key in modules.keys()]
         print(tabulate(rows, headers, tablefmt="fancy_grid"))
+        return
 
-    elif list_all:
+    headers = [
+        colors.B_CYAN + "Category",
+        utils.TITLE,
+        utils.REPOSITORY,
+        utils.AUTHOR,
+        utils.DESCRIPTION + colors.RESET
+    ]
 
-        headers = [
-            colors.B_CYAN + "Category",
-            utils.TITLE,
-            utils.REPOSITORY,
-            utils.AUTHOR,
-            utils.DESCRIPTION + colors.RESET
-        ]
+    rows = []
 
-        rows = []
+    for category, details in modules.items():
+        for index, _ in enumerate(details):
+            rows.append([
+                category,
+                details[index][utils.TITLE],
+                fill(details[index][utils.REPOSITORY]),
+                fill(details[index][utils.AUTHOR], width=12),
+                fill(details[index][utils.DESCRIPTION], width=15)
+            ])
 
-        for category, details in modules.items():
-            for index, _ in enumerate(details):
-                rows.append([
-                    category,
-                    details[index][utils.TITLE],
-                    fill(details[index][utils.REPOSITORY]),
-                    fill(details[index][utils.AUTHOR], width=12),
-                    fill(details[index][utils.DESCRIPTION], width=15)
-                ])
-
-        print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))
+    print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))
 
 
 def get_installed_modules(modules):
@@ -670,7 +669,14 @@ def get_installed_modules(modules):
     os.chdir(modules_dir)
 
     module_dirs = os.listdir(os.getcwd())
-    installed_modules = [value[utils.TITLE] for values in modules.values() for value in values if value[utils.TITLE] in module_dirs]
+
+    installed_modules = {}
+
+    for category, modules in modules.items():
+        for module in modules:
+            if module[utils.TITLE] in module_dirs:
+                installed_modules.setdefault(category, []).append(module)
+
     os.chdir(original_dir)
     return installed_modules
 

@@ -10,13 +10,16 @@ import { EmbeddedTerminalComponent } from "./components/embedded-terminal/embedd
 import { NgTerminalModule } from "ng-terminal";
 import { ExternalSourceRegistrationFormComponent } from "./components/external-source-registration-form/external-source-registration-form.component";
 import { ReactiveFormsModule, FormsModule } from "@angular/forms";
+import { MonacoEditorModule } from "ngx-monaco-editor";
+import { MagicMirrorConfigEditorComponent } from "./components/magic-mirror-config-editor/magic-mirror-config-editor.component";
 
 @NgModule({
   declarations: [
     AppComponent,
     MagicMirrorModulesTableComponent,
     EmbeddedTerminalComponent,
-    ExternalSourceRegistrationFormComponent
+    ExternalSourceRegistrationFormComponent,
+    MagicMirrorConfigEditorComponent
   ],
   imports: [
     BrowserModule,
@@ -26,7 +29,27 @@ import { ReactiveFormsModule, FormsModule } from "@angular/forms";
     HttpClientModule,
     NgTerminalModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    MonacoEditorModule.forRoot({
+      baseUrl: "assets", // configure base path for monaco editor default: './assets'
+      defaultOptions: {
+        language: "javascript",
+        scrollBeyondLastLine: false,
+        minimap: {
+          enabled: false
+        },
+        scrollbar: {
+          useShadows: true,
+          verticalHasArrows: false,
+          horizontalHasArrows: false,
+          vertical: "visible",
+          verticalScrollbarSize: 12,
+          horizontalScrollbarSize: 12,
+          arrowSize: 30
+        },
+        automaticLayout: true
+      }
+    })
   ],
   providers: [],
   bootstrap: [AppComponent]

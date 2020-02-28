@@ -124,6 +124,11 @@ def get_user_args():
                             action='store_true',
                             help='Register external module source')
 
+    arg_parser.add_argument('-C',
+                            '--magicmirror-config',
+                            action='store_true',
+                            help='Open MagicMirror config file in your $EDITOR')
+
     if len(argv) < 2:
         arg_parser.print_help()
         exit(0)

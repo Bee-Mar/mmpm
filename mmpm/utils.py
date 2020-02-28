@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import os
+import shutil
 import subprocess
 from mmpm import colors, utils
 from os.path import join
@@ -18,7 +19,8 @@ REPOSITORY = 'Repository'
 DESCRIPTION = 'Description'
 AUTHOR = 'Author'
 CATEGORY = 'Category'
-SNAPSHOT_FILE = join(utils.HOME_DIR, '.config', 'mmpm', 'MagicMirror-modules-snapshot.json')
+SNAPSHOT_FILE = join(utils.HOME_DIR, '.config', 'mmpm',
+                     'MagicMirror-modules-snapshot.json')
 MMPM_CONFIG_FILE = join(utils.HOME_DIR, '.config', 'mmpm', 'mmpm-config.json')
 EXTERNAL_MODULE_SOURCES = 'External Module Sources'
 
@@ -109,3 +111,23 @@ def get_magicmirror_root():
         magicmirror_root_dir (str): Root directory of MagicMirror installation
     '''
     return os.environ[MMPM_ENV_VAR] if MMPM_ENV_VAR in os.environ else os.path.join(HOME_DIR, 'MagicMirror')
+
+
+def get_magicmirror_config_file_path():
+    file_path = os.path.join(get_magicmirror_root(), 'config', 'config.js')
+    return file_path if os.path.exists(file_path) else ''
+
+
+def open_default_editor(file_path):
+    if not file_path:
+        error_msg(f'MagicMirror config file not found. If this is incorrect, please ensure {MMPM_ENV_VAR} is set properly.')
+
+    editor = os.getenv('EDITOR') if os.getenv('EDITOR') else 'nano'
+
+    return_code, _, _ = run_cmd(['which', editor])
+
+    if return_code:
+        error_msg('Unable to determine editor to open config file with. Please set the $EDITOR env variable')
+
+    os.system(f'{editor} {file_path}')
+

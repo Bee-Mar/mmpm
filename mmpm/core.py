@@ -318,14 +318,12 @@ def install_modules(modules, modules_to_install):
 
     for module in modules_to_install:
         if module not in successful_installs:
-            utils.warning_msg(
-                f"Unable to match '{module}' with installation candidate. Is the title casing correct?\n")
+            utils.warning_msg(f"Unable to match '{module}' with installation candidate. Is the casing correct?\n")
 
-    utils.plain_print(colors.B_GREEN +
-                      "\nTo complete installation, populate " + colors.B_WHITE)
-    print(colors.B_WHITE + "'~/MagicMirror/config/config.js'" + colors.B_GREEN +
-          " with the necessary configurations for each of the newly installed modules\n")
-    print(colors.RESET + "There may be additional installation steps required. Review the associated GitHub pages for each newly installed module")
+    if successful_installs:
+        utils.plain_print(colors.B_GREEN + "\nTo complete installation, populate " + colors.B_WHITE)
+        print(colors.B_WHITE + "'~/MagicMirror/config/config.js'" + colors.B_GREEN + " with the necessary configurations for each of the newly installed modules\n")
+        print(colors.RESET + "There may be additional installation steps required. Review the associated GitHub pages for each newly installed module")
 
 
 def install_magicmirror():
@@ -720,3 +718,7 @@ def add_external_module_source(title=None, author=None, repo=None, desc=None):
         return True
     except IOError:
         error_msg('Failed to save external module')
+
+
+def edit_magicmirror_config():
+   utils.open_default_editor(utils.get_magicmirror_config_file_path())

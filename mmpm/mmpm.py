@@ -57,6 +57,9 @@ def main(argv):
     elif args.add_ext_module_src:
         core.add_external_module_source()
 
+    elif args.magicmirror_config:
+        core.edit_magicmirror_config()
+
 
 if __name__ == "__main__":
     try:

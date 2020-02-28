@@ -21,8 +21,18 @@ export class RestApiService {
 
   public mmpmApiRequest(path: string): Observable<any> {
     return this.http
-      .get<any>(this.MMPM_API_URL + `${path}`)
+      .get<any>(this.MMPM_API_URL + `${path}`, this.httpOptions)
       .pipe(retry(1), catchError(this.handleError));
+  }
+
+  public getMagicMirrorConfig() {
+    return this.http.get(this.MMPM_API_URL + "/get-magicmirror-config", {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json"
+      },
+      responseType: "text"
+    });
   }
 
   public handleError(error) {

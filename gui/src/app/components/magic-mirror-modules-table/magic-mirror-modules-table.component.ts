@@ -47,14 +47,16 @@ export class MagicMirrorModulesTableComponent {
 
     this.api.mmpmApiRequest(`/${this.url}`).subscribe((packages) => {
       Object.keys(packages).forEach((category) => {
-        for (let pkg of packages[category]) {
-          PACKAGES.push({
-            category: category,
-            title: pkg["Title"],
-            description: pkg["Description"],
-            author: pkg["Author"],
-            repository: pkg["Repository"]
-          });
+        if (packages) {
+          for (let pkg of packages[category]) {
+            PACKAGES.push({
+              category: category,
+              title: pkg["Title"],
+              description: pkg["Description"],
+              author: pkg["Author"],
+              repository: pkg["Repository"]
+            });
+          }
         }
       });
 

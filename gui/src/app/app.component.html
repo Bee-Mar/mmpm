@@ -20,7 +20,15 @@
   </mat-tab>
   <mat-tab label="Terminal">
     <mat-card style="margin: 5vh auto; height: 72vh; width: 95vw;">
-      <app-embedded-terminal></app-embedded-terminal>
+      <iframe
+        style="height: 100%; width: 100%;"
+        src="http://localhost:3000/wetty"
+        ></iframe>
+    </mat-card>
+  </mat-tab>
+  <mat-tab label="MagicMirror Config">
+    <mat-card style="margin: 5vh auto; height: 72vh; width: 95vw;">
+      <app-magic-mirror-config-editor></app-magic-mirror-config-editor>
     </mat-card>
   </mat-tab>
 </mat-tab-group>

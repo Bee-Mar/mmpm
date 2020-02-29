@@ -8,4 +8,5 @@ requirements = [
     'colorama >= 0.4.3',
     'flask >= 1.1.1',
     'gunicorn >= 20.0.4',
+    'webssh >= 1.5.1',
 ]

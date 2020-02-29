@@ -4,7 +4,7 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "baseUrl": "./",
-    "outDir": "./dist/out-tsc",
+    "outDir": "./static/out-tsc",
     "sourceMap": true,
     "declaration": false,
     "downlevelIteration": true,

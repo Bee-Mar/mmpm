@@ -8,7 +8,7 @@ import { retry, catchError } from "rxjs/operators";
   providedIn: "root"
 })
 export class RestApiService {
-  MMPM_API_URL = "http://0.0.0.0:8090";
+  MMPM_API_URL = "http://0.0.0.0:8090/api";
 
   constructor(private http: HttpClient) {}
 
@@ -35,7 +35,7 @@ export class RestApiService {
     });
   }
 
-  public handleError(error) {
+  public handleError(error: any) {
     let errorMessage = "";
 
     if (error.error instanceof ErrorEvent) {

@@ -31,7 +31,7 @@ import { MagicMirrorConfigEditorComponent } from "./components/magic-mirror-conf
     ReactiveFormsModule,
     FormsModule,
     MonacoEditorModule.forRoot({
-      baseUrl: "assets", // configure base path for monaco editor default: './assets'
+      baseUrl: "./static/assets", // configure base path for monaco editor default: './assets'
       defaultOptions: {
         language: "javascript",
         scrollBeyondLastLine: false,

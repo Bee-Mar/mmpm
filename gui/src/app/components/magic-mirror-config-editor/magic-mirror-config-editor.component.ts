@@ -19,7 +19,7 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
 
   ngOnInit(): void {
     this.api.getMagicMirrorConfig().subscribe((file) => {
-      this.code = file;
+      this.code = file ?? "";
     });
   }
 
@@ -27,7 +27,7 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
     if (this.editor) this.editor.dispose();
   }
 
-  onEditorInit(editor): void {
+  onEditorInit(editor: any): void {
     this.editor = editor;
   }
 }

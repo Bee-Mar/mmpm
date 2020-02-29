@@ -2,6 +2,7 @@
 
 from setuptools import setup, find_packages
 from mmpm.mmpm import __version__
+from requirements import requirements
 
 VERSION = __version__
 
@@ -16,11 +17,5 @@ setup(name="mmpm",
       keywords="MagicMirror magicmirror",
       packages=find_packages(),
       entry_points={"console_scripts": ["mmpm=mmpm.__main__:main"]},
-      install_requires=[
-          "setuptools",
-          "wheel",
-          "argparse",
-          "tabulate",
-          "bs4",
-          "colorama",
-      ])
+      install_requires=requirements
+      )

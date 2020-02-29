@@ -35,7 +35,7 @@ build-gui:
 	@printf -- "---------------------"
 	@printf "\n| \e[92mBuilding MMPM GUI\e[0m |"
 	@printf "\n---------------------\n"
-	@cd gui && ng build --prod --deploy-url static/
+	@cd gui && ng build --prod
 
 install: install-cli install-gui
 
@@ -52,9 +52,20 @@ install-gui:
 	@printf -- "------------------------"
 	@printf "\n| \e[92mInstalling MMPM GUI \e[0m |"
 	@printf "\n------------------------\n"
+	# @mkdir -p ${HOME}/.config/mmpm/configs
+	# @cp mmpm/gunicorn.conf.py ${HOME}/.config/mmpm/configs
+	# @cd configs && \
+	# 	bash gen-mmpm-service.sh && \
+	# 	sudo cp mmpm.service /etc/systemd/system/
+	@sudo systemctl enable mmpm && \
+		sudo systemctl start mmpm && \
+		sudo systemctl status --no-pager mmpm
+	# @sudo cp configs/mmpm.conf /etc/nginx/sites-available && sudo ln -sf /etc/nginx/sites-available/mmpm.conf /etc/nginx/sites-enabled &&
 	@sudo mkdir -p /var/www/mmpm/templates && \
-		sudo cp -r gui/build/static /var/www/mmpm && \
-		sudo cp /var/www/mmpm/static/index.html /var/www/mmpm/templates
+		sudo cp -r gui/static /var/www/mmpm && \
+		sudo mv /var/www/mmpm/static/index.html /var/www/mmpm/templates && \
+	# @sudo service nginx restart
+	# @sudo ufw allow 'Nginx Full' && sudo service ufw restart
 	@[ ! $? ] && printf "\n\033[1;36mMMPM Successfully Installed \e[0m\n"
 	@[ ! $? ] && printf "\nThe MMPM GUI is being served the IP address of your default interface at port 8091"
 	@[ ! $? ] && printf "\nBest guess: http://$$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):8091\n\n"

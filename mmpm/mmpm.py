@@ -11,7 +11,7 @@ def main(argv):
     args = opts.get_user_args()
 
     if args.version:
-        print(colors.B_CYAN + "MMPM Version: " + colors.B_WHITE + f"{__version__}")
+        print(colors.B_CYAN + "MMPM Version: " + colors.B_WHITE + "{}".format(__version__))
         exit(0)
 
     modules, curr_snap, next_snap, checked_enhancements = core.load_modules(args.force_refresh)

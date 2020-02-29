@@ -1,0 +1,17 @@
+[Unit]
+Description=MMPM (Python3) WebSSH
+After=syslog.target network.target
+StartLimitBurst=5, StartLimitIntervalSec=1
+
+[Service]
+User=bpm
+WorkingDirectory=/home/bpm
+ExecStart=/home/bpm/.local/bin/wssh --address=0.0.0.0 --port=8091
+ExecReload=/bin/kill -s HUP $MAINPID
+Type=simple
+PIDFile=/var/run/webssh.pid
+Restart=on-failure
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target

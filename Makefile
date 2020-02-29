@@ -52,19 +52,25 @@ install-gui:
 	@printf "\n------------------------\n"
 	@mkdir -p ${HOME}/.config/mmpm/configs
 	@cp configs/gunicorn.conf.py ${HOME}/.config/mmpm/configs
+	@rm -f configs/mmpm.service
+	@rm -f configs/mmpm-webssh.service
 	@cd configs && \
 		bash gen-mmpm-service.sh && \
-		sudo cp mmpm.service /etc/systemd/system/
+		sudo cp mmpm.service /etc/systemd/system/ && \
+		sudo cp mmpm-webssh.service /etc/systemd/system/
 	@sudo systemctl enable mmpm
 	@sudo systemctl start mmpm
+	@sudo systemctl enable mmpm-webssh
+	@sudo systemctl start mmpm-webssh
 	@sudo systemctl status mmpm --no-pager
+	@sudo systemctl status mmpm-webssh --no-pager
 	@sudo mkdir -p /var/www/mmpm/templates && \
 		sudo cp -r gui/build/static /var/www/mmpm && \
 		sudo cp /var/www/mmpm/static/index.html /var/www/mmpm/templates
 	@cp ./configs/gunicorn.conf.py ~/.config/mmpm/configs
 	@[ ! $? ] && printf "\n\033[1;36mMMPM Successfully Installed \e[0m\n"
-	@[ ! $? ] && printf "\nThe MMPM GUI is being served the IP address of your default interface at port 8091"
-	@[ ! $? ] && printf "\nBest guess: http://$$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):8091\n\n"
+	@[ ! $? ] && printf "\nThe MMPM GUI is being served the IP address of your default interface at port 8090"
+	@[ ! $? ] && printf "\nBest guess: http://$$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):8090\n\n"
 	@printf -- "------------------------------------------------------------------------"
 	@printf "\n| \e[92mNOTE: Ensure your ufw (firewall) settings allow ports 8090 and 8091 \e[0m |"
 	@printf "\n------------------------------------------------------------------------\n"
@@ -84,7 +90,9 @@ uninstall-gui:
 	rm $$HOME/.config/mmpm/configs/gunicorn.conf.py
 	sudo systemctl stop mmpm.service
 	sudo systemctl disable mmpm.service
-	sudo rm /etc/systemd/system/mmpm.s*
+	sudo systemctl stop mmpm-webssh.service
+	sudo systemctl disable mmpm-webssh.service
+	sudo rm /etc/systemd/system/mmpm*
 	sudo systemctl daemon-reload
 	sudo systemctl reset-failed
 	sudo rm -rf /var/www/mmpm

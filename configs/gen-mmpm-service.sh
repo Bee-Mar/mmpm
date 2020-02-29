@@ -17,3 +17,19 @@ printf "ExecReload=/bin/kill -s HUP \$MAINPID\n" >> mmpm.service
 printf "KillMode=mixed\n" >> mmpm.service
 printf "TimeoutStopSec=5\n" >> mmpm.service
 printf "PrivateTmp=true\n" >> mmpm.service
+
+printf "[Unit]\n" >> mmpm-webssh.service
+printf "Description=MMPM (Python3) WebSSH\n" >> mmpm-webssh.service
+printf "After=syslog.target network.target\n" >> mmpm-webssh.service
+printf "StartLimitBurst=5, StartLimitIntervalSec=1\n\n" >> mmpm-webssh.service
+printf "[Service]\n" >> ./mmpm-webssh.service
+printf "User=$USER\n" >> mmpm-webssh.service
+printf "WorkingDirectory=$HOME\n" >> mmpm-webssh.service
+printf "ExecStart=$HOME/.local/bin/wssh --address=0.0.0.0 --port=8091\n" >> mmpm-webssh.service
+printf "ExecReload=/bin/kill -s HUP \$MAINPID\n" >> mmpm-webssh.service
+printf "Type=simple\n" >> mmpm-webssh.service
+printf "PIDFile=/var/run/webssh.pid\n" >> mmpm-webssh.service
+printf "Restart=on-failure\n" >> mmpm-webssh.service
+printf "RestartSec=1\n\n" >> mmpm-webssh.service
+printf "[Install]\n" >> mmpm-webssh.service
+printf "WantedBy=multi-user.target\n" >> mmpm-webssh.service

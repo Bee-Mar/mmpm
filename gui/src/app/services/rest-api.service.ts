@@ -35,6 +35,12 @@ export class RestApiService {
     });
   }
 
+  public installSelectedModules(selectedModules: any): Observable<any> {
+    return this.http
+      .post(this.MMPM_API_URL + "/install-modules", selectedModules, this.httpOptions)
+      .pipe(retry(1), catchError(this.handleError));
+  }
+
   public handleError(error: any) {
     let errorMessage = "";
 

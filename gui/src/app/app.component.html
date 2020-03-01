@@ -4,22 +4,21 @@
 
 <mat-tab-group color="primary" mat-align-tabs="center">
   <mat-tab label="Marketplace" color="secondary">
-    <app-magic-mirror-modules-table
-      url="all-modules"
-    ></app-magic-mirror-modules-table>
+    <mat-card class="card-container" style="text-align: center;">
+      <app-magic-mirror-modules-table
+        url="all-modules"
+      ></app-magic-mirror-modules-table>
+    </mat-card>
   </mat-tab>
-  <mat-tab label="Installed">
-    <app-magic-mirror-modules-table
-      url="installed-modules"
-    ></app-magic-mirror-modules-table>
-  </mat-tab>
-  <mat-tab label="Register External Source">
-    <mat-card style="margin: 5vh auto; height: 72vh; width: 95vw;">
-      <app-external-source-registration-form></app-external-source-registration-form>
+  <mat-tab label="Local Modules">
+    <mat-card class="card-container" style="text-align: center;">
+      <app-magic-mirror-modules-table
+        url="installed-modules"
+      ></app-magic-mirror-modules-table>
     </mat-card>
   </mat-tab>
   <mat-tab label="Terminal">
-    <mat-card style="margin: 5vh auto; height: 72vh; width: 95vw;">
+    <mat-card class="card-container">
       <iframe
         style="height: 100%; width: 100%;"
         src="http://0.0.0.0:8091"
@@ -27,7 +26,7 @@
     </mat-card>
   </mat-tab>
   <mat-tab label="MagicMirror Config">
-    <mat-card style="margin: 5vh auto; height: 72vh; width: 95vw;">
+    <mat-card class="card-container">
       <app-magic-mirror-config-editor></app-magic-mirror-config-editor>
     </mat-card>
   </mat-tab>

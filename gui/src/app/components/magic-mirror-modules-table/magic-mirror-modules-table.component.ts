@@ -110,6 +110,25 @@ export class MagicMirrorModulesTableComponent {
       : this.dataSource?.data.forEach((row) => this.selection.select(row));
   }
 
+  public onInstallModules(): void {
+    if (this.selection.selected.length) {
+      this.api.installSelectedModules(this.selection.selected).subscribe((result) => {
+        console.log(result);
+      });
+    }
+  }
+
+  public onAddExternalSource(): void {
+
+  }
+
+  public onRemoveModules(): void {
+  }
+
+  public onUpdateModules(): void {
+
+  }
+
   public checkboxLabel(row?: MagicMirrorPackage): string {
     if (!row) return `${this.isAllSelected() ? "select" : "deselect"} all`;
     return `${

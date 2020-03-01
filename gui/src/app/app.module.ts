@@ -6,8 +6,6 @@ import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { MaterialModule } from "./modules/material/material.module";
 import { MagicMirrorModulesTableComponent } from "./components/magic-mirror-modules-table/magic-mirror-modules-table.component";
 import { HttpClientModule } from "@angular/common/http";
-import { EmbeddedTerminalComponent } from "./components/embedded-terminal/embedded-terminal.component";
-import { NgTerminalModule } from "ng-terminal";
 import { ExternalSourceRegistrationFormComponent } from "./components/external-source-registration-form/external-source-registration-form.component";
 import { ReactiveFormsModule, FormsModule } from "@angular/forms";
 import { MonacoEditorModule } from "ngx-monaco-editor";
@@ -17,7 +15,6 @@ import { MagicMirrorConfigEditorComponent } from "./components/magic-mirror-conf
   declarations: [
     AppComponent,
     MagicMirrorModulesTableComponent,
-    EmbeddedTerminalComponent,
     ExternalSourceRegistrationFormComponent,
     MagicMirrorConfigEditorComponent
   ],
@@ -27,11 +24,10 @@ import { MagicMirrorConfigEditorComponent } from "./components/magic-mirror-conf
     BrowserAnimationsModule,
     MaterialModule,
     HttpClientModule,
-    NgTerminalModule,
     ReactiveFormsModule,
     FormsModule,
     MonacoEditorModule.forRoot({
-      baseUrl: "./static/assets", // configure base path for monaco editor default: './assets'
+      baseUrl: "./static/assets",
       defaultOptions: {
         language: "javascript",
         scrollBeyondLastLine: false,

@@ -456,11 +456,11 @@ def load_modules(force_refresh=False):
     checked_for_enhancements = False
     snapshot_exists = os.path.exists(utils.SNAPSHOT_FILE)
 
-    if not snapshot_exists:
+    if not snapshot_exists and not os.path.exists(utils.MMPM_CONFIG_DIR):
         try:
             os.mkdir(os.path.dirname(utils.SNAPSHOT_FILE))
         except OSError:
-            error_msg('Failed to create directory for snapshot')
+            utils.error_msg('Failed to create directory for snapshot')
 
     if not force_refresh and snapshot_exists:
         curr_snap = os.path.getmtime(utils.SNAPSHOT_FILE)

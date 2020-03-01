@@ -19,9 +19,9 @@ REPOSITORY = 'Repository'
 DESCRIPTION = 'Description'
 AUTHOR = 'Author'
 CATEGORY = 'Category'
-SNAPSHOT_FILE = join(utils.HOME_DIR, '.config', 'mmpm',
-                     'MagicMirror-modules-snapshot.json')
-MMPM_CONFIG_FILE = join(utils.HOME_DIR, '.config', 'mmpm', 'mmpm-config.json')
+MMPM_CONFIG_DIR = join(utils.HOME_DIR, '.config', 'mmpm')
+SNAPSHOT_FILE = join(MMPM_CONFIG_DIR, 'MagicMirror-modules-snapshot.json')
+MMPM_CONFIG_FILE = join(MMPM_CONFIG_DIR, 'mmpm-config.json')
 EXTERNAL_MODULE_SOURCES = 'External Module Sources'
 
 

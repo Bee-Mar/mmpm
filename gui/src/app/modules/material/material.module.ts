@@ -9,6 +9,8 @@ import { MatSortModule } from "@angular/material/sort";
 import { MatCardModule } from "@angular/material/card";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatTabsModule } from "@angular/material/tabs";
+import { MatDialogModule } from "@angular/material/dialog";
+import { MatButtonModule } from "@angular/material/button";
 
 @NgModule({
   declarations: [],
@@ -23,6 +25,8 @@ import { MatTabsModule } from "@angular/material/tabs";
     MatCardModule,
     MatPaginatorModule,
     MatTabsModule,
+    MatDialogModule,
+    MatButtonModule
   ],
   exports: [
     CommonModule,
@@ -35,6 +39,8 @@ import { MatTabsModule } from "@angular/material/tabs";
     MatCardModule,
     MatPaginatorModule,
     MatTabsModule,
+    MatDialogModule,
+    MatButtonModule
   ]
 })
 export class MaterialModule {}

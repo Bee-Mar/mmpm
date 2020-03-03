@@ -89,6 +89,7 @@ def check_for_mmpm_enhancements():
 
                     if return_code:
                         utils.error_msg(std_err)
+                        return False
 
                     os.chdir("mmpm")
                     print("\n")
@@ -97,6 +98,7 @@ def check_for_mmpm_enhancements():
 
                     if return_code:
                         utils.error_msg(std_err)
+                        return False
 
                     os.chdir(original_dir)
                     print(colors.B_GREEN + f"\nMMPM Version: {version_number}")
@@ -108,9 +110,10 @@ def check_for_mmpm_enhancements():
                     utils.warning_msg("Respond with yes/no or y/n.")
         else:
             print("No enhancements available for MMPM.")
-
+            return False
+        return True
     except HTTPError:
-        pass
+        return False
 
 
 def enhance_modules(modules, update=False, upgrade=False, modules_to_upgrade=None):
@@ -253,7 +256,7 @@ def install_modules(modules, modules_to_install):
         modules_to_install (list): List of modules to install
 
     Returns:
-        None
+        bool: True upon success, False upon failure
     '''
 
     modules_dir = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
@@ -263,6 +266,7 @@ def install_modules(modules, modules_to_install):
         msg = "Failed to find MagicMirror root. Have you installed MagicMirror properly? "
         msg += "You may also set the env variable 'MMPM_MAGICMIRROR_ROOT' to the MagicMirror root directory."
         utils.error_msg(msg)
+        return False
 
     os.chdir(modules_dir)
     successful_installs = []
@@ -282,6 +286,7 @@ def install_modules(modules, modules_to_install):
                     os.mkdir(target)
                 except OSError:
                     utils.error_msg(f"The {title} module already exists. To remove the module, run 'mmpm -r {title}'")
+                    return False
 
                 os.chdir(target)
 
@@ -338,52 +343,53 @@ def install_magicmirror():
         None
 
     Returns:
-        None
+        bool: True upon succcess, False upon failure
     '''
 
     original_dir = os.getcwd()
 
-    if not os.path.exists(os.path.join(utils.MAGICMIRROR_ROOT)):
-        print(colors.B_CYAN + "MagicMirror directory not found. " +
-              colors.RESET + "Installing MagicMirror..." +
-              colors.RESET)
+    try:
+        if not os.path.exists(os.path.join(utils.MAGICMIRROR_ROOT)):
+            print(colors.B_CYAN + "MagicMirror directory not found. " + colors.RESET + "Installing MagicMirror..." + colors.RESET)
+            os.system('bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"')
 
-        os.system('bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"')
+        else:
+            message = colors.B_CYAN + "MagicMirror directory found. " + colors.RESET + "Would you like to check for updates? [yes/no | y/n]: "
+            valid_response = False
 
-    else:
-        message = colors.B_CYAN + "MagicMirror directory found. " + colors.RESET + "Would you like to check for updates? [yes/no | y/n]: "
-        valid_response = False
+            while not valid_response:
+                response = input(message)
 
-        while not valid_response:
-            response = input(message)
+                if response in ("yes", "y"):
+                    os.chdir(os.path.join(utils.HOME_DIR, 'MagicMirror'))
 
-            if response in ("yes", "y"):
-                os.chdir(os.path.join(utils.HOME_DIR, 'MagicMirror'))
+                    print(colors.B_CYAN + "Checking for updates..." + colors.RESET)
+                    git_status = subprocess.run(["git", "fetch", "--dry-run"], stdout=subprocess.PIPE)
 
-                print(colors.B_CYAN + "Checking for updates..." + colors.RESET)
-                git_status = subprocess.run(["git", "fetch", "--dry-run"], stdout=subprocess.PIPE)
+                    if git_status.stdout:
+                        print(colors.B_CYAN + "Updates found for MagicMirror. " + colors.RESET + "Requesting upgrades...")
+                        return_code, _, std_err = utils.run_cmd(['git', 'pull'])
+                        utils.handle_warnings(return_code, std_err)
 
-                if git_status.stdout:
-                    print(colors.B_CYAN + "Updates found for MagicMirror. " + colors.RESET + "Requesting upgrades...")
-                    return_code, _, std_err = utils.run_cmd(['git', 'pull'])
-                    utils.handle_warnings(return_code, std_err)
+                        if not return_code:
+                            os.system("$(which npm) install")
 
-                    if not return_code:
-                        os.system("$(which npm) install")
+                    else:
+                        print("No updates available for MagicMirror.")
+
+                    valid_response = True
+
+                elif response in ("no", "n"):
+                    print(colors.B_MAGENTA + "Aborted MagicMirror update.")
+                    valid_response = True
 
                 else:
-                    print("No updates available for MagicMirror.")
-
-                valid_response = True
-
-            elif response in ("no", "n"):
-                print(colors.B_MAGENTA + "Aborted MagicMirror update.")
-                valid_response = True
-
-            else:
-                utils.warning_msg("Respond with yes/no or y/n.")
+                    utils.warning_msg("Respond with yes/no or y/n.")
+    except Exception:
+        return False
 
     os.chdir(original_dir)
+    return True
 
 
 def remove_modules(installed_modules, modules_to_remove):
@@ -398,11 +404,12 @@ def remove_modules(installed_modules, modules_to_remove):
         modules_to_remove (list): List of modules to remove
 
     Returns:
-        None
+        bool: True upon success, False upon failure
     '''
 
     if not installed_modules:
         utils.error_msg("No modules are currently installed.")
+        return False
 
     modules_dir = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
     original_dir = os.getcwd()
@@ -411,6 +418,7 @@ def remove_modules(installed_modules, modules_to_remove):
         msg = "Failed to find MagicMirror root. Have you installed MagicMirror properly? "
         msg += "You may also set the env variable 'MMPM_MAGICMIRROR_ROOT' to the MagicMirror root directory."
         utils.error_msg(msg)
+        return False
 
     os.chdir(modules_dir)
     successful_removals = []
@@ -432,9 +440,10 @@ def remove_modules(installed_modules, modules_to_remove):
             print(colors.RESET + f"{removal}")
     else:
         utils.error_msg("Unable to remove modules.")
+        return False
 
     os.chdir(original_dir)
-
+    return True
 
 def load_modules(force_refresh=False):
     '''
@@ -446,7 +455,8 @@ def load_modules(force_refresh=False):
         force_refresh (bool): Boolean flag to force refresh of snapshot
 
     Returns:
-        None
+        bool: False upon failure
+        modules (dict): list of modules upon success
     '''
 
     modules = {}
@@ -456,11 +466,12 @@ def load_modules(force_refresh=False):
     checked_for_enhancements = False
     snapshot_exists = os.path.exists(utils.SNAPSHOT_FILE)
 
-    if not snapshot_exists and not os.path.exists(utils.mmpm_ext_srcs_DIR):
+    if not snapshot_exists and not os.path.exists(utils.MMPM_CONFIG_DIR):
         try:
-            os.mkdir(os.path.dirname(utils.SNAPSHOT_FILE))
+            os.mkdir(utils.MMPM_CONFIG_DIR)
         except OSError:
             utils.error_msg('Failed to create directory for snapshot')
+            return None, None, None, None
 
     if not force_refresh and snapshot_exists:
         curr_snap = os.path.getmtime(utils.SNAPSHOT_FILE)
@@ -473,8 +484,8 @@ def load_modules(force_refresh=False):
         utils.plain_print(colors.B_CYAN + "Refreshing MagicMirror module snapshot... ")
         modules = retrieve_modules()
 
-        with open(utils.SNAPSHOT_FILE, "w") as f:  # save the new snapshot
-            json.dump(modules, f)
+        with open(utils.SNAPSHOT_FILE, "w") as snapshot:  # save the new snapshot
+            json.dump(modules, snapshot)
 
         utils.plain_print(colors.RESET + "Retrieval complete.\n")
 
@@ -513,15 +524,16 @@ def retrieve_modules():
         None
 
     Returns:
-        None
+        modules (dict): list of modules upon success, None upon failure
     '''
 
     modules = {}
 
     try:
         web_page = urlopen(utils.MAGICMIRROR_MODULES_URL).read()
-    except HTTPError as err:
+    except HTTPError:
         utils.error_msg("Unable to retrieve MagicMirror modules. Is your internet connection down?")
+        return None
 
     soup = BeautifulSoup(web_page, "html.parser")
     table_soup = soup.find_all("table")
@@ -653,6 +665,7 @@ def get_installed_modules(modules):
         modules (dict): Dictionary of MagicMirror modules
 
     Returns:
+        None upon failure
         installed_modules (dict): Dictionary of installed MagicMirror modules
     '''
 
@@ -663,6 +676,7 @@ def get_installed_modules(modules):
         msg = "Failed to find MagicMirror root. Have you installed MagicMirror properly? "
         msg += "You may also set the env variable 'MMPM_MAGICMIRROR_ROOT' to the MagicMirror root directory."
         utils.error_msg(msg)
+        return None
 
     os.chdir(modules_dir)
 
@@ -725,6 +739,7 @@ def add_external_module_source(title=None, author=None, repo=None, desc=None):
             for module in config[utils.EXTERNAL_MODULE_SOURCES]:
                 if module[utils.TITLE] == title:
                     utils.error_msg(f"A module named '{title}' already exists")
+                    return False
 
             with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 config[utils.EXTERNAL_MODULE_SOURCES].append(new_source)
@@ -737,6 +752,7 @@ def add_external_module_source(title=None, author=None, repo=None, desc=None):
         return True
     except IOError:
         utils.error_msg('Failed to save external module')
+        return False
 
 
 def remove_external_module_source(titles=None):
@@ -776,6 +792,7 @@ def remove_external_module_source(titles=None):
             return True
     except IOError:
         utils.error_msg('Failed to remove external module')
+        return False
 
 
 def edit_magicmirror_config():
@@ -786,7 +803,11 @@ def edit_magicmirror_config():
         None
 
     Returns:
-        None
+        bool: True upon success, False upon failure
     '''
-    utils.open_default_editor(utils.get_file_path(utils.MAGICMIRROR_CONFIG_FILE))
+    try:
+        utils.open_default_editor(utils.get_file_path(utils.MAGICMIRROR_CONFIG_FILE))
+        return True
+    except Exception:
+        return False
 

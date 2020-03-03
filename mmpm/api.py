@@ -74,13 +74,13 @@ def get_external_modules_sources():
 def add_external_module_source():
     external_source = request.get_json(force=True)['external-source']
     try:
-         core.add_external_module_source(
+         success = core.add_external_module_source(
              title=external_source.get('title'),
              author=external_source.get('author'),
              desc=external_source.get('description'),
              repo=external_source.get('repository')
          )
-         return json.dumps(True)
+         return json.dumps(True if success else False)
     except Exception:
         return json.dumps(False)
 

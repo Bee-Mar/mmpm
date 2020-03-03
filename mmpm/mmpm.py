@@ -16,6 +16,10 @@ def main(argv):
 
     modules, curr_snap, next_snap, checked_enhancements = core.load_modules(args.force_refresh)
 
+    if not modules:
+        utils.error_msg('Fatal. No modules found.')
+        exit(1)
+
     if args.all:
         core.display_modules(modules)
 

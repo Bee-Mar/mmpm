@@ -49,7 +49,6 @@ def error_msg(msg):
         msg (str): The error message to be printed to stdout
     '''
     print(colors.B_RED + "ERROR: " + colors.RESET + msg)
-    exit(1)
 
 
 def warning_msg(msg):

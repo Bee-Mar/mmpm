@@ -653,7 +653,7 @@ def get_installed_modules(modules):
         modules (dict): Dictionary of MagicMirror modules
 
     Returns:
-        None
+        installed_modules (dict): Dictionary of installed MagicMirror modules
     '''
 
     modules_dir = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
@@ -667,7 +667,6 @@ def get_installed_modules(modules):
     os.chdir(modules_dir)
 
     module_dirs = os.listdir(os.getcwd())
-
     installed_modules = {}
 
     for category, modules in modules.items():
@@ -680,6 +679,22 @@ def get_installed_modules(modules):
 
 
 def add_external_module_source(title=None, author=None, repo=None, desc=None):
+    '''
+    Adds an external source for user to install a module from. This may be a
+    private git repo, or a specific branch of a public repo. All modules added
+    in this manner will be added to the 'External Module Sources' category.
+    These sources are stored in ~/.config/mmpm/mmpm-external-sources.json
+
+    Parameters:
+        title (str): External source title
+        author (str): External source author
+        repo (str): External source repo url
+        desc (str): External source description
+
+    Returns:
+        (bool): Upon success, a True result is returned
+    '''
+
     print(colors.B_GREEN + "Register external module source\n" + colors.RESET)
 
     if not title and not author and not repo and not desc:
@@ -725,6 +740,17 @@ def add_external_module_source(title=None, author=None, repo=None, desc=None):
 
 
 def remove_external_module_source(titles=None):
+    '''
+    Allows user to remove an external source from the sources saved in
+    ~/.config/mmpm/mmpm-external-sources.json
+
+    Parameters:
+        title (str): External source title
+
+    Returns:
+        (bool): Upon success, a True result is returned
+    '''
+
     try:
         if os.path.exists(utils.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(utils.MMPM_EXTERNAL_SOURCES_FILE).st_size:
             config = {}
@@ -739,11 +765,12 @@ def remove_external_module_source(titles=None):
                         config[utils.EXTERNAL_MODULE_SOURCES].remove(module)
                         successful_removals.append(module[utils.TITLE])
 
-            with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
-                json.dump(config, mmpm_ext_srcs)
-
             if not successful_removals:
                 utils.error_msg('No external sources found matching provided query')
+
+            # if the error_msg was triggered, there's no need to even bother writing back to the file
+            with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
+                json.dump(config, mmpm_ext_srcs)
 
             print(colors.B_GREEN + f"Successfully removed {', '.join(successful_removals)} from '{utils.EXTERNAL_MODULE_SOURCES}'" + colors.RESET)
             return True
@@ -752,5 +779,14 @@ def remove_external_module_source(titles=None):
 
 
 def edit_magicmirror_config():
+    '''
+    Allows user to edit the MagicMirror config file using their $EDITOR
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
     utils.open_default_editor(utils.get_file_path(utils.MAGICMIRROR_CONFIG_FILE))
 

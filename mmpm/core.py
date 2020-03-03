@@ -743,7 +743,7 @@ def remove_external_module_source(titles=None):
                 json.dump(config, mmpm_ext_srcs)
 
             if not successful_removals:
-                utils.error_msg('No modules external sources found matching provided query')
+                utils.error_msg('No external sources found matching provided query')
 
             print(colors.B_GREEN + f"Successfully removed {', '.join(successful_removals)} from '{utils.EXTERNAL_MODULE_SOURCES}'" + colors.RESET)
             return True

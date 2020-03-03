@@ -11,6 +11,8 @@ import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { MatTooltipModule } from "@angular/material/tooltip";
 
 @NgModule({
   declarations: [],
@@ -26,7 +28,9 @@ import { MatButtonModule } from "@angular/material/button";
     MatPaginatorModule,
     MatTabsModule,
     MatDialogModule,
-    MatButtonModule
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule
   ],
   exports: [
     CommonModule,
@@ -40,7 +44,9 @@ import { MatButtonModule } from "@angular/material/button";
     MatPaginatorModule,
     MatTabsModule,
     MatDialogModule,
-    MatButtonModule
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule
   ]
 })
 export class MaterialModule {}

@@ -5,8 +5,13 @@ import { RestApiService } from "src/app/services/rest-api.service";
 import { MatSort } from "@angular/material/sort";
 import { MatPaginator } from "@angular/material/paginator";
 import { ExternalSourceRegistrationDialogComponent } from "src/app/components/external-source-registration-dialog/external-source-registration-dialog.component";
+import { TooltipPosition } from "@angular/material/tooltip";
 
-import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogRef,
+  MAT_DIALOG_DATA
+} from "@angular/material/dialog";
 
 export interface MagicMirrorPackage {
   title: string;
@@ -31,10 +36,7 @@ export class MagicMirrorModulesTableComponent {
   @ViewChild(MatSort) sort: MatSort;
   @Input() url: string;
 
-  constructor(
-    private api: RestApiService,
-    public dialog: MatDialog
-  ) {}
+  constructor(private api: RestApiService, public dialog: MatDialog) {}
 
   displayedColumns: string[] = [
     "select",
@@ -47,6 +49,7 @@ export class MagicMirrorModulesTableComponent {
 
   dataSource: MatTableDataSource<MagicMirrorPackage>;
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
+  tooltipPosition: TooltipPosition[] = ['below'];
 
   public ngOnInit(): void {
     this.paginator.pageSize = 10;
@@ -72,7 +75,11 @@ export class MagicMirrorModulesTableComponent {
     });
   }
 
-  public compare(a: number | string, b: number | string, ascending: boolean) {
+  public compare(
+    a: number | string,
+    b: number | string,
+    ascending: boolean
+  ): number {
     return (a < b ? -1 : 1) * (ascending ? 1 : -1);
   }
 
@@ -127,14 +134,19 @@ export class MagicMirrorModulesTableComponent {
   }
 
   public onAddExternalSource(): void {
-    const dialogRef = this.dialog.open(ExternalSourceRegistrationDialogComponent, {
-      width: "50vw",
-    });
+    const dialogRef = this.dialog.open(
+      ExternalSourceRegistrationDialogComponent,
+      {
+        width: "50vw"
+      }
+    );
 
     dialogRef.afterClosed().subscribe((result) => {
       console.log("The dialog was closed");
     });
   }
+
+  public onRefreshModules(): void {}
 
   public onRemoveModules(): void {}
 

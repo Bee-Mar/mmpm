@@ -74,6 +74,7 @@
 <mat-paginator [pageSizeOptions]="[5, 10]" showFirstLastButtons></mat-paginator>
 
 <button
+  *ngIf="url === 'all-modules' || url === 'all-installed-modules'"
   mat-raised-button
   color="accent"
   [disabled]="!selection.selected.length"
@@ -83,20 +84,6 @@
 >
   <mat-icon>
     {{ url == 'all-modules' ? 'get_app' : 'open_in_browser' }}
-  </mat-icon>
-</button>
-
-<button
-  mat-raised-button
-  color="{{ url === 'all-modules' ? 'accent' : 'primary'}}"
-  style="margin-left: 3em;"
-  matTooltip="{{ url === 'all-modules' ? 'Add external source' : 'Remove module' }}"
-  [matTooltipPosition]="tooltipPosition"
-  (click)="url === 'all-modules' ? onAddExternalSource() : onRemoveModules()"
-  [disabled]="url === 'installed-modules' && !selection.selected.length"
->
-  <mat-icon>
-    {{ url == "all-modules" ? 'playlist_add' : 'delete_forever' }}
   </mat-icon>
 </button>
 
@@ -111,5 +98,34 @@
 >
   <mat-icon>
     refresh
+  </mat-icon>
+</button>
+
+<button
+  *ngIf="url === 'all-installed-modules' || url === 'all-external-module-sources'"
+  mat-raised-button
+  color="primary"
+  style="margin-left: 3em;"
+  matTooltip="{{ url === 'all-installed-modules' ? 'Uninstall module(s)' : 'Remove source' }}"
+  [matTooltipPosition]="tooltipPosition"
+  (click)="url === 'all-installed-modules' ? onUninstallModules() : onRemoveExternalSource()"
+  [disabled]="!selection.selected.length"
+>
+  <mat-icon>
+    delete
+  </mat-icon>
+</button>
+
+<button
+  *ngIf="url === 'all-external-module-sources'"
+  mat-raised-button
+  color="accent"
+  style="margin-left: 3em;"
+  matTooltip="Add source"
+  [matTooltipPosition]="tooltipPosition"
+  (click)="onAddExternalSources()"
+>
+  <mat-icon>
+    add
   </mat-icon>
 </button>

@@ -7,6 +7,12 @@ import json
 app = Flask(__name__, root_path='/var/www/mmpm', static_folder="/var/www/mmpm/static")
 CORS(app)
 
+GET = 'GET'
+POST = 'POST'
+PATCH = 'PATCH'
+DELETE = 'DELETE'
+OPTIONS = 'OPTIONS'
+
 
 def __api__(path=''):
     return f'/api/{path}'
@@ -21,12 +27,12 @@ def __modules__(force_refresh=False):
     return modules
 
 
-@app.route('/<path:path>', methods=['GET', 'OPTIONS'])
+@app.route('/<path:path>', methods=[GET, OPTIONS])
 def static_proxy(path):
     return send_from_directory('./', path)
 
 
-@app.route('/', methods=['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'])
+@app.route('/', methods=[GET, POST, PATCH, DELETE, OPTIONS])
 def root():
     return render_template('index.html')
 
@@ -36,30 +42,41 @@ def server_error(error):
     return f'An internal error occurred [{__name__}.py]: {error}', 500
 
 
-@app.route(__api__('all-modules'), methods=['GET', 'OPTIONS'])
+@app.route(__api__('all-modules'), methods=[GET, OPTIONS])
 def get_magicmirror_modules():
     return __modules__()
 
 
-@app.route(__api__('install-modules'), methods=['POST', 'OPTIONS'])
+@app.route(__api__('install-modules'), methods=[POST, OPTIONS])
 def install_magicmirror_modules():
-    core.install_modules(__modules__(), request.args.get('modules_to_install'))
-    return True
+    selected_modules = request.get_json(force=True)['selected-modules']
+    success = False
+
+    try:
+        success = core.install_modules(__modules__(), selected_modules)
+    except Exception:
+        pass
+    return json.dumps(True if success else False)
 
 
-@app.route(__api__('uninstall-module'), methods=['POST', 'OPTIONS'])
+@app.route(__api__('uninstall-module'), methods=[POST, OPTIONS])
 def remove_magicmirror_modules():
     modules, _, _, _ = core.load_modules()
     core.remove_modules(modules, request.args.get('modules_to_remove'))
     return True
 
+@app.route(__api__('update-module'), methods=[POST, OPTIONS])
+def update_magicmirror_modules():
+    modules, _, _, _ = core.load_modules()
+    core.remove_modules(modules, request.args.get('modules_to_remove'))
+    return True
 
-@app.route(__api__('installed-modules'), methods=['GET', 'OPTIONS'])
+@app.route(__api__('all-installed-modules'), methods=[GET, OPTIONS])
 def get_installed_magicmirror_modules():
     return core.get_installed_modules(__modules__())
 
 
-@app.route(__api__('get-external-module-sources'), methods=['GET', 'OPTIONS'])
+@app.route(__api__('all-external-module-sources'), methods=[GET, OPTIONS])
 def get_external_modules_sources():
     ext_sources = {utils.EXTERNAL_MODULE_SOURCES: []}
     try:
@@ -70,7 +87,7 @@ def get_external_modules_sources():
     return ext_sources
 
 
-@app.route(__api__('register-external-module-source'), methods=['POST', 'OPTIONS'])
+@app.route(__api__('add-external-module-source'), methods=[POST, OPTIONS])
 def add_external_module_source():
     external_source = request.get_json(force=True)['external-source']
     try:
@@ -85,24 +102,42 @@ def add_external_module_source():
         return json.dumps(False)
 
 
-@app.route(__api__('refresh-modules'), methods=['GET', 'OPTIONS'])
+@app.route(__api__('remove-external-module-source'), methods=[DELETE, OPTIONS])
+def remove_external_module_source():
+    external_sources = request.get_json(force=True)['external-sources']
+    print(external_sources)
+    # try:
+    #      success = core.add_external_module_source(
+    #          title=external_source.get('title'),
+    #          author=external_source.get('author'),
+    #          desc=external_source.get('description'),
+    #          repo=external_source.get('repository')
+    #      )
+    return json.dumps(True
+            #if success else False
+            )
+    # except Exception:
+    #     return json.dumps(False)
+
+
+@app.route(__api__('refresh-modules'), methods=[GET, OPTIONS])
 def force_refresh_magicmirror_modules():
     return __modules__(force_refresh=True)
 
 
-@app.route(__api__('get-magicmirror-config'), methods=['GET', 'OPTIONS'])
+@app.route(__api__('get-magicmirror-config'), methods=[GET, OPTIONS])
 def get_magicmirror_config():
     path = utils.MAGICMIRROR_CONFIG_FILE
     result = send_file(path, attachment_filename='config.js') if path else ''
     return result
 
-@app.route(__api__('update-magicmirror-config'), methods=['POST', 'OPTIONS'])
+@app.route(__api__('update-magicmirror-config'), methods=[POST, OPTIONS])
 def update_magicmirror_config():
     data = request.get_json(force=True)
 
     try:
-        with open(utils.MAGICMIRROR_CONFIG_FILE, 'w') as f:
-            f.write(data.get('code'))
+        with open(utils.MAGICMIRROR_CONFIG_FILE, 'w') as config:
+            config.write(data.get('code'))
     except IOError:
         return json.dumps(False)
 

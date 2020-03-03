@@ -93,16 +93,16 @@ uninstall-gui:
 	@printf -- "----------------------"
 	@printf "\n| \e[92mRemoving MMPM GUI \e[0m |"
 	@printf "\n----------------------\n"
-	rm $$HOME/.config/mmpm/configs/gunicorn.conf.py
+	rm -f $$HOME/.config/mmpm/configs/gunicorn.conf.py
 	sudo systemctl stop mmpm.service
 	sudo systemctl disable mmpm.service
 	sudo systemctl stop mmpm-webssh.service
 	sudo systemctl disable mmpm-webssh.service
-	sudo rm /etc/systemd/system/mmpm*
+	sudo rm -f /etc/systemd/system/mmpm*
 	sudo systemctl daemon-reload
 	sudo systemctl reset-failed
 	sudo rm -rf /var/www/mmpm
-	sudo rm /etc/nginx/sites-available/mmpm.conf
-	sudo rm /etc/nginx/sites-enabled/mmpm.conf
+	sudo rm -f /etc/nginx/sites-available/mmpm.conf
+	sudo rm -f /etc/nginx/sites-enabled/mmpm.conf
 	sudo systemctl restart nginx
 	@[ ! $? ] && printf "\n\033[1;36mSuccessfully Removed MMPM \e[0m\n"

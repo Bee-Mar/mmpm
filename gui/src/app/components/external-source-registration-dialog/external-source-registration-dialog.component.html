@@ -1,69 +1,67 @@
-<div>
-  <div>
-    <mat-form-field appearance="fill">
-      <mat-label>Title</mat-label>
-      <input
-        matInput
-        [formControl]="titleFormControl"
-        [(ngModel)]="externalSource.title"
-        required
+<div style="margin-top: 2vh; height: 88%;">
+  <mat-form-field appearance="fill">
+    <mat-label>Title</mat-label>
+    <input
+      matInput
+      [formControl]="titleFormControl"
+      [(ngModel)]="externalSource.title"
+      required
       />
-      <mat-error *ngIf="titleFormControl.invalid"
-        >{{getErrorMessage()}}</mat-error
-      >
-    </mat-form-field>
-    <mat-form-field appearance="fill">
-      <mat-label>Repository</mat-label>
-      <input
-        matInput
-        [formControl]="repositoryFormControl"
-        [(ngModel)]="externalSource.repository"
-        required
-      />
-      <mat-error *ngIf="repositoryFormControl.invalid"
-        >{{getErrorMessage()}}</mat-error
-      >
-    </mat-form-field>
-    <mat-form-field appearance="fill">
-      <mat-label>Author</mat-label>
-      <input
-        matInput
-        [formControl]="authorFormControl"
-        [(ngModel)]="externalSource.author"
-        required
-      />
-      <mat-error *ngIf="authorFormControl.invalid"
-        >{{getErrorMessage()}}</mat-error
-      >
-    </mat-form-field>
-    <mat-form-field appearance="fill">
-      <mat-label>Description</mat-label>
-      <textarea
-        matInput
-        [formControl]="descriptionFormControl"
-        rows="10"
-        [(ngModel)]="externalSource.description"
-        required
-      >
-      </textarea>
-      <mat-error *ngIf="descriptionFormControl.invalid"
-        >{{getErrorMessage()}}</mat-error
-      >
-    </mat-form-field>
-  </div>
+    <mat-error *ngIf="titleFormControl.invalid"
+      >{{getErrorMessage(titleFormControl)}}</mat-error
+    >
+  </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Repository</mat-label>
+        <input
+          matInput
+          [formControl]="repositoryFormControl"
+          [(ngModel)]="externalSource.repository"
+          required
+          />
+        <mat-error *ngIf="repositoryFormControl.invalid"
+          >{{getErrorMessage(repositoryFormControl)}}</mat-error
+        >
+      </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Author</mat-label>
+            <input
+              matInput
+              [formControl]="authorFormControl"
+              [(ngModel)]="externalSource.author"
+              required
+              />
+            <mat-error *ngIf="authorFormControl.invalid"
+              >{{getErrorMessage(authorFormControl)}}</mat-error
+            >
+          </mat-form-field>
+              <mat-form-field appearance="fill">
+                <mat-label>Description</mat-label>
+                <textarea
+                  matInput
+                  [formControl]="descriptionFormControl"
+                  rows="10"
+                  [(ngModel)]="externalSource.description"
+                  required
+                  >
+                </textarea>
+                  <mat-error *ngIf="descriptionFormControl.invalid"
+                  >{{getErrorMessage(descriptionFormControl)}}</mat-error
+                >
+              </mat-form-field>
+</div>
 
-  <div style="margin-top: 3vh; display: flex; justify-content: center;">
-    <button
-      mat-raised-button
-      color="primary"
-      mat-raised-button
-      matTooltip="Save external source"
-      (click)="onRegisterSource()"
-      [disabled]="!externalSource.title || !externalSource.repository || !externalSource.author || !externalSource.description"
+<div style="display: flex; justify-content: center;">
+  <button
+    mat-raised-button
+    color="primary"
+    mat-raised-button
+    matTooltip="Save external source"
+    (click)="onRegisterSource()"
+    [disabled]="!externalSource.title || !externalSource.repository || !externalSource.author || !externalSource.description"
     >
     <mat-icon>
       save
     </mat-icon>
-    </button>
-  </div>
+  </button>
 </div>

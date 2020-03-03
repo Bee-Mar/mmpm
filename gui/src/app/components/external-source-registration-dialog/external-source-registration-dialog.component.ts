@@ -2,6 +2,7 @@ import { Component, OnInit, Inject } from "@angular/core";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
+import { MagicMirrorModulesTableComponent } from "src/app/components/magic-mirror-modules-table/magic-mirror-modules-table.component";
 import {
   FormBuilder,
   FormControl,
@@ -34,14 +35,13 @@ export class ExternalSourceRegistrationDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.externalSource = this.data.externalSource;
+    console.log(this.data.externalSources);
   }
 
-  public getErrorMessage(): string {
-    if (this.titleFormControl.hasError("required")) {
+  public getErrorMessage(formControl: FormControl): string {
+    if (formControl.hasError("required")) {
       return "You must enter a value";
     }
-
-    return this.titleFormControl.hasError("title") ? "Not a valid title" : "";
   }
 
   public onRegisterSource(): void {

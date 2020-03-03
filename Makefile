@@ -15,11 +15,18 @@ cli: dependencies-cli build-cli install-cli
 dependencies: dependencies-gui
 
 dependencies-cli:
+	@printf -- "------------------------------"
+	@printf "\n| \e[92mGathering CLI dependencies\e[0m |"
+	@printf "\n------------------------------\n"
+	@sudo apt install python3-pip
+	@pip3 install --user setuptools wheel
 
 dependencies-gui:
 	@printf -- "------------------------------"
 	@printf "\n| \e[92mGathering GUI dependencies\e[0m |"
 	@printf "\n------------------------------\n"
+	@sudo apt install nginx -y
+	@sudo systemctl start nginx
 	@npm install -g @angular/cli
 	@npm install --prefix gui
 
@@ -51,8 +58,8 @@ install-gui:
 	@printf "\n------------------------\n"
 	@mkdir -p ${HOME}/.config/mmpm/configs
 	@cp configs/gunicorn.conf.py ${HOME}/.config/mmpm/configs
-	@rm -f configs/mmpm.service
-	@rm -f configs/mmpm-webssh.service
+	@cp configs/*conf ${HOME}/.config/mmpm/configs
+	@cp configs/*service ${HOME}/.config/mmpm/configs
 	@cd configs && \
 		bash gen-mmpm-service.sh && \
 		sudo cp mmpm.service /etc/systemd/system/ && \
@@ -63,16 +70,16 @@ install-gui:
 	@sudo systemctl start mmpm-webssh
 	@sudo systemctl status mmpm --no-pager
 	@sudo systemctl status mmpm-webssh --no-pager
+	@sudo cp configs/mmpm.conf /etc/nginx/sites-available && \
+		sudo ln -s /etc/nginx/sites-available/mmpm.conf /etc/nginx/sites-enabled
+	@sudo systemctl restart nginx.service --no-pager
 	@sudo mkdir -p /var/www/mmpm/templates && \
 		sudo cp -r gui/build/static /var/www/mmpm && \
 		sudo cp /var/www/mmpm/static/index.html /var/www/mmpm/templates
 	@cp ./configs/gunicorn.conf.py ~/.config/mmpm/configs
 	@[ ! $? ] && printf "\n\033[1;36mMMPM Successfully Installed \e[0m\n"
-	@[ ! $? ] && printf "\nThe MMPM GUI is being served the IP address of your default interface at port 8090"
-	@[ ! $? ] && printf "\nBest guess: http://$$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):8090\n\n"
-	@printf -- "------------------------------------------------------------------------"
-	@printf "\n| \e[92mNOTE: Ensure your ufw (firewall) settings allow ports 8090 and 8091 \e[0m |"
-	@printf "\n------------------------------------------------------------------------\n"
+	@[ ! $? ] && printf "\nThe MMPM GUI is being served the IP address of your default interface at port 7890"
+	@[ ! $? ] && printf "\nBest guess: http://$$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):7890\n\n"
 
 uninstall: uninstall-cli uninstall-gui
 
@@ -95,4 +102,7 @@ uninstall-gui:
 	sudo systemctl daemon-reload
 	sudo systemctl reset-failed
 	sudo rm -rf /var/www/mmpm
+	sudo rm /etc/nginx/sites-available/mmpm.conf
+	sudo rm /etc/nginx/sites-enabled/mmpm.conf
+	sudo systemctl restart nginx
 	@[ ! $? ] && printf "\n\033[1;36mSuccessfully Removed MMPM \e[0m\n"

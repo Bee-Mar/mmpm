@@ -6,7 +6,7 @@ StartLimitBurst=5, StartLimitIntervalSec=1
 [Service]
 User=bpm
 WorkingDirectory=/home/bpm
-ExecStart=/home/bpm/.local/bin/wssh --address=0.0.0.0 --port=8091
+ExecStart=/home/bpm/.local/bin/wssh --port=7893
 ExecReload=/bin/kill -s HUP $MAINPID
 Type=simple
 PIDFile=/var/run/webssh.pid

@@ -6,4 +6,4 @@ mmpm.egg-info
 gui/build
 gui/.clangd
 gui/src/.clang-format
-configs/mmpm.service
+configs/*.service

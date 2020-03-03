@@ -4,8 +4,10 @@ import { SelectionModel } from "@angular/cdk/collections";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { MatSort } from "@angular/material/sort";
 import { MatPaginator } from "@angular/material/paginator";
-import { ExternalSourceRegistrationDialogComponent } from "src/app/components/external-source-registration-dialog/external-source-registration-dialog.component";
 import { TooltipPosition } from "@angular/material/tooltip";
+import {
+  ExternalSourceRegistrationDialogComponent
+} from "src/app/components/external-source-registration-dialog/external-source-registration-dialog.component";
 
 import {
   MatDialog,
@@ -21,11 +23,6 @@ export interface MagicMirrorPackage {
   description: string;
 }
 
-let PACKAGES: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
-let SORTED_PACKAGES: Array<MagicMirrorPackage> = new Array<
-  MagicMirrorPackage
->();
-
 @Component({
   selector: "app-magic-mirror-modules-table",
   styleUrls: ["./magic-mirror-modules-table.component.scss"],
@@ -35,6 +32,9 @@ export class MagicMirrorModulesTableComponent {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
   @Input() url: string;
+
+  PACKAGES: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
+  SORTED_PACKAGES: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
 
   constructor(private api: RestApiService, public dialog: MatDialog) {}
 
@@ -49,7 +49,7 @@ export class MagicMirrorModulesTableComponent {
 
   dataSource: MatTableDataSource<MagicMirrorPackage>;
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
-  tooltipPosition: TooltipPosition[] = ['below'];
+  tooltipPosition: TooltipPosition[] = ["below"];
 
   public ngOnInit(): void {
     this.paginator.pageSize = 10;
@@ -58,7 +58,7 @@ export class MagicMirrorModulesTableComponent {
       Object.keys(packages).forEach((category) => {
         if (packages) {
           for (const pkg of packages[category]) {
-            PACKAGES.push({
+            this.PACKAGES.push({
               category,
               title: pkg["Title"],
               description: pkg["Description"],
@@ -69,7 +69,9 @@ export class MagicMirrorModulesTableComponent {
         }
       });
 
-      this.dataSource = new MatTableDataSource<MagicMirrorPackage>(PACKAGES);
+      this.dataSource = new MatTableDataSource<MagicMirrorPackage>(
+        this.PACKAGES
+      );
       this.dataSource.paginator = this.paginator;
       this.dataSource.sort = this.sort;
     });
@@ -84,14 +86,14 @@ export class MagicMirrorModulesTableComponent {
   }
 
   public onSort(sort: MatSort) {
-    const data = PACKAGES.slice();
+    const data = this.PACKAGES.slice();
 
     if (!sort.active || sort.direction === "") {
-      SORTED_PACKAGES = data;
+      this.SORTED_PACKAGES = data;
       return;
     }
 
-    SORTED_PACKAGES = data.sort((a, b) => {
+    this.SORTED_PACKAGES = data.sort((a, b) => {
       const ascending = sort.direction === "asc";
       switch (sort.active) {
         case "category":
@@ -105,7 +107,7 @@ export class MagicMirrorModulesTableComponent {
       }
     });
 
-    PACKAGES = SORTED_PACKAGES;
+    this.PACKAGES = this.SORTED_PACKAGES;
   }
 
   public searchFilter(event: Event): void {

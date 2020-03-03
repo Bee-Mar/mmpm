@@ -28,10 +28,13 @@ def main(argv):
     elif args.install:
         core.install_modules(modules, args.install)
 
-    elif args.magicmirror:
+    elif args.install_magicmirror:
         core.install_magicmirror()
 
-    elif args.remove:
+    elif args.remove and args.ext_module_src:
+        core.remove_external_module_source(args.remove)
+
+    elif args.remove and not args.ext_module_src:
         core.remove_modules(core.get_installed_modules(modules), args.remove)
 
     elif args.list_installed:

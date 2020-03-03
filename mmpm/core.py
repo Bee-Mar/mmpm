@@ -707,6 +707,10 @@ def add_external_module_source(title=None, author=None, repo=None, desc=None):
             with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
                 config[utils.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[utils.EXTERNAL_MODULE_SOURCES]
 
+            for module in config[utils.EXTERNAL_MODULE_SOURCES]:
+                if module[utils.TITLE] == title:
+                    utils.error_msg(f"A module named '{title}' already exists")
+
             with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 config[utils.EXTERNAL_MODULE_SOURCES].append(new_source)
                 json.dump(config, mmpm_ext_srcs)
@@ -714,16 +718,39 @@ def add_external_module_source(title=None, author=None, repo=None, desc=None):
             with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 json.dump({utils.EXTERNAL_MODULE_SOURCES: [new_source]}, mmpm_ext_srcs)
 
-        print(colors.B_WHITE + f"\nSuccessfully added {title} to '{utils.EXTERNAL_MODULE_SOURCES}'\n" + colors.RESET)
+        print(colors.B_WHITE + f"\nSuccessfully added '{title}' to '{utils.EXTERNAL_MODULE_SOURCES}'\n" + colors.RESET)
         return True
     except IOError:
         utils.error_msg('Failed to save external module')
 
 
+def remove_external_module_source(titles=None):
+    try:
+        if os.path.exists(utils.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(utils.MMPM_EXTERNAL_SOURCES_FILE).st_size:
+            config = {}
+            successful_removals = []
+
+            with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
+                config[utils.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[utils.EXTERNAL_MODULE_SOURCES]
+
+            for title in titles:
+                for module in config[utils.EXTERNAL_MODULE_SOURCES]:
+                    if module[utils.TITLE] == title:
+                        config[utils.EXTERNAL_MODULE_SOURCES].remove(module)
+                        successful_removals.append(module[utils.TITLE])
+
+            with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
+                json.dump(config, mmpm_ext_srcs)
+
+            if not successful_removals:
+                utils.error_msg('No modules external sources found matching provided query')
+
+            print(colors.B_GREEN + f"Successfully removed {', '.join(successful_removals)} from '{utils.EXTERNAL_MODULE_SOURCES}'" + colors.RESET)
+            return True
+    except IOError:
+        utils.error_msg('Failed to remove external module')
+
+
 def edit_magicmirror_config():
     utils.open_default_editor(utils.get_file_path(utils.MAGICMIRROR_CONFIG_FILE))
-
-
-def edit_magicmirror_external_sources():
-   utils.open_default_editor(utils.get_file_path(utils.MMPM_EXTERNAL_SOURCES_FILE))
 

@@ -83,7 +83,7 @@ def get_user_args():
                                 ''')
 
     arg_parser.add_argument('-M',
-                            '--magicmirror',
+                            '--install-magicmirror',
                             action='store_true',
                             help='''
                                 Installs the most recent version of
@@ -128,6 +128,10 @@ def get_user_args():
                             '--magicmirror-config',
                             action='store_true',
                             help='Open MagicMirror config file in your $EDITOR')
+
+    arg_parser.add_argument('--ext-module-src',
+                            action='store_true',
+                            help='Used in conjuction with --remove to unregister an external module source')
 
     if len(argv) < 2:
         arg_parser.print_help()

@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable, throwError } from "rxjs";
-import { MagicMirrorPackage } from "src/app/classes/magic-mirror-package";
+import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
 import { retry, catchError } from "rxjs/operators";
 
 const httpOptions = (httpHeaders: object = {}) => {
@@ -17,7 +17,7 @@ const httpOptions = (httpHeaders: object = {}) => {
   providedIn: "root"
 })
 export class RestApiService {
-  BASE_API_URL = "http://localhost:7891/api";
+  BASE_API_URL = "http://0.0.0.0:7891/api";
 
   constructor(private http: HttpClient) {}
 
@@ -54,6 +54,17 @@ export class RestApiService {
         httpOptions({ "Content-Type": "application/x-www-form-urlencoded" })
       )
       .pipe(retry(1), catchError(this.handleError));
+  }
+
+  public registerExternalModuleSource(externalSource: MagicMirrorPackage): Observable<any> {
+    return this.http
+      .post<any>(
+        this.BASE_API_URL + "/register-external-module-source",
+        { "external-source": externalSource },
+        httpOptions({ "Content-Type": "application/x-www-form-urlencoded" })
+      )
+      .pipe(retry(1), catchError(this.handleError));
+
   }
 
   public handleError(error: any) {

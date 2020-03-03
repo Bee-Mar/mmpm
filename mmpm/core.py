@@ -689,16 +689,16 @@ def add_external_module_source(title=None, author=None, repo=None, desc=None):
             repo = input("Repository: ")
             desc = input("Description: ")
 
-            new_source = {
-                utils.TITLE: title,
-                utils.REPOSITORY: repo,
-                utils.AUTHOR: author,
-                utils.DESCRIPTION: desc
-            }
-
         except KeyboardInterrupt:
             print('\n')
             exit(1)
+
+    new_source = {
+        utils.TITLE: title,
+        utils.REPOSITORY: repo,
+        utils.AUTHOR: author,
+        utils.DESCRIPTION: desc
+    }
 
     try:
         if os.path.exists(utils.MMPM_CONFIG_FILE) and os.stat(utils.MMPM_CONFIG_FILE).st_size:
@@ -717,7 +717,7 @@ def add_external_module_source(title=None, author=None, repo=None, desc=None):
         print(colors.B_WHITE + f'\nSuccessfully added external module to {utils.MMPM_CONFIG_FILE}\n' + colors.RESET)
         return True
     except IOError:
-        error_msg('Failed to save external module')
+        utils.error_msg('Failed to save external module')
 
 
 def edit_magicmirror_config():

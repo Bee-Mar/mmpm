@@ -68,12 +68,17 @@ def get_external_modules_sources():
 
 @app.route(__api__('register-external-module-source'), methods=['POST', 'OPTIONS'])
 def add_external_module_source():
-    core.add_external_module_source(
-        request.args.get('title'),
-        request.args.get('author'),
-        request.args.get('desc'),
-        request.args.get('repo')
-    )
+    external_source = request.get_json(force=True)['external-source']
+    try:
+         core.add_external_module_source(
+             title=external_source.get('title'),
+             author=external_source.get('author'),
+             desc=external_source.get('description'),
+             repo=external_source.get('repository')
+         )
+         return json.dumps(True)
+    except Exception:
+        return json.dumps(False)
 
 
 @app.route(__api__('refresh-modules'), methods=['GET', 'OPTIONS'])

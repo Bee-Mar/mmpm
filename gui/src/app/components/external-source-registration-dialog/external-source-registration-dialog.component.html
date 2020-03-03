@@ -2,18 +2,39 @@
   <div>
     <mat-form-field appearance="fill">
       <mat-label>Title</mat-label>
-      <input matInput [formControl]="titleFormControl" [(ngModel)]="title" required />
-      <mat-error *ngIf="titleFormControl.invalid">{{getErrorMessage()}}</mat-error>
+      <input
+        matInput
+        [formControl]="titleFormControl"
+        [(ngModel)]="externalSource.title"
+        required
+      />
+      <mat-error *ngIf="titleFormControl.invalid"
+        >{{getErrorMessage()}}</mat-error
+      >
     </mat-form-field>
     <mat-form-field appearance="fill">
       <mat-label>Repository</mat-label>
-      <input matInput [formControl]="repositoryFormControl" [(ngModel)]="repository" required />
-      <mat-error *ngIf="repositoryFormControl.invalid">{{getErrorMessage()}}</mat-error>
+      <input
+        matInput
+        [formControl]="repositoryFormControl"
+        [(ngModel)]="externalSource.repository"
+        required
+      />
+      <mat-error *ngIf="repositoryFormControl.invalid"
+        >{{getErrorMessage()}}</mat-error
+      >
     </mat-form-field>
     <mat-form-field appearance="fill">
       <mat-label>Author</mat-label>
-      <input matInput [formControl]="authorFormControl" [(ngModel)]="author" required />
-      <mat-error *ngIf="authorFormControl.invalid">{{getErrorMessage()}}</mat-error>
+      <input
+        matInput
+        [formControl]="authorFormControl"
+        [(ngModel)]="externalSource.author"
+        required
+      />
+      <mat-error *ngIf="authorFormControl.invalid"
+        >{{getErrorMessage()}}</mat-error
+      >
     </mat-form-field>
     <mat-form-field appearance="fill">
       <mat-label>Description</mat-label>
@@ -21,11 +42,13 @@
         matInput
         [formControl]="descriptionFormControl"
         rows="10"
-        [(ngModel)]="description"
+        [(ngModel)]="externalSource.description"
         required
       >
       </textarea>
-        <mat-error *ngIf="descriptionFormControl.invalid">{{getErrorMessage()}}</mat-error>
+      <mat-error *ngIf="descriptionFormControl.invalid"
+        >{{getErrorMessage()}}</mat-error
+      >
     </mat-form-field>
   </div>
 
@@ -33,9 +56,9 @@
     <button
       mat-raised-button
       color="primary"
-      (click)="registerExternalModuleSource()"
-      [disabled]="!title || !repository || !author || !description"
-      >
+      (click)="onRegisterSource()"
+      [disabled]="!externalSource.title || !externalSource.repository || !externalSource.author || !externalSource.description"
+    >
       Register Source
     </button>
   </div>

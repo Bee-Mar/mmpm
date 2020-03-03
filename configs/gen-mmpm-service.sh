@@ -25,7 +25,7 @@ printf "StartLimitBurst=5, StartLimitIntervalSec=1\n\n" >> mmpm-webssh.service
 printf "[Service]\n" >> ./mmpm-webssh.service
 printf "User=$USER\n" >> mmpm-webssh.service
 printf "WorkingDirectory=$HOME\n" >> mmpm-webssh.service
-printf "ExecStart=$HOME/.local/bin/wssh --port=7893\n" >> mmpm-webssh.service
+printf "ExecStart=$HOME/.local/bin/wssh --address=0.0.0.0 --port=7893\n" >> mmpm-webssh.service
 printf "ExecReload=/bin/kill -s HUP \$MAINPID\n" >> mmpm-webssh.service
 printf "Type=simple\n" >> mmpm-webssh.service
 printf "PIDFile=/var/run/webssh.pid\n" >> mmpm-webssh.service

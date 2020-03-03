@@ -5,23 +5,15 @@ import { RestApiService } from "src/app/services/rest-api.service";
 import { MatSort } from "@angular/material/sort";
 import { MatPaginator } from "@angular/material/paginator";
 import { TooltipPosition } from "@angular/material/tooltip";
-import {
-  ExternalSourceRegistrationDialogComponent
-} from "src/app/components/external-source-registration-dialog/external-source-registration-dialog.component";
+import { ExternalSourceRegistrationDialogComponent } from "src/app/components/external-source-registration-dialog/external-source-registration-dialog.component";
+import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 import {
   MatDialog,
   MatDialogRef,
   MAT_DIALOG_DATA
 } from "@angular/material/dialog";
-
-export interface MagicMirrorPackage {
-  title: string;
-  category: string;
-  repository: string;
-  author: string;
-  description: string;
-}
 
 @Component({
   selector: "app-magic-mirror-modules-table",
@@ -36,7 +28,11 @@ export class MagicMirrorModulesTableComponent {
   PACKAGES: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
   SORTED_PACKAGES: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
 
-  constructor(private api: RestApiService, public dialog: MatDialog) {}
+  constructor(
+    private api: RestApiService,
+    public dialog: MatDialog,
+    private snackbar: MatSnackBar
+  ) {}
 
   displayedColumns: string[] = [
     "select",
@@ -52,10 +48,14 @@ export class MagicMirrorModulesTableComponent {
   tooltipPosition: TooltipPosition[] = ["below"];
 
   public ngOnInit(): void {
+    this.retrieveModules();
+  }
+
+  private retrieveModules(): void {
     this.paginator.pageSize = 10;
 
-    this.api.mmpmApiRequest(`/${this.url}`).subscribe((packages) => {
-      Object.keys(packages).forEach((category) => {
+    this.api.mmpmApiRequest(`/${this.url}`).subscribe(packages => {
+      Object.keys(packages).forEach(category => {
         if (packages) {
           for (const pkg of packages[category]) {
             this.PACKAGES.push({
@@ -122,29 +122,55 @@ export class MagicMirrorModulesTableComponent {
   public toggleSelectAll(): void {
     this.isAllSelected()
       ? this.selection.clear()
-      : this.dataSource?.data.forEach((row) => this.selection.select(row));
+      : this.dataSource?.data.forEach(row => this.selection.select(row));
   }
 
   public onInstallModules(): void {
     if (this.selection.selected.length) {
       this.api
         .installSelectedModules(this.selection.selected)
-        .subscribe((result) => {
+        .subscribe(result => {
           console.log(result);
         });
     }
   }
 
   public onAddExternalSource(): void {
+    let externalSource: MagicMirrorPackage;
+
+    externalSource = {
+      title: "",
+      author: "",
+      repository: "",
+      category: "External Module Sources",
+      description: ""
+    };
+
     const dialogRef = this.dialog.open(
       ExternalSourceRegistrationDialogComponent,
       {
-        width: "50vw"
+        width: "50vw",
+        data: {
+          externalSource
+        }
       }
     );
 
     dialogRef.afterClosed().subscribe((result) => {
-      console.log("The dialog was closed");
+      if (result) {
+        this.api.registerExternalModuleSource(result).subscribe((success) => {
+          let message: any;
+
+          if (success) {
+            this.retrieveModules();
+            message = "Successfully added new source";
+          } else {
+            message = "Failed to add new source";
+          }
+
+          this.snackbar.open(message, "Close", { duration: 3000 });
+        });
+      }
     });
   }
 

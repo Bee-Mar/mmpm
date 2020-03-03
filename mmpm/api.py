@@ -59,11 +59,15 @@ def get_installed_magicmirror_modules():
     return core.get_installed_modules(__modules__())
 
 
-@app.route(__api__('external-module-sources'), methods=['GET', 'OPTIONS'])
+@app.route(__api__('get-external-module-sources'), methods=['GET', 'OPTIONS'])
 def get_external_modules_sources():
-    modules = __modules__()
-    ext_sources = modules[utils.EXTERNAL_MODULE_SOURCES] if utils.EXTERNAL_MODULE_SOURCES in modules.keys() else []
-    return {utils.EXTERNAL_MODULE_SOURCES: ext_sources}
+    ext_sources = {utils.EXTERNAL_MODULE_SOURCES: []}
+    try:
+        with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
+            ext_sources[utils.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[utils.EXTERNAL_MODULE_SOURCES]
+    except IOError:
+        pass
+    return ext_sources
 
 
 @app.route(__api__('register-external-module-source'), methods=['POST', 'OPTIONS'])

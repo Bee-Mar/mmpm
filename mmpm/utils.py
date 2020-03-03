@@ -21,7 +21,7 @@ AUTHOR = 'Author'
 CATEGORY = 'Category'
 MMPM_CONFIG_DIR = join(utils.HOME_DIR, '.config', 'mmpm')
 SNAPSHOT_FILE = join(MMPM_CONFIG_DIR, 'MagicMirror-modules-snapshot.json')
-MMPM_CONFIG_FILE = join(MMPM_CONFIG_DIR, 'mmpm-config.json')
+MMPM_EXTERNAL_SOURCES_FILE = join(MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
 EXTERNAL_MODULE_SOURCES = 'External Module Sources'
 
 

@@ -456,7 +456,7 @@ def load_modules(force_refresh=False):
     checked_for_enhancements = False
     snapshot_exists = os.path.exists(utils.SNAPSHOT_FILE)
 
-    if not snapshot_exists and not os.path.exists(utils.MMPM_CONFIG_DIR):
+    if not snapshot_exists and not os.path.exists(utils.mmpm_ext_srcs_DIR):
         try:
             os.mkdir(os.path.dirname(utils.SNAPSHOT_FILE))
         except OSError:
@@ -490,12 +490,12 @@ def load_modules(force_refresh=False):
         with open(utils.SNAPSHOT_FILE, "r") as f:
             modules = json.load(f)
 
-    if os.path.exists(utils.MMPM_CONFIG_FILE) and os.stat(utils.MMPM_CONFIG_FILE).st_size:
+    if os.path.exists(utils.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(utils.MMPM_EXTERNAL_SOURCES_FILE).st_size:
         try:
-            with open(utils.MMPM_CONFIG_FILE, "r") as f:
+            with open(utils.MMPM_EXTERNAL_SOURCES_FILE, "r") as f:
                 modules[utils.EXTERNAL_MODULE_SOURCES] = json.load(f)[utils.EXTERNAL_MODULE_SOURCES]
         except Exception:
-            utils.warning_msg(f'Failed to load data from {utils.MMPM_CONFIG_FILE}.')
+            utils.warning_msg(f'Failed to load data from {utils.MMPM_EXTERNAL_SOURCES_FILE}.')
 
     curr_snap = datetime.datetime.fromtimestamp(int(curr_snap))
     next_snap = datetime.datetime.fromtimestamp(int(next_snap))
@@ -701,20 +701,20 @@ def add_external_module_source(title=None, author=None, repo=None, desc=None):
     }
 
     try:
-        if os.path.exists(utils.MMPM_CONFIG_FILE) and os.stat(utils.MMPM_CONFIG_FILE).st_size:
+        if os.path.exists(utils.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(utils.MMPM_EXTERNAL_SOURCES_FILE).st_size:
             config = {}
 
-            with open(utils.MMPM_CONFIG_FILE, 'r') as mmpm_config:
-                config[utils.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_config)[utils.EXTERNAL_MODULE_SOURCES]
+            with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
+                config[utils.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[utils.EXTERNAL_MODULE_SOURCES]
 
-            with open(utils.MMPM_CONFIG_FILE, 'w') as mmpm_config:
+            with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 config[utils.EXTERNAL_MODULE_SOURCES].append(new_source)
-                json.dump(config, mmpm_config)
+                json.dump(config, mmpm_ext_srcs)
         else:
-            with open(utils.MMPM_CONFIG_FILE, 'w') as mmpm_config:
-                json.dump({utils.EXTERNAL_MODULE_SOURCES: [new_source]}, mmpm_config)
+            with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
+                json.dump({utils.EXTERNAL_MODULE_SOURCES: [new_source]}, mmpm_ext_srcs)
 
-        print(colors.B_WHITE + f'\nSuccessfully added external module to {utils.MMPM_CONFIG_FILE}\n' + colors.RESET)
+        print(colors.B_WHITE + f'\nSuccessfully added external module to {utils.MMPM_EXTERNAL_SOURCES_FILE}\n' + colors.RESET)
         return True
     except IOError:
         utils.error_msg('Failed to save external module')

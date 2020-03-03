@@ -1,0 +1,42 @@
+<div>
+  <div>
+    <mat-form-field appearance="fill">
+      <mat-label>Title</mat-label>
+      <input matInput [formControl]="titleFormControl" [(ngModel)]="title" required />
+      <mat-error *ngIf="titleFormControl.invalid">{{getErrorMessage()}}</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Repository</mat-label>
+      <input matInput [formControl]="repositoryFormControl" [(ngModel)]="repository" required />
+      <mat-error *ngIf="repositoryFormControl.invalid">{{getErrorMessage()}}</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Author</mat-label>
+      <input matInput [formControl]="authorFormControl" [(ngModel)]="author" required />
+      <mat-error *ngIf="authorFormControl.invalid">{{getErrorMessage()}}</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Description</mat-label>
+      <textarea
+        matInput
+        [formControl]="descriptionFormControl"
+        rows="10"
+        [(ngModel)]="description"
+        required
+      >
+      </textarea>
+        <mat-error *ngIf="descriptionFormControl.invalid">{{getErrorMessage()}}</mat-error>
+    </mat-form-field>
+  </div>
+
+  <div style="margin-top: 3vh; display: flex; justify-content: center;">
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="registerExternalModuleSource()"
+      [disabled]="!title || !repository || !author || !description"
+      >
+      Register Source
+    </button>
+  </div>
+</div>

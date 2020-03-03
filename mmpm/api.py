@@ -5,7 +5,8 @@ from mmpm import core, utils
 import json
 
 app = Flask(__name__, root_path='/var/www/mmpm', static_folder="/var/www/mmpm/static")
-CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+CORS(app, expose_headers='Authorization', support_credentials=True, origins=['*'])
 
 
 def __api__(path=''):

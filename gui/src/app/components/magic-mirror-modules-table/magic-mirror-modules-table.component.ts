@@ -4,6 +4,9 @@ import { SelectionModel } from "@angular/cdk/collections";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { MatSort } from "@angular/material/sort";
 import { MatPaginator } from "@angular/material/paginator";
+import { ExternalSourceRegistrationDialogComponent } from "src/app/components/external-source-registration-dialog/external-source-registration-dialog.component";
+
+import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 
 export interface MagicMirrorPackage {
   title: string;
@@ -28,7 +31,10 @@ export class MagicMirrorModulesTableComponent {
   @ViewChild(MatSort) sort: MatSort;
   @Input() url: string;
 
-  constructor(private api: RestApiService) {}
+  constructor(
+    private api: RestApiService,
+    public dialog: MatDialog
+  ) {}
 
   displayedColumns: string[] = [
     "select",
@@ -42,15 +48,15 @@ export class MagicMirrorModulesTableComponent {
   dataSource: MatTableDataSource<MagicMirrorPackage>;
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
 
-  ngOnInit() {
+  public ngOnInit(): void {
     this.paginator.pageSize = 10;
 
     this.api.mmpmApiRequest(`/${this.url}`).subscribe((packages) => {
       Object.keys(packages).forEach((category) => {
         if (packages) {
-          for (let pkg of packages[category]) {
+          for (const pkg of packages[category]) {
             PACKAGES.push({
-              category: category,
+              category,
               title: pkg["Title"],
               description: pkg["Description"],
               author: pkg["Author"],
@@ -101,7 +107,7 @@ export class MagicMirrorModulesTableComponent {
   }
 
   public isAllSelected(): boolean {
-    return this.dataSource?.data.length == this.selection.selected.length;
+    return this.dataSource?.data.length === this.selection.selected.length;
   }
 
   public toggleSelectAll(): void {
@@ -112,25 +118,33 @@ export class MagicMirrorModulesTableComponent {
 
   public onInstallModules(): void {
     if (this.selection.selected.length) {
-      this.api.installSelectedModules(this.selection.selected).subscribe((result) => {
-        console.log(result);
-      });
+      this.api
+        .installSelectedModules(this.selection.selected)
+        .subscribe((result) => {
+          console.log(result);
+        });
     }
   }
 
   public onAddExternalSource(): void {
+    const dialogRef = this.dialog.open(ExternalSourceRegistrationDialogComponent, {
+      width: "50vw",
+    });
 
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log("The dialog was closed");
+    });
   }
 
-  public onRemoveModules(): void {
-  }
+  public onRemoveModules(): void {}
 
-  public onUpdateModules(): void {
-
-  }
+  public onUpdateModules(): void {}
 
   public checkboxLabel(row?: MagicMirrorPackage): string {
-    if (!row) return `${this.isAllSelected() ? "select" : "deselect"} all`;
+    if (!row) {
+      return `${this.isAllSelected() ? "select" : "deselect"} all`;
+    }
+
     return `${
       this.selection.isSelected(row) ? "deselect" : "select"
     } row ${row.category + 1}`;

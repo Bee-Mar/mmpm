@@ -21,12 +21,12 @@ def __modules__(force_refresh=False):
     return modules
 
 
-@app.route('/<path:path>', methods=['GET'])
+@app.route('/<path:path>', methods=['GET', 'OPTIONS'])
 def static_proxy(path):
     return send_from_directory('./', path)
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'])
 def root():
     return render_template('index.html')
 
@@ -92,7 +92,7 @@ def force_refresh_magicmirror_modules():
 
 @app.route(__api__('get-magicmirror-config'), methods=['GET', 'OPTIONS'])
 def get_magicmirror_config():
-    path = utils.get_magicmirror_config_file_path()
+    path = utils.MAGICMIRROR_CONFIG_FILE
     result = send_file(path, attachment_filename='config.js') if path else ''
     return result
 
@@ -101,9 +101,8 @@ def update_magicmirror_config():
     data = request.get_json(force=True)
 
     try:
-        with open(utils.get_magicmirror_config_file_path(), 'w') as f:
+        with open(utils.MAGICMIRROR_CONFIG_FILE, 'w') as f:
             f.write(data.get('code'))
-
     except IOError:
         return json.dumps(False)
 

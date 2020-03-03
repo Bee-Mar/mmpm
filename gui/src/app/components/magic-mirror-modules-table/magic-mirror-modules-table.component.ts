@@ -163,7 +163,7 @@ export class MagicMirrorModulesTableComponent {
 
           if (success) {
             this.retrieveModules();
-            message = "Successfully added new source";
+            message = `Successfully added ${externalSource.title} module to 'External Module Sources'`;
           } else {
             message = "Failed to add new source";
           }

@@ -19,6 +19,8 @@ REPOSITORY = 'Repository'
 DESCRIPTION = 'Description'
 AUTHOR = 'Author'
 CATEGORY = 'Category'
+MAGICMIRROR_ROOT = os.environ[MMPM_ENV_VAR] if MMPM_ENV_VAR in os.environ else os.path.join(HOME_DIR, 'MagicMirror')
+MAGICMIRROR_CONFIG_FILE = join(MAGICMIRROR_ROOT, 'config', 'config.js')
 MMPM_CONFIG_DIR = join(utils.HOME_DIR, '.config', 'mmpm')
 SNAPSHOT_FILE = join(MMPM_CONFIG_DIR, 'MagicMirror-modules-snapshot.json')
 MMPM_EXTERNAL_SOURCES_FILE = join(MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
@@ -100,22 +102,8 @@ def handle_warnings(return_code, std_err, success='done\n'):
         utils.plain_print(colors.B_WHITE + success)
 
 
-def get_magicmirror_root():
-    '''
-    Gets root directory of MagicMirror installation
-
-    Parameters:
-        None
-
-    Returns:
-        magicmirror_root_dir (str): Root directory of MagicMirror installation
-    '''
-    return os.environ[MMPM_ENV_VAR] if MMPM_ENV_VAR in os.environ else os.path.join(HOME_DIR, 'MagicMirror')
-
-
-def get_magicmirror_config_file_path():
-    file_path = os.path.join(get_magicmirror_root(), 'config', 'config.js')
-    return file_path if os.path.exists(file_path) else ''
+def get_file_path(path):
+    return path if os.path.exists(path) else ''
 
 
 def open_default_editor(file_path):

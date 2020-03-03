@@ -135,7 +135,7 @@ def enhance_modules(modules, update=False, upgrade=False, modules_to_upgrade=Non
     '''
 
     original_dir = os.getcwd()
-    modules_dir = os.path.join(utils.get_magicmirror_root(), 'modules')
+    modules_dir = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
     os.chdir(modules_dir)
 
     updates_list = []
@@ -256,7 +256,7 @@ def install_modules(modules, modules_to_install):
         None
     '''
 
-    modules_dir = os.path.join(utils.get_magicmirror_root(), 'modules')
+    modules_dir = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
     original_dir = os.getcwd()
 
     if not os.path.exists(modules_dir):
@@ -343,7 +343,7 @@ def install_magicmirror():
 
     original_dir = os.getcwd()
 
-    if not os.path.exists(os.path.join(utils.get_magicmirror_root())):
+    if not os.path.exists(os.path.join(utils.MAGICMIRROR_ROOT)):
         print(colors.B_CYAN + "MagicMirror directory not found. " +
               colors.RESET + "Installing MagicMirror..." +
               colors.RESET)
@@ -404,7 +404,7 @@ def remove_modules(installed_modules, modules_to_remove):
     if not installed_modules:
         utils.error_msg("No modules are currently installed.")
 
-    modules_dir = os.path.join(utils.get_magicmirror_root(), 'modules')
+    modules_dir = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
     original_dir = os.getcwd()
 
     if not os.path.exists(modules_dir):
@@ -656,7 +656,7 @@ def get_installed_modules(modules):
         None
     '''
 
-    modules_dir = os.path.join(utils.get_magicmirror_root(), 'modules')
+    modules_dir = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
     original_dir = os.getcwd()
 
     if not os.path.exists(modules_dir):
@@ -714,11 +714,16 @@ def add_external_module_source(title=None, author=None, repo=None, desc=None):
             with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 json.dump({utils.EXTERNAL_MODULE_SOURCES: [new_source]}, mmpm_ext_srcs)
 
-        print(colors.B_WHITE + f'\nSuccessfully added external module to {utils.MMPM_EXTERNAL_SOURCES_FILE}\n' + colors.RESET)
+        print(colors.B_WHITE + f"\nSuccessfully added {title} to '{utils.EXTERNAL_MODULE_SOURCES}'\n" + colors.RESET)
         return True
     except IOError:
         utils.error_msg('Failed to save external module')
 
 
 def edit_magicmirror_config():
-   utils.open_default_editor(utils.get_magicmirror_config_file_path())
+    utils.open_default_editor(utils.get_file_path(utils.MAGICMIRROR_CONFIG_FILE))
+
+
+def edit_magicmirror_external_sources():
+   utils.open_default_editor(utils.get_file_path(utils.MMPM_EXTERNAL_SOURCES_FILE))
+

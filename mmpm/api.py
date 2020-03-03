@@ -5,8 +5,7 @@ from mmpm import core, utils
 import json
 
 app = Flask(__name__, root_path='/var/www/mmpm', static_folder="/var/www/mmpm/static")
-app.config['CORS_HEADERS'] = 'Content-Type'
-CORS(app, expose_headers='Authorization', support_credentials=True, origins=['*'])
+CORS(app)
 
 
 def __api__(path=''):
@@ -88,7 +87,15 @@ def get_magicmirror_config():
     result = send_file(path, attachment_filename='config.js') if path else ''
     return result
 
-
-@app.route(__api__('/update-magicmirror-config'), methods=['GET', 'OPTIONS'])
+@app.route(__api__('update-magicmirror-config'), methods=['POST', 'OPTIONS'])
 def update_magicmirror_config():
-    return __modules__()
+    data = request.get_json(force=True)
+
+    try:
+        with open(utils.get_magicmirror_config_file_path(), 'w') as f:
+            f.write(data.get('code'))
+
+    except IOError:
+        return json.dumps(False)
+
+    return json.dumps(True)

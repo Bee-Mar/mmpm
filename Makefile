@@ -1,6 +1,6 @@
 .NOTPARALLEL:
 
-all: clean dependencies build install
+all: clean cli gui
 
 clean:
 	@printf -- "-----------------------------------------"
@@ -8,13 +8,13 @@ clean:
 	@printf "\n-----------------------------------------\n"
 	sudo rm -f /usr/local/bin/mmpm
 
+gui: dependencies-gui build-gui install-gui
+
+cli: dependencies-cli build-cli install-cli
+
 dependencies: dependencies-gui
 
 dependencies-cli:
-	@printf -- "------------------------------"
-	@printf "\n| \e[92mGathering CLI dependencies\e[0m |"
-	@printf "\n------------------------------\n"
-	@pip3 install -r requirements.txt --user
 
 dependencies-gui:
 	@printf -- "------------------------------"
@@ -26,7 +26,6 @@ dependencies-gui:
 build: build-cli build-gui
 
 build-cli:
-	# nothing yet for this, but keeping for consistency sake
 
 build-gui:
 	@printf -- "---------------------"

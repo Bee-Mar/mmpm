@@ -28,6 +28,7 @@ import { MagicMirrorConfigEditorComponent } from "./components/magic-mirror-conf
     FormsModule,
     MonacoEditorModule.forRoot({
       baseUrl: "./static/assets",
+      // baseUrl: "./assets",
       defaultOptions: {
         language: "javascript",
         scrollBeyondLastLine: false,

@@ -79,7 +79,7 @@
   [disabled]="!selection.selected.length"
   matTooltip="{{ url === 'all-modules' ? 'Install module(s)' : 'Update module(s)' }}"
   [matTooltipPosition]="tooltipPosition"
-  (click)="onInstallModules()"
+  (click)="url === 'all-modules' ? onInstallModules() : onUpdateModules()"
 >
   <mat-icon>
     {{ url == 'all-modules' ? 'get_app' : 'open_in_browser' }}

@@ -32,19 +32,20 @@ Ideally, this project will become the official package manager of [Magic Mirror]
 As it stands, this project is entirely dependent on the structure of the [MagicMirror 3rd Party Modules](https://github.com/MichMich/MagicMirror/wiki/3rd-Party-Modules) page. The HTML is parsed, and the appropriate text of each module is extracted. If for some reason any of the information is not displayed correctly, it is most likely due to someone changing the structure of the page. Ideally, in the future, a database will be constructed, and things will be handeled in a more formal, predictable way. So, think of this currently as a shim, just to get the project going.
 
 ## Installation
+
 Please see the [MMPM Installation](https://github.com/Bee-Mar/mmpm/wiki/Installation) of the wiki.
 
-## Font Size
+## CLI Font Size
 
 The `tabulate` package is used to format output, and it is expected the user will be ssh'ing into
 their Pi. However, if viewing on the your Pi, reduce your font-size to **at most** 7 so the output is
 displayed more properly. This is not intended to be the long-term solution.
 
-## `magic_mirror_modules_snapshot.json`
+## `~/.config/mmpm/MagicMirror-modules-snapshot.json`
 
-This JSON file will be placed in your home folder as a hidden file. `mmpm` takes snapshots of the [MagicMirror 3rd Party Modules](https://github.com/MichMich/MagicMirror/wiki/3rd-Party-Modules) every six hours, unless you force a refresh manually. This is done to quicken the response time when searching for packages.
+This JSON file contains all the retrieved MagicMirror module data. `mmpm` takes snapshots of the [MagicMirror 3rd Party Modules](https://github.com/MichMich/MagicMirror/wiki/3rd-Party-Modules) every six hours, unless you force a refresh manually. This is done to quicken the response time when searching for packages.
 
-However, this is not a process that runs in the background. If a command is issued, and the snapshot is more than six hours old, a new one is taken. Conceivably, you could issue a search or installation command, wait two weeks until the next one, and the same snapshot would exist on your hard drive until another search or install command is issued.
+However, this is not a process that runs in the background. If a command utilizing the snapshot data is issued, and the snapshot is more than six hours old, a new one is taken.
 
 ## Uninstall MMPM
 

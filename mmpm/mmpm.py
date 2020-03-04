@@ -2,7 +2,7 @@
 import sys
 from mmpm import utils, colors, core, opts
 
-__version__ = 0.50
+__version__ = 0.98
 
 
 def main(argv):

@@ -129,3 +129,9 @@
 - Added ability for user to configure external sources for modules
 - Bug fixes
 - Code cleanup
+
+# Version 0.98
+
+- Major code cleanup
+- Added web interface, and daemons to run on system boot, that will be accessible from any device in
+the users home network which allows user to perform maintenance on their MagicMirror packages

@@ -141,6 +141,8 @@ def enhance_modules(modules, update=False, upgrade=False, modules_to_upgrade=Non
     modules_dir = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
     os.chdir(modules_dir)
 
+    installed_modules = get_installed_modules(modules)
+
     updates_list = []
 
     dirs = os.listdir(modules_dir)
@@ -149,9 +151,10 @@ def enhance_modules(modules, update=False, upgrade=False, modules_to_upgrade=Non
         dirs = modules_to_upgrade
 
     if update:
-        utils.plain_print(colors.B_CYAN + "Checking for updates... " + colors.RESET)
+        print(colors.B_MAGENTA + "Checking for updates to: " + colors.RESET)
 
-    for _, value in modules.items():
+    # TODO: look to simplify or flatten this loop
+    for _, value in installed_modules.items():
         for index, _ in enumerate(value):
             if value[index][utils.TITLE] in dirs:
                 title = value[index][utils.TITLE]
@@ -159,22 +162,38 @@ def enhance_modules(modules, update=False, upgrade=False, modules_to_upgrade=Non
                 os.chdir(curr_module_dir)
 
                 if update:
-                    git_status = subprocess.run(
-                        ["git", "fetch", "--dry-run"],
-                        stdout=subprocess.PIPE)
+                    print(f"{title} ")
+                    return_code, stdout, stderr = utils.run_cmd(["git", "fetch", "--dry-run"])
 
-                    if git_status.stdout:
+                    if return_code:
+                        utils.error_msg(stderr)
+                        return False
+
+                    if stdout:
                         updates_list.append(title)
 
                 elif upgrade:
-                    utils.plain_print(
-                        colors.B_CYAN + f"Requesting upgrade for {title}... " + colors.RESET)
+                    utils.plain_print(colors.B_CYAN + f"Requesting upgrade for {title}... " + colors.RESET)
 
                     os.system("git pull")
 
                     if os.path.isfile(os.path.join(os.getcwd(), "package.json")):
-                        print(colors.B_CYAN + "Found package.json. Installing NodeJS dependencies... " + colors.RESET)
-                        os.system("$(which npm) install")
+                        utils.plain_print(colors.B_CYAN + "Found package.json. Installing NodeJS dependencies... ")
+                        return_code, _, std_err = utils.run_cmd(['npm', 'install'])
+                        utils.handle_warnings(return_code, std_err)
+
+                    if os.path.isfile(os.path.join(os.getcwd(),'Makefile')) or os.path.isfile(os.path.join(os.getcwd(), 'makefile')):
+                        utils.plain_print(colors.B_CYAN + "Found Makefile. Attempting to run 'make'... ")
+                        return_code, _, std_err = utils.run_cmd(['make'])
+                        utils.handle_warnings(return_code, std_err)
+
+                    if os.path.isfile(os.path.join(os.getcwd(), 'CMakeLists.txt')):
+                        utils.plain_print(colors.B_CYAN + "Found CMakeLists.txt. Attempting to run 'cmake'... ")
+                        os.system('mkdir -p build')
+                        os.chdir('build')
+                        return_code, _, std_err = utils.run_cmd(['cmake', '..'])
+                        utils.handle_warnings(return_code, std_err)
+                        os.chdir('..')
 
                 os.chdir(modules_dir)
 
@@ -182,13 +201,13 @@ def enhance_modules(modules, update=False, upgrade=False, modules_to_upgrade=Non
 
     if update:
         if not updates_list:
-            utils.plain_print(colors.B_WHITE + "No updates available.\n" + colors.RESET)
+            utils.plain_print(colors.B_CYAN + "\nNo updates available.\n" + colors.RESET)
         else:
             utils.plain_print(colors.B_MAGENTA + "Updates are available for the following modules:\n" + colors.RESET)
 
             for update in updates_list:
                 print(f"{update}")
-
+    return True
 
 def search_modules(modules, search):
     '''
@@ -329,6 +348,8 @@ def install_modules(modules, modules_to_install):
         utils.plain_print(colors.B_GREEN + "\nTo complete installation, populate " + colors.B_WHITE)
         print(colors.B_WHITE + "'~/MagicMirror/config/config.js'" + colors.B_GREEN + " with the necessary configurations for each of the newly installed modules\n")
         print(colors.RESET + "There may be additional installation steps required. Review the associated GitHub pages for each newly installed module")
+        return True
+    return False
 
 
 def install_magicmirror():
@@ -392,7 +413,7 @@ def install_magicmirror():
     return True
 
 
-def remove_modules(installed_modules, modules_to_remove):
+def remove_modules(modules, modules_to_remove):
     '''
     Gathers list of modules currently installed in the ~/MagicMirror/modules
     directory, and removes each of the modules from the folder, if modules are
@@ -406,6 +427,8 @@ def remove_modules(installed_modules, modules_to_remove):
     Returns:
         bool: True upon success, False upon failure
     '''
+
+    installed_modules = get_installed_modules(modules)
 
     if not installed_modules:
         utils.error_msg("No modules are currently installed.")
@@ -783,6 +806,7 @@ def remove_external_module_source(titles=None):
 
             if not successful_removals:
                 utils.error_msg('No external sources found matching provided query')
+                return False
 
             # if the error_msg was triggered, there's no need to even bother writing back to the file
             with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:

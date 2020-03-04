@@ -19,7 +19,7 @@ export class RestApiService {
 
   constructor(private http: HttpClient) {}
 
-  public mmpmApiRequest(path: string): Observable<any> {
+  public getModules(path: string): Observable<any> {
     return this.http
       .get<any>(this.BASE_API_URL + `${path}`, { headers: httpOptions() })
       .pipe(retry(1), catchError(this.handleError));
@@ -32,10 +32,10 @@ export class RestApiService {
     });
   }
 
-  public installSelectedModules(selectedModules: any): Observable<any> {
+  public modifyModules(url: string, selectedModules: MagicMirrorPackage[]): Observable<any> {
     return this.http
       .post(
-        this.BASE_API_URL + "/install-modules",
+        this.BASE_API_URL + url,
         {
           "selected-modules": selectedModules
         },

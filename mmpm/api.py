@@ -50,22 +50,28 @@ def get_magicmirror_modules():
 @app.route(__api__('install-modules'), methods=[POST, OPTIONS])
 def install_magicmirror_modules():
     selected_modules = request.get_json(force=True)['selected-modules']
+    titles = [selected_module['title'] for selected_module in selected_modules]
     success = False
-
     try:
-        success = core.install_modules(__modules__(), selected_modules)
+        success = core.install_modules(__modules__(), titles)
     except Exception:
         pass
     return json.dumps(True if success else False)
 
 
-@app.route(__api__('uninstall-module'), methods=[POST, OPTIONS])
+@app.route(__api__('uninstall-modules'), methods=[POST, OPTIONS])
 def remove_magicmirror_modules():
-    modules, _, _, _ = core.load_modules()
-    core.remove_modules(modules, request.args.get('modules_to_remove'))
-    return True
+    selected_modules = request.get_json(force=True)['selected-modules']
+    titles = [selected_module['title'] for selected_module in selected_modules]
+    success = False
+    try:
+        success = core.remove_modules(__modules__(), titles)
+    except Exception:
+        pass
+    print(success)
+    return json.dumps(True if success else False)
 
-@app.route(__api__('update-module'), methods=[POST, OPTIONS])
+@app.route(__api__('update-selected-modules'), methods=[POST, OPTIONS])
 def update_magicmirror_modules():
     modules, _, _, _ = core.load_modules()
     core.remove_modules(modules, request.args.get('modules_to_remove'))
@@ -78,6 +84,17 @@ def get_installed_magicmirror_modules():
 
 @app.route(__api__('all-external-module-sources'), methods=[GET, OPTIONS])
 def get_external_modules_sources():
+    ext_sources = {utils.EXTERNAL_MODULE_SOURCES: []}
+    try:
+        with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
+            ext_sources[utils.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[utils.EXTERNAL_MODULE_SOURCES]
+    except IOError:
+        pass
+    return ext_sources
+
+
+@app.route(__api__('update-modules'), methods=[GET, OPTIONS])
+def update_installed_modules():
     ext_sources = {utils.EXTERNAL_MODULE_SOURCES: []}
     try:
         with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:

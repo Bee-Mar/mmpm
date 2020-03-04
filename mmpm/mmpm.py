@@ -39,13 +39,14 @@ def main(argv):
         core.remove_external_module_source(args.remove)
 
     elif args.remove and not args.ext_module_src:
-        core.remove_modules(core.get_installed_modules(modules), args.remove)
+        core.remove_modules(modules, args.remove)
 
     elif args.list_installed:
         installed_modules = core.get_installed_modules(modules)
 
         if not installed_modules:
             utils.error_msg("No modules are currently installed")
+            exit(1)
 
         core.display_modules(installed_modules)
 

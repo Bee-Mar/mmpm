@@ -45,7 +45,7 @@ export class MagicMirrorModulesTableComponent {
   ];
 
   dataSource: MatTableDataSource<MagicMirrorPackage>;
-  selection: SelectionModel<MagicMirrorPackage>;
+  selection = new SelectionModel<MagicMirrorPackage>(true, []);
   tooltipPosition: TooltipPosition[] = ["below"];
 
   public ngOnInit(): void {
@@ -56,7 +56,7 @@ export class MagicMirrorModulesTableComponent {
     this.ALL_PACKAGES = new Array<MagicMirrorPackage>();
     this.paginator.pageSize = 10;
 
-    this.api.mmpmApiRequest(`/${this.url}`).subscribe((packages) => {
+    this.api.getModules(`/${this.url}`).subscribe((packages) => {
       Object.keys(packages).forEach((_category) => {
         if (packages) {
           for (const pkg of packages[_category]) {
@@ -127,9 +127,18 @@ export class MagicMirrorModulesTableComponent {
   public onInstallModules(): void {
     if (this.selection.selected.length) {
       this.api
-        .installSelectedModules(this.selection.selected)
-        .subscribe((result) => {
-          console.log(result);
+        .modifyModules('/install-modules', this.selection.selected)
+        .subscribe((success) => {
+          let message: any;
+
+          if (success) {
+            this.retrieveModules();
+            message = "Successfully installed selected module(s)";
+          } else {
+            message = "Failed to add new source";
+          }
+
+          this.snackbar.open(message, "Close", { duration: 3000 });
         });
     }
   }
@@ -194,13 +203,29 @@ export class MagicMirrorModulesTableComponent {
 
   public onRefreshModules(): void {}
 
-  public onUninstallModules(): void {}
+  public onUninstallModules(): void {
+    if (this.selection.selected.length) {
+      this.api
+        .modifyModules('/uninstall-modules', this.selection.selected)
+        .subscribe((success) => {
+          let message: any;
+
+          if (success) {
+            this.retrieveModules();
+            message = "Successfully deleted module(s)";
+          } else {
+            message = "Failed to remove module(s)";
+          }
+
+          this.snackbar.open(message, "Close", { duration: 3000 });
+        });
+    }
+  }
 
   public onUpdateModules(): void {
     if (this.selection.selected) {
       this.api.updateModules(this.selection.selected).subscribe((success) => {
         let message: any;
-
         if (success) {
           this.retrieveModules();
           message = "Successfully updated module(s)";

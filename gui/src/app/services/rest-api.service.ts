@@ -7,8 +7,6 @@ import { retry, catchError } from "rxjs/operators";
 const httpOptions = (httpHeaders: object = {}) => {
   return new HttpHeaders({
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-    Accept: "application/json",
     ...httpHeaders
   });
 };
@@ -17,7 +15,7 @@ const httpOptions = (httpHeaders: object = {}) => {
   providedIn: "root"
 })
 export class RestApiService {
-  BASE_API_URL = "http://localhost:7891/api";
+  BASE_API_URL = "http://0.0.0.0:7890/api";
 
   constructor(private http: HttpClient) {}
 
@@ -82,9 +80,7 @@ export class RestApiService {
       .pipe(retry(1), catchError(this.handleError));
   }
 
-  public updateModules(
-    selectedModules: MagicMirrorPackage[]
-  ): Observable<any> {
+  public updateModules(selectedModules: MagicMirrorPackage[]): Observable<any> {
     return this.http
       .post<any>(
         this.BASE_API_URL + "/update-modules",
@@ -104,11 +100,11 @@ export class RestApiService {
     externalSources: MagicMirrorPackage[]
   ): Observable<any> {
     return this.http
-      .request("DELETE", this.BASE_API_URL + "/updated-selected-modules", {
+      .request("DELETE", this.BASE_API_URL + "/remove-external-module-source", {
         body: {
           "external-sources": externalSources
         },
-        headers: httpOptions()
+        headers: httpOptions({ "Content-Type": "text/plain" })
       })
       .pipe(retry(1), catchError(this.handleError));
   }

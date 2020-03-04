@@ -60,6 +60,7 @@ install-gui:
 	@cp configs/gunicorn.conf.py ${HOME}/.config/mmpm/configs
 	@cp configs/*conf ${HOME}/.config/mmpm/configs
 	@cp configs/*service ${HOME}/.config/mmpm/configs
+	# bash gen-mmpm-conf.sh
 	@cd configs && \
 		bash gen-mmpm-service.sh && \
 		sudo cp mmpm.service /etc/systemd/system/ && \

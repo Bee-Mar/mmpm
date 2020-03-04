@@ -748,7 +748,7 @@ def add_external_module_source(title=None, author=None, repo=None, desc=None):
             with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 json.dump({utils.EXTERNAL_MODULE_SOURCES: [new_source]}, mmpm_ext_srcs)
 
-        print(colors.B_WHITE + f"\nSuccessfully added '{title}' to '{utils.EXTERNAL_MODULE_SOURCES}'\n" + colors.RESET)
+        print(colors.B_WHITE + f"\nSuccessfully added {title} to '{utils.EXTERNAL_MODULE_SOURCES}'\n" + colors.RESET)
         return True
     except IOError:
         utils.error_msg('Failed to save external module')

@@ -45,7 +45,7 @@ export class MagicMirrorModulesTableComponent {
   ];
 
   dataSource: MatTableDataSource<MagicMirrorPackage>;
-  selection = new SelectionModel<MagicMirrorPackage>(true, []);
+  selection: SelectionModel<MagicMirrorPackage>;
   tooltipPosition: TooltipPosition[] = ["below"];
 
   public ngOnInit(): void {
@@ -71,9 +71,8 @@ export class MagicMirrorModulesTableComponent {
         }
       });
 
-      this.dataSource = new MatTableDataSource<MagicMirrorPackage>(
-        this.ALL_PACKAGES
-      );
+      this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
+      this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.ALL_PACKAGES);
       this.dataSource.paginator = this.paginator;
       this.dataSource.sort = this.sort;
     });
@@ -199,20 +198,18 @@ export class MagicMirrorModulesTableComponent {
 
   public onUpdateModules(): void {
     if (this.selection.selected) {
-      this.api
-        .updateModules(this.selection.selected)
-        .subscribe((success) => {
-          let message: any;
+      this.api.updateModules(this.selection.selected).subscribe((success) => {
+        let message: any;
 
-          if (success) {
-            this.retrieveModules();
-            message = "Successfully updated module(s)";
-          } else {
-            message = "Failed to update selected module(s)";
-          }
+        if (success) {
+          this.retrieveModules();
+          message = "Successfully updated module(s)";
+        } else {
+          message = "Failed to update selected module(s)";
+        }
 
-          this.snackbar.open(message, "Close", { duration: 3000 });
-        });
+        this.snackbar.open(message, "Close", { duration: 3000 });
+      });
     }
   }
 

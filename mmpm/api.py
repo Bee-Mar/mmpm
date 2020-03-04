@@ -105,19 +105,13 @@ def add_external_module_source():
 @app.route(__api__('remove-external-module-source'), methods=[DELETE, OPTIONS])
 def remove_external_module_source():
     external_sources = request.get_json(force=True)['external-sources']
-    print(external_sources)
-    # try:
-    #      success = core.add_external_module_source(
-    #          title=external_source.get('title'),
-    #          author=external_source.get('author'),
-    #          desc=external_source.get('description'),
-    #          repo=external_source.get('repository')
-    #      )
-    return json.dumps(True
-            #if success else False
-            )
-    # except Exception:
-    #     return json.dumps(False)
+    titles = [external_source['title'] for external_source in external_sources]
+
+    try:
+        success = core.remove_external_module_source(titles)
+        return json.dumps(True if success else False)
+    except Exception:
+        return json.dumps(False)
 
 
 @app.route(__api__('refresh-modules'), methods=[GET, OPTIONS])

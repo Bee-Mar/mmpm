@@ -28,4 +28,7 @@ setup(name="mmpm",
           'Flask-Cors >= 3.0.8',
           'gunicorn >= 20.0.4',
           'webssh >= 1.5.1',
+          'flask-socketio >= 4.2.1',
+          'shelljob >= 0.5.6',
+          'greenlet >= 0.4.15',
       ])

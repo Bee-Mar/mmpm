@@ -32,7 +32,10 @@ export class RestApiService {
     });
   }
 
-  public modifyModules(url: string, selectedModules: MagicMirrorPackage[]): Observable<any> {
+  public modifyModules(
+    url: string,
+    selectedModules: MagicMirrorPackage[]
+  ): Observable<any> {
     return this.http
       .post(
         this.BASE_API_URL + url,

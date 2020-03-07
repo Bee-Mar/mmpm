@@ -72,7 +72,9 @@ export class MagicMirrorModulesTableComponent {
       });
 
       this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
-      this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.ALL_PACKAGES);
+      this.dataSource = new MatTableDataSource<MagicMirrorPackage>(
+        this.ALL_PACKAGES
+      );
       this.dataSource.paginator = this.paginator;
       this.dataSource.sort = this.sort;
     });
@@ -127,7 +129,7 @@ export class MagicMirrorModulesTableComponent {
   public onInstallModules(): void {
     if (this.selection.selected.length) {
       this.api
-        .modifyModules('/install-modules', this.selection.selected)
+        .modifyModules("/install-modules", this.selection.selected)
         .subscribe((success) => {
           let message: any;
 
@@ -135,7 +137,7 @@ export class MagicMirrorModulesTableComponent {
             this.retrieveModules();
             message = "Successfully installed selected module(s)";
           } else {
-            message = "Failed to add new source";
+            message = "Failed to install module";
           }
 
           this.snackbar.open(message, "Close", { duration: 3000 });
@@ -206,7 +208,7 @@ export class MagicMirrorModulesTableComponent {
   public onUninstallModules(): void {
     if (this.selection.selected.length) {
       this.api
-        .modifyModules('/uninstall-modules', this.selection.selected)
+        .modifyModules("/uninstall-modules", this.selection.selected)
         .subscribe((success) => {
           let message: any;
 

@@ -31,18 +31,19 @@ def __modules__(force_refresh=False):
     return modules
 
 
-def __capture_process_stdout__(process):
-    while process.is_pending():
-        for proc, line in process.readlines():
+def __capture_process_stdout__(group):
+    while group.is_pending():
+        lines = group.readlines()
+        for proc, line in lines:
             yield str(line.decode('utf-8'))
 
 
-# TODO: This works, but needs to be integrated into the API and frontend
+# TODO: This works, but needs to be integrated into the API
 @app.route('/stream')
 def stream_command_output(cmd):
-    process = proc.Group()
-    process.run(["bash", "-c", cmd])
-    return flask.Response(__capture_process_stdout__(process), mimetype='text/event-stream')
+    group = proc.Group()
+    group.run(["bash", "-c", cmd])
+    return flask.Response(__capture_process_stdout__(group)), mimetype='text/event-stream')
 
 
 @app.route('/<path:path>', methods=[GET, OPTIONS])

@@ -1,18 +1,18 @@
 <ngx-monaco-editor
-       style="height: 92%;"
-       [options]="editorOptions"
-       (onInit)="onEditorInit($event)"
-       [(ngModel)]="code"
-       >
+  style="height: 92%;"
+  [options]="editorOptions"
+  (onInit)="onEditorInit($event)"
+  [(ngModel)]="code"
+>
 </ngx-monaco-editor>
 
 <button
   style="margin-right: 50%; float: right;"
   mat-raised-button
-  color="accent"
+  color="primary"
   matTooltip="Save"
   [matTooltipPosition]="'below'"
   (click)="onSaveMagicMirrorConfig()"
-  >
+>
   <mat-icon>save</mat-icon>
 </button>

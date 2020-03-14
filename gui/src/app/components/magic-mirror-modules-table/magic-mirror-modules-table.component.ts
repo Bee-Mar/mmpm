@@ -6,6 +6,7 @@ import { MatSort } from "@angular/material/sort";
 import { MatPaginator } from "@angular/material/paginator";
 import { TooltipPosition } from "@angular/material/tooltip";
 import { ExternalSourceRegistrationDialogComponent } from "src/app/components/external-source-registration-dialog/external-source-registration-dialog.component";
+import { LiveFeedDialogComponent } from "src/app/components/live-feed-dialog/live-feed-dialog.component";
 import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
@@ -33,7 +34,7 @@ export class MagicMirrorModulesTableComponent {
     private api: RestApiService,
     public dialog: MatDialog,
     private snackbar: MatSnackBar
-  ) {}
+  ) { }
 
   displayedColumns: string[] = [
     select,
@@ -128,20 +129,10 @@ export class MagicMirrorModulesTableComponent {
 
   public onInstallModules(): void {
     if (this.selection.selected.length) {
-      this.api
-        .modifyModules("/install-modules", this.selection.selected)
-        .subscribe((success) => {
-          let message: any;
-
-          if (success) {
-            this.retrieveModules();
-            message = "Successfully installed selected module(s)";
-          } else {
-            message = "Failed to install module";
-          }
-
-          this.snackbar.open(message, "Close", { duration: 3000 });
-        });
+      this.api.modifyModules("/install-modules", this.selection.selected).subscribe((_) => {
+        this.retrieveModules();
+        this.snackbar.open("Process complete", "Close", { duration: 3000 });
+      });
     }
   }
 
@@ -186,8 +177,7 @@ export class MagicMirrorModulesTableComponent {
 
   public onRemoveExternalSource(): void {
     if (this.selection.selected.length) {
-      this.api
-        .removeExternalModuleSource(this.selection.selected)
+      this.api.removeExternalModuleSource(this.selection.selected)
         .subscribe((success) => {
           let message: any;
 
@@ -203,12 +193,11 @@ export class MagicMirrorModulesTableComponent {
     }
   }
 
-  public onRefreshModules(): void {}
+  public onRefreshModules(): void { }
 
   public onUninstallModules(): void {
     if (this.selection.selected.length) {
-      this.api
-        .modifyModules("/uninstall-modules", this.selection.selected)
+      this.api.modifyModules("/uninstall-modules", this.selection.selected)
         .subscribe((success) => {
           let message: any;
 
@@ -228,6 +217,7 @@ export class MagicMirrorModulesTableComponent {
     if (this.selection.selected) {
       this.api.updateModules(this.selection.selected).subscribe((success) => {
         let message: any;
+
         if (success) {
           this.retrieveModules();
           message = "Successfully updated module(s)";
@@ -247,6 +237,6 @@ export class MagicMirrorModulesTableComponent {
 
     return `${
       this.selection.isSelected(row) ? "deselect" : "select"
-    } row ${row.category + 1}`;
+      } row ${row.category + 1}`;
   }
 }

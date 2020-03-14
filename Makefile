@@ -82,7 +82,7 @@ install-gui:
 	@[ ! $? ] && printf "\nThe MMPM GUI is being served the IP address of your default interface at port 7890"
 	@[ ! $? ] && printf "\nBest guess: http://$$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):7890\n\n"
 
-reinstall: reinstall-cli reinstall-gui
+reinstall: uninstall cli gui
 
 reinstall-cli: uninstall-cli build-cli install-cli
 

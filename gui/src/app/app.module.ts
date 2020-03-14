@@ -10,13 +10,15 @@ import { ExternalSourceRegistrationDialogComponent } from "./components/external
 import { ReactiveFormsModule, FormsModule } from "@angular/forms";
 import { MonacoEditorModule } from "ngx-monaco-editor";
 import { MagicMirrorConfigEditorComponent } from "./components/magic-mirror-config-editor/magic-mirror-config-editor.component";
+import { LiveFeedDialogComponent } from './components/live-feed-dialog/live-feed-dialog.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MagicMirrorModulesTableComponent,
     ExternalSourceRegistrationDialogComponent,
-    MagicMirrorConfigEditorComponent
+    MagicMirrorConfigEditorComponent,
+    LiveFeedDialogComponent
   ],
   imports: [
     BrowserModule,

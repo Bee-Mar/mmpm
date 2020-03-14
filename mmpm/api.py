@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import json
 from flask_cors import CORS
-from flask import Flask, request, send_file, render_template, send_from_directory
+from flask import Flask, request, send_file, render_template, send_from_directory, Response
 from mmpm import core, utils
 from shelljob import proc
+from flask_socketio import send, emit
 
 import eventlet
 eventlet.monkey_patch()
@@ -22,7 +23,7 @@ def __api__(path=''):
     return f'/api/{path}'
 
 
-def __json__(val):
+def __to_json__(val: object):
     return json.dumps(val)
 
 
@@ -31,18 +32,18 @@ def __modules__(force_refresh=False):
     return modules
 
 
-def __capture_process_stdout__(process):
-    while process.is_pending():
-        for proc, line in process.readlines():
-            yield str(line.decode('utf-8'))
+def __stream_cmd_output__(process: proc.Group, namespace: str) -> bool:
+    try:
+        while process.is_pending():
+            for proc, line in process.readlines():
+                send(str(line.decode('utf-8')), namespace)
+    except Exception:
+        return __to_json__(False)
+    return __to_json__(True)
 
 
-# TODO: This works, but needs to be integrated into the API and frontend
-@app.route('/stream')
-def stream_command_output(cmd):
-    process = proc.Group()
-    process.run(["bash", "-c", cmd])
-    return flask.Response(__capture_process_stdout__(process), mimetype='text/event-stream')
+def __run__(process: proc.Group, cmd: list):
+    process.run(['mmpm'] + cmd)
 
 
 @app.route('/<path:path>', methods=[GET, OPTIONS])
@@ -68,27 +69,17 @@ def get_magicmirror_modules():
 @app.route(__api__('install-modules'), methods=[POST, OPTIONS])
 def install_magicmirror_modules():
     selected_modules = request.get_json(force=True)['selected-modules']
-    titles = [selected_module['title'] for selected_module in selected_modules]
-    success = False
-    try:
-
-        success = core.install_modules(__modules__(), titles)
-    except Exception:
-        pass
-    return json.dumps(True if success else False)
+    process = proc.Group()
+    __run__(process, ['-i'] + [selected_module['title'] for selected_module in selected_modules])
+    return __stream_cmd_output__(process, '/install-modules-stream')
 
 
 @app.route(__api__('uninstall-modules'), methods=[POST, OPTIONS])
 def remove_magicmirror_modules():
     selected_modules = request.get_json(force=True)['selected-modules']
-    titles = [selected_module['title'] for selected_module in selected_modules]
-    success = False
-    try:
-        success = core.remove_modules(__modules__(), titles)
-    except Exception:
-        pass
-    print(success)
-    return json.dumps(True if success else False)
+    process = proc.Group()
+    __run__(process, ['-r'] + [selected_module['title'] for selected_module in selected_modules])
+    return __stream_cmd_output__(process, '/uninstall-modules-stream')
 
 
 @app.route(__api__('update-selected-modules'), methods=[POST, OPTIONS])
@@ -104,7 +95,7 @@ def get_installed_magicmirror_modules():
 
 
 @app.route(__api__('all-external-module-sources'), methods=[GET, OPTIONS])
-def get_external_modules_sources():
+def get_external__modules__sources():
     ext_sources = {utils.EXTERNAL_MODULE_SOURCES: []}
     try:
         with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
@@ -149,7 +140,7 @@ def remove_external_module_source():
 
     try:
         success = core.remove_external_module_source(titles)
-        return json.dumps(True if success else False)
+        return json.dumps(True if not return_code else False)
     except Exception:
         return json.dumps(False)
 

@@ -1,14 +1,7 @@
 import { Component, OnInit, Inject } from "@angular/core";
-import { RestApiService } from "src/app/services/rest-api.service";
 import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
-import { MagicMirrorModulesTableComponent } from "src/app/components/magic-mirror-modules-table/magic-mirror-modules-table.component";
-import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  Validators
-} from "@angular/forms";
+import { FormControl, Validators } from "@angular/forms";
 
 @Component({
   selector: "app-external-source-registration-dialog",

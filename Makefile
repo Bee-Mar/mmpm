@@ -65,6 +65,7 @@ install-gui:
 		bash gen-mmpm-service.sh && \
 		sudo cp mmpm.service /etc/systemd/system/ && \
 		sudo cp mmpm-webssh.service /etc/systemd/system/
+	@sudo touch /var/log/mmpm-error.log /var/log/mmpm-access.log
 	@sudo systemctl enable mmpm
 	@sudo systemctl start mmpm
 	@sudo systemctl enable mmpm-webssh
@@ -100,16 +101,16 @@ uninstall-gui:
 	@printf -- "----------------------"
 	@printf "\n| \e[92mRemoving MMPM GUI \e[0m |"
 	@printf "\n----------------------\n"
-	rm -f $$HOME/.config/mmpm/configs/gunicorn.conf.py
-	sudo systemctl stop mmpm.service
-	sudo systemctl disable mmpm.service
-	sudo systemctl stop mmpm-webssh.service
-	sudo systemctl disable mmpm-webssh.service
-	sudo rm -f /etc/systemd/system/mmpm*
-	sudo systemctl daemon-reload
-	sudo systemctl reset-failed
-	sudo rm -rf /var/www/mmpm
-	sudo rm -f /etc/nginx/sites-available/mmpm.conf
-	sudo rm -f /etc/nginx/sites-enabled/mmpm.conf
-	sudo systemctl restart nginx
+	-rm -f $$HOME/.config/mmpm/configs/gunicorn.conf.py
+	-sudo systemctl stop mmpm.service
+	-sudo systemctl disable mmpm.service
+	-sudo systemctl stop mmpm-webssh.service
+	-sudo systemctl disable mmpm-webssh.service
+	-sudo rm -f /etc/systemd/system/mmpm* /var/log/mmpm*.log
+	-sudo systemctl daemon-reload
+	-sudo systemctl reset-failed
+	-sudo rm -rf /var/www/mmpm
+	-sudo rm -f /etc/nginx/sites-available/mmpm.conf
+	-sudo rm -f /etc/nginx/sites-enabled/mmpm.conf
+	-sudo systemctl restart nginx
 	@[ ! $? ] && printf "\n\033[1;36mSuccessfully Removed MMPM \e[0m\n"

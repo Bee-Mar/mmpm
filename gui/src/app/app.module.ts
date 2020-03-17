@@ -10,7 +10,9 @@ import { ExternalSourceRegistrationDialogComponent } from "./components/external
 import { ReactiveFormsModule, FormsModule } from "@angular/forms";
 import { MonacoEditorModule } from "ngx-monaco-editor";
 import { MagicMirrorConfigEditorComponent } from "./components/magic-mirror-config-editor/magic-mirror-config-editor.component";
-import { LiveFeedDialogComponent } from './components/live-feed-dialog/live-feed-dialog.component';
+import { LiveTerminalFeedDialogComponent } from "src/app/components/live-terminal-feed-dialog/live-terminal-feed-dialog.component";
+import { LiveTerminalFeedService } from "src/app/services/live-terminal-feed.service";
+import { RestApiService } from "src/app/services/rest-api.service";
 
 @NgModule({
   declarations: [
@@ -18,7 +20,7 @@ import { LiveFeedDialogComponent } from './components/live-feed-dialog/live-feed
     MagicMirrorModulesTableComponent,
     ExternalSourceRegistrationDialogComponent,
     MagicMirrorConfigEditorComponent,
-    LiveFeedDialogComponent
+    LiveTerminalFeedDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -30,7 +32,6 @@ import { LiveFeedDialogComponent } from './components/live-feed-dialog/live-feed
     FormsModule,
     MonacoEditorModule.forRoot({
       baseUrl: "./static/assets",
-      // baseUrl: "./assets",
       defaultOptions: {
         language: "javascript",
         scrollBeyondLastLine: false,
@@ -50,7 +51,7 @@ import { LiveFeedDialogComponent } from './components/live-feed-dialog/live-feed
       }
     })
   ],
-  providers: [],
+  providers: [LiveTerminalFeedService, RestApiService],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

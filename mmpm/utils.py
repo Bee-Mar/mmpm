@@ -5,6 +5,8 @@ import shutil
 import subprocess
 from mmpm import colors, utils
 from os.path import join
+import logging
+import logging.handlers
 
 # String constants
 MMPM_ENV_VAR = 'MMPM_MAGICMIRROR_ROOT'
@@ -25,6 +27,29 @@ MMPM_CONFIG_DIR = join(utils.HOME_DIR, '.config', 'mmpm')
 SNAPSHOT_FILE = join(MMPM_CONFIG_DIR, 'MagicMirror-modules-snapshot.json')
 MMPM_EXTERNAL_SOURCES_FILE = join(MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
 EXTERNAL_MODULE_SOURCES = 'External Module Sources'
+
+
+class MMPMLogger():
+    def __init__(self):
+        self.log_file = os.path.join(utils.MMPM_CONFIG_DIR, 'mmpm.log')
+        logging.basicConfig(filename=self.log_file)
+        logger = logging.getLogger()
+        logger.setLevel(logging.INFO)
+
+        self.handler = logging.handlers.RotatingFileHandler(
+            self.log_file,
+            mode='a',
+            maxBytes=1024*1024,
+            backupCount=2,
+            encoding=None,
+            delay=0
+        )
+
+        logger.addHandler(self.handler)
+        self.logger = logger
+
+
+log = MMPMLogger()
 
 
 def plain_print(msg):
@@ -107,14 +132,11 @@ def get_file_path(path):
 
 def open_default_editor(file_path):
     if not file_path:
-        error_msg(f'MagicMirror config file not found. If this is incorrect, please ensure {MMPM_ENV_VAR} is set properly.')
+        error_msg(f'MagicMirror config file not found. Please ensure {MMPM_ENV_VAR} is set properly.')
+        sys.exit(1)
 
     editor = os.getenv('EDITOR') if os.getenv('EDITOR') else 'nano'
-
     return_code, _, _ = run_cmd(['which', editor])
 
-    if return_code:
-        error_msg('Unable to determine editor to open config file with. Please set the $EDITOR env variable')
-
-    os.system(f'{editor} {file_path}')
-
+    # fall back to the 'edit' command if you don't even have nano...which idk why you wouldn't, but whatever
+    os.system(f'{editor} {file_path}') if not return_code else os.system(f'edit {file_path}')

@@ -31,7 +31,7 @@ EXTERNAL_MODULE_SOURCES = 'External Module Sources'
 
 class MMPMLogger():
     def __init__(self):
-        self.log_file = os.path.join(utils.MMPM_CONFIG_DIR, 'mmpm.log')
+        self.log_file = os.path.join(utils.MMPM_CONFIG_DIR, 'log', 'mmpm-cli-interface.log')
         logging.basicConfig(filename=self.log_file)
         logger = logging.getLogger()
         logger.setLevel(logging.INFO)

@@ -7,11 +7,9 @@ _ROOT = os.path.abspath(os.path.join(site.getusersitepackages(), 'mmpm'))
 _VAR = os.path.join(_ROOT, 'var')
 _ETC = os.path.join(_ROOT, 'etc')
 
-loglevel = 'debug'
-accesslog = '-'
-errorlog = '-'
-# accesslog = '/tmp/mmpm-access.log'
-# errorlog = '/tmp/mmpm-error.log'
+loglevel = 'info'
+accesslog = os.path.join(os.getenv('HOME'),'.config/mmpm/log/mmpm-gunicorn-access.log')
+errorlog = os.path.join(os.getenv('HOME'), '.config/mmpm/log/mmpm-gunicorn-error.log')
 bind = '127.0.0.1:7891'
 workers = multiprocessing.cpu_count()
 

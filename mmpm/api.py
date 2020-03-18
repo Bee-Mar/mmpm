@@ -7,7 +7,9 @@ from mmpm.utils import log
 from shelljob import proc
 from flask_socketio import send, emit, SocketIO
 import os
+import eventlet
 
+MMPM_EXECUTABLE = [os.path.join(os.path.expanduser('~'), '.local', 'bin', 'mmpm')]
 
 app = Flask(
     __name__,
@@ -18,20 +20,14 @@ app = Flask(
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 resources = {
-    r'/*': {
-        'origins': '*'
-    },
-    r'/api/*': {
-        'origins': '*'
-    },
-    r'/socket.io/*': {
-        'origins': '*'
-    },
+    r'/*': {'origins': '*'},
+    r'/api/*': {'origins': '*'},
+    r'/socket.io/*': {'origins': '*'},
 }
 
 
 CORS(app, send_wildcard=True)
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins='*')
 
 GET = 'GET'
 POST = 'POST'
@@ -45,19 +41,18 @@ def __api__(path=''):
     return f'/api/{path}'
 
 
-def __to_json__(val: object):
-    ''' Wrapper around json.dumps '''
-    return json.dumps(val)
-
-
 def __modules__(force_refresh=False):
     ''' Returns dictionary of MagicMirror modules '''
     modules, _, _, _ = core.load_modules(force_refresh=force_refresh)
     return modules
 
 
+def __io_callback__():
+    log.logger.info('SocketIO ack')
+
+
 def __stream_cmd_output__(process: proc.Group, cmd: list):
-    command = ['mmpm'] + cmd
+    command = MMPM_EXECUTABLE + cmd
     log.logger.info(f"Executing {command}")
     process.run(command)
 
@@ -65,8 +60,7 @@ def __stream_cmd_output__(process: proc.Group, cmd: list):
         while process.is_pending():
             for proc, line in process.readlines():
                 output = str(line.decode('utf-8'))
-                send(output, OUTPUT_STREAM)
-                yield output
+                emit(output, OUTPUT_STREAM, json=True)
         log.logger.info(f'Process complete: {command}')
     except Exception:
         pass
@@ -136,7 +130,7 @@ def install_magicmirror_modules():
     )
 
     log.logger.info('Finished installing')
-    return __to_json__(True)
+    return json.dumps(True)
 
 
 @app.route(__api__('uninstall-modules'), methods=[POST])

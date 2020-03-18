@@ -7,7 +7,7 @@ VERSION = __version__
 
 setup(name="mmpm",
       version=VERSION,
-      description="The MagicMirror Package Manager (mmpm)",
+      description="The MagicMirror Package Manager (MMPM)",
       url="https://github.com/Bee-Mar/mmpm",
       author="Brandon Marlowe",
       author_email="bpmarlowe-software@protonmail.com",
@@ -30,5 +30,5 @@ setup(name="mmpm",
           'webssh >= 1.5.1',
           'flask-socketio >= 4.2.1',
           'shelljob >= 0.5.6',
-          'greenlet >= 0.4.15',
+          'eventlet >= 0.25.1',
       ])

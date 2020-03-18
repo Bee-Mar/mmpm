@@ -46,7 +46,7 @@ install-cli:
 	@printf -- "------------------------"
 	@printf "\n| \e[92mInstalling MMPM CLI \e[0m |"
 	@printf "\n------------------------\n"
-	@mkdir -p ~/.config/mmpm/configs
+	@mkdir -p ${HOME}/.config/mmpm/log ${HOME}/.config/mmpm/configs
 	@pip3 install --user .
 	@printf -- "-------------------------------------------------------"
 	@printf "\n| \e[92mNOTE: Ensure \"${HOME}/.local/bin\" is in your PATH\e[0m |"
@@ -56,7 +56,7 @@ install-gui:
 	@printf -- "------------------------"
 	@printf "\n| \e[92mInstalling MMPM GUI \e[0m |"
 	@printf "\n------------------------\n"
-	@mkdir -p ${HOME}/.config/mmpm/configs
+	@mkdir -p ${HOME}/.config/mmpm/log ${HOME}/.config/mmpm/configs
 	@cp configs/gunicorn.conf.py ${HOME}/.config/mmpm/configs
 	@cp configs/*conf ${HOME}/.config/mmpm/configs
 	@cp configs/*service ${HOME}/.config/mmpm/configs
@@ -65,7 +65,7 @@ install-gui:
 		bash gen-mmpm-service.sh && \
 		sudo cp mmpm.service /etc/systemd/system/ && \
 		sudo cp mmpm-webssh.service /etc/systemd/system/
-	@sudo touch /var/log/mmpm-error.log /var/log/mmpm-access.log
+	@touch ${HOME}/.config/mmpm/log/mmpm-gunicorn-error.log ${HOME}/.config/mmpm/log/mmpm-gunicorn-access.log
 	@sudo systemctl enable mmpm
 	@sudo systemctl start mmpm
 	@sudo systemctl enable mmpm-webssh

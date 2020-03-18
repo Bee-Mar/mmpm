@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { MatDialogRef } from "@angular/material/dialog";
 import { LiveTerminalFeedService } from "src/app/services/live-terminal-feed.service";
-import { Observable, Subject } from "rxjs";
+import * as io from "socket.io-client";
 
 @Component({
   selector: "app-live-terminal-feed-dialog",
@@ -9,8 +9,10 @@ import { Observable, Subject } from "rxjs";
   styleUrls: ["./live-terminal-feed-dialog.component.scss"]
 })
 export class LiveTerminalFeedDialogComponent implements OnInit {
-  //outputStream: Subject<any>;
   outputStream: string;
+  OUTPUT_STREAM: string = '/live-terminal-output-stream';
+
+  socket: any;
 
   constructor(
     private dialogRef: MatDialogRef<LiveTerminalFeedDialogComponent>,
@@ -18,13 +20,21 @@ export class LiveTerminalFeedDialogComponent implements OnInit {
   ) {
     this.outputStream = "hello";
 
-    // this.outputStream = <Subject<any>>terminalFeed.connect().map(
-    //   (response: any): any => {
-    //     return response;
-    //   })
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    console.log('Calling connect');
+    //const socket = io.connect(`ws://0.0.0.0:7890/socket.io/${this.OUTPUT_STREAM}`);
+    //console.log(`Connected: ${socket.connected}`);
 
-  onNoClick() {}
+    // socket.on('connect', (socket: any) => {
+    //   socket.on(this.OUTPUT_STREAM, (data: any) => {
+    //     console.log(data);
+    //   })
+    // });
+  }
+
+  onNoClick() {
+    this.socket.close()
+  }
 }

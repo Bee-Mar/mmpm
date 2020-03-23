@@ -1,18 +1,21 @@
 import { Injectable } from "@angular/core";
-import io from 'socket.io-client';
+import io from "socket.io-client";
+import { Observable } from "rxjs";
 
 @Injectable({
   providedIn: "root"
 })
 export class LiveTerminalFeedService {
-  socket = io('http://localhost');
-  constructor() {}
+  socket: any;
+  observable: Observable<object>;
 
-  ngOnInit() {
-    this.socket.on('connect', (message: any) => {console.log(message)});
+  constructor() {
   }
 
-  public getOutput() {
-    // return this.socket.fromEvent<any>("message").map((data) => data.msg);
+  public getSocket() {
+    return io("http://127.0.0.1:7891", {
+      reconnection: true,
+      transports: ["websocket", "polling"]
+    });
   }
 }

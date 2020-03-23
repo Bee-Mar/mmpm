@@ -61,8 +61,14 @@
 
     <ng-container matColumnDef="description">
       <th mat-header-cell *matHeaderCellDef>Description</th>
-      <td style="max-width: 275px;" mat-cell *matCellDef="let package">
-        {{package.description}}
+      <td
+        style="max-width: 275px;"
+        mat-cell
+        *matCellDef="let package"
+        [matTooltip]="package.description.length > maxDescriptionLength ? package.description : ''"
+      >
+        {{ (package.description.length > maxDescriptionLength) ?  package.description.slice(0, maxDescriptionLength - 3) + '...' : package.description }}
+
       </td>
     </ng-container>
 
@@ -136,5 +142,4 @@
       delete
     </mat-icon>
   </button>
-
 </div>

@@ -10,3 +10,12 @@ a {
 a:visited {
   color: #cf8313;
 }
+
+table tr.mat-row {
+  height: 50px;
+  overflow: hidden;
+}
+
+table {
+  text-align: left;
+}

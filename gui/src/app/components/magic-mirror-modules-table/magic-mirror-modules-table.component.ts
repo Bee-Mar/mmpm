@@ -18,6 +18,13 @@ const repository = "repository";
 const author = "author";
 const description = "description";
 
+const liveTerminalFeedDialogSettings = {
+  width: "75vw",
+  height: "75vh"
+};
+
+const snackbarSettings = { duration: 3000 };
+
 @Component({
   selector: "app-magic-mirror-modules-table",
   styleUrls: ["./magic-mirror-modules-table.component.scss"],
@@ -28,13 +35,15 @@ export class MagicMirrorModulesTableComponent {
   @ViewChild(MatSort) sort: MatSort;
   @Input() url: string;
 
-  ALL_PACKAGES: Array<MagicMirrorPackage>;
-
   constructor(
     private api: RestApiService,
     public dialog: MatDialog,
     private snackbar: MatSnackBar
-  ) { }
+  ) {}
+
+  ALL_PACKAGES: Array<MagicMirrorPackage>;
+
+  maxDescriptionLength: number = 140;
 
   displayedColumns: string[] = [
     select,
@@ -57,8 +66,10 @@ export class MagicMirrorModulesTableComponent {
     this.ALL_PACKAGES = new Array<MagicMirrorPackage>();
     this.paginator.pageSize = 10;
 
-    this.api.getModules(`/${this.url}`).subscribe((packages) => {
-      Object.keys(packages).forEach((_category) => {
+    const maxDescriptionLength = 140;
+
+    this.api.getModules(`/${this.url}`).subscribe(packages => {
+      Object.keys(packages).forEach(_category => {
         if (packages) {
           for (const pkg of packages[_category]) {
             this.ALL_PACKAGES.push({
@@ -122,19 +133,24 @@ export class MagicMirrorModulesTableComponent {
   }
 
   public toggleSelectAll(): void {
-    this.isAllSelected() ? this.selection.clear() : this.dataSource?.data.forEach((row) => this.selection.select(row));
+    this.isAllSelected()
+      ? this.selection.clear()
+      : this.dataSource?.data.forEach(row => this.selection.select(row));
   }
 
   public onInstallModules(): void {
     if (this.selection.selected.length) {
-      this.api.modifyModules("/install-modules", this.selection.selected).subscribe((_) => {
-        const dialogRef = this.dialog.open(LiveTerminalFeedDialogComponent, { width: "50vw", height: "50vh"});
+      const dialogRef = this.dialog.open(LiveTerminalFeedDialogComponent, liveTerminalFeedDialogSettings);
 
-        dialogRef.afterClosed().subscribe((_) => {
-          this.retrieveModules();
-          this.snackbar.open("Process complete", "Close", { duration: 3000 });
-        })
-      });
+      this.api
+        .modifyModules("/install-modules", this.selection.selected)
+        .subscribe(_ => {
+          dialogRef.afterClosed().subscribe(_ => {
+            this.retrieveModules();
+            this.snackbar.open("Process complete", "Close", snackbarSettings);
+            console.clear();
+          });
+        });
     }
   }
 
@@ -159,9 +175,9 @@ export class MagicMirrorModulesTableComponent {
       }
     );
 
-    dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.api.addExternalModuleSource(result).subscribe((success) => {
+        this.api.addExternalModuleSource(result).subscribe(success => {
           let message: any;
 
           if (success) {
@@ -171,7 +187,7 @@ export class MagicMirrorModulesTableComponent {
             message = "Failed to add new source";
           }
 
-          this.snackbar.open(message, "Close", { duration: 3000 });
+          this.snackbar.open(message, "Close", snackbarSettings);
         });
       }
     });
@@ -179,45 +195,44 @@ export class MagicMirrorModulesTableComponent {
 
   public onRemoveExternalSource(): void {
     if (this.selection.selected.length) {
-      this.api.removeExternalModuleSource(this.selection.selected).subscribe((success) => {
-        let message: any;
-
-        if (success) {
-          this.retrieveModules();
-          message = "Successfully deleted external source(s)";
-        } else {
-          message = "Failed to remove external source(s)";
-        }
-
-        this.snackbar.open(message, "Close", { duration: 3000 });
-      });
-    }
-  }
-
-  public onRefreshModules(): void { }
-
-  public onUninstallModules(): void {
-    if (this.selection.selected.length) {
       this.api
-        .modifyModules("/uninstall-modules", this.selection.selected)
-        .subscribe((success) => {
+        .removeExternalModuleSource(this.selection.selected)
+        .subscribe(success => {
           let message: any;
 
           if (success) {
             this.retrieveModules();
-            message = "Successfully deleted module(s)";
+            message = "Successfully deleted external source(s)";
           } else {
-            message = "Failed to remove module(s)";
+            message = "Failed to remove external source(s)";
           }
 
-          this.snackbar.open(message, "Close", { duration: 3000 });
+          this.snackbar.open(message, "Close", snackbarSettings);
+        });
+    }
+  }
+
+  public onRefreshModules(): void {}
+
+  public onUninstallModules(): void {
+    if (this.selection.selected.length) {
+      const dialogRef = this.dialog.open(LiveTerminalFeedDialogComponent, liveTerminalFeedDialogSettings);
+
+      this.api
+        .modifyModules("/uninstall-modules", this.selection.selected)
+        .subscribe(_ => {
+          dialogRef.afterClosed().subscribe((_) => {
+            this.retrieveModules();
+            this.snackbar.open("Process complete", "Close", snackbarSettings);
+            console.clear();
+          });
         });
     }
   }
 
   public onUpdateModules(): void {
     if (this.selection.selected) {
-      this.api.updateModules(this.selection.selected).subscribe((success) => {
+      this.api.updateModules(this.selection.selected).subscribe(success => {
         let message: any;
 
         if (success) {
@@ -227,7 +242,7 @@ export class MagicMirrorModulesTableComponent {
           message = "Failed to update selected module(s)";
         }
 
-        this.snackbar.open(message, "Close", { duration: 3000 });
+        this.snackbar.open(message, "Close", snackbarSettings);
       });
     }
   }
@@ -239,6 +254,6 @@ export class MagicMirrorModulesTableComponent {
 
     return `${
       this.selection.isSelected(row) ? "deselect" : "select"
-      } row ${row.category + 1}`;
+    } row ${row.category + 1}`;
   }
 }

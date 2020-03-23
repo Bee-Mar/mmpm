@@ -20,6 +20,7 @@ dependencies-cli:
 	@printf "\n------------------------------\n"
 	@sudo apt install python3-pip
 	@pip3 install --user setuptools wheel
+	@pip3 install --user -r requirements.txt
 
 dependencies-gui:
 	@printf -- "------------------------------"

@@ -5,7 +5,7 @@ from flask import Flask, request, send_file, render_template, send_from_director
 from mmpm import core, utils
 from mmpm.utils import log
 from shelljob import proc
-from flask_socketio import send, emit, SocketIO
+from flask_socketio import SocketIO, send, emit
 import os
 import eventlet
 
@@ -47,9 +47,8 @@ def __modules__(force_refresh=False):
     return modules
 
 
-def __io_callback__():
-    log.logger.info('SocketIO ack')
-
+def __callback__():
+    log.logger.info('Acked')
 
 def __stream_cmd_output__(process: proc.Group, cmd: list):
     command = MMPM_EXECUTABLE + cmd
@@ -58,9 +57,9 @@ def __stream_cmd_output__(process: proc.Group, cmd: list):
 
     try:
         while process.is_pending():
+            log.logger.info('Process pending')
             for proc, line in process.readlines():
-                output = str(line.decode('utf-8'))
-                emit(output, OUTPUT_STREAM, json=True)
+                socketio.emit('installation', {'data': str(line.decode('utf-8'))})
         log.logger.info(f'Process complete: {command}')
     except Exception:
         pass
@@ -73,18 +72,18 @@ def error_handler(error):
     return message, 500
 
 
-@socketio.on('connect', namespace=OUTPUT_STREAM)
+@socketio.on('connect')
 def test_connection():
-    message = 'Client connected'
+    message = 'Server connected'
     log.logger.info(message)
-    emit(message, {'data': 'Connected'})
+    socketio.emit('connected', {'data': message})
 
 
-@socketio.on('disconnect', namespace=OUTPUT_STREAM)
+@socketio.on('disconnect')
 def test_connection():
-    message = 'Client disconnected'
+    message = 'Server disconnected'
     log.logger.info(message)
-    emit(message, {'data': 'Disconnected'})
+    socketio.emit(message, {'data': message})
 
 @app.after_request
 def after_request(response):

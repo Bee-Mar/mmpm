@@ -336,6 +336,7 @@ def install_modules(modules, modules_to_install):
 
                     os.chdir('..')
 
+                print('\n')
                 os.chdir(curr_subdir)
 
     os.chdir(original_dir)

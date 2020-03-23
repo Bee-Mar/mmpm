@@ -33,17 +33,15 @@ GET = 'GET'
 POST = 'POST'
 DELETE = 'DELETE'
 
-OUTPUT_STREAM = '/live-terminal-output-stream'
-
 
 def __api__(path=''):
     ''' Returns formatted string containing /api base path'''
     return f'/api/{path}'
 
 
-def __modules__(force_refresh=False):
+def __modules__():
     ''' Returns dictionary of MagicMirror modules '''
-    modules, _, _, _ = core.load_modules(force_refresh=force_refresh)
+    modules, _, _, _ = core.load_modules()
     return modules
 
 
@@ -59,7 +57,7 @@ def __stream_cmd_output__(process: proc.Group, cmd: list):
         while process.is_pending():
             log.logger.info('Process pending')
             for proc, line in process.readlines():
-                socketio.emit('installation', {'data': str(line.decode('utf-8'))})
+                socketio.emit('live-terminal-stream', {'data': str(line.decode('utf-8'))})
         log.logger.info(f'Process complete: {command}')
     except Exception:
         pass
@@ -195,23 +193,25 @@ def add_external_module_source():
 
 @app.route(__api__('remove-external-module-source'), methods=[DELETE])
 def remove_external_module_source():
-    external_sources = request.get_json(force=True)['external-sources']
-    titles = [external_source['title'] for external_source in external_sources]
-    log.logger.info(f'Request to remove external sources: {titles}')
+    selected_sources = request.get_json(force=True)['external-sources']
+    log.logger.info(f'Request to remove external sources')
 
-    try:
-        success = core.remove_external_module_source(titles)
-        log.logger.info(f'Successfully removed external sources: {titles}')
-        return json.dumps(True if not return_code else False)
-    except Exception:
-        log.logger.critical(f'Failed to remove external sources: {titles}')
-        return json.dumps(False)
+    process = proc.Group()
+    response = Response(
+        __stream_cmd_output__(process, ['-r'] + [external_source['title'] for external_source in selected_sources] + ['--ext-module-src']),
+        mimetype='text/plain'
+    )
+
+    return json.dumps(True)
 
 
 @app.route(__api__('refresh-modules'), methods=[GET])
 def force_refresh_magicmirror_modules():
-    log.logger.info('Forcibly refreshing modules')
-    return __modules__(force_refresh=True)
+    log.logger.info(f'Recieved request to refresh modules')
+    process = proc.Group()
+    response = Response(__stream_cmd_output__(process, ['-f']), mimetype='text/plain')
+    log.logger.info('Finished refresh')
+    return json.dumps(True)
 
 
 @app.route(__api__('get-magicmirror-config'), methods=[GET])

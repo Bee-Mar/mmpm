@@ -21,7 +21,7 @@ export class LiveTerminalFeedDialogComponent implements OnInit {
   ngOnInit(): void {
     this.socket = this.terminalFeed.getSocket();
 
-    this.socket.on("installation", (stream: any) => {
+    this.socket.on("live-terminal-stream", (stream: any) => {
       this.outputStream += stream.data;
     });
   }

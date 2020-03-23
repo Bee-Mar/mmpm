@@ -20,7 +20,17 @@ export class RestApiService {
   constructor(private http: HttpClient) {}
 
   public getModules(path: string): Observable<any> {
-    return this.http.get<any>(this.BASE_API_URL + `${path}`, { headers: httpOptions() }).pipe(retry(1), catchError(this.handleError));
+    return this.http
+      .get<any>(this.BASE_API_URL + `${path}`, { headers: httpOptions() })
+      .pipe(retry(1), catchError(this.handleError));
+  }
+
+  public refreshModules(): Observable<any> {
+    return this.http
+      .get<any>(this.BASE_API_URL + "/refresh-modules", {
+        headers: httpOptions()
+      })
+      .pipe(retry(1), catchError(this.handleError));
   }
 
   public getMagicMirrorConfig() {
@@ -30,14 +40,20 @@ export class RestApiService {
     });
   }
 
-  public modifyModules(url: string, selectedModules: MagicMirrorPackage[]): Observable<any> {
-    return this.http.post(
+  public modifyModules(
+    url: string,
+    selectedModules: MagicMirrorPackage[]
+  ): Observable<any> {
+    return this.http
+      .post(
         this.BASE_API_URL + url,
         {
           "selected-modules": selectedModules
         },
         {
-          headers: httpOptions({"Content-Type": "application/x-www-form-urlencoded"}),
+          headers: httpOptions({
+            "Content-Type": "application/x-www-form-urlencoded"
+          }),
           responseType: "text",
           reportProgress: true
         }
@@ -46,33 +62,42 @@ export class RestApiService {
   }
 
   public updateMagicMirrorConfig(code: string): Observable<Response> {
-    return this.http.post<any>(
+    return this.http
+      .post<any>(
         this.BASE_API_URL + "/update-magicmirror-config",
         {
           code
         },
         {
-          headers: httpOptions({"Content-Type": "application/x-www-form-urlencoded"})
+          headers: httpOptions({
+            "Content-Type": "application/x-www-form-urlencoded"
+          })
         }
       )
       .pipe(retry(1), catchError(this.handleError));
   }
 
-  public addExternalModuleSource(externalSource: MagicMirrorPackage): Observable<any> {
-    return this.http.post<any>(
+  public addExternalModuleSource(
+    externalSource: MagicMirrorPackage
+  ): Observable<any> {
+    return this.http
+      .post<any>(
         this.BASE_API_URL + "/add-external-module-source",
         {
           "external-source": externalSource
         },
         {
-          headers: httpOptions({"Content-Type": "application/x-www-form-urlencoded"})
+          headers: httpOptions({
+            "Content-Type": "application/x-www-form-urlencoded"
+          })
         }
       )
       .pipe(retry(1), catchError(this.handleError));
   }
 
   public updateModules(selectedModules: MagicMirrorPackage[]): Observable<any> {
-    return this.http.post<any>(
+    return this.http
+      .post<any>(
         this.BASE_API_URL + "/update-modules",
         {
           "selected-modules": selectedModules
@@ -86,8 +111,11 @@ export class RestApiService {
       .pipe(retry(1), catchError(this.handleError));
   }
 
-  public removeExternalModuleSource(externalSources: MagicMirrorPackage[]): Observable<any> {
-    return this.http.request("DELETE", this.BASE_API_URL + "/remove-external-module-source", {
+  public removeExternalModuleSource(
+    externalSources: MagicMirrorPackage[]
+  ): Observable<any> {
+    return this.http
+      .request("DELETE", this.BASE_API_URL + "/remove-external-module-source", {
         body: {
           "external-sources": externalSources
         },

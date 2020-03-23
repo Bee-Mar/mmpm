@@ -18,13 +18,6 @@ const repository = "repository";
 const author = "author";
 const description = "description";
 
-const liveTerminalFeedDialogSettings = {
-  width: "75vw",
-  height: "75vh"
-};
-
-const snackbarSettings = { duration: 3000 };
-
 @Component({
   selector: "app-magic-mirror-modules-table",
   styleUrls: ["./magic-mirror-modules-table.component.scss"],
@@ -58,6 +51,13 @@ export class MagicMirrorModulesTableComponent {
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
   tooltipPosition: TooltipPosition[] = ["below"];
 
+  liveTerminalFeedDialogSettings: object = {
+    width: "75vw",
+    height: "75vh"
+  };
+
+  snackbarSettings: object = { duration: 3000 };
+
   public ngOnInit(): void {
     this.retrieveModules();
   }
@@ -66,14 +66,12 @@ export class MagicMirrorModulesTableComponent {
     this.ALL_PACKAGES = new Array<MagicMirrorPackage>();
     this.paginator.pageSize = 10;
 
-    const maxDescriptionLength = 140;
-
-    this.api.getModules(`/${this.url}`).subscribe(packages => {
-      Object.keys(packages).forEach(_category => {
+    this.api.getModules(`/${this.url}`).subscribe((packages) => {
+      Object.keys(packages).forEach((packageCategory) => {
         if (packages) {
-          for (const pkg of packages[_category]) {
+          for (const pkg of packages[packageCategory]) {
             this.ALL_PACKAGES.push({
-              category: _category,
+              category: packageCategory,
               title: pkg["Title"],
               description: pkg["Description"],
               author: pkg["Author"],
@@ -135,21 +133,31 @@ export class MagicMirrorModulesTableComponent {
   public toggleSelectAll(): void {
     this.isAllSelected()
       ? this.selection.clear()
-      : this.dataSource?.data.forEach(row => this.selection.select(row));
+      : this.dataSource?.data.forEach((row) => this.selection.select(row));
   }
 
   public onInstallModules(): void {
     if (this.selection.selected.length) {
-      const dialogRef = this.dialog.open(LiveTerminalFeedDialogComponent, liveTerminalFeedDialogSettings);
+      const dialogRef = this.dialog.open(
+        LiveTerminalFeedDialogComponent,
+        this.liveTerminalFeedDialogSettings
+      );
+
+      this.snackbar.open(
+        "Process executing ...",
+        "Close",
+        this.snackbarSettings
+      );
 
       this.api
         .modifyModules("/install-modules", this.selection.selected)
-        .subscribe(_ => {
-          dialogRef.afterClosed().subscribe(_ => {
-            this.retrieveModules();
-            this.snackbar.open("Process complete", "Close", snackbarSettings);
-            console.clear();
-          });
+        .subscribe((_) => {
+          this.snackbar.open(
+            "Process complete",
+            "Close",
+            this.snackbarSettings
+          );
+          this.retrieveModules();
         });
     }
   }
@@ -175,9 +183,9 @@ export class MagicMirrorModulesTableComponent {
       }
     );
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.api.addExternalModuleSource(result).subscribe(success => {
+        this.api.addExternalModuleSource(result).subscribe((success) => {
           let message: any;
 
           if (success) {
@@ -187,7 +195,7 @@ export class MagicMirrorModulesTableComponent {
             message = "Failed to add new source";
           }
 
-          this.snackbar.open(message, "Close", snackbarSettings);
+          this.snackbar.open(message, "Close", this.snackbarSettings);
         });
       }
     });
@@ -195,44 +203,69 @@ export class MagicMirrorModulesTableComponent {
 
   public onRemoveExternalSource(): void {
     if (this.selection.selected.length) {
+      this.dialog.open(
+        LiveTerminalFeedDialogComponent,
+        this.liveTerminalFeedDialogSettings
+      );
+
+      this.snackbar.open(
+        "Process executing ...",
+        "Close",
+        this.snackbarSettings
+      );
+
       this.api
         .removeExternalModuleSource(this.selection.selected)
-        .subscribe(success => {
-          let message: any;
-
-          if (success) {
-            this.retrieveModules();
-            message = "Successfully deleted external source(s)";
-          } else {
-            message = "Failed to remove external source(s)";
-          }
-
-          this.snackbar.open(message, "Close", snackbarSettings);
+        .subscribe((success) => {
+          this.retrieveModules();
+          this.snackbar.open("Process complete", "Close", this.snackbarSettings);
         });
     }
   }
 
-  public onRefreshModules(): void {}
+  public onRefreshModules(): void {
+    this.dialog.open(
+      LiveTerminalFeedDialogComponent,
+      this.liveTerminalFeedDialogSettings
+    );
+
+    this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
+
+    this.api.refreshModules().subscribe((_) => {
+      this.retrieveModules();
+      this.snackbar.open("Process complete", "Close", this.snackbarSettings);
+    });
+  }
 
   public onUninstallModules(): void {
     if (this.selection.selected.length) {
-      const dialogRef = this.dialog.open(LiveTerminalFeedDialogComponent, liveTerminalFeedDialogSettings);
+      const dialogRef = this.dialog.open(
+        LiveTerminalFeedDialogComponent,
+        this.liveTerminalFeedDialogSettings
+      );
+
+      this.snackbar.open(
+        "Process executing ...",
+        "Close",
+        this.snackbarSettings
+      );
 
       this.api
         .modifyModules("/uninstall-modules", this.selection.selected)
-        .subscribe(_ => {
-          dialogRef.afterClosed().subscribe((_) => {
-            this.retrieveModules();
-            this.snackbar.open("Process complete", "Close", snackbarSettings);
-            console.clear();
-          });
+        .subscribe((_) => {
+          this.retrieveModules();
+          this.snackbar.open(
+            "Process complete",
+            "Close",
+            this.snackbarSettings
+          );
         });
     }
   }
 
   public onUpdateModules(): void {
     if (this.selection.selected) {
-      this.api.updateModules(this.selection.selected).subscribe(success => {
+      this.api.updateModules(this.selection.selected).subscribe((success) => {
         let message: any;
 
         if (success) {
@@ -242,7 +275,7 @@ export class MagicMirrorModulesTableComponent {
           message = "Failed to update selected module(s)";
         }
 
-        this.snackbar.open(message, "Close", snackbarSettings);
+        this.snackbar.open(message, "Close", this.snackbarSettings);
       });
     }
   }

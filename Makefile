@@ -26,8 +26,11 @@ dependencies-gui:
 	@printf -- "------------------------------"
 	@printf "\n| \e[92mGathering GUI dependencies\e[0m |"
 	@printf "\n------------------------------\n"
-	@sudo apt install nginx -y
+	@sudo apt install nginx-full curl -y
+	@curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+	@sudo apt install nodejs -y
 	@sudo systemctl start nginx
+	@npm config set prefix ~/.local
 	@npm install -g @angular/cli
 	@npm install --prefix gui
 
@@ -39,7 +42,7 @@ build-gui:
 	@printf -- "---------------------"
 	@printf "\n| \e[92mBuilding MMPM GUI\e[0m |"
 	@printf "\n---------------------\n"
-	@cd gui && ng build --prod --deploy-url static/
+	@cd gui && ~/.local/bin/ng build --prod --deploy-url static/
 
 install: install-cli install-gui
 
@@ -58,14 +61,13 @@ install-gui:
 	@printf "\n| \e[92mInstalling MMPM GUI \e[0m |"
 	@printf "\n------------------------\n"
 	@mkdir -p ${HOME}/.config/mmpm/log ${HOME}/.config/mmpm/configs
-	@cp configs/gunicorn.conf.py ${HOME}/.config/mmpm/configs
-	@cp configs/*conf ${HOME}/.config/mmpm/configs
-	@cp configs/*service ${HOME}/.config/mmpm/configs
-	# bash gen-mmpm-conf.sh
 	@cd configs && \
 		bash gen-mmpm-service.sh && \
 		sudo cp mmpm.service /etc/systemd/system/ && \
 		sudo cp mmpm-webssh.service /etc/systemd/system/
+	@cp configs/gunicorn.conf.py ${HOME}/.config/mmpm/configs
+	@cp configs/*conf ${HOME}/.config/mmpm/configs
+	@cp configs/*service ${HOME}/.config/mmpm/configs
 	@touch ${HOME}/.config/mmpm/log/mmpm-gunicorn-error.log ${HOME}/.config/mmpm/log/mmpm-gunicorn-access.log
 	@sudo systemctl enable mmpm
 	@sudo systemctl start mmpm

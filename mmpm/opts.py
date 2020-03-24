@@ -4,8 +4,16 @@ from sys import argv
 from mmpm.utils import MMPM_WIKI_URL
 
 
-def get_user_args():
-    arg_parser = argparse.ArgumentParser(prog='mmpm',
+def get_user_args() -> object:
+    '''
+    Wrapper method around ArgumentParser.parse_args()
+
+    Parameters:
+        None
+    Returns:
+        ArgumentParser objects
+    '''
+    arg_parser: object = argparse.ArgumentParser(prog='mmpm',
                                          epilog=f'More details at {MMPM_WIKI_URL}',
                                          description='''
                                                     The MagicMirror Package

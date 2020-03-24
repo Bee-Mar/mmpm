@@ -28,7 +28,7 @@
     <mat-card class="card-container">
       <iframe
         style="height: 100%; width: 100%;"
-        src="http://localhost:7893"
+        [src]="webSSHLocation | safe"
       ></iframe>
     </mat-card>
   </mat-tab>

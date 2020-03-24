@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+import eventlet
+eventlet.monkey_patch()
+
 import json
 from flask_cors import CORS, cross_origin
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
@@ -7,11 +10,10 @@ from mmpm.utils import log
 from shelljob import proc
 from flask_socketio import SocketIO, send, emit
 import os
-import eventlet
 
-MMPM_EXECUTABLE = [os.path.join(os.path.expanduser('~'), '.local', 'bin', 'mmpm')]
+MMPM_EXECUTABLE: list = [os.path.join(os.path.expanduser('~'), '.local', 'bin', 'mmpm')]
 
-app = Flask(
+app: object = Flask(
     __name__,
     root_path='/var/www/mmpm',
     static_folder="/var/www/mmpm/static",
@@ -19,7 +21,7 @@ app = Flask(
 
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-resources = {
+resources: dict = {
     r'/*': {'origins': '*'},
     r'/api/*': {'origins': '*'},
     r'/socket.io/*': {'origins': '*'},
@@ -27,29 +29,29 @@ resources = {
 
 
 CORS(app, send_wildcard=True)
-socketio = SocketIO(app, cors_allowed_origins='*')
+socketio: object = SocketIO(app, cors_allowed_origins='*')
 
-GET = 'GET'
-POST = 'POST'
-DELETE = 'DELETE'
+GET: str = 'GET'
+POST: str = 'POST'
+DELETE: str = 'DELETE'
 
 
-def __api__(path=''):
+def __api__(path='') -> str:
     ''' Returns formatted string containing /api base path'''
     return f'/api/{path}'
 
 
-def __modules__():
+def __modules__() -> dict:
     ''' Returns dictionary of MagicMirror modules '''
     modules, _, _, _ = core.load_modules()
     return modules
 
 
-def __callback__():
+def __callback__() -> None:
     log.logger.info('Acked')
 
-def __stream_cmd_output__(process: proc.Group, cmd: list):
-    command = MMPM_EXECUTABLE + cmd
+def __stream_cmd_output__(process: proc.Group, cmd: list) -> None:
+    command: list = MMPM_EXECUTABLE + cmd
     log.logger.info(f"Executing {command}")
     process.run(command)
 
@@ -64,27 +66,27 @@ def __stream_cmd_output__(process: proc.Group, cmd: list):
 
 
 @socketio.on_error()
-def error_handler(error):
-    message = f'An internal error occurred within flask_socketio: {error}'
+def error_handler(error) -> tuple:
+    message: str = f'An internal error occurred within flask_socketio: {error}'
     log.logger.critical(message)
     return message, 500
 
 
 @socketio.on('connect')
-def test_connection():
-    message = 'Server connected'
+def test_connection() -> None:
+    message: str = 'Server connected'
     log.logger.info(message)
     socketio.emit('connected', {'data': message})
 
 
 @socketio.on('disconnect')
-def test_connection():
-    message = 'Server disconnected'
+def test_connection() -> None:
+    message: str = 'Server disconnected'
     log.logger.info(message)
     socketio.emit(message, {'data': message})
 
 @app.after_request
-def after_request(response):
+def after_request(response: Response) -> Response:
     log.logger.info('')
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"

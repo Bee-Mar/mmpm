@@ -3,15 +3,12 @@ import os
 import multiprocessing
 import site
 
-_ROOT = os.path.abspath(os.path.join(site.getusersitepackages(), 'mmpm'))
-_VAR = os.path.join(_ROOT, 'var')
-_ETC = os.path.join(_ROOT, 'etc')
-
 loglevel = 'info'
 accesslog = os.path.join(os.getenv('HOME'),'.config/mmpm/log/mmpm-gunicorn-access.log')
 errorlog = os.path.join(os.getenv('HOME'), '.config/mmpm/log/mmpm-gunicorn-error.log')
-bind = '127.0.0.1:7891'
-workers = multiprocessing.cpu_count()
+bind = 'localhost:7891'
+workers = multiprocessing.cpu_count() * 2 + 1
+worker_class = 'eventlet'
 
 timeout = 3 * 60  # 3 minutes
 keepalive = 24 * 60 * 60  # 1 day

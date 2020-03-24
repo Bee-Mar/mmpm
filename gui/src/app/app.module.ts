@@ -11,8 +11,8 @@ import { ReactiveFormsModule, FormsModule } from "@angular/forms";
 import { MonacoEditorModule } from "ngx-monaco-editor";
 import { MagicMirrorConfigEditorComponent } from "./components/magic-mirror-config-editor/magic-mirror-config-editor.component";
 import { LiveTerminalFeedDialogComponent } from "src/app/components/live-terminal-feed-dialog/live-terminal-feed-dialog.component";
-import { LiveTerminalFeedService } from "src/app/services/live-terminal-feed.service";
 import { RestApiService } from "src/app/services/rest-api.service";
+import { SafePipe } from "./pipes/safe.pipe";
 
 @NgModule({
   declarations: [
@@ -20,7 +20,8 @@ import { RestApiService } from "src/app/services/rest-api.service";
     MagicMirrorModulesTableComponent,
     ExternalSourceRegistrationDialogComponent,
     MagicMirrorConfigEditorComponent,
-    LiveTerminalFeedDialogComponent
+    LiveTerminalFeedDialogComponent,
+    SafePipe
   ],
   imports: [
     BrowserModule,
@@ -51,7 +52,7 @@ import { RestApiService } from "src/app/services/rest-api.service";
       }
     })
   ],
-  providers: [LiveTerminalFeedService, RestApiService],
+  providers: [RestApiService],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

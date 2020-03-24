@@ -15,7 +15,7 @@ from bs4 import BeautifulSoup
 from mmpm import colors, utils, mmpm
 
 
-def snapshot_details(modules, curr_snap, next_snap):
+def snapshot_details(modules: dict, curr_snap: str, next_snap: str) -> None:
     '''
     Displays information regarding the most recent 'snapshot_file', ie. when it
     was taken, when the next scheduled snapshot will be taken, how many module
@@ -31,8 +31,8 @@ def snapshot_details(modules, curr_snap, next_snap):
         None
     '''
 
-    num_categories = len(modules.keys())
-    num_modules = 0
+    num_categories: int = len(modules.keys())
+    num_modules: int = 0
 
     for value in modules.values():
         num_modules += len(value)
@@ -43,7 +43,7 @@ def snapshot_details(modules, curr_snap, next_snap):
     print(colors.B_GREEN + "Modules Available: " + colors.B_WHITE + f"{num_modules}\n")
 
 
-def check_for_mmpm_enhancements():
+def check_for_mmpm_enhancements() -> bool:
     '''
     Scrapes the main file of MMPM off the github repo, and compares the current
     version, versus the one available in the master branch. If there is a newer
@@ -53,16 +53,16 @@ def check_for_mmpm_enhancements():
         None
 
     Returns:
-        None
+        bool
     '''
 
     try:
         MMPM_FILE = urlopen(utils.MMPM_FILE_URL)
-        contents = str(MMPM_FILE.read())
+        contents: str = str(MMPM_FILE.read())
 
-        version_line = re.findall(r"__version__ = \d+\.\d+", contents)
-        version_number = re.findall(r"\d+\.\d+", version_line[0])
-        version_number = float(version_number[0])
+        version_line: list = re.findall(r"__version__ = \d+\.\d+", contents)
+        version_number: list = re.findall(r"\d+\.\d+", version_line[0])
+        version_number: float = float(version_number[0])
 
         if version_number and mmpm.__version__ < version_number:
             valid_response = False
@@ -116,7 +116,7 @@ def check_for_mmpm_enhancements():
         return False
 
 
-def enhance_modules(modules, update=False, upgrade=False, modules_to_upgrade=None):
+def enhance_modules(modules: dict, update=False, upgrade=False, modules_to_upgrade=None) -> bool:
     '''
     Depending on flags passed in as arguments:
 
@@ -137,13 +137,13 @@ def enhance_modules(modules, update=False, upgrade=False, modules_to_upgrade=Non
         None
     '''
 
-    original_dir = os.getcwd()
-    modules_dir = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
+    original_dir: str = os.getcwd()
+    modules_dir: str = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
     os.chdir(modules_dir)
 
-    installed_modules = get_installed_modules(modules)
+    installed_modules: dict = get_installed_modules(modules)
 
-    updates_list = []
+    updates_list: list = []
 
     dirs = os.listdir(modules_dir)
 
@@ -538,7 +538,7 @@ def load_modules(force_refresh=False):
     return modules, curr_snap, next_snap, checked_for_enhancements
 
 
-def retrieve_modules():
+def retrieve_modules() -> None:
     '''
     Scrapes the MagicMirror 3rd Party Wiki, and saves all modules along with
     their full, available descriptions in a hidden JSON file in the users home
@@ -551,21 +551,21 @@ def retrieve_modules():
         modules (dict): list of modules upon success, None upon failure
     '''
 
-    modules = {}
+    modules: dict = {}
 
     try:
-        web_page = urlopen(utils.MAGICMIRROR_MODULES_URL).read()
+        web_page: object = urlopen(utils.MAGICMIRROR_MODULES_URL).read()
     except HTTPError:
         utils.error_msg("Unable to retrieve MagicMirror modules. Is your internet connection down?")
         return None
 
-    soup = BeautifulSoup(web_page, "html.parser")
-    table_soup = soup.find_all("table")
+    soup: object = BeautifulSoup(web_page, "html.parser")
+    table_soup: list = soup.find_all("table")
 
-    category_soup = soup.find_all(attrs={"class": "markdown-body"})
-    categories_soup = category_soup[0].find_all("h3")
+    category_soup: list = soup.find_all(attrs={"class": "markdown-body"})
+    categories_soup: list = category_soup[0].find_all("h3")
 
-    categories = []
+    categories: list = []
 
     for index, _ in enumerate(categories_soup):
         last_element = len(categories_soup[index].contents) - 1
@@ -574,7 +574,7 @@ def retrieve_modules():
         if new_category != "General Advice":
             categories.append(new_category)
 
-    tr_soup = []
+    tr_soup: list = []
 
     for table in table_soup:
         tr_soup.append(table.find_all("tr"))
@@ -632,7 +632,7 @@ def retrieve_modules():
     return modules
 
 
-def display_modules(modules, list_categories=False):
+def display_modules(modules: dict, list_categories=False) -> None:
     '''
     Depending on the user flags passed in from the command line, either all
     existing modules may be displayed, or the names of all categories of
@@ -647,16 +647,16 @@ def display_modules(modules, list_categories=False):
     '''
 
     if list_categories:
-        headers = [
+        headers: list = [
             colors.B_CYAN + "Category",
             colors.B_CYAN + "Number of Modules" + colors.RESET
         ]
 
-        rows = [[key, len(modules[key])] for key in modules.keys()]
+        rows: list = [[key, len(modules[key])] for key in modules.keys()]
         print(tabulate(rows, headers, tablefmt="fancy_grid"))
         return
 
-    headers = [
+    headers: list = [
         colors.B_CYAN + "Category",
         utils.TITLE,
         utils.REPOSITORY,
@@ -664,7 +664,7 @@ def display_modules(modules, list_categories=False):
         utils.DESCRIPTION + colors.RESET
     ]
 
-    rows = []
+    rows: list = []
 
     for category, details in modules.items():
         for index, _ in enumerate(details):
@@ -693,8 +693,8 @@ def get_installed_modules(modules):
         installed_modules (dict): Dictionary of installed MagicMirror modules
     '''
 
-    modules_dir = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
-    original_dir = os.getcwd()
+    modules_dir: str = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
+    original_dir: str = os.getcwd()
 
     if not os.path.exists(modules_dir):
         msg = "Failed to find MagicMirror root. Have you installed MagicMirror properly? "
@@ -704,8 +704,8 @@ def get_installed_modules(modules):
 
     os.chdir(modules_dir)
 
-    module_dirs = os.listdir(os.getcwd())
-    installed_modules = {}
+    module_dirs: list = os.listdir(os.getcwd())
+    installed_modules: dict = {}
 
     for category, modules in modules.items():
         for module in modules:
@@ -716,7 +716,7 @@ def get_installed_modules(modules):
     return installed_modules
 
 
-def add_external_module_source(title=None, author=None, repo=None, desc=None):
+def add_external_module_source(title=None, author=None, repo=None, desc=None) -> bool:
     '''
     Adds an external source for user to install a module from. This may be a
     private git repo, or a specific branch of a public repo. All modules added
@@ -737,10 +737,10 @@ def add_external_module_source(title=None, author=None, repo=None, desc=None):
 
     if not title and not author and not repo and not desc:
         try:
-            title = input("Title: ")
-            author = input("Author: ")
-            repo = input("Repository: ")
-            desc = input("Description: ")
+            title: str = input("Title: ")
+            author: str = input("Author: ")
+            repo: str = input("Repository: ")
+            desc: str = input("Description: ")
 
         except KeyboardInterrupt:
             print('\n')
@@ -755,7 +755,7 @@ def add_external_module_source(title=None, author=None, repo=None, desc=None):
 
     try:
         if os.path.exists(utils.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(utils.MMPM_EXTERNAL_SOURCES_FILE).st_size:
-            config = {}
+            config: dict = {}
 
             with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
                 config[utils.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[utils.EXTERNAL_MODULE_SOURCES]
@@ -779,7 +779,7 @@ def add_external_module_source(title=None, author=None, repo=None, desc=None):
         return False
 
 
-def remove_external_module_source(titles=None):
+def remove_external_module_source(titles=None) -> bool:
     '''
     Allows user to remove an external source from the sources saved in
     ~/.config/mmpm/mmpm-external-sources.json
@@ -793,8 +793,8 @@ def remove_external_module_source(titles=None):
 
     try:
         if os.path.exists(utils.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(utils.MMPM_EXTERNAL_SOURCES_FILE).st_size:
-            config = {}
-            successful_removals = []
+            config: dict = {}
+            successful_removals: list = []
 
             with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
                 config[utils.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[utils.EXTERNAL_MODULE_SOURCES]
@@ -820,7 +820,7 @@ def remove_external_module_source(titles=None):
         return False
 
 
-def edit_magicmirror_config():
+def edit_magicmirror_config() -> bool:
     '''
     Allows user to edit the MagicMirror config file using their $EDITOR
 

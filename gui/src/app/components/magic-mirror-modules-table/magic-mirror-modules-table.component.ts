@@ -82,19 +82,13 @@ export class MagicMirrorModulesTableComponent {
       });
 
       this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
-      this.dataSource = new MatTableDataSource<MagicMirrorPackage>(
-        this.ALL_PACKAGES
-      );
+      this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.ALL_PACKAGES);
       this.dataSource.paginator = this.paginator;
       this.dataSource.sort = this.sort;
     });
   }
 
-  public compare(
-    a: number | string,
-    b: number | string,
-    ascending: boolean
-  ): number {
+  public compare(a: number | string, b: number | string, ascending: boolean): number {
     return (a < b ? -1 : 1) * (ascending ? 1 : -1);
   }
 
@@ -138,27 +132,14 @@ export class MagicMirrorModulesTableComponent {
 
   public onInstallModules(): void {
     if (this.selection.selected.length) {
-      const dialogRef = this.dialog.open(
-        LiveTerminalFeedDialogComponent,
-        this.liveTerminalFeedDialogSettings
-      );
 
-      this.snackbar.open(
-        "Process executing ...",
-        "Close",
-        this.snackbarSettings
-      );
+      this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
+      this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
 
-      this.api
-        .modifyModules("/install-modules", this.selection.selected)
-        .subscribe((_) => {
-          this.snackbar.open(
-            "Process complete",
-            "Close",
-            this.snackbarSettings
-          );
-          this.retrieveModules();
-        });
+      this.api.modifyModules("/install-modules", this.selection.selected).subscribe((_) => {
+        this.snackbar.open("Process complete", "Close", this.snackbarSettings);
+        this.retrieveModules();
+      });
     }
   }
 
@@ -184,17 +165,11 @@ export class MagicMirrorModulesTableComponent {
     );
 
     dialogRef.afterClosed().subscribe((result) => {
+      // the user may have exited without entering anything
       if (result) {
         this.api.addExternalModuleSource(result).subscribe((success) => {
-          let message: any;
-
-          if (success) {
-            this.retrieveModules();
-            message = `Successfully added '${externalSource.title}' to 'External Module Sources'`;
-          } else {
-            message = "Failed to add new source";
-          }
-
+          const message = success ? `Successfully added '${externalSource.title}' to 'External Module Sources'` : "Failed to add new source";
+          this.retrieveModules();
           this.snackbar.open(message, "Close", this.snackbarSettings);
         });
       }
@@ -203,32 +178,19 @@ export class MagicMirrorModulesTableComponent {
 
   public onRemoveExternalSource(): void {
     if (this.selection.selected.length) {
-      this.dialog.open(
-        LiveTerminalFeedDialogComponent,
-        this.liveTerminalFeedDialogSettings
-      );
 
-      this.snackbar.open(
-        "Process executing ...",
-        "Close",
-        this.snackbarSettings
-      );
+      this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
+      this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
 
-      this.api
-        .removeExternalModuleSource(this.selection.selected)
-        .subscribe((success) => {
-          this.retrieveModules();
-          this.snackbar.open("Process complete", "Close", this.snackbarSettings);
-        });
+      this.api.removeExternalModuleSource(this.selection.selected).subscribe((success) => {
+        this.retrieveModules();
+        this.snackbar.open("Process complete", "Close", this.snackbarSettings);
+      });
     }
   }
 
   public onRefreshModules(): void {
-    this.dialog.open(
-      LiveTerminalFeedDialogComponent,
-      this.liveTerminalFeedDialogSettings
-    );
-
+    this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
     this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
 
     this.api.refreshModules().subscribe((_) => {
@@ -239,54 +201,28 @@ export class MagicMirrorModulesTableComponent {
 
   public onUninstallModules(): void {
     if (this.selection.selected.length) {
-      const dialogRef = this.dialog.open(
-        LiveTerminalFeedDialogComponent,
-        this.liveTerminalFeedDialogSettings
-      );
+      this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
+      this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
 
-      this.snackbar.open(
-        "Process executing ...",
-        "Close",
-        this.snackbarSettings
-      );
-
-      this.api
-        .modifyModules("/uninstall-modules", this.selection.selected)
-        .subscribe((_) => {
-          this.retrieveModules();
-          this.snackbar.open(
-            "Process complete",
-            "Close",
-            this.snackbarSettings
-          );
-        });
+      this.api.modifyModules("/uninstall-modules", this.selection.selected).subscribe((_) => {
+        this.retrieveModules();
+        this.snackbar.open("Process complete", "Close", this.snackbarSettings);
+      });
     }
   }
 
   public onUpdateModules(): void {
     if (this.selection.selected) {
       this.api.updateModules(this.selection.selected).subscribe((success) => {
-        let message: any;
-
-        if (success) {
-          this.retrieveModules();
-          message = "Successfully updated module(s)";
-        } else {
-          message = "Failed to update selected module(s)";
-        }
-
+        const message = success ? "Successfully updated module(s)" : "Failed to update selected module(s)";
+        this.retrieveModules();
         this.snackbar.open(message, "Close", this.snackbarSettings);
       });
     }
   }
 
   public checkboxLabel(row?: MagicMirrorPackage): string {
-    if (!row) {
-      return `${this.isAllSelected() ? "select" : "deselect"} all`;
-    }
-
-    return `${
-      this.selection.isSelected(row) ? "deselect" : "select"
-    } row ${row.category + 1}`;
+    if (!row) return `${this.isAllSelected() ? "select" : "deselect"} all`;
+    return `${this.selection.isSelected(row) ? "deselect" : "select"} row ${row.category + 1}`;
   }
 }

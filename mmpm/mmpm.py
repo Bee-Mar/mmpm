@@ -8,7 +8,7 @@ __version__ = 0.98
 def main(argv):
     ''' Main entry point for CLI '''
 
-    args = opts.get_user_args()
+    args: object = opts.get_user_args()
 
     if args.version:
         print(colors.B_CYAN + "MMPM Version: " + colors.B_WHITE + "{}".format(__version__))

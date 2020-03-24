@@ -1,7 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { MatDialogRef } from "@angular/material/dialog";
-import { LiveTerminalFeedService } from "src/app/services/live-terminal-feed.service";
-import { Observable, combineLatest } from "rxjs";
+import io from "socket.io-client";
 
 @Component({
   selector: "app-live-terminal-feed-dialog",
@@ -13,16 +12,20 @@ export class LiveTerminalFeedDialogComponent implements OnInit {
   streams: Array<Promise<object>> = new Array<Promise<object>>();
   outputStream: string = "";
 
-  constructor(
-    private dialogRef: MatDialogRef<LiveTerminalFeedDialogComponent>,
-    private terminalFeed: LiveTerminalFeedService
-  ) {}
+  constructor(private dialogRef: MatDialogRef<LiveTerminalFeedDialogComponent>) {}
 
   ngOnInit(): void {
-    this.socket = this.terminalFeed.getSocket();
+    this.socket = this.getSocket();
 
     this.socket.on("live-terminal-stream", (stream: any) => {
       this.outputStream += stream.data;
+    });
+  }
+
+  private getSocket() {
+    return io(`http://${window.location.hostname}:7890`, {
+      reconnection: true,
+      transports: ["websocket", "polling"]
     });
   }
 

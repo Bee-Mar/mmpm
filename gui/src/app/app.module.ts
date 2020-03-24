@@ -13,6 +13,7 @@ import { MagicMirrorConfigEditorComponent } from "./components/magic-mirror-conf
 import { LiveTerminalFeedDialogComponent } from "src/app/components/live-terminal-feed-dialog/live-terminal-feed-dialog.component";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { SafePipe } from "./pipes/safe.pipe";
+import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
 
 @NgModule({
   declarations: [
@@ -52,7 +53,7 @@ import { SafePipe } from "./pipes/safe.pipe";
       }
     })
   ],
-  providers: [RestApiService],
+  providers: [RestApiService, TableUpdateNotifierService],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

@@ -90,9 +90,9 @@ export class RestApiService {
       ).pipe(retry(1), catchError(this.handleError));
   }
 
-  public updateModules(selectedModules: MagicMirrorPackage[]): Observable<any> {
+  public upgradeModules(selectedModules: MagicMirrorPackage[]): Observable<any> {
     return this.http.post<any>(
-        this.BASE_API_URL + "/update-modules",
+        this.BASE_API_URL + "/upgrade-modules",
         {
           "selected-modules": selectedModules
         },
@@ -116,7 +116,9 @@ export class RestApiService {
   }
 
   public handleError(error: any) {
-    const errorMessage = error.error instanceof ErrorEvent ?  error.error.message :  `Error Code: ${error.status}\nMessage: ${error.message}`;
+    const errorMessage = error.error instanceof ErrorEvent ?
+      error.error.message :  `Error Code: ${error.status}\nMessage: ${error.message}`;
+
     window.alert(errorMessage);
     return throwError(errorMessage);
   }

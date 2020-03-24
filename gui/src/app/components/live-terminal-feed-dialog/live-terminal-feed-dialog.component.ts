@@ -29,5 +29,7 @@ export class LiveTerminalFeedDialogComponent implements OnInit {
     });
   }
 
-  onNoClick() {}
+  onNoClick() {
+    this.socket.disconnect();
+  }
 }

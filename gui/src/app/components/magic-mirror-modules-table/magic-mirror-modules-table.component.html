@@ -66,6 +66,7 @@
         mat-cell
         *matCellDef="let package"
         [matTooltip]="package.description.length > maxDescriptionLength ? package.description : ''"
+        matTooltipClass="matTooltipClass"
       >
         {{ (package.description.length > maxDescriptionLength) ?  package.description.slice(0, maxDescriptionLength - 3) + '...' : package.description }}
 
@@ -91,9 +92,9 @@
     mat-raised-button
     color="primary"
     [disabled]="!selection.selected.length || !ALL_PACKAGES.length"
-    matTooltip="{{ url === 'all-modules' ? 'Install module(s)' : 'Update module(s)' }}"
+    matTooltip="{{ url === 'all-modules' ? 'Install module(s)' : 'Upgrade module(s)' }}"
     [matTooltipPosition]="tooltipPosition"
-    (click)="url === 'all-modules' ? onInstallModules() : onUpdateModules()"
+    (click)="url === 'all-modules' ? onInstallModules() : onUpgradeModules()"
   >
     <mat-icon>
       {{ url == 'all-modules' ? 'get_app' : 'open_in_browser' }}

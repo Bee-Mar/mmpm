@@ -132,6 +132,7 @@
 
 # Version 0.98
 
-- Major code cleanup
-- Added web interface, and daemons to run on system boot, that will be accessible from any device in
-the users home network which allows user to perform maintenance on their MagicMirror packages
+- Major code cleanup (added typing, and docstrings)
+- Added web interface, and daemons to run on system restart that will be accessible from any device in
+  the users home network which allows user to perform maintenance on their MagicMirror packages
+

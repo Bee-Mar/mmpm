@@ -1,4 +1,4 @@
-import { Component, ViewChild, Input } from "@angular/core";
+import { Component, ViewChild, Input, ViewEncapsulation } from "@angular/core";
 import { MatTableDataSource } from "@angular/material/table";
 import { SelectionModel } from "@angular/cdk/collections";
 import { RestApiService } from "src/app/services/rest-api.service";
@@ -10,6 +10,8 @@ import { LiveTerminalFeedDialogComponent } from "src/app/components/live-termina
 import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
+import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
+import { Subscription } from "rxjs";
 
 const select = "select";
 const category = "category";
@@ -21,22 +23,25 @@ const description = "description";
 @Component({
   selector: "app-magic-mirror-modules-table",
   styleUrls: ["./magic-mirror-modules-table.component.scss"],
-  templateUrl: "./magic-mirror-modules-table.component.html"
+  templateUrl: "./magic-mirror-modules-table.component.html",
+  encapsulation: ViewEncapsulation.None,
 })
 export class MagicMirrorModulesTableComponent {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
   @Input() url: string;
 
+  private subscription: Subscription;
+
   constructor(
     private api: RestApiService,
     public dialog: MatDialog,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private notifier: TableUpdateNotifierService
   ) {}
 
   ALL_PACKAGES: Array<MagicMirrorPackage>;
-
-  maxDescriptionLength: number = 140;
+  maxDescriptionLength: number = 70;
 
   displayedColumns: string[] = [
     select,
@@ -60,6 +65,7 @@ export class MagicMirrorModulesTableComponent {
 
   public ngOnInit(): void {
     this.retrieveModules();
+    this.subscription = this.notifier.getNotification().subscribe((_) => this.retrieveModules());
   }
 
   private retrieveModules(): void {
@@ -87,6 +93,9 @@ export class MagicMirrorModulesTableComponent {
       this.dataSource.sort = this.sort;
     });
   }
+
+  private complete = () => this.snackbar.open("Process complete", "Close", this.snackbarSettings);
+  private executing = () => this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
 
   public compare(a: number | string, b: number | string, ascending: boolean): number {
     return (a < b ? -1 : 1) * (ascending ? 1 : -1);
@@ -134,11 +143,11 @@ export class MagicMirrorModulesTableComponent {
     if (this.selection.selected.length) {
 
       this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
-      this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
+      this.executing();
 
       this.api.modifyModules("/install-modules", this.selection.selected).subscribe((_) => {
-        this.snackbar.open("Process complete", "Close", this.snackbarSettings);
-        this.retrieveModules();
+        this.complete();
+        this.notifier.triggerTableUpdate();
       });
     }
   }
@@ -168,8 +177,12 @@ export class MagicMirrorModulesTableComponent {
       // the user may have exited without entering anything
       if (result) {
         this.api.addExternalModuleSource(result).subscribe((success) => {
-          const message = success ? `Successfully added '${externalSource.title}' to 'External Module Sources'` : "Failed to add new source";
-          this.retrieveModules();
+
+          const message = success ?
+            `Successfully added '${externalSource.title}' to 'External Module Sources'` :
+            "Failed to add new source";
+
+          this.notifier.triggerTableUpdate();
           this.snackbar.open(message, "Close", this.snackbarSettings);
         });
       }
@@ -180,43 +193,45 @@ export class MagicMirrorModulesTableComponent {
     if (this.selection.selected.length) {
 
       this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
-      this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
+      this.executing();
 
-      this.api.removeExternalModuleSource(this.selection.selected).subscribe((success) => {
-        this.retrieveModules();
-        this.snackbar.open("Process complete", "Close", this.snackbarSettings);
+      this.api.removeExternalModuleSource(this.selection.selected).subscribe((_) => {
+        this.complete();
+        this.notifier.triggerTableUpdate();
       });
     }
   }
 
   public onRefreshModules(): void {
     this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
-    this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
+    this.executing();
 
     this.api.refreshModules().subscribe((_) => {
-      this.retrieveModules();
-      this.snackbar.open("Process complete", "Close", this.snackbarSettings);
+      this.complete();
+      this.notifier.triggerTableUpdate();
     });
   }
 
   public onUninstallModules(): void {
     if (this.selection.selected.length) {
       this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
-      this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
+      this.executing();
 
       this.api.modifyModules("/uninstall-modules", this.selection.selected).subscribe((_) => {
-        this.retrieveModules();
-        this.snackbar.open("Process complete", "Close", this.snackbarSettings);
+        this.complete();
+        this.notifier.triggerTableUpdate();
       });
     }
   }
 
-  public onUpdateModules(): void {
+  public onUpgradeModules(): void {
     if (this.selection.selected) {
-      this.api.updateModules(this.selection.selected).subscribe((success) => {
-        const message = success ? "Successfully updated module(s)" : "Failed to update selected module(s)";
-        this.retrieveModules();
-        this.snackbar.open(message, "Close", this.snackbarSettings);
+      this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
+      this.executing();
+
+      this.api.upgradeModules(this.selection.selected).subscribe((_) => {
+        this.complete();
+        this.notifier.triggerTableUpdate();
       });
     }
   }
@@ -224,5 +239,9 @@ export class MagicMirrorModulesTableComponent {
   public checkboxLabel(row?: MagicMirrorPackage): string {
     if (!row) return `${this.isAllSelected() ? "select" : "deselect"} all`;
     return `${this.selection.isSelected(row) ? "deselect" : "select"} row ${row.category + 1}`;
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 }

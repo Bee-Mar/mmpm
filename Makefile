@@ -3,9 +3,9 @@
 all: clean cli gui
 
 clean:
-	@printf -- "-----------------------------------------"
-	@printf "\n| \e[92mRemoving old installation destination\e[0m |"
-	@printf "\n-----------------------------------------\n"
+	@printf -- "---------------------------------------------"
+	@printf "\n| \e[92mRemoving legacy installation destination\e[0m |"
+	@printf "\n---------------------------------------------\n"
 	sudo rm -f /usr/local/bin/mmpm
 
 gui: dependencies-gui build-gui install-gui
@@ -55,6 +55,7 @@ install-cli:
 	@printf -- "-------------------------------------------------------"
 	@printf "\n| \e[92mNOTE: Ensure \"${HOME}/.local/bin\" is in your PATH\e[0m |"
 	@printf "\n-------------------------------------------------------\n"
+	@[ ! $? ] && printf "\n\033[1;36mMMPM GUI Installed \e[0m\n"
 
 install-gui:
 	@printf -- "------------------------"
@@ -82,7 +83,7 @@ install-gui:
 		sudo cp -r gui/build/static /var/www/mmpm && \
 		sudo cp /var/www/mmpm/static/index.html /var/www/mmpm/templates
 	@cp ./configs/gunicorn.conf.py ~/.config/mmpm/configs
-	@[ ! $? ] && printf "\n\033[1;36mMMPM Successfully Installed \e[0m\n"
+	@[ ! $? ] && printf "\n\033[1;36mMMPM GUI Installed \e[0m\n"
 	@[ ! $? ] && printf "\nThe MMPM GUI is being served the IP address of your default interface at port 7890"
 	@[ ! $? ] && printf "\nBest guess: http://$$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):7890\n\n"
 
@@ -99,12 +100,13 @@ uninstall-cli:
 	@printf "\n| \e[92mRemoving MMPM CLI \e[0m |"
 	@printf "\n----------------------\n"
 	@pip3 uninstall mmpm -y
+	@[ ! $? ] && printf "\n\033[1;36mMMPM CLI Removed\e[0m\n"
 
 uninstall-gui:
 	@printf -- "----------------------"
 	@printf "\n| \e[92mRemoving MMPM GUI \e[0m |"
 	@printf "\n----------------------\n"
-	-rm -f $$HOME/.config/mmpm/configs/gunicorn.conf.py
+	-rm -f ${HOME}/.config/mmpm/configs/gunicorn.conf.py
 	-sudo systemctl stop mmpm.service
 	-sudo systemctl disable mmpm.service
 	-sudo systemctl stop mmpm-webssh.service
@@ -116,4 +118,4 @@ uninstall-gui:
 	-sudo rm -f /etc/nginx/sites-available/mmpm.conf
 	-sudo rm -f /etc/nginx/sites-enabled/mmpm.conf
 	-sudo systemctl restart nginx
-	@[ ! $? ] && printf "\n\033[1;36mSuccessfully Removed MMPM \e[0m\n"
+	@[ ! $? ] && printf "\n\033[1;36mMMPM GUI Removed\e[0m\n"

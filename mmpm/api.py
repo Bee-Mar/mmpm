@@ -28,7 +28,7 @@ resources: dict = {
 }
 
 
-CORS(app, send_wildcard=True)
+CORS(app)
 socketio: object = SocketIO(app, cors_allowed_origins='*')
 
 GET: str = 'GET'
@@ -92,9 +92,7 @@ def after_request(response: Response) -> Response:
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
     response.headers['Cache-Control'] = 'public, max-age=0'
-    response.headers.add('Access-Control-Allow-Origin', '*')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,DELETE')
     return response
 
 
@@ -142,11 +140,17 @@ def remove_magicmirror_modules():
     )
 
 
-@app.route(__api__('update-selected-modules'), methods=[POST])
-def update_magicmirror_modules():
-    modules, _, _, _ = core.load_modules()
-    core.remove_modules(modules, request.args.get('modules_to_remove'))
-    return True
+@app.route(__api__('upgrade-modules'), methods=[POST])
+def upgrade_magicmirror_modules():
+    selected_modules = request.get_json(force=True)['selected-modules']
+    log.logger.info(f'Request to upgrade {selected_modules}')
+    process = proc.Group()
+    response = Response(
+        __stream_cmd_output__(process, ['-U'] + [selected_module['title'] for selected_module in selected_modules]),
+        mimetype='text/plain'
+    )
+    log.logger.info('Finished update')
+    return json.dumps(True)
 
 
 @app.route(__api__('all-installed-modules'), methods=[GET])

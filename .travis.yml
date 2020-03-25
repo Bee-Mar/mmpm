@@ -9,7 +9,7 @@ before_install:
     - pip install -U pip
     - pip --version
     - pip install mypy codecov pytest pylint
-    - cd mmpm
+    - pip install -r requirements.txt
     - mypy mmpm
     - pylint mmpm
     - mkdir -p ~/.config/mmpm/log
@@ -19,5 +19,4 @@ before_install:
     - touch ~/.config/mmpm/mmpm-gunicorn-access.log
 
 install:
-  - pip install -r requirements.txt
   - pip install .

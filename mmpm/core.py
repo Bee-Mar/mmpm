@@ -55,11 +55,11 @@ def check_for_mmpm_enhancements() -> bool:
         None
 
     Returns:
-        bool
+        bool: True on success, False on failure
     '''
 
     try:
-        log.logger.info('Checking for MMPM enhancements')
+        log.logger.info(f'Checking for MMPM enhancements. Current version: {mmpm.__version__}')
 
         MMPM_FILE: Request = urlopen(utils.MMPM_FILE_URL)
         contents: str = str(MMPM_FILE.read())
@@ -71,48 +71,37 @@ def check_for_mmpm_enhancements() -> bool:
         if version_number and mmpm.__version__ < version_number:
             valid_response = False
 
-            utils.plain_print(colors.B_CYAN + "Automated check for MMPM enhancements... " + colors.RESET)
-
             while not valid_response:
-                response = input(colors.B_GREEN + "MMPM enhancements are available. " +
-                                 colors.B_WHITE + "Would you like to upgrade now? [yes/no | y/n]: " +
-                                 colors.RESET)
+                print(f'Currently installed version: {mmpm.__version__}')
+                print(f'Available version: {version_number}\n')
+
+                response = input(
+                    colors.B_GREEN + "A newer version of MMPM is available\n\n" +
+                    colors.RESET + "Would you like to upgrade now?" + colors.B_WHITE + " [yes/y | no/n]: " +
+                    colors.RESET
+                )
 
                 if response in ("yes", "y"):
+                    valid_response = True
                     original_dir = os.getcwd()
 
-                    os.chdir(utils.HOME_DIR + "/Downloads")
-
-                    # make sure there isn't a pre-existing version cloned
-                    os.system("rm -rf mmpm")
-
+                    os.chdir(os.path.join('/', 'tmp'))
+                    utils.run_cmd(['rm', '-rf', os.path.join('/', 'tmp', 'mmpm')])  # in case it existed previously
                     print("\n")
 
-                    return_code, _, std_err = utils.run_cmd(['git', 'clone', utils.MMPM_REPO_URL])
+                    # because of the lengthy installation process, it's better
+                    # to have everything printed to stdout for the user to see,
+                    # rather than run as subprocess, hiding the output
 
-                    if return_code:
-                        utils.error_msg(std_err)
-                        return False
-
-                    os.chdir("mmpm")
-                    print("\n")
-
-                    return_code, _, std_err = utils.run_cmd(['make'])
-
-                    if return_code:
-                        utils.error_msg(std_err)
-                        return False
-
+                    os.system(f'git clone {utils.MMPM_REPO_URL} -b develop && cd mmpm && make reinstall')
                     os.chdir(original_dir)
-                    print(colors.B_GREEN + f"\nMMPM Version: {version_number}")
-                    valid_response = True
 
                 elif response in ("no", "n"):
                     valid_response = True
                 else:
                     utils.warning_msg("Respond with yes/no or y/n.")
         else:
-            print("No enhancements available for MMPM.")
+            print("No enhancements available for MMPM. You have the latest version.")
             return False
         return True
     except HTTPError:
@@ -175,9 +164,12 @@ def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, 
                         updates_list.append(title)
 
                 elif upgrade:
-                    utils.plain_print(colors.B_CYAN + f"Requesting upgrade for {title}... " + colors.RESET)
+                    print(colors.B_CYAN + f"Requesting upgrade for {title} ... " + colors.RESET)
+                    return_code, stdout, stderr = utils.run_cmd(["git", "pull"])
 
-                    os.system("git pull")
+                    if return_code:
+                        utils.error_msg(stderr)
+                        return False
 
                     error_msg: str = utils.handle_installation_process()
 
@@ -348,7 +340,7 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
             utils.warning_msg(f"Unable to match '{module}' with installation candidate. Is the casing correct?")
 
     if successful_installs:
-        print(f"Finish the installation process by editing '{utils.MAGICMIRROR_CONFIG_FILE}' as needed")
+        print(f"The installed modules may need additional configuring within '{utils.MAGICMIRROR_CONFIG_FILE}'")
         return True
 
     return False
@@ -843,4 +835,3 @@ def edit_magicmirror_config() -> bool:
         return True
     except Exception:
         return False
-

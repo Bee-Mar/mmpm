@@ -107,6 +107,7 @@ def run_cmd(command: List[str]) -> tuple:
         stdout (str): The stdout output of the executed subprocess
         stderr (str): The stderr output of the executed subprocess
     '''
+
     proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
     return proc.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')

@@ -10,7 +10,7 @@ N_RED: str = N + Fore.RED
 B_RED: str = B + Fore.RED
 
 B_MAGENTA: str = N + Fore.MAGENTA
-B_MAGENTA: str = B + Fore.MAGENTA
+N_MAGENTA: str = B + Fore.MAGENTA
 
 N_CYAN: str = N + Fore.CYAN
 B_CYAN: str = B + Fore.CYAN

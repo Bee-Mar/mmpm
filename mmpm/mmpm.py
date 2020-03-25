@@ -12,13 +12,13 @@ def main(argv):
 
     if args.version:
         print(colors.B_CYAN + "MMPM Version: " + colors.B_WHITE + "{}".format(__version__))
-        exit(0)
+        sys.exit(0)
 
     modules, curr_snap, next_snap, checked_enhancements = core.load_modules(args.force_refresh)
 
     if not modules:
         utils.error_msg('Fatal. No modules found.')
-        exit(1)
+        sys.exit(1)
 
     if args.all:
         core.display_modules(modules)
@@ -46,7 +46,7 @@ def main(argv):
 
         if not installed_modules:
             utils.error_msg("No modules are currently installed")
-            exit(1)
+            sys.exit(1)
 
         core.display_modules(installed_modules)
 

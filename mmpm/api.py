@@ -3,17 +3,19 @@ import eventlet
 eventlet.monkey_patch()
 
 import json
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
 from mmpm import core, utils
 from mmpm.utils import log
 from shelljob import proc
 from flask_socketio import SocketIO, send, emit
+from typing import Tuple
 import os
+
 
 MMPM_EXECUTABLE: list = [os.path.join(os.path.expanduser('~'), '.local', 'bin', 'mmpm')]
 
-app: object = Flask(
+app = Flask(
     __name__,
     root_path='/var/www/mmpm',
     static_folder="/var/www/mmpm/static",
@@ -29,25 +31,51 @@ resources: dict = {
 
 
 CORS(app)
-socketio: object = SocketIO(app, cors_allowed_origins='*')
+socketio = SocketIO(app, cors_allowed_origins='*')
 
 GET: str = 'GET'
 POST: str = 'POST'
 DELETE: str = 'DELETE'
 
 
-def __api__(path='') -> str:
-    ''' Returns formatted string containing /api base path'''
+def __api__(path: str = '') -> str:
+    '''
+    Returns formatted string containing /api base path
+
+    Parameters:
+        path (str): url path
+
+    Returns:
+        str
+    '''
     return f'/api/{path}'
 
 
 def __modules__() -> dict:
-    ''' Returns dictionary of MagicMirror modules '''
+    '''
+    Returns dictionary of MagicMirror modules
+
+    Parameters:
+        None
+
+    Returns:
+        dict
+    '''
     modules, _, _, _ = core.load_modules()
     return modules
 
 
-def __stream_cmd_output__(process: proc.Group, cmd: list) -> None:
+def __stream_cmd_output__(process: proc.Group, cmd: list):
+    '''
+    Streams command output to socket.io client on frontend.
+
+    Parameters:
+        process (proc.Group): the process object responsible for running the command
+        cmd (List[str]): list of command arguments
+
+    Returns:
+        None
+    '''
     command: list = MMPM_EXECUTABLE + cmd
     log.logger.info(f"Executing {command}")
     process.run(command)
@@ -61,23 +89,31 @@ def __stream_cmd_output__(process: proc.Group, cmd: list) -> None:
     except Exception:
         pass
 
-
 @socketio.on_error()
-def error_handler(error) -> tuple:
+def error_handler(error) -> Tuple[str, int]:
+    '''
+    Socket.io error handler
+
+    Parameters:
+        error (str): error message
+
+    Returns:
+        tuple (str, int): error message and code
+    '''
     message: str = f'An internal error occurred within flask_socketio: {error}'
     log.logger.critical(message)
     return message, 500
 
 
 @socketio.on('connect')
-def test_connection() -> None:
+def on_connect() -> None:
     message: str = 'Server connected'
     log.logger.info(message)
     socketio.emit('connected', {'data': message})
 
 
 @socketio.on('disconnect')
-def test_connection() -> None:
+def on_disconnect() -> None:
     message: str = 'Server disconnected'
     log.logger.info(message)
     socketio.emit(message, {'data': message})
@@ -94,7 +130,7 @@ def after_request(response: Response) -> Response:
 
 
 @app.route('/<path:path>', methods=[GET])
-def static_proxy(path) -> str:
+def static_proxy(path):
     return send_from_directory('./', path)
 
 
@@ -104,7 +140,7 @@ def root() -> str:
 
 
 @app.errorhandler(500)
-def server_error(error) -> str:
+def server_error(error) -> Tuple[str, int]:
     return f'An internal error occurred [{__name__}.py]: {error}', 500
 
 
@@ -118,7 +154,7 @@ def install_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
     log.logger.info(f'Request to install {selected_modules}')
     process: proc.Group = proc.Group()
-    response: Response = Response(
+    Response(
         __stream_cmd_output__(process, ['-i'] + [selected_module['title'] for selected_module in selected_modules]),
         mimetype='text/plain'
     )
@@ -202,7 +238,7 @@ def remove_external_module_source() -> str:
 def force_refresh_magicmirror_modules() -> str:
     log.logger.info(f'Recieved request to refresh modules')
     process: proc.Group = proc.Group()
-    response: Response = Response(__stream_cmd_output__(process, ['-f']), mimetype='text/plain')
+    Response(__stream_cmd_output__(process, ['-f']), mimetype='text/plain')
     log.logger.info('Finished refresh')
     return json.dumps(True)
 
@@ -217,7 +253,7 @@ def get_magicmirror_config():
 
 @app.route(__api__('update-magicmirror-config'), methods=[POST])
 def update_magicmirror_config() -> str:
-    data: str = request.get_json(force=True)
+    data: dict = request.get_json(force=True)
     log.logger.info('Saving MagicMirror config file')
 
     try:

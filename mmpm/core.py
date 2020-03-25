@@ -9,11 +9,11 @@ import shutil
 from textwrap import fill
 from tabulate import tabulate
 from urllib.error import HTTPError
-from urllib.request import urlopen, Request
+from urllib.request import urlopen
 from collections import defaultdict
 from bs4 import BeautifulSoup
 from mmpm import colors, utils, mmpm
-from typing import List
+from typing import List, Tuple
 from mmpm.utils import log
 
 
@@ -61,12 +61,12 @@ def check_for_mmpm_enhancements() -> bool:
     try:
         log.logger.info(f'Checking for MMPM enhancements. Current version: {mmpm.__version__}')
 
-        MMPM_FILE: Request = urlopen(utils.MMPM_FILE_URL)
+        MMPM_FILE = urlopen(utils.MMPM_FILE_URL)
         contents: str = str(MMPM_FILE.read())
 
         version_line: List[str] = re.findall(r"__version__ = \d+\.\d+", contents)
-        version_number: List[str] = re.findall(r"\d+\.\d+", version_line[0])
-        version_number: float = float(version_number[0])
+        version_list: List[str] = re.findall(r"\d+\.\d+", version_line[0])
+        version_number: float = float(version_list[0])
 
         if version_number and mmpm.__version__ < version_number:
             log.logger.info(f'Found newer version of MMPM: {version_number}')
@@ -113,7 +113,7 @@ def check_for_mmpm_enhancements() -> bool:
 
 
 
-def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, modules_to_upgrade: bool = None) -> bool:
+def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, modules_to_upgrade: List[str] = None) -> bool:
     '''
     Depending on flags passed in as arguments:
 
@@ -190,9 +190,8 @@ def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, 
             utils.plain_print(colors.RESET + "\nNo updates available.\n")
         else:
             utils.plain_print(colors.B_MAGENTA + "Updates are available for the following modules:\n" + colors.RESET)
-
-            for update in updates_list:
-                print(f"{update}")
+            for module in updates_list:
+                print(f"{module}")
     return True
 
 def search_modules(modules: dict, search: str) -> dict:
@@ -212,7 +211,7 @@ def search_modules(modules: dict, search: str) -> dict:
     '''
 
     search_results: dict = {}
-    query:str = search[0]
+    query: str = search[0]
 
     try:
         if modules[query]:
@@ -224,7 +223,7 @@ def search_modules(modules: dict, search: str) -> dict:
 
     try:
         search_results = defaultdict(list)
-        query: str = query.lower()
+        query = query.lower()
 
         for key, value in modules.items():
             for index, _ in enumerate(value):
@@ -471,7 +470,7 @@ def remove_modules(modules: dict, modules_to_remove: List[str]) -> bool:
     os.chdir(original_dir)
     return True
 
-def load_modules(force_refresh: bool = False) -> dict:
+def load_modules(force_refresh: bool = False) -> Tuple[dict, datetime.datetime, datetime.datetime, bool]:
     '''
     Reads in modules from the hidden 'snapshot_file'  and checks if the file is
     out of date. If so, the modules are gathered again from the MagicMirror 3rd
@@ -486,7 +485,8 @@ def load_modules(force_refresh: bool = False) -> dict:
     '''
 
     modules: dict = {}
-    curr_snap: int = 0
+    curr_snap: float = None
+    next_snap: float = None
     refresh_interval: int = 6
 
     checked_for_enhancements: bool = False
@@ -500,8 +500,8 @@ def load_modules(force_refresh: bool = False) -> dict:
             return None, None, None, None
 
     if not force_refresh and snapshot_exists:
-        curr_snap: datetime.datetime = os.path.getmtime(utils.SNAPSHOT_FILE)
-        next_snap: datetime.datetime = curr_snap + refresh_interval * 60 * 60
+        curr_snap = os.path.getmtime(utils.SNAPSHOT_FILE)
+        next_snap = curr_snap + refresh_interval * 60 * 60
     else:
         next_snap = curr_snap = time.time()
 
@@ -534,13 +534,13 @@ def load_modules(force_refresh: bool = False) -> dict:
         except Exception:
             utils.warning_msg(f'Failed to load data from {utils.MMPM_EXTERNAL_SOURCES_FILE}.')
 
-    curr_snap = datetime.datetime.fromtimestamp(int(curr_snap))
-    next_snap = datetime.datetime.fromtimestamp(int(next_snap))
+    curr_snap_date = datetime.datetime.fromtimestamp(int(curr_snap))
+    next_snap_date = datetime.datetime.fromtimestamp(int(next_snap))
 
-    return modules, curr_snap, next_snap, checked_for_enhancements
+    return modules, curr_snap_date, next_snap_date, checked_for_enhancements
 
 
-def retrieve_modules() -> None:
+def retrieve_modules() -> dict:
     '''
     Scrapes the MagicMirror 3rd Party Wiki, and saves all modules along with
     their full, available descriptions in a hidden JSON file in the users home
@@ -561,7 +561,7 @@ def retrieve_modules() -> None:
         utils.error_msg("Unable to retrieve MagicMirror modules. Is your internet connection down?")
         return None
 
-    soup: object = BeautifulSoup(web_page, "html.parser")
+    soup = BeautifulSoup(web_page, "html.parser")
     table_soup: list = soup.find_all("table")
 
     category_soup: list = soup.find_all(attrs={"class": "markdown-body"})
@@ -587,7 +587,7 @@ def retrieve_modules() -> None:
         for column_number, _ in enumerate(row):
             # ignore cells that literally say "Title", "Author", "Description"
             if column_number > 0:
-                td_soup: List[object] = tr_soup[index][column_number].find_all("td")
+                td_soup: list = tr_soup[index][column_number].find_all("td")
 
                 title: str = "N/A"
                 repo: str = "N/A"
@@ -660,7 +660,7 @@ def display_modules(modules: dict, list_categories: bool = False) -> None:
         print(tabulate(rows, headers, tablefmt="fancy_grid"))
         return
 
-    headers: List[str] = [
+    headers = [
         colors.B_CYAN + "Category",
         utils.TITLE,
         utils.REPOSITORY,
@@ -668,7 +668,7 @@ def display_modules(modules: dict, list_categories: bool = False) -> None:
         utils.DESCRIPTION + colors.RESET
     ]
 
-    rows: List[List[object]] = []
+    rows = []
 
     for category, details in modules.items():
         for index, _ in enumerate(details):
@@ -741,10 +741,10 @@ def add_external_module_source(title: str = None, author: str = None, repo: str 
 
     if not title and not author and not repo and not desc:
         try:
-            title: str = input("Title: ")
-            author: str = input("Author: ")
-            repo: str = input("Repository: ")
-            desc: str = input("Description: ")
+            title = input("Title: ")
+            author = input("Author: ")
+            repo = input("Repository: ")
+            desc = input("Description: ")
 
         except KeyboardInterrupt:
             print('\n')
@@ -762,7 +762,8 @@ def add_external_module_source(title: str = None, author: str = None, repo: str 
             config: dict = {}
 
             with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
-                config[utils.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[utils.EXTERNAL_MODULE_SOURCES]
+                config[utils.EXTERNAL_MODULE_SOURCES] = json.load(
+                    mmpm_ext_srcs)[utils.EXTERNAL_MODULE_SOURCES]
 
             for module in config[utils.EXTERNAL_MODULE_SOURCES]:
                 if module[utils.TITLE] == title:
@@ -777,10 +778,10 @@ def add_external_module_source(title: str = None, author: str = None, repo: str 
                 json.dump({utils.EXTERNAL_MODULE_SOURCES: [new_source]}, mmpm_ext_srcs)
 
         print(colors.B_WHITE + f"\nSuccessfully added {title} to '{utils.EXTERNAL_MODULE_SOURCES}'\n" + colors.RESET)
-        return True
     except IOError:
         utils.error_msg('Failed to save external module')
         return False
+    return True
 
 
 def remove_external_module_source(titles: str = None) -> bool:

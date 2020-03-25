@@ -14,7 +14,7 @@ def get_user_args() -> object:
     Returns:
         ArgumentParser objects
     '''
-    arg_parser: object = argparse.ArgumentParser(prog='mmpm',
+    arg_parser = argparse.ArgumentParser(prog='mmpm',
                                          epilog=f'More details at {MMPM_WIKI_URL}',
                                          description='''
                                                     The MagicMirror Package

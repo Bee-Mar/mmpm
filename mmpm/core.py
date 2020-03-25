@@ -69,6 +69,7 @@ def check_for_mmpm_enhancements() -> bool:
         version_number: float = float(version_number[0])
 
         if version_number and mmpm.__version__ < version_number:
+            log.logger.info(f'Found newer version of MMPM: {version_number}')
             valid_response = False
 
             while not valid_response:
@@ -84,6 +85,7 @@ def check_for_mmpm_enhancements() -> bool:
                 if response in ("yes", "y"):
                     valid_response = True
                     original_dir = os.getcwd()
+                    log.logger.info(f'User chose to update MMPM with {original_dir} as the starting directory')
 
                     os.chdir(os.path.join('/', 'tmp'))
                     utils.run_cmd(['rm', '-rf', os.path.join('/', 'tmp', 'mmpm')])  # in case it existed previously
@@ -95,6 +97,7 @@ def check_for_mmpm_enhancements() -> bool:
 
                     os.system(f'git clone {utils.MMPM_REPO_URL} -b develop && cd mmpm && make reinstall')
                     os.chdir(original_dir)
+                    log.logger.info(f'Changing back to original working directory: {original_dir}')
 
                 elif response in ("no", "n"):
                     valid_response = True
@@ -102,6 +105,7 @@ def check_for_mmpm_enhancements() -> bool:
                     utils.warning_msg("Respond with yes/no or y/n.")
         else:
             print("No enhancements available for MMPM. You have the latest version.")
+            log.logger.info('No newer version of MMPM available')
             return False
         return True
     except HTTPError:

@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { MagicMirrorConfigEditorComponent } from './magic-mirror-config-editor.component';
+import { MagicMirrorConfigEditorComponent } from "./magic-mirror-config-editor.component";
 
-describe('MagicMirrorConfigEditorComponent', () => {
+describe("MagicMirrorConfigEditorComponent", () => {
   let component: MagicMirrorConfigEditorComponent;
   let fixture: ComponentFixture<MagicMirrorConfigEditorComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ MagicMirrorConfigEditorComponent ]
-    })
-    .compileComponents();
+      declarations: [MagicMirrorConfigEditorComponent]
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('MagicMirrorConfigEditorComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

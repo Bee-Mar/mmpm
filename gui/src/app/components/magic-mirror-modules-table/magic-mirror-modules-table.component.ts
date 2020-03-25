@@ -65,7 +65,7 @@ export class MagicMirrorModulesTableComponent {
 
   public ngOnInit(): void {
     this.retrieveModules();
-    this.subscription = this.notifier.getNotification().subscribe((_) => this.retrieveModules());
+    this.subscription = this.notifier.getNotification().subscribe((unused) => { this.retrieveModules(); });
   }
 
   private retrieveModules(): void {
@@ -94,8 +94,13 @@ export class MagicMirrorModulesTableComponent {
     });
   }
 
-  private complete = () => this.snackbar.open("Process complete", "Close", this.snackbarSettings);
-  private executing = () => this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
+  private complete = () => {
+    this.snackbar.open("Process complete", "Close", this.snackbarSettings);
+  };
+
+  private executing = () => {
+    this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
+  };
 
   public compare(a: number | string, b: number | string, ascending: boolean): number {
     return (a < b ? -1 : 1) * (ascending ? 1 : -1);
@@ -134,9 +139,7 @@ export class MagicMirrorModulesTableComponent {
   }
 
   public toggleSelectAll(): void {
-    this.isAllSelected()
-      ? this.selection.clear()
-      : this.dataSource?.data.forEach((row) => this.selection.select(row));
+    this.isAllSelected() ? this.selection.clear() : this.dataSource?.data.forEach((row) => { this.selection.select(row); });
   }
 
   public onInstallModules(): void {
@@ -145,7 +148,7 @@ export class MagicMirrorModulesTableComponent {
       this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
       this.executing();
 
-      this.api.modifyModules("/install-modules", this.selection.selected).subscribe((_) => {
+      this.api.modifyModules("/install-modules", this.selection.selected).subscribe((ununsed) => {
         this.complete();
         this.notifier.triggerTableUpdate();
       });
@@ -195,7 +198,7 @@ export class MagicMirrorModulesTableComponent {
       this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
       this.executing();
 
-      this.api.removeExternalModuleSource(this.selection.selected).subscribe((_) => {
+      this.api.removeExternalModuleSource(this.selection.selected).subscribe((unused) => {
         this.complete();
         this.notifier.triggerTableUpdate();
       });
@@ -206,7 +209,7 @@ export class MagicMirrorModulesTableComponent {
     this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
     this.executing();
 
-    this.api.refreshModules().subscribe((_) => {
+    this.api.refreshModules().subscribe((unused) => {
       this.complete();
       this.notifier.triggerTableUpdate();
     });
@@ -217,7 +220,7 @@ export class MagicMirrorModulesTableComponent {
       this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
       this.executing();
 
-      this.api.modifyModules("/uninstall-modules", this.selection.selected).subscribe((_) => {
+      this.api.modifyModules("/uninstall-modules", this.selection.selected).subscribe((unused) => {
         this.complete();
         this.notifier.triggerTableUpdate();
       });
@@ -229,7 +232,7 @@ export class MagicMirrorModulesTableComponent {
       this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
       this.executing();
 
-      this.api.upgradeModules(this.selection.selected).subscribe((_) => {
+      this.api.upgradeModules(this.selection.selected).subscribe((unused) => {
         this.complete();
         this.notifier.triggerTableUpdate();
       });

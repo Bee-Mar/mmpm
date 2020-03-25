@@ -21,6 +21,7 @@
     "@angular/platform-browser": "~9.0.1",
     "@angular/platform-browser-dynamic": "~9.0.1",
     "@angular/router": "~9.0.1",
+    "@types/js-cookie": "^2.2.5",
     "@types/socket.io": "^2.1.4",
     "@types/socket.io-client": "^1.4.32",
     "js-cookie": "^2.2.1",

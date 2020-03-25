@@ -120,7 +120,7 @@ def on_disconnect() -> None:
 
 @app.after_request
 def after_request(response: Response) -> Response:
-    log.logger.info('')
+    log.logger.info('Headers being added after the request')
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"

@@ -1,8 +1,8 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed } from "@angular/core/testing";
 
-import { TableUpdateNotifierService } from './table-update-notifier.service';
+import { TableUpdateNotifierService } from "./table-update-notifier.service";
 
-describe('TableUpdateNotifierService', () => {
+describe("TableUpdateNotifierService", () => {
   let service: TableUpdateNotifierService;
 
   beforeEach(() => {
@@ -10,7 +10,7 @@ describe('TableUpdateNotifierService', () => {
     service = TestBed.inject(TableUpdateNotifierService);
   });
 
-  it('should be created', () => {
+  it("should be created", () => {
     expect(service).toBeTruthy();
   });
 });

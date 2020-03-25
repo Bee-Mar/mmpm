@@ -9,10 +9,12 @@ import shutil
 from textwrap import fill
 from tabulate import tabulate
 from urllib.error import HTTPError
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 from collections import defaultdict
 from bs4 import BeautifulSoup
 from mmpm import colors, utils, mmpm
+from typing import List
+from mmpm.utils import log
 
 
 def snapshot_details(modules: dict, curr_snap: str, next_snap: str) -> None:
@@ -57,18 +59,19 @@ def check_for_mmpm_enhancements() -> bool:
     '''
 
     try:
-        MMPM_FILE = urlopen(utils.MMPM_FILE_URL)
+        log.logger.info('Checking for MMPM enhancements')
+
+        MMPM_FILE: Request = urlopen(utils.MMPM_FILE_URL)
         contents: str = str(MMPM_FILE.read())
 
-        version_line: list = re.findall(r"__version__ = \d+\.\d+", contents)
-        version_number: list = re.findall(r"\d+\.\d+", version_line[0])
+        version_line: List[str] = re.findall(r"__version__ = \d+\.\d+", contents)
+        version_number: List[str] = re.findall(r"\d+\.\d+", version_line[0])
         version_number: float = float(version_number[0])
 
         if version_number and mmpm.__version__ < version_number:
             valid_response = False
 
-            utils.plain_print(
-                colors.B_CYAN + "Automated check for MMPM enhancements... " + colors.RESET)
+            utils.plain_print(colors.B_CYAN + "Automated check for MMPM enhancements... " + colors.RESET)
 
             while not valid_response:
                 response = input(colors.B_GREEN + "MMPM enhancements are available. " +
@@ -116,7 +119,8 @@ def check_for_mmpm_enhancements() -> bool:
         return False
 
 
-def enhance_modules(modules: dict, update=False, upgrade=False, modules_to_upgrade=None) -> bool:
+
+def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, modules_to_upgrade: bool = None) -> bool:
     '''
     Depending on flags passed in as arguments:
 
@@ -131,7 +135,7 @@ def enhance_modules(modules: dict, update=False, upgrade=False, modules_to_upgra
         modules (dict): Dictionary of MagicMirror modules
         update (bool): Flag to update modules
         upgrade (bool): Flag to upgrade modules
-        modules_to_upgrade (list): List of modules to update/upgrade
+        modules_to_upgrade (List[str]): List of modules to update/upgrade
 
     Returns:
         None
@@ -143,26 +147,24 @@ def enhance_modules(modules: dict, update=False, upgrade=False, modules_to_upgra
 
     installed_modules: dict = get_installed_modules(modules)
 
-    updates_list: list = []
+    updates_list: List[str] = []
 
-    dirs = os.listdir(modules_dir)
+    dirs: List[str] = os.listdir(modules_dir)
 
     if upgrade and modules_to_upgrade:
         dirs = modules_to_upgrade
 
     if update:
-        print(colors.B_MAGENTA + "Checking for updates to: " + colors.RESET)
+        print(colors.B_CYAN + "Checking for updates" + colors.RESET + " ...")
 
-    # TODO: look to simplify or flatten this loop
     for _, value in installed_modules.items():
         for index, _ in enumerate(value):
             if value[index][utils.TITLE] in dirs:
-                title = value[index][utils.TITLE]
-                curr_module_dir = os.path.join(modules_dir, title)
+                title: str = value[index][utils.TITLE]
+                curr_module_dir: str = os.path.join(modules_dir, title)
                 os.chdir(curr_module_dir)
 
                 if update:
-                    print(f"{title} ")
                     return_code, stdout, stderr = utils.run_cmd(["git", "fetch", "--dry-run"])
 
                     if return_code:
@@ -177,23 +179,11 @@ def enhance_modules(modules: dict, update=False, upgrade=False, modules_to_upgra
 
                     os.system("git pull")
 
-                    if os.path.isfile(os.path.join(os.getcwd(), "package.json")):
-                        utils.plain_print(colors.B_CYAN + "Found package.json. Installing NodeJS dependencies... ")
-                        return_code, _, std_err = utils.run_cmd(['npm', 'install'])
-                        utils.handle_warnings(return_code, std_err)
+                    error_msg: str = utils.handle_installation_process()
 
-                    if os.path.isfile(os.path.join(os.getcwd(),'Makefile')) or os.path.isfile(os.path.join(os.getcwd(), 'makefile')):
-                        utils.plain_print(colors.B_CYAN + "Found Makefile. Attempting to run 'make'... ")
-                        return_code, _, std_err = utils.run_cmd(['make'])
-                        utils.handle_warnings(return_code, std_err)
-
-                    if os.path.isfile(os.path.join(os.getcwd(), 'CMakeLists.txt')):
-                        utils.plain_print(colors.B_CYAN + "Found CMakeLists.txt. Attempting to run 'cmake'... ")
-                        os.system('mkdir -p build')
-                        os.chdir('build')
-                        return_code, _, std_err = utils.run_cmd(['cmake', '..'])
-                        utils.handle_warnings(return_code, std_err)
-                        os.chdir('..')
+                    if error_msg:
+                        utils.error_msg(error_msg)
+                        return False
 
                 os.chdir(modules_dir)
 
@@ -201,7 +191,7 @@ def enhance_modules(modules: dict, update=False, upgrade=False, modules_to_upgra
 
     if update:
         if not updates_list:
-            utils.plain_print(colors.B_CYAN + "\nNo updates available.\n" + colors.RESET)
+            utils.plain_print(colors.RESET + "\nNo updates available.\n")
         else:
             utils.plain_print(colors.B_MAGENTA + "Updates are available for the following modules:\n" + colors.RESET)
 
@@ -209,7 +199,7 @@ def enhance_modules(modules: dict, update=False, upgrade=False, modules_to_upgra
                 print(f"{update}")
     return True
 
-def search_modules(modules, search):
+def search_modules(modules: dict, search: str) -> dict:
     '''
     Used to search the 'modules' for either a category, or keyword/phrase
     appearing within module descriptions. If the argument supplied is a
@@ -222,11 +212,11 @@ def search_modules(modules, search):
         search (str): Search query
 
     Returns:
-        None
+        dict
     '''
 
-    search_results = {}
-    query = search[0]
+    search_results: dict = {}
+    query:str = search[0]
 
     try:
         if modules[query]:
@@ -238,7 +228,7 @@ def search_modules(modules, search):
 
     try:
         search_results = defaultdict(list)
-        query = query.lower()
+        query: str = query.lower()
 
         for key, value in modules.items():
             for index, _ in enumerate(value):
@@ -264,7 +254,7 @@ def search_modules(modules, search):
     return search_results
 
 
-def install_modules(modules, modules_to_install):
+def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
     '''
     Compares list of 'modules_to_install' to modules found within the
     'modules', clones the repository within the ~/MagicMirror/modules
@@ -272,14 +262,14 @@ def install_modules(modules, modules_to_install):
 
     Parameters:
         modules (dict): Dictionary of MagicMirror modules
-        modules_to_install (list): List of modules to install
+        modules_to_install (List[str]): List of modules to install
 
     Returns:
         bool: True upon success, False upon failure
     '''
 
-    modules_dir = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
-    original_dir = os.getcwd()
+    modules_dir: str = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
+    original_dir: str = os.getcwd()
 
     if not os.path.exists(modules_dir):
         msg = "Failed to find MagicMirror root. Have you installed MagicMirror properly? "
@@ -287,73 +277,84 @@ def install_modules(modules, modules_to_install):
         utils.error_msg(msg)
         return False
 
+    log.logger.info(f'User selected modules to install: {modules_to_install}')
+    log.logger.info(f'Changing into MagicMirror modules directory {modules_dir}')
     os.chdir(modules_dir)
-    successful_installs = []
+    successful_installs: List[str] = []
+    existing_modules: List[str] = []
+    failed_installs: List[str] = []
 
-    for value in modules.values():
-        curr_subdir = os.getcwd()
+    for module_to_install in modules_to_install:
+        install_next: bool = False
 
-        for index in range(len(value)):
-            if value[index][utils.TITLE] in modules_to_install:
-                title = value[index][utils.TITLE]
-                target = os.path.join(os.getcwd(), title)
-                repo = value[index][utils.REPOSITORY]
+        for _, category in modules.items():
+            for module in category:
+                if module[utils.TITLE] == module_to_install:
+                    log.logger.info(f'Matched {module[utils.TITLE]} to installation candidate')
+                    title = module[utils.TITLE]
+                    target = os.path.join(os.getcwd(), title)
+                    repo = module[utils.REPOSITORY]
 
-                successful_installs.append(title)
+                    try:
+                        os.mkdir(target)
+                    except OSError:
+                        log.logger.info(f'Found {title} already in {os.getcwd()}. Skipping.')
+                        utils.warning_msg(f"The module {title} is already installed. To remove the module, run 'mmpm -r {title}'")
+                        existing_modules.append(title)
+                        install_next = True
+                        continue
 
-                try:
-                    os.mkdir(target)
-                except OSError:
-                    utils.error_msg(f"The {title} module already exists. To remove the module, run 'mmpm -r {title}'")
-                    return False
+                    os.chdir(target)
 
-                os.chdir(target)
+                    print(colors.RESET + "Installing " + colors.B_CYAN + f"{title}" + colors.B_YELLOW + " @ " + colors.RESET + f"{target}\n")
 
-                print(colors.B_GREEN + f"Installing {title}" + colors.B_YELLOW + " @ " + colors.B_GREEN + f"{target}\n")
+                    utils.plain_print(colors.RESET + f"Cloning {title} repository ... " + colors.RESET)
 
-                utils.plain_print(
-                    colors.B_CYAN + f"Cloning {title} repository ... " + colors.RESET)
+                    # by using "repo.split()", it allows the user to bake in additional commands when making custom sources
+                    # ie. git clone <repo> -b <branch> <target>
+                    return_code, _, std_err = utils.run_cmd(['git', 'clone'] + repo.split() + [target])
 
-                return_code, _, std_err = utils.run_cmd(['git', 'clone', repo, target])
-                utils.handle_warnings(return_code, std_err)
+                    if return_code:
+                        print('\n')
+                        utils.warning_msg(std_err)
+                    else:
+                        utils.plain_print(colors.B_GREEN + 'done\n')
 
-                if os.path.isfile(os.getcwd() + "/package.json"):
-                    utils.plain_print(colors.B_CYAN + "Found package.json. Installing NodeJS dependencies... ")
-                    return_code, _, std_err = utils.run_cmd(['npm', 'install'])
-                    utils.handle_warnings(return_code, std_err)
+                    error: str = utils.handle_installation_process()
 
-                if os.path.isfile(os.getcwd() + '/Makefile') or os.path.isfile(os.getcwd() + '/makefile'):
-                    utils.plain_print(colors.B_CYAN + "Found Makefile. Attempting to run 'make'... ")
-                    return_code, _, std_err = utils.run_cmd(['make'])
-                    utils.handle_warnings(return_code, std_err)
+                    if error:
+                        utils.error_msg(error)
+                        failed_installs.append(title)
 
-                if os.path.isfile(os.getcwd() + '/CMakeLists.txt'):
-                    utils.plain_print(colors.B_CYAN + "Found CMakeLists.txt. Attempting to run 'cmake'... ")
-                    os.system('mkdir -p build')
-                    os.chdir('build')
-                    return_code, _, std_err = utils.run_cmd(['cmake', '..'])
-                    utils.handle_warnings(return_code, std_err)
+                    else:
+                        successful_installs.append(title)
 
-                    os.chdir('..')
+                    os.chdir(modules_dir)
+                    install_next = True
+                    break
 
-                print('\n')
-                os.chdir(curr_subdir)
+            if install_next:
+                break
 
-    os.chdir(original_dir)
+    for module in failed_installs:
+        failed_install_path = os.path.join(modules_dir, module)
+        message = f"Failed to install {title}, removing the directory: '{failed_install_path}'"
+        log.logger.info(message)
+        utils.error_msg(message)
+        shutil.rmtree(failed_install_path)
 
     for module in modules_to_install:
-        if module not in successful_installs:
-            utils.warning_msg(f"Unable to match '{module}' with installation candidate. Is the casing correct?\n")
+        if module not in successful_installs and module not in existing_modules and module not in failed_installs:
+            utils.warning_msg(f"Unable to match '{module}' with installation candidate. Is the casing correct?")
 
     if successful_installs:
-        utils.plain_print(colors.B_GREEN + "\nTo complete installation, populate " + colors.B_WHITE)
-        print(colors.B_WHITE + "'~/MagicMirror/config/config.js'" + colors.B_GREEN + " with the necessary configurations for each of the newly installed modules\n")
-        print(colors.RESET + "There may be additional installation steps required. Review the associated GitHub pages for each newly installed module")
+        print(f"Finish the installation process by editing '{utils.MAGICMIRROR_CONFIG_FILE}' as needed")
         return True
+
     return False
 
 
-def install_magicmirror():
+def install_magicmirror() -> bool:
     '''
     Installs MagicMirror. First checks if a MagicMirror installation can be
     found, and if one is found, prompts user to update the MagicMirror.
@@ -368,7 +369,7 @@ def install_magicmirror():
         bool: True upon succcess, False upon failure
     '''
 
-    original_dir = os.getcwd()
+    original_dir: str = os.getcwd()
 
     try:
         if not os.path.exists(os.path.join(utils.MAGICMIRROR_ROOT)):
@@ -380,7 +381,7 @@ def install_magicmirror():
             valid_response = False
 
             while not valid_response:
-                response = input(message)
+                response: str = input(message)
 
                 if response in ("yes", "y"):
                     os.chdir(os.path.join(utils.HOME_DIR, 'MagicMirror'))
@@ -391,7 +392,12 @@ def install_magicmirror():
                     if git_status.stdout:
                         print(colors.B_CYAN + "Updates found for MagicMirror. " + colors.RESET + "Requesting upgrades...")
                         return_code, _, std_err = utils.run_cmd(['git', 'pull'])
-                        utils.handle_warnings(return_code, std_err)
+
+                        if return_code:
+                            print('\n')
+                            utils.warning_msg(std_err)
+                        else:
+                            utils.plain_print(colors.B_WHITE + 'done\n')
 
                         if not return_code:
                             os.system("$(which npm) install")
@@ -414,7 +420,7 @@ def install_magicmirror():
     return True
 
 
-def remove_modules(modules, modules_to_remove):
+def remove_modules(modules: dict, modules_to_remove: List[str]) -> bool:
     '''
     Gathers list of modules currently installed in the ~/MagicMirror/modules
     directory, and removes each of the modules from the folder, if modules are
@@ -429,14 +435,14 @@ def remove_modules(modules, modules_to_remove):
         bool: True upon success, False upon failure
     '''
 
-    installed_modules = get_installed_modules(modules)
+    installed_modules: dict = get_installed_modules(modules)
 
     if not installed_modules:
         utils.error_msg("No modules are currently installed.")
         return False
 
-    modules_dir = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
-    original_dir = os.getcwd()
+    modules_dir: str = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
+    original_dir: str = os.getcwd()
 
     if not os.path.exists(modules_dir):
         msg = "Failed to find MagicMirror root. Have you installed MagicMirror properly? "
@@ -445,11 +451,11 @@ def remove_modules(modules, modules_to_remove):
         return False
 
     os.chdir(modules_dir)
-    successful_removals = []
-    curr_dir = os.getcwd()
+    successful_removals: List[str] = []
+    curr_dir: str = os.getcwd()
 
     for module in modules_to_remove:
-        dir_to_rm = os.path.join(curr_dir, module)
+        dir_to_rm: str = os.path.join(curr_dir, module)
 
         try:
             shutil.rmtree(dir_to_rm)
@@ -469,7 +475,7 @@ def remove_modules(modules, modules_to_remove):
     os.chdir(original_dir)
     return True
 
-def load_modules(force_refresh=False):
+def load_modules(force_refresh: bool = False) -> dict:
     '''
     Reads in modules from the hidden 'snapshot_file'  and checks if the file is
     out of date. If so, the modules are gathered again from the MagicMirror 3rd
@@ -483,12 +489,12 @@ def load_modules(force_refresh=False):
         modules (dict): list of modules upon success
     '''
 
-    modules = {}
-    curr_snap = 0
-    refresh_interval = 6
+    modules: dict = {}
+    curr_snap: int = 0
+    refresh_interval: int = 6
 
-    checked_for_enhancements = False
-    snapshot_exists = os.path.exists(utils.SNAPSHOT_FILE)
+    checked_for_enhancements: bool = False
+    snapshot_exists: bool = os.path.exists(utils.SNAPSHOT_FILE)
 
     if not snapshot_exists and not os.path.exists(utils.MMPM_CONFIG_DIR):
         try:
@@ -498,8 +504,8 @@ def load_modules(force_refresh=False):
             return None, None, None, None
 
     if not force_refresh and snapshot_exists:
-        curr_snap = os.path.getmtime(utils.SNAPSHOT_FILE)
-        next_snap = curr_snap + refresh_interval * 60 * 60
+        curr_snap: datetime.datetime = os.path.getmtime(utils.SNAPSHOT_FILE)
+        next_snap: datetime.datetime = curr_snap + refresh_interval * 60 * 60
     else:
         next_snap = curr_snap = time.time()
 
@@ -568,8 +574,8 @@ def retrieve_modules() -> None:
     categories: list = []
 
     for index, _ in enumerate(categories_soup):
-        last_element = len(categories_soup[index].contents) - 1
-        new_category = categories_soup[index].contents[last_element]
+        last_element: object = len(categories_soup[index].contents) - 1
+        new_category: object = categories_soup[index].contents[last_element]
 
         if new_category != "General Advice":
             categories.append(new_category)
@@ -585,12 +591,12 @@ def retrieve_modules() -> None:
         for column_number, _ in enumerate(row):
             # ignore cells that literally say "Title", "Author", "Description"
             if column_number > 0:
-                td_soup = tr_soup[index][column_number].find_all("td")
+                td_soup: List[object] = tr_soup[index][column_number].find_all("td")
 
-                title = ""
-                repo = "N/A"
-                author = ""
-                desc = ""
+                title: str = "N/A"
+                repo: str = "N/A"
+                author: str = "N/A"
+                desc: str = "N/A"
 
                 for idx in range(len(td_soup)):
                     if idx == 0:
@@ -615,6 +621,8 @@ def retrieve_modules() -> None:
                         author = str(author)
 
                     else:
+                        if contents:
+                            desc = ""
                         for contents in td_soup[idx].contents:
                             if type(contents).__name__ == "Tag":
                                 for content in contents:
@@ -632,7 +640,7 @@ def retrieve_modules() -> None:
     return modules
 
 
-def display_modules(modules: dict, list_categories=False) -> None:
+def display_modules(modules: dict, list_categories: bool = False) -> None:
     '''
     Depending on the user flags passed in from the command line, either all
     existing modules may be displayed, or the names of all categories of
@@ -647,16 +655,16 @@ def display_modules(modules: dict, list_categories=False) -> None:
     '''
 
     if list_categories:
-        headers: list = [
+        headers: List[str] = [
             colors.B_CYAN + "Category",
             colors.B_CYAN + "Number of Modules" + colors.RESET
         ]
 
-        rows: list = [[key, len(modules[key])] for key in modules.keys()]
+        rows: List[List[object]] = [[key, len(modules[key])] for key in modules.keys()]
         print(tabulate(rows, headers, tablefmt="fancy_grid"))
         return
 
-    headers: list = [
+    headers: List[str] = [
         colors.B_CYAN + "Category",
         utils.TITLE,
         utils.REPOSITORY,
@@ -664,7 +672,7 @@ def display_modules(modules: dict, list_categories=False) -> None:
         utils.DESCRIPTION + colors.RESET
     ]
 
-    rows: list = []
+    rows: List[List[object]] = []
 
     for category, details in modules.items():
         for index, _ in enumerate(details):
@@ -679,7 +687,7 @@ def display_modules(modules: dict, list_categories=False) -> None:
     print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))
 
 
-def get_installed_modules(modules):
+def get_installed_modules(modules: dict) -> dict:
     '''
     Saves a list of all currently installed modules in the
     ~/MagicMirror/modules directory, and compares against the known modules
@@ -704,7 +712,7 @@ def get_installed_modules(modules):
 
     os.chdir(modules_dir)
 
-    module_dirs: list = os.listdir(os.getcwd())
+    module_dirs: List[str] = os.listdir(os.getcwd())
     installed_modules: dict = {}
 
     for category, modules in modules.items():
@@ -716,7 +724,7 @@ def get_installed_modules(modules):
     return installed_modules
 
 
-def add_external_module_source(title=None, author=None, repo=None, desc=None) -> bool:
+def add_external_module_source(title: str = None, author: str = None, repo: str = None, desc: str = None) -> bool:
     '''
     Adds an external source for user to install a module from. This may be a
     private git repo, or a specific branch of a public repo. All modules added
@@ -779,7 +787,7 @@ def add_external_module_source(title=None, author=None, repo=None, desc=None) ->
         return False
 
 
-def remove_external_module_source(titles=None) -> bool:
+def remove_external_module_source(titles: str = None) -> bool:
     '''
     Allows user to remove an external source from the sources saved in
     ~/.config/mmpm/mmpm-external-sources.json

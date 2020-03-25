@@ -47,9 +47,6 @@ def __modules__() -> dict:
     return modules
 
 
-def __callback__() -> None:
-    log.logger.info('Acked')
-
 def __stream_cmd_output__(process: proc.Group, cmd: list) -> None:
     command: list = MMPM_EXECUTABLE + cmd
     log.logger.info(f"Executing {command}")
@@ -97,31 +94,31 @@ def after_request(response: Response) -> Response:
 
 
 @app.route('/<path:path>', methods=[GET])
-def static_proxy(path):
+def static_proxy(path) -> str:
     return send_from_directory('./', path)
 
 
 @app.route('/', methods=[GET, POST, DELETE])
-def root():
+def root() -> str:
     return render_template('index.html')
 
 
 @app.errorhandler(500)
-def server_error(error):
+def server_error(error) -> str:
     return f'An internal error occurred [{__name__}.py]: {error}', 500
 
 
 @app.route(__api__('all-modules'), methods=[GET])
-def get_magicmirror_modules():
+def get_magicmirror_modules() -> dict:
     return __modules__()
 
 
 @app.route(__api__('install-modules'), methods=[POST])
-def install_magicmirror_modules():
-    selected_modules = request.get_json(force=True)['selected-modules']
+def install_magicmirror_modules() -> str:
+    selected_modules: list = request.get_json(force=True)['selected-modules']
     log.logger.info(f'Request to install {selected_modules}')
-    process = proc.Group()
-    response = Response(
+    process: proc.Group = proc.Group()
+    response: Response = Response(
         __stream_cmd_output__(process, ['-i'] + [selected_module['title'] for selected_module in selected_modules]),
         mimetype='text/plain'
     )
@@ -131,9 +128,10 @@ def install_magicmirror_modules():
 
 
 @app.route(__api__('uninstall-modules'), methods=[POST])
-def remove_magicmirror_modules():
-    selected_modules = request.get_json(force=True)['selected-modules']
-    process = proc.Group()
+def remove_magicmirror_modules() -> Response:
+    selected_modules: list = request.get_json(force=True)['selected-modules']
+    process: proc.Group = proc.Group()
+
     return Response(
         __stream_cmd_output__(process, ['-r'] + [selected_module['title'] for selected_module in selected_modules]),
         mimetype='text/plain'
@@ -141,52 +139,41 @@ def remove_magicmirror_modules():
 
 
 @app.route(__api__('upgrade-modules'), methods=[POST])
-def upgrade_magicmirror_modules():
-    selected_modules = request.get_json(force=True)['selected-modules']
+def upgrade_magicmirror_modules() -> str:
+    selected_modules: list = request.get_json(force=True)['selected-modules']
     log.logger.info(f'Request to upgrade {selected_modules}')
-    process = proc.Group()
+    process: proc.Group = proc.Group()
+
     response = Response(
         __stream_cmd_output__(process, ['-U'] + [selected_module['title'] for selected_module in selected_modules]),
         mimetype='text/plain'
     )
+
     log.logger.info('Finished update')
     return json.dumps(True)
 
 
 @app.route(__api__('all-installed-modules'), methods=[GET])
-def get_installed_magicmirror_modules():
+def get_installed_magicmirror_modules() -> dict:
     return core.get_installed_modules(__modules__())
 
 
 @app.route(__api__('all-external-module-sources'), methods=[GET])
-def get_external__modules__sources():
-    ext_sources = {utils.EXTERNAL_MODULE_SOURCES: []}
+def get_external__modules__sources() -> dict:
+    ext_sources: dict = {utils.EXTERNAL_MODULE_SOURCES: []}
     try:
         with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
-            ext_sources[utils.EXTERNAL_MODULE_SOURCES] = json.load(
-                mmpm_ext_srcs)[utils.EXTERNAL_MODULE_SOURCES]
-    except IOError:
-        pass
-    return ext_sources
-
-
-@app.route(__api__('update-modules'), methods=[GET])
-def update_installed_modules():
-    ext_sources = {utils.EXTERNAL_MODULE_SOURCES: []}
-    try:
-        with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
-            ext_sources[utils.EXTERNAL_MODULE_SOURCES] = json.load(
-                mmpm_ext_srcs)[utils.EXTERNAL_MODULE_SOURCES]
+            ext_sources[utils.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[utils.EXTERNAL_MODULE_SOURCES]
     except IOError:
         pass
     return ext_sources
 
 
 @app.route(__api__('add-external-module-source'), methods=[POST])
-def add_external_module_source():
-    external_source = request.get_json(force=True)['external-source']
+def add_external_module_source() -> str:
+    external_source: dict = request.get_json(force=True)['external-source']
     try:
-        success = core.add_external_module_source(
+        success: bool = core.add_external_module_source(
             title=external_source.get('title'),
             author=external_source.get('author'),
             desc=external_source.get('description'),
@@ -198,12 +185,12 @@ def add_external_module_source():
 
 
 @app.route(__api__('remove-external-module-source'), methods=[DELETE])
-def remove_external_module_source():
-    selected_sources = request.get_json(force=True)['external-sources']
+def remove_external_module_source() -> str:
+    selected_sources: list = request.get_json(force=True)['external-sources']
     log.logger.info(f'Request to remove external sources')
 
-    process = proc.Group()
-    response = Response(
+    process: proc.Group = proc.Group()
+    response: Response = Response(
         __stream_cmd_output__(process, ['-r'] + [external_source['title'] for external_source in selected_sources] + ['--ext-module-src']),
         mimetype='text/plain'
     )
@@ -212,25 +199,25 @@ def remove_external_module_source():
 
 
 @app.route(__api__('refresh-modules'), methods=[GET])
-def force_refresh_magicmirror_modules():
+def force_refresh_magicmirror_modules() -> str:
     log.logger.info(f'Recieved request to refresh modules')
-    process = proc.Group()
-    response = Response(__stream_cmd_output__(process, ['-f']), mimetype='text/plain')
+    process: proc.Group = proc.Group()
+    response: Response = Response(__stream_cmd_output__(process, ['-f']), mimetype='text/plain')
     log.logger.info('Finished refresh')
     return json.dumps(True)
 
 
 @app.route(__api__('get-magicmirror-config'), methods=[GET])
 def get_magicmirror_config():
-    path = utils.MAGICMIRROR_CONFIG_FILE
-    result = send_file(path, attachment_filename='config.js') if path else ''
+    path: str = utils.MAGICMIRROR_CONFIG_FILE
+    result: str = send_file(path, attachment_filename='config.js') if path else ''
     log.logger.info('Retrieving MagicMirror config')
     return result
 
 
 @app.route(__api__('update-magicmirror-config'), methods=[POST])
-def update_magicmirror_config():
-    data = request.get_json(force=True)
+def update_magicmirror_config() -> str:
+    data: str = request.get_json(force=True)
     log.logger.info('Saving MagicMirror config file')
 
     try:
@@ -238,5 +225,4 @@ def update_magicmirror_config():
             config.write(data.get('code'))
     except IOError:
         return json.dumps(False)
-
     return json.dumps(True)

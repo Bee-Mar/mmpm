@@ -10,6 +10,7 @@ def get_user_args() -> object:
 
     Parameters:
         None
+
     Returns:
         ArgumentParser objects
     '''

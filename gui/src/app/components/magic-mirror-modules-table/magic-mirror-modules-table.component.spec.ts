@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { MagicMirrorModulesTableComponent } from './magic-mirror-modules-table.component';
+import { MagicMirrorModulesTableComponent } from "./magic-mirror-modules-table.component";
 
-describe('MagicMirrorModulesTableComponent', () => {
+describe("MagicMirrorModulesTableComponent", () => {
   let component: MagicMirrorModulesTableComponent;
   let fixture: ComponentFixture<MagicMirrorModulesTableComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ MagicMirrorModulesTableComponent ]
-    })
-    .compileComponents();
+      declarations: [MagicMirrorModulesTableComponent]
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('MagicMirrorModulesTableComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

@@ -1,22 +1,30 @@
 language: python
+
+sudo: false
+
+os:
+  - linux
+
 python:
   - "3.6"
   - "3.7"
   - "3.8"
 
 before_install:
-    - python --version
-    - pip install -U pip
-    - pip --version
-    - pip install mypy codecov pytest pylint
-    - pip install -r requirements.txt
-    - mypy mmpm
-    - pylint mmpm
-    - mkdir -p ~/.config/mmpm/log
-    - mkdir -p ~/.config/mmpm/configs
-    - touch ~/.config/mmpm/mmpm-cli-interface.log
-    - touch ~/.config/mmpm/mmpm-gunicorn-error.log
-    - touch ~/.config/mmpm/mmpm-gunicorn-access.log
+  - python --version
+  - pip install -U pip
+  - pip --version
+  - mkdir -p ~/.config/mmpm/log
+  - mkdir -p ~/.config/mmpm/configs
+  - touch ~/.config/mmpm/{mmpm-cli-interface.log,mmpm-gunicorn-error.log,mmpm-gunicorn-access.log}
 
 install:
+  - pip install mypy codecov pytest pylint
+  - pip install -r requirements.txt
   - pip install .
+
+script:
+    - mypy mmpm
+    - pylint mmpm
+    - pytest mmpm
+

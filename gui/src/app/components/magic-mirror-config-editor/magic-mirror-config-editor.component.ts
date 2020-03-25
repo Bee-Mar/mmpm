@@ -22,7 +22,7 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
   code = "";
 
   ngOnInit(): void {
-    this.api.getMagicMirrorConfig().subscribe((fileContents) => (this.code = fileContents ?? ""));
+    this.api.getMagicMirrorConfig().subscribe((fileContents) => { this.code = fileContents ?? ""; });
   }
 
   public ngOnDestroy(): void {

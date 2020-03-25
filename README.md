@@ -17,6 +17,10 @@ Currently, the supported features consist of five main categories:
     3) Removal
     4) Checking for updates
     5) Upgrading packages that have updates available
+    
+## New Version Teaser Video
+
+The next version of MMPM will be accompanied by a GUI, which allow you to perform all actions provided by the CLI (search, install, update, and remove packages), as well as add external sources (similar to Ubuntu PPAs), ssh into your device, and edit your MagicMirror config file. Watch the [video](https://youtu.be/xNpyWHh0aOQ) for a preview of what's to come.
 
 ## Prior State of Affairs
 

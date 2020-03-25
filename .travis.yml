@@ -9,6 +9,7 @@ before_install:
     - pip install -U pip
     - pip --version
     - pip install mypy codecov pytest pylint
+    - cd mmpm
     - mypy mmpm
     - pylint mmpm
     - mkdir -p ~/.config/mmpm/log

@@ -6,6 +6,7 @@ import json
 import datetime
 import subprocess
 import shutil
+import sys
 from textwrap import fill
 from tabulate import tabulate
 from urllib.error import HTTPError
@@ -264,7 +265,6 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
     '''
 
     modules_dir: str = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
-    original_dir: str = os.getcwd()
 
     if not os.path.exists(modules_dir):
         msg = "Failed to find MagicMirror root. Have you installed MagicMirror properly? "
@@ -524,8 +524,8 @@ def load_modules(force_refresh: bool = False) -> Tuple[dict, datetime.datetime, 
         checked_for_enhancements = True
 
     else:
-        with open(utils.SNAPSHOT_FILE, "r") as f:
-            modules = json.load(f)
+        with open(utils.SNAPSHOT_FILE, "r") as snapshot_file:
+            modules = json.load(snapshot_file)
 
     if os.path.exists(utils.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(utils.MMPM_EXTERNAL_SOURCES_FILE).st_size:
         try:
@@ -594,7 +594,7 @@ def retrieve_modules() -> dict:
                 author: str = "N/A"
                 desc: str = "N/A"
 
-                for idx in range(len(td_soup)):
+                for idx, _ in enumerate(td_soup):
                     if idx == 0:
                         for td in td_soup[idx]:
                             title = td.contents[0]
@@ -711,8 +711,8 @@ def get_installed_modules(modules: dict) -> dict:
     module_dirs: List[str] = os.listdir(os.getcwd())
     installed_modules: dict = {}
 
-    for category, modules in modules.items():
-        for module in modules:
+    for category, module_names in modules.items():
+        for module in module_names:
             if module[utils.TITLE] in module_dirs:
                 installed_modules.setdefault(category, []).append(module)
 
@@ -748,7 +748,7 @@ def add_external_module_source(title: str = None, author: str = None, repo: str 
 
         except KeyboardInterrupt:
             print('\n')
-            exit(1)
+            sys.exit(1)
 
     new_source = {
         utils.TITLE: title,
@@ -819,11 +819,10 @@ def remove_external_module_source(titles: str = None) -> bool:
                 json.dump(config, mmpm_ext_srcs)
 
             print(colors.B_GREEN + f"Successfully removed {', '.join(successful_removals)} from '{utils.EXTERNAL_MODULE_SOURCES}'" + colors.RESET)
-            return True
     except IOError:
         utils.error_msg('Failed to remove external module')
         return False
-
+    return True
 
 def edit_magicmirror_config() -> bool:
     '''

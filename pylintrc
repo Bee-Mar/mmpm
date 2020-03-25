@@ -139,7 +139,23 @@ disable=print-statement,
         deprecated-sys-function,
         exception-escape,
         comprehension-escape,
-        missing-module-docstring
+        missing-module-docstring,
+        wrong-import-order,
+        wrong-import-position,
+        missing-function-docstring,
+        too-many-nested-blocks,
+        line-too-long,
+        too-many-branches,
+        import-self,
+        invalid-name,
+        broad-except,
+        too-many-locals,
+        too-many-statements,
+        too-few-public-methods,
+        subprocess-run-check,
+        no-else-return,
+        logging-format-interpolation,
+        expression-not-assigned
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

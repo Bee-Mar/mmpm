@@ -7,8 +7,8 @@ from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
 from mmpm import core, utils
 from mmpm.utils import log
-from shelljob import proc
-from flask_socketio import SocketIO, send, emit
+from shelljob.proc import Group
+from flask_socketio import SocketIO
 from typing import Tuple
 import os
 
@@ -65,12 +65,12 @@ def __modules__() -> dict:
     return modules
 
 
-def __stream_cmd_output__(process: proc.Group, cmd: list):
+def __stream_cmd_output__(process: Group, cmd: list):
     '''
     Streams command output to socket.io client on frontend.
 
     Parameters:
-        process (proc.Group): the process object responsible for running the command
+        process (Group): the process object responsible for running the command
         cmd (List[str]): list of command arguments
 
     Returns:
@@ -83,7 +83,7 @@ def __stream_cmd_output__(process: proc.Group, cmd: list):
     try:
         while process.is_pending():
             log.logger.info('Process pending')
-            for proc, line in process.readlines():
+            for _, line in process.readlines():
                 socketio.emit('live-terminal-stream', {'data': str(line.decode('utf-8'))})
         log.logger.info(f'Process complete: {command}')
     except Exception:
@@ -153,7 +153,7 @@ def get_magicmirror_modules() -> dict:
 def install_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
     log.logger.info(f'Request to install {selected_modules}')
-    process: proc.Group = proc.Group()
+    process: Group = Group()
     Response(
         __stream_cmd_output__(process, ['-i'] + [selected_module['title'] for selected_module in selected_modules]),
         mimetype='text/plain'
@@ -166,7 +166,7 @@ def install_magicmirror_modules() -> str:
 @app.route(__api__('uninstall-modules'), methods=[POST])
 def remove_magicmirror_modules() -> Response:
     selected_modules: list = request.get_json(force=True)['selected-modules']
-    process: proc.Group = proc.Group()
+    process: Group = Group()
 
     return Response(
         __stream_cmd_output__(process, ['-r'] + [selected_module['title'] for selected_module in selected_modules]),
@@ -178,9 +178,9 @@ def remove_magicmirror_modules() -> Response:
 def upgrade_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
     log.logger.info(f'Request to upgrade {selected_modules}')
-    process: proc.Group = proc.Group()
+    process: Group = Group()
 
-    response = Response(
+    Response(
         __stream_cmd_output__(process, ['-U'] + [selected_module['title'] for selected_module in selected_modules]),
         mimetype='text/plain'
     )
@@ -215,7 +215,7 @@ def add_external_module_source() -> str:
             desc=external_source.get('description'),
             repo=external_source.get('repository')
         )
-        return json.dumps(True if success else False)
+        return json.dumps(bool(success))
     except Exception:
         return json.dumps(False)
 
@@ -225,8 +225,8 @@ def remove_external_module_source() -> str:
     selected_sources: list = request.get_json(force=True)['external-sources']
     log.logger.info(f'Request to remove external sources')
 
-    process: proc.Group = proc.Group()
-    response: Response = Response(
+    process: Group = Group()
+    Response(
         __stream_cmd_output__(process, ['-r'] + [external_source['title'] for external_source in selected_sources] + ['--ext-module-src']),
         mimetype='text/plain'
     )
@@ -237,7 +237,7 @@ def remove_external_module_source() -> str:
 @app.route(__api__('refresh-modules'), methods=[GET])
 def force_refresh_magicmirror_modules() -> str:
     log.logger.info(f'Recieved request to refresh modules')
-    process: proc.Group = proc.Group()
+    process: Group = Group()
     Response(__stream_cmd_output__(process, ['-f']), mimetype='text/plain')
     log.logger.info('Finished refresh')
     return json.dumps(True)

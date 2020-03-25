@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=unused-argument
 import sys
 from mmpm import utils, colors, core, opts
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
+# pylint: disable=unused-argument
 import argparse
-from sys import argv
+import sys
 from mmpm.utils import MMPM_WIKI_URL
 
 
@@ -142,8 +143,8 @@ def get_user_args() -> object:
                             action='store_true',
                             help='Used in conjuction with --remove to unregister an external module source')
 
-    if len(argv) < 2:
+    if len(sys.argv) < 2:
         arg_parser.print_help()
-        exit(0)
+        sys.exit(0)
 
     return arg_parser.parse_args()

@@ -17,7 +17,7 @@ The MagicMirror Package Manager (`mmpm`) is both a command line and web interfac
 
 <i>Consider this project to be in an Alpha state, so don't get too picky just yet, as you most likely will discover some bugs I was unable to find.</i>
 
-The supported features consist of following categories:
+The supported features are comprised of the following categories:
 
     1) Search
     2) Installation
@@ -29,14 +29,13 @@ The supported features consist of following categories:
     8) Self updating
     9) Installing MagicMirror
 
-## TLDR; What's the Installation Process?
+## TLDR; What's the Installation/Removal Process?
 
-Please see the [MMPM Installation](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installation) for installation instructions, and [MMPM Removal](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Removal) for
-removal instructions.
+See the [MMPM Installation](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installation) and [MMPM Removal](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Removal) sections of the wiki for installation and removal instructions, respectively.
 
 ## Refer to the Wiki First
 
-If any issues arise, please consule the wiki first, which can be found [here](https://github.com/Bee-Mar/mmpm/wiki).
+If any issues arise, please consult the wiki first, which can be found [here](https://github.com/Bee-Mar/mmpm/wiki).
 
 ## GUI Demo
 
@@ -59,7 +58,7 @@ If any issues arise, please consule the wiki first, which can be found [here](ht
 
 ## Future State of Affairs
 
-In the not-to-distant future, `.deb` releases of this package will be available for download, simplifying installation.
+In the not-to-distant future, `.deb` releases of this package will be available for download, simplifying the installation.
 
 ## Potential Problems
 

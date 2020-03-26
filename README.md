@@ -47,7 +47,7 @@ If any issues arise, please consult the wiki first, which can be found [here](ht
 
 ![Editing MagicMirror Config](https://media.giphy.com/media/XDdeJQpzZRRwrylBVg/giphy.gif)
 
-- Using WebSSH within GUI
+- Using [WebSSH](https://github.com/huashengdun/webssh) within GUI
 
 ![Using WebSSH](https://media.giphy.com/media/gkLZiyqWfDqcH0tHE0/giphy.gif)
 

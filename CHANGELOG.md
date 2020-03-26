@@ -132,7 +132,10 @@
 
 # Version 0.98
 
-- Major code cleanup (added typing, and docstrings)
+- Major code cleanup (added typing hinting, and docstrings)
 - Added web interface, and daemons to run on system restart that will be accessible from any device in
   the users home network which allows user to perform maintenance on their MagicMirror packages
+- Added better terminal output during installation process
+- Added mypy and pylint configs
+- Added logging for CLI
 

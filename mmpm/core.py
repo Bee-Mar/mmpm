@@ -89,8 +89,9 @@ def check_for_mmpm_enhancements() -> bool:
                     log.logger.info(f'User chose to update MMPM with {original_dir} as the starting directory')
 
                     os.chdir(os.path.join('/', 'tmp'))
-                    utils.run_cmd(['rm', '-rf', os.path.join('/', 'tmp', 'mmpm')])  # in case it existed previously
-                    print("\n")
+
+                    # in case it existed previously
+                    utils.run_cmd(['rm', '-rf', os.path.join('/', 'tmp', 'mmpm')], progress=False)
 
                     # because of the lengthy installation process, it's better
                     # to have everything printed to stdout for the user to see,
@@ -148,8 +149,6 @@ def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, 
     if upgrade and modules_to_upgrade:
         dirs = modules_to_upgrade
 
-    if update:
-        print(colors.B_CYAN + "Checking for updates" + colors.RESET + " ...")
 
     for _, value in installed_modules.items():
         for index, _ in enumerate(value):
@@ -159,22 +158,31 @@ def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, 
                 os.chdir(curr_module_dir)
 
                 if update:
-                    return_code, stdout, stderr = utils.run_cmd(["git", "fetch", "--dry-run"])
+                    utils.plain_print(f"Checking {title} for updates")
+                    error_code, stdout, stderr = utils.run_cmd(["git", "fetch", "--dry-run"])
 
-                    if return_code:
+                    if error_code:
                         utils.error_msg(stderr)
                         return False
 
                     if stdout:
                         updates_list.append(title)
 
-                elif upgrade:
-                    print(colors.B_CYAN + f"Requesting upgrade for {title} ... " + colors.RESET)
-                    return_code, stdout, stderr = utils.run_cmd(["git", "pull"])
+                    utils.done()
 
-                    if return_code:
+                elif upgrade:
+                    utils.plain_print(f"Requesting upgrade for {title}")
+                    error_code, stdout, stderr = utils.run_cmd(["git", "pull"])
+
+                    if error_code:
                         utils.error_msg(stderr)
                         return False
+
+                    utils.done()
+
+                    if "Already up to date." in stdout:
+                        print(stdout)
+                        continue
 
                     error_msg: str = utils.handle_installation_process()
 
@@ -274,7 +282,9 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
 
     log.logger.info(f'User selected modules to install: {modules_to_install}')
     log.logger.info(f'Changing into MagicMirror modules directory {modules_dir}')
+
     os.chdir(modules_dir)
+
     successful_installs: List[str] = []
     existing_modules: List[str] = []
     failed_installs: List[str] = []
@@ -301,20 +311,26 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
 
                     os.chdir(target)
 
-                    print(colors.RESET + "Installing " + colors.B_CYAN + f"{title}" + colors.B_YELLOW + " @ " + colors.RESET + f"{target}\n")
+                    message = f"Installing {title} @ {target}"
+                    utils.separator(message)
 
-                    utils.plain_print(colors.RESET + f"Cloning {title} repository ... " + colors.RESET)
+                    print(colors.RESET + "Installing " + colors.B_CYAN + f"{title}" + colors.B_YELLOW + " @ " + colors.RESET + f"{target}")
 
-                    # by using "repo.split()", it allows the user to bake in additional commands when making custom sources
-                    # ie. git clone <repo> -b <branch> <target>
-                    return_code, _, std_err = utils.run_cmd(['git', 'clone'] + repo.split() + [target])
+                    utils.separator(message)
+                    utils.plain_print(colors.RESET + f"\nCloning {title} repository " + colors.RESET)
 
-                    if return_code:
-                        print('\n')
-                        utils.warning_msg(std_err)
-                    else:
-                        utils.plain_print(colors.B_GREEN + 'done\n')
+                    # by using "repo.split()", it allows the user to bake in
+                    # additional commands when making custom sources
+                    # ie. git clone [repo] -b [branch] [target]
+                    error_code, _, stderr = utils.run_cmd(['git', 'clone'] + repo.split() + [target])
 
+                    if error_code:
+                        utils.warning_msg("\n" + stderr)
+                        failed_installs.append(title)
+                        install_next = True
+                        continue
+
+                    utils.done()
                     error: str = utils.handle_installation_process()
 
                     if error:
@@ -336,7 +352,7 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
         message = f"Failed to install {title}, removing the directory: '{failed_install_path}'"
         log.logger.info(message)
         utils.error_msg(message)
-        shutil.rmtree(failed_install_path)
+        utils.run_cmd(['rm', '-rf', failed_install_path], progress=False)
 
     for module in modules_to_install:
         if module not in successful_installs and module not in existing_modules and module not in failed_installs:
@@ -386,16 +402,14 @@ def install_magicmirror() -> bool:
 
                     if git_status.stdout:
                         print(colors.B_CYAN + "Updates found for MagicMirror. " + colors.RESET + "Requesting upgrades...")
-                        return_code, _, std_err = utils.run_cmd(['git', 'pull'])
+                        error_code, _, stderr = utils.run_cmd(['git', 'pull'])
 
-                        if return_code:
-                            print('\n')
-                            utils.warning_msg(std_err)
+                        if error_code:
+                            utils.warning_msg(stderr)
+
                         else:
-                            utils.plain_print(colors.B_WHITE + 'done\n')
-
-                        if not return_code:
-                            os.system("$(which npm) install")
+                            utils.done()
+                            utils.run_npm_install()
 
                     else:
                         print("No updates available for MagicMirror.")

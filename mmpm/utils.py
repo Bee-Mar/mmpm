@@ -2,11 +2,12 @@
 import sys
 import os
 import subprocess
-from mmpm import colors, utils
-from os.path import join
 import logging
 import logging.handlers
-from typing import List, Optional
+import time
+from os.path import join
+from typing import List, Optional, Tuple
+from mmpm import colors, utils
 
 # String constants
 MMPM_ENV_VAR: str = 'MMPM_MAGICMIRROR_ROOT'
@@ -94,7 +95,21 @@ def warning_msg(msg: str) -> None:
     print(colors.B_YELLOW + "WARNING: " + colors.RESET + msg)
 
 
-def run_cmd(command: List[str]) -> tuple:
+def separator(message):
+    '''
+    Used to pretty print a dashed line as long as the provided message
+
+    Parameters:
+        message (str): The string that will go under or above the dashed line
+
+    Returns:
+        None
+
+    '''
+    print(colors.RESET + "-" * len(message), flush=True)
+
+
+def run_cmd(command: List[str], progress=True) -> Tuple[int, str]:
     '''
     Executes shell command and captures errors
 
@@ -102,14 +117,27 @@ def run_cmd(command: List[str]) -> tuple:
         command (List[str]): The command string to be executed
 
     Returns:
-        returncode (str): The integer return code of the executed subprocess
-        stdout (str): The stdout output of the executed subprocess
-        stderr (str): The stderr output of the executed subprocess
+        Tuple[returncode (int), stderr (str)]
     '''
 
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = proc.communicate()
-    return proc.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
+    log.logger.info(f'Executing process {" ".join(command)}')
+
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    if progress:
+        sys.stdout.write(' [')
+
+        while process.poll() is None:
+            sys.stdout.write('#')
+            time.sleep(.25)
+            sys.stdout.flush()
+
+    stdout, stderr = process.communicate()
+
+    if progress:
+        sys.stdout.write('] ')
+
+    return process.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
 
 
 def get_file_path(path: str) -> str:
@@ -144,10 +172,116 @@ def open_default_editor(file_path: str) -> Optional[None]:
         sys.exit(1)
 
     editor = os.getenv('EDITOR') if os.getenv('EDITOR') else 'nano'
-    return_code, _, _ = run_cmd(['which', editor])
+    error_code, _, _ = run_cmd(['which', editor], progress=False)
 
     # fall back to the 'edit' command if you don't even have nano for some reason
-    os.system(f'{editor} {file_path}') if not return_code else os.system(f'edit {file_path}')
+    os.system(f'{editor} {file_path}') if not error_code else os.system(f'edit {file_path}')
+
+
+def done():
+    ''' Wrapper method to print green 'done' message '''
+    print(colors.B_GREEN + "done" + colors.RESET)
+
+
+def makefile_in_current_dir() -> bool:
+    '''
+    Checks current directory for a Makefile, case-insensitive
+
+    Parameters:
+        None
+
+    Returns:
+        bool: True if file is found, False if not
+    '''
+    return os.path.isfile(os.path.join(os.getcwd(), 'Makefile')) or os.path.isfile(os.path.join(os.getcwd(), 'makefile'))
+
+
+def package_json_in_current_dir() -> bool:
+    '''
+    Checks current directory for a package.json file
+
+    Parameters:
+        None
+
+    Returns:
+        bool: True if file is found, False if not
+    '''
+    return os.path.isfile(os.path.join(os.getcwd(), "package.json"))
+
+
+def cmakelists_in_current_dir() -> bool:
+    '''
+    Checks current directory for a CMakeLists.txt file
+
+    Parameters:
+        None
+
+    Returns:
+        bool: True if file is found, False if not
+    '''
+    return os.path.isfile(os.path.join(os.getcwd(), 'CMakeLists.txt'))
+
+
+def run_cmake() -> Tuple[int, str]:
+    ''' Used to run make from a directory known to have a CMakeLists.txt file
+
+    Parameters:
+        None
+
+    Returns:
+        Tuple[error_code (int), error_message (str)]
+
+    '''
+    log.logger.info(f"Running 'cmake ..' in {os.getcwd()}")
+    plain_print(colors.RESET + "Found CMakeLists.txt. Attempting build with 'cmake'")
+
+    run_cmd(['mkdir', '-p', 'build'], progress=False)
+    os.chdir('build')
+    run_cmd(['rm', '-rf', '*'], progress=False)
+    return run_cmd(['cmake', '..'])
+
+
+def run_make() -> Tuple[int, str]:
+    '''
+    Used to run make from a directory known to have a Makefile
+
+    Parameters:
+        None
+
+    Returns:
+        Tuple[error_code (int), error_message (str)]
+    '''
+    log.logger.info(f"Running 'make' in {os.getcwd()}")
+    plain_print(colors.RESET + "Found Makefile. Attempting to run 'make'")
+    return run_cmd(['make'])
+
+
+def run_npm_install() -> Tuple[int, str]:
+    '''
+    Used to run npm install from a directory known to have a package.json file
+
+    Parameters:
+        None
+
+    Returns:
+        Tuple[error_code (int), error_message (str)]
+    '''
+    log.logger.info(f"Running 'npm install' in {os.getcwd()}")
+    plain_print("Found package.json. Running 'npm install'")
+    return run_cmd(['npm', 'install'])
+
+
+def basic_fail_log(error_code, error):
+    '''
+    Wrapper method for simple failure logging
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+    log.logger.info(f'Failed with return code {error_code}, and error message {error}')
 
 
 def handle_installation_process() -> str:
@@ -164,61 +298,46 @@ def handle_installation_process() -> str:
         string: Empty, or the error message from the failed install
     '''
 
-    if os.path.isfile(os.path.join(os.getcwd(), "package.json")):
-        log.logger.info(f'Found package.json in {os.getcwd()}')
-        utils.plain_print(colors.RESET + "Found package.json. Attempting to run 'npm install' ... ")
-        return_code, _, std_err = utils.run_cmd(['npm', 'install'])
+    if package_json_in_current_dir():
+        error_code, _, stderr = run_npm_install()
 
-        if return_code:
-            log.logger.info(f'Failed with return code {return_code}, and error message {error_msg}')
-            return str('\n' + std_err)
+        if error_code:
+            basic_fail_log(error_code, stderr)
+            print('\n')
+            return str(stderr)
         else:
-            print(colors.B_GREEN + "done" + colors.RESET)
+            done()
 
-    if os.path.isfile(os.path.join(os.getcwd(), 'Makefile')) or os.path.isfile(os.path.join(os.getcwd(), 'makefile')):
-        log.logger.info(f'Found Makefile in {os.getcwd()}')
-        utils.plain_print(colors.RESET + "Found Makefile. Attempting to run 'make'... ")
-        return_code, _, std_err = utils.run_cmd(['make'])
+    if makefile_in_current_dir():
+        error_code, _, stderr = run_make()
 
-        if return_code:
-            log.logger.info(f'Failed with return code {return_code}, and error message {error_msg}')
-            return str('\n' + std_err)
+        if error_code:
+            basic_fail_log(error_code, stderr)
+            print('\n')
+            return str(stderr)
         else:
-            print(colors.B_GREEN + "done" + colors.RESET)
+            done()
 
 
-    if os.path.isfile(os.path.join(os.getcwd(), 'CMakeLists.txt')):
-        log.logger.info(f'Found CMakeLists.txt in {os.getcwd()}')
-        utils.plain_print(colors.RESET + "Found CMakeLists.txt. Attempting to run 'cmake' ... ")
-        os.system('mkdir -p build')
-        os.chdir('build')
-        return_code, _, std_err = utils.run_cmd(['cmake', '..'])
+    if cmakelists_in_current_dir():
+        error_code, _, stderr = run_cmake()
 
-        if return_code:
-            log.logger.info(f'CMake failed. Return code {return_code}, and error message {error_msg}')
-            return str('\n' + std_err)
+        if error_code:
+            basic_fail_log(error_code, stderr)
+            print('\n')
+            return str(stderr)
         else:
-            print(colors.B_GREEN + "done" + colors.RESET)
+            done()
 
-        if os.path.isfile(os.path.join(os.getcwd(), 'Makefile')) or os.path.isfile(os.path.join(os.getcwd(), 'makefile')):
-            log.logger.info(f'Makefile found in {os.getcwd()} after running cmake')
-            utils.plain_print(colors.RESET + "Attempting to run 'make' on Makefile generated by CMake ... ")
-            return_code, _, std_err = utils.run_cmd(['make'])
+        if makefile_in_current_dir():
+            error_code, _, stderr = run_make()
 
-            if return_code:
-                utils.warning_msg('\n' + std_err)
+            if error_code:
+                basic_fail_log(error_code, stderr)
+                print('\n')
+                return str(stderr)
             else:
-                utils.plain_print(colors.B_WHITE + 'done\n')
-
-            log.logger.info(f"Changing back to parent directory: {os.path.dirname('..')}")
-            os.chdir('..')
-
-            if return_code:
-                log.logger.info(f"Make failed. Return code {return_code}, and error message {error_msg}")
-                return str('\n' + std_err)
-            else:
-                log.logger.info(f"Successful execution of 'make'")
-                print(colors.B_GREEN + "done" + colors.RESET)
+                done()
 
     print('\n')
     log.logger.info(f'Exiting installation handler from {os.getcwd()}')

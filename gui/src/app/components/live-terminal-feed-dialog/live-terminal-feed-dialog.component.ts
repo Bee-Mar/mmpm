@@ -1,5 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { MatDialogRef } from "@angular/material/dialog";
+import { Subject } from "rxjs";
 import io from "socket.io-client";
 
 @Component({
@@ -9,7 +10,6 @@ import io from "socket.io-client";
 })
 export class LiveTerminalFeedDialogComponent implements OnInit {
   socket: any;
-  streams: Array<Promise<object>> = new Array<Promise<object>>();
   outputStream: string = "";
 
   constructor(private dialogRef: MatDialogRef<LiveTerminalFeedDialogComponent>) {}

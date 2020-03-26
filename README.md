@@ -31,8 +31,12 @@ The supported features consist of following categories:
 
 ## TLDR; What's the Installation Process?
 
-Please see the [MMPM Installation](https://github.com/Bee-Mar/mmpm/wiki/Installation) for installation instructions, and [MMPM Removal](https://github.com/Bee-Mar/mmpm/wiki/Removal) for
+Please see the [MMPM Installation](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installation) for installation instructions, and [MMPM Removal](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Removal) for
 removal instructions.
+
+## Refer to the Wiki First
+
+If any issues arise, please consule the wiki first, which can be found [here](https://github.com/Bee-Mar/mmpm/wiki).
 
 ## GUI Demo
 

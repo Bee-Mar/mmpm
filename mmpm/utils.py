@@ -109,7 +109,7 @@ def separator(message):
     print(colors.RESET + "-" * len(message), flush=True)
 
 
-def run_cmd(command: List[str], progress=True) -> Tuple[int, str]:
+def run_cmd(command: List[str], progress=True) -> Tuple[int, str, str]:
     '''
     Executes shell command and captures errors
 
@@ -117,7 +117,7 @@ def run_cmd(command: List[str], progress=True) -> Tuple[int, str]:
         command (List[str]): The command string to be executed
 
     Returns:
-        Tuple[returncode (int), stderr (str)]
+        Tuple[returncode (int), stdout (str), stderr (str)]
     '''
 
     log.logger.info(f'Executing process {" ".join(command)}')
@@ -222,14 +222,14 @@ def cmakelists_in_current_dir() -> bool:
     return os.path.isfile(os.path.join(os.getcwd(), 'CMakeLists.txt'))
 
 
-def run_cmake() -> Tuple[int, str]:
+def run_cmake() -> Tuple[int, str, str]:
     ''' Used to run make from a directory known to have a CMakeLists.txt file
 
     Parameters:
         None
 
     Returns:
-        Tuple[error_code (int), error_message (str)]
+        Tuple[error_code (int), stdout (str), error_message (str)]
 
     '''
     log.logger.info(f"Running 'cmake ..' in {os.getcwd()}")
@@ -241,7 +241,7 @@ def run_cmake() -> Tuple[int, str]:
     return run_cmd(['cmake', '..'])
 
 
-def run_make() -> Tuple[int, str]:
+def run_make() -> Tuple[int, str, str]:
     '''
     Used to run make from a directory known to have a Makefile
 
@@ -249,14 +249,14 @@ def run_make() -> Tuple[int, str]:
         None
 
     Returns:
-        Tuple[error_code (int), error_message (str)]
+        Tuple[error_code (int), stdout (str), error_message (str)]
     '''
     log.logger.info(f"Running 'make' in {os.getcwd()}")
     plain_print(colors.RESET + "Found Makefile. Attempting to run 'make'")
     return run_cmd(['make'])
 
 
-def run_npm_install() -> Tuple[int, str]:
+def run_npm_install() -> Tuple[int, str, str]:
     '''
     Used to run npm install from a directory known to have a package.json file
 
@@ -264,7 +264,7 @@ def run_npm_install() -> Tuple[int, str]:
         None
 
     Returns:
-        Tuple[error_code (int), error_message (str)]
+        Tuple[error_code (int), stdout (str), error_message (str)]
     '''
     log.logger.info(f"Running 'npm install' in {os.getcwd()}")
     plain_print("Found package.json. Running 'npm install'")

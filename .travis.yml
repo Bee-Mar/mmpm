@@ -30,6 +30,9 @@ matrix:
       - bash tests/travis-ci/eslint.sh
       - bash scripts/compress-static-files.sh
 
+    before_deploy:
+      - echo $TRAVIS_BUILD_NUMBER
+      - echo $TRAVIS_BRANCH
     deploy:
       provider: releases
       skip_cleanup: true

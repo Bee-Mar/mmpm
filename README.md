@@ -5,7 +5,9 @@
   <a href="http://choosealicense.com/licenses/mit">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
   </a>
-  <img src="https://travis-ci.org/Bee-Mar/mmpm.svg?branch=master">
+  <a href="https://travis-ci.org/github/Bee-Mar/mmpm">
+    <img src="https://travis-ci.org/Bee-Mar/mmpm.svg?branch=master">
+  </a>
 </p>
 
 # MMPM - The MagicMirror Package Manager
@@ -55,7 +57,6 @@ If any issues arise, please consult the wiki first, which can be found [here](ht
 - Adding External Sources
 
 ![Adding External Sources](https://media.giphy.com/media/loAdplweaF3BpyGS1M/giphy.gif)
-
 
 ## Future State of Affairs
 

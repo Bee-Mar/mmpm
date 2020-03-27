@@ -8,3 +8,4 @@ gui/.clangd
 gui/src/.clang-format
 configs/*.service
 .mypy_cache
+mmpm-gui.tar.gz

@@ -16,7 +16,7 @@ clean:
 	@printf -- "--------------------------------------------"
 	@printf "\n| \e[92mRemoving legacy installation destination\e[0m |"
 	@printf "\n--------------------------------------------\n"
-	sudo rm -f /usr/local/bin/mmpm
+	sudo rm -vf /usr/local/bin/mmpm
 
 dependencies: dependencies-cli dependencies-gui
 
@@ -25,8 +25,8 @@ dependencies-cli:
 	@printf "\n| \e[92mGathering CLI dependencies\e[0m |"
 	@printf "\n------------------------------\n"
 	@sudo apt install python3-pip
-	@pip3 install --user setuptools wheel --upgrade
-	@pip3 install --user -r requirements.txt
+	@pip3 install --user setuptools wheel --upgrade -v
+	@pip3 install --user -r requirements.txt -v
 
 dependencies-gui:
 	@printf -- "------------------------------"
@@ -63,8 +63,8 @@ install-cli:
 	@printf -- "------------------------"
 	@printf "\n| \e[92mInstalling MMPM CLI \e[0m |"
 	@printf "\n------------------------\n"
-	@mkdir -p ${HOME}/.config/mmpm/log ${HOME}/.config/mmpm/configs
-	@pip3 install --user .
+	@mkdir -vp ${HOME}/.config/mmpm/log ${HOME}/.config/mmpm/configs
+	@pip3 install --user . -v
 	@[ ! $? ] && printf "\n\033[1;36mMMPM CLI Installed \e[0m\n"
 	@printf -- "-------------------------------------------------------"
 	@printf "\n| \e[92mNOTE: Ensure \"${HOME}/.local/bin\" is in your PATH\e[0m |"
@@ -83,9 +83,9 @@ install-daemons:
 	@printf -- "----------------------------"
 	@printf "\n| \e[92mInstalling MMPM Daemons \e[0m |"
 	@printf "\n----------------------------\n"
-	@mkdir -p ${HOME}/.config/mmpm/log ${HOME}/.config/mmpm/configs
+	@mkdir -vp ${HOME}/.config/mmpm/log ${HOME}/.config/mmpm/configs
 	@bash scripts/gen-mmpm-services.sh
-	@sudo cp configs/*.service /etc/systemd/system/
+	@sudo cp -v configs/*.service /etc/systemd/system/
 	@cp configs/gunicorn.conf.py ${HOME}/.config/mmpm/configs
 	@cp configs/*conf ${HOME}/.config/mmpm/configs
 	@cp configs/*service ${HOME}/.config/mmpm/configs
@@ -107,9 +107,9 @@ install-gui-from-src:
 	@printf -- "------------------------"
 	@printf "\n| \e[92mInstalling MMPM GUI \e[0m |"
 	@printf "\n------------------------\n"
-	sudo rm -rf /var/www/mmpm/{static,templates}
+	sudo rm -rvf /var/www/mmpm/{static,templates}
 	sudo mkdir -p /var/www/mmpm/templates && \
-		sudo cp -r gui/build/static /var/www/mmpm && \
+		sudo cp -vr gui/build/static /var/www/mmpm && \
 		sudo cp /var/www/mmpm/static/index.html /var/www/mmpm/templates
 
 reinstall: uninstall build-cli install-cli build-gui install-gui reinstall-daemons
@@ -128,8 +128,8 @@ uninstall-cli:
 	@printf -- "----------------------"
 	@printf "\n| \e[92mRemoving MMPM CLI \e[0m |"
 	@printf "\n----------------------\n"
-	pip3 uninstall mmpm -y
-	rm -rf ~/.config/mmpm
+	pip3 uninstall mmpm -v -y
+	rm -rvf ~/.config/mmpm
 	@[ ! $? ] && printf "\n\033[1;36mMMPM CLI Removed\e[0m\n"
 
 uninstall-daemons:
@@ -140,19 +140,19 @@ uninstall-daemons:
 	-sudo systemctl disable mmpm.service
 	-sudo systemctl stop mmpm-webssh.service
 	-sudo systemctl disable mmpm-webssh.service
-	-sudo rm -f /etc/systemd/system/mmpm* /var/log/mmpm*.log
+	-sudo rm -vf /etc/systemd/system/mmpm* /var/log/mmpm*.log
 	-sudo systemctl daemon-reload
 	-sudo systemctl reset-failed
-	-sudo rm -f /etc/nginx/sites-available/mmpm.conf
-	-sudo rm -f /etc/nginx/sites-enabled/mmpm.conf
+	-sudo rm -vf /etc/nginx/sites-available/mmpm.conf
+	-sudo rm -vf /etc/nginx/sites-enabled/mmpm.conf
 	-sudo systemctl restart nginx
-	-rm -rf ~/.config/mmpm
+	-rm -rvf ~/.config/mmpm
 	@[ ! $? ] && printf "\n\033[1;36mMMPM Daemons Removed\e[0m\n"
 
 uninstall-gui:
 	@printf -- "----------------------"
 	@printf "\n| \e[92mRemoving MMPM GUI \e[0m |"
 	@printf "\n----------------------\n"
-	-rm -f ${HOME}/.config/mmpm/configs/gunicorn.conf.py
-	-sudo rm -rf /var/www/mmpm
+	-rm -vf ${HOME}/.config/mmpm/configs/gunicorn.conf.py
+	-sudo rm -rvf /var/www/mmpm
 	@[ ! $? ] && printf "\n\033[1;36mMMPM GUI Removed\e[0m\n"

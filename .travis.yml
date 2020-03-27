@@ -29,6 +29,7 @@ matrix:
       - cd ..
       - bash tests/travis-ci/eslint.sh
       - bash scripts/compress-static-files.sh
+      - make
 
     deploy:
       provider: releases

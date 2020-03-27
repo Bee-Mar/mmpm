@@ -142,3 +142,9 @@
 # Version 0.981
 
 - Wrong wiki url
+
+# Version 0.99
+
+- integrated Travis-CI builds
+- quickened installation process by retrieving artifacts from tagged builds
+- Modified Makefile to reflect the changes

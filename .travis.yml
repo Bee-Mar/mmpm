@@ -40,6 +40,11 @@ matrix:
         skip_cleanup: true
         file: mmpm-gui.tar.gz
         api_key: "fab37cb57117840f84b0fc43ce070e7f989eee5a"
+        on:
+          branches:
+            only:
+              - master
+              - travis-ci-testing
 
 
 

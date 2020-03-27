@@ -38,5 +38,5 @@ matrix:
       file: mmpm-gui.tar.gz
       on:
         repo: Bee-Mar/mmpm
-        branch: travis-ci-testing
+        branch: master
         tags: true

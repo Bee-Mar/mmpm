@@ -39,4 +39,3 @@ matrix:
       on:
         repo: Bee-Mar/mmpm
         branch: travis-ci-testing
-        tags: true

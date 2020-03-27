@@ -29,9 +29,8 @@ dependencies-gui:
 	@sudo apt install nginx-full curl -y
 	@curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
 	@sudo apt install nodejs -y
+	@sudo systemctl stop nginx
 	@sudo systemctl start nginx
-	@npm config set prefix ~/.local
-	@npm install -g @angular/cli
 	@npm install --prefix gui
 
 build: build-cli build-gui
@@ -42,7 +41,7 @@ build-gui:
 	@printf -- "---------------------"
 	@printf "\n| \e[92mBuilding MMPM GUI\e[0m |"
 	@printf "\n---------------------\n"
-	@cd gui && ~/.local/bin/ng build --prod --deploy-url static/
+	@cd gui && node_modules/@angular/cli/bin/ng build --prod --deploy-url static/
 
 install: install-cli install-gui
 
@@ -62,10 +61,8 @@ install-gui:
 	@printf "\n| \e[92mInstalling MMPM GUI \e[0m |"
 	@printf "\n------------------------\n"
 	@mkdir -p ${HOME}/.config/mmpm/log ${HOME}/.config/mmpm/configs
-	@cd configs && \
-		bash gen-mmpm-service.sh && \
-		sudo cp mmpm.service /etc/systemd/system/ && \
-		sudo cp mmpm-webssh.service /etc/systemd/system/
+	@bash scripts/gen-mmpm-services.sh
+	@sudo cp configs/*.service /etc/systemd/system/
 	@cp configs/gunicorn.conf.py ${HOME}/.config/mmpm/configs
 	@cp configs/*conf ${HOME}/.config/mmpm/configs
 	@cp configs/*service ${HOME}/.config/mmpm/configs

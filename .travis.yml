@@ -1,0 +1,25 @@
+matrix:
+  include:
+    - language: python
+      python:
+        - "3.6"
+        - "3.7"
+        - "3.8"
+
+      before_install:
+        - python --version
+        - pip install -U pip
+        - pip --version
+        - mkdir -p ~/.config/mmpm/{log,configs}
+        - touch ~/.config/mmpm/{mmpm-cli-interface.log,mmpm-gunicorn-error.log,mmpm-gunicorn-access.log}
+
+      install:
+        - pip install mypy codecov pytest pylint
+        - pip install -r requirements.txt
+        - pip install .
+
+      script:
+          - mypy mmpm
+          - pylint mmpm
+            #- pytest mmpm
+

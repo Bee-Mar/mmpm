@@ -13,8 +13,12 @@ from mmpm import colors, utils
 MMPM_ENV_VAR: str = 'MMPM_MAGICMIRROR_ROOT'
 MMPM_REPO_URL: str = "https://github.com/Bee-Mar/mmpm.git"
 MMPM_FILE_URL: str = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
-MMPM_WIKI_URL: str = 'https://github.com/Bee-Mar/mmpm/wiki/MMPM-Command-Line-Options'
+MMPM_WIKI_URL: str = 'https://github.com/Bee-Mar/mmpm/wiki'
 MAGICMIRROR_MODULES_URL: str = "https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules"
+MAKEFILE: str = 'Makefile'
+CMAKELISTS: str = 'CMakeLists.txt'
+PACKAGE_JSON: str = 'package.json'
+GEMFILE: str = 'Gemfile'
 
 HOME_DIR: str = os.path.expanduser("~")
 TITLE: str = 'Title'
@@ -183,46 +187,23 @@ def done():
     print(colors.B_GREEN + "done" + colors.RESET)
 
 
-def makefile_in_current_dir() -> bool:
+def package_requirements_file_exists(file_name: str) -> bool:
     '''
-    Checks current directory for a Makefile, case-insensitive
+    Case-insensitive search for existing package specification file in current directory
 
     Parameters:
-        None
+        file_name (str): The name of the file to search for
 
     Returns:
-        bool: True if file is found, False if not
+        bool: True if found, False if not
     '''
-    return os.path.isfile(os.path.join(os.getcwd(), 'Makefile')) or os.path.isfile(os.path.join(os.getcwd(), 'makefile'))
+    for name in [file_name, file_name.lower(), file_name.upper()]:
+        if os.path.isfile(os.path.join(os.getcwd(), name)):
+            return True
+    return False
 
 
-def package_json_in_current_dir() -> bool:
-    '''
-    Checks current directory for a package.json file
-
-    Parameters:
-        None
-
-    Returns:
-        bool: True if file is found, False if not
-    '''
-    return os.path.isfile(os.path.join(os.getcwd(), "package.json"))
-
-
-def cmakelists_in_current_dir() -> bool:
-    '''
-    Checks current directory for a CMakeLists.txt file
-
-    Parameters:
-        None
-
-    Returns:
-        bool: True if file is found, False if not
-    '''
-    return os.path.isfile(os.path.join(os.getcwd(), 'CMakeLists.txt'))
-
-
-def run_cmake() -> Tuple[int, str, str]:
+def cmake() -> Tuple[int, str, str]:
     ''' Used to run make from a directory known to have a CMakeLists.txt file
 
     Parameters:
@@ -241,7 +222,7 @@ def run_cmake() -> Tuple[int, str, str]:
     return run_cmd(['cmake', '..'])
 
 
-def run_make() -> Tuple[int, str, str]:
+def make() -> Tuple[int, str, str]:
     '''
     Used to run make from a directory known to have a Makefile
 
@@ -256,7 +237,7 @@ def run_make() -> Tuple[int, str, str]:
     return run_cmd(['make'])
 
 
-def run_npm_install() -> Tuple[int, str, str]:
+def npm_install() -> Tuple[int, str, str]:
     '''
     Used to run npm install from a directory known to have a package.json file
 
@@ -269,6 +250,21 @@ def run_npm_install() -> Tuple[int, str, str]:
     log.logger.info(f"Running 'npm install' in {os.getcwd()}")
     plain_print("Found package.json. Running 'npm install'")
     return run_cmd(['npm', 'install'])
+
+
+def bundle_install() -> Tuple[int, str, str]:
+    '''
+    Used to run npm install from a directory known to have a package.json file
+
+    Parameters:
+        None
+
+    Returns:
+        Tuple[error_code (int), stdout (str), error_message (str)]
+    '''
+    log.logger.info(f"Running 'bundle install' in {os.getcwd()}")
+    plain_print("Found Gemfile. Running 'bundle install'")
+    return run_cmd(['bundle', 'install'])
 
 
 def basic_fail_log(error_code, error):
@@ -298,8 +294,8 @@ def handle_installation_process() -> str:
         string: Empty, or the error message from the failed install
     '''
 
-    if package_json_in_current_dir():
-        error_code, _, stderr = run_npm_install()
+    if package_requirements_file_exists(PACKAGE_JSON):
+        error_code, _, stderr = npm_install()
 
         if error_code:
             basic_fail_log(error_code, stderr)
@@ -308,8 +304,18 @@ def handle_installation_process() -> str:
         else:
             done()
 
-    if makefile_in_current_dir():
-        error_code, _, stderr = run_make()
+    if package_requirements_file_exists(GEMFILE):
+        error_code, _, stderr = bundle_install()
+
+        if error_code:
+            basic_fail_log(error_code, stderr)
+            print('\n')
+            return str(stderr)
+        else:
+            done()
+
+    if package_requirements_file_exists(MAKEFILE):
+        error_code, _, stderr = make()
 
         if error_code:
             basic_fail_log(error_code, stderr)
@@ -319,8 +325,8 @@ def handle_installation_process() -> str:
             done()
 
 
-    if cmakelists_in_current_dir():
-        error_code, _, stderr = run_cmake()
+    if package_requirements_file_exists(CMAKELISTS):
+        error_code, _, stderr = cmake()
 
         if error_code:
             basic_fail_log(error_code, stderr)
@@ -329,8 +335,8 @@ def handle_installation_process() -> str:
         else:
             done()
 
-        if makefile_in_current_dir():
-            error_code, _, stderr = run_make()
+        if package_requirements_file_exists(MAKEFILE):
+            error_code, _, stderr = make()
 
             if error_code:
                 basic_fail_log(error_code, stderr)

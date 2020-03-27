@@ -139,3 +139,6 @@
 - Added mypy and pylint configs
 - Added logging for CLI
 
+# Version 0.981
+
+- Wrong wiki url

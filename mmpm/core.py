@@ -406,10 +406,16 @@ def install_magicmirror() -> bool:
 
                         if error_code:
                             utils.warning_msg(stderr)
+                            break
 
-                        else:
-                            utils.done()
-                            utils.run_npm_install()
+                        utils.done()
+                        error_code, _, stderr = utils.npm_install()
+
+                        if error_code:
+                            utils.warning_msg(stderr)
+                            break
+
+                        utils.done()
 
                     else:
                         print("No updates available for MagicMirror.")

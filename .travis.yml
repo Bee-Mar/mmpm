@@ -3,9 +3,7 @@ matrix:
     - language: python
       python:
         - "3.6"
-        - "3.6.9"
         - "3.7"
-        - "3.7.3"
         - "3.8"
 
       before_install:
@@ -35,3 +33,10 @@ matrix:
       script:
         - cd ..
         - bash tests/travis-ci/eslint.sh
+        # not where this will be in the end, but just a test
+        - bash scripts/compress-static-files.sh
+
+          # deploy:
+          #   provider: releases
+          #   skip_cleanup: true
+

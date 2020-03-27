@@ -5,6 +5,7 @@
   <a href="http://choosealicense.com/licenses/mit">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
   </a>
+  <img src="https://travis-ci.org/Bee-Mar/mmpm.svg?branch=master">
 </p>
 
 # MMPM - The MagicMirror Package Manager

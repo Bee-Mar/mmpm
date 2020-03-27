@@ -38,13 +38,12 @@ matrix:
       deploy:
         provider: releases
         skip_cleanup: true
+        keep_history: true
         file: mmpm-gui.tar.gz
-        api_key: "fab37cb57117840f84b0fc43ce070e7f989eee5a"
+        github_token: $GITHUB_TOKEN
+        # api_key: "fab37cb57117840f84b0fc43ce070e7f989eee5a"
         on:
-          branches:
-            only:
-              - master
-              - travis-ci-testing
+          branch: travis-ci-testing
 
 
 

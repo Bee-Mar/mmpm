@@ -21,7 +21,15 @@ matrix:
         - pip install .
 
       script:
-          - mypy mmpm
-          - pylint mmpm
-            #- pytest mmpm
+          - bash tests/travis-ci/mypy.sh
+          - bash tests/travis-ci/pylint.sh
 
+    - language: nodejs
+
+      before_install:
+        - cd gui
+        - npm install
+        - node_modules/@angular/cli/bin/ng build --prod --deploy-url static/
+      script:
+        - cd ..
+        - bash tests/travis-ci/eslint.sh

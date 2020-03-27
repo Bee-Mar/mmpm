@@ -128,7 +128,8 @@ uninstall-cli:
 	@printf -- "----------------------"
 	@printf "\n| \e[92mRemoving MMPM CLI \e[0m |"
 	@printf "\n----------------------\n"
-	@pip3 uninstall mmpm -y
+	pip3 uninstall mmpm -y
+	rm -rf ~/.config/mmpm
 	@[ ! $? ] && printf "\n\033[1;36mMMPM CLI Removed\e[0m\n"
 
 uninstall-daemons:

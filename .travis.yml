@@ -18,6 +18,7 @@ matrix:
     script:
       - bash tests/travis-ci/mypy.sh
       - bash tests/travis-ci/pylint.sh
+
   - language: nodejs
     node_js:
       - 10.19
@@ -29,8 +30,6 @@ matrix:
       - cd ..
       - bash tests/travis-ci/eslint.sh
       - bash scripts/compress-static-files.sh
-      - make
-
     deploy:
       provider: releases
       skip_cleanup: true

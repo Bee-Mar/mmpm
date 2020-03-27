@@ -2,38 +2,37 @@ matrix:
   include:
   - language: python
     python:
-    - '3.6'
-    - '3.7'
-    - '3.8'
+      - '3.6'
+      - '3.7'
+      - '3.8'
     before_install:
-    - python --version
-    - pip install -U pip
-    - pip --version
-    - mkdir -p ~/.config/mmpm/{log,configs}
-    - touch ~/.config/mmpm/{mmpm-cli-interface.log,mmpm-gunicorn-error.log,mmpm-gunicorn-access.log}
+      - python --version
+      - pip install -U pip
+      - pip --version
+      - mkdir -p ~/.config/mmpm/{log,configs}
+      - touch ~/.config/mmpm/{mmpm-cli-interface.log,mmpm-gunicorn-error.log,mmpm-gunicorn-access.log}
     install:
-    - pip install mypy codecov pytest pylint
-    - pip install -r requirements.txt
-    - pip install .
+      - pip install mypy codecov pytest pylint
+      - pip install -r requirements.txt
+      - pip install .
     script:
-    - bash tests/travis-ci/mypy.sh
-    - bash tests/travis-ci/pylint.sh
+      - bash tests/travis-ci/mypy.sh
+      - bash tests/travis-ci/pylint.sh
   - language: nodejs
     node_js:
-    - 10.19
+      - 10.19
     before_install:
-    - cd gui
-    - npm install
-    - node_modules/@angular/cli/bin/ng build --prod --deploy-url static/
+      - cd gui
+      - npm install
+      - node_modules/@angular/cli/bin/ng build --prod --deploy-url static/
     script:
-    - cd ..
-    - bash tests/travis-ci/eslint.sh
-    - bash scripts/compress-static-files.sh
+      - cd ..
+      - bash tests/travis-ci/eslint.sh
+      - bash scripts/compress-static-files.sh
 
     deploy:
       provider: releases
       skip_cleanup: true
-      provider: releases
       api_key:
         secure: oxaEx5+ywp7wYXu7A7RNDx7yu20SrQd53weefXDoIkrp0VYGQdaozmpix8UBcSlVR3h5rYMB0NzBCTeyBj8cWAs1zdHJJ9QylxaUo2SkVoRfPtnKNZ7o6vVSigWVEUXp9TxJF7cHjRwDEI7sSOT2SqNhlnvuCDM9vUsFoBdmFaKIG6HB7zpWxuyuHPQzSV3oQ57IdEClW3QyIvBYTLoc05FX+MY9d4C4MvJ4Qk7mPLn2I6Ox6l1oJ95RDwMj+08n2J02z0rzB+IbBGm9WzhMy4lr+r8+kiwb/aZ/xaeiD/yQia569yE5rNprkVNeZV6U9hIZnzGI07+jkJaagd0eRTTT/HFaVXfnmBqmiIwzz3Oo7x2ScDEh1q3Qezr7lv7+1cjZ95eujQRQZiH0L5rg5J0SXP1b4HsIIEb1Ni3++TNvscnNBqukqXyTcM4nR7lv6MrK9fANYDph1MdNcwl+I4CXIqBCje4zaXOiTmB/XfsDJ76BaU9uKbvQxxOFcUs8d6s73BvEUHv/Hsbg3L7TGIAWJ14uRUzPkrZ227DiJB2IuwVwhRp074R9cnn5uuHuc/p/jdJEM5e2DCqw0vi/36A8haIEYZb9DqU0wS4csKR0Rqc5QcZbwblmPCFkKmkrYqgHhCTYUWCGKYYF7Suh6l1TvHIQFr6bR/HiDmb2evk=
       file: mmpm-gui.tar.gz

@@ -116,3 +116,4 @@ uninstall-gui:
 	-sudo rm -f /etc/nginx/sites-enabled/mmpm.conf
 	-sudo systemctl restart nginx
 	@[ ! $? ] && printf "\n\033[1;36mMMPM GUI Removed\e[0m\n"
+

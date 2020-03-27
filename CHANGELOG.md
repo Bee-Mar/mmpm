@@ -148,3 +148,7 @@
 - integrated Travis-CI builds
 - quickened installation process by retrieving artifacts from tagged builds
 - Modified Makefile to reflect the changes
+
+# Version 0.991
+
+- Upping the tag number...nothing more

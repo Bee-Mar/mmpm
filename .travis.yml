@@ -25,6 +25,8 @@ matrix:
           - bash tests/travis-ci/pylint.sh
 
     - language: nodejs
+      node_js:
+        - 10.19
 
       before_install:
         - cd gui

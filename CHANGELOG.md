@@ -149,6 +149,6 @@
 - quickened installation process by retrieving artifacts from tagged builds
 - Modified Makefile to reflect the changes
 
-# Version 0.991
+# Version 0.992
 
 - Upping the tag number

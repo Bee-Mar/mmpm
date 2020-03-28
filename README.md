@@ -58,6 +58,10 @@ If any issues arise, please consult the wiki first, which can be found [here](ht
 
 ![Adding External Sources](https://media.giphy.com/media/loAdplweaF3BpyGS1M/giphy.gif)
 
+- MagicMirror Control Center
+
+![MagicMirror Control Center](https://media.giphy.com/media/eH9GfGdbZfUxJuJ9o5/giphy.gif)
+
 ## Future State of Affairs
 
 In the not-to-distant future, `.deb` releases of this package will be available for download, simplifying the installation.

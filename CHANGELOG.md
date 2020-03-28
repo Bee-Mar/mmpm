@@ -157,3 +157,7 @@
 
 - added tab for user to control Restart, Start, and Stop the MagicMirror, as well as Reboot and
   Power-off the RaspberryPi
+
+# Version 0.999
+
+- Merging into master

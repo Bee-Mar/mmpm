@@ -162,6 +162,6 @@
 
 - Merging into master
 
-# Version 0.9995
+# Version 1.0
 
-- Travis CI messed up
+- Travis CI doesn't read 4 decimals on tag precision

@@ -61,7 +61,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       url: "/shutdown-raspberrypi"
     }
   ];
-  private snackbarSettings: object = { duration: 3000 };
+  private snackbarSettings: object = { duration: 5000 };
 
   private working = () => {
     this.snackbar.open(
@@ -79,6 +79,14 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
   };
 
+  private magicMirrorRunningAlready = () => {
+    this.snackbar.open(
+      "MagicMirror appears to be running already. If this is a mistake, stop, then start MagicMirror.",
+      "Close",
+      this.snackbarSettings
+    );
+  };
+
   ngOnInit(): void {}
 
   sendControlSignal(url: string): void {
@@ -87,14 +95,18 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       width: "15vw"
     });
 
-    dialogRef.afterClosed().subscribe(response => {
-      if (response === true) {
-        this.executing();
+    dialogRef.afterClosed().subscribe((response) => {
+      if (!response) return;
 
-        this.api.retrieve(url).subscribe(response => {
-          (url === "/restart-magicmirror" || url === "/start-magicmirror") ? this.working() : this.executed();
-        });
-      }
+      this.executing();
+
+      this.api.retrieve(url).subscribe((success) => {
+        if (url === "/start-magicmirror") {
+          success ? this.working() : this.magicMirrorRunningAlready();
+        } else {
+          url === "/restart-magicmirror" ? this.working() : this.executed();
+        }
+      });
     });
   }
 }

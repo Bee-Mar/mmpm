@@ -61,7 +61,7 @@ export class MagicMirrorModulesTableComponent {
     height: "75vh"
   };
 
-  snackbarSettings: object = { duration: 3000 };
+  snackbarSettings: object = { duration: 5000 };
 
   public ngOnInit(): void {
     this.retrieveModules();

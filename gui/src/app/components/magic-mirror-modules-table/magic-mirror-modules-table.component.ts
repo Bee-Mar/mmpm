@@ -72,7 +72,7 @@ export class MagicMirrorModulesTableComponent {
     this.ALL_PACKAGES = new Array<MagicMirrorPackage>();
     this.paginator.pageSize = 10;
 
-    this.api.basicGet(`/${this.url}`).subscribe((packages) => {
+    this.api.retrieve(`/${this.url}`).subscribe((packages) => {
       Object.keys(packages).forEach((packageCategory) => {
         if (packages) {
           for (const pkg of packages[packageCategory]) {

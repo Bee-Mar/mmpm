@@ -14,8 +14,8 @@ import { LiveTerminalFeedDialogComponent } from "src/app/components/live-termina
 import { RestApiService } from "src/app/services/rest-api.service";
 import { SafePipe } from "./pipes/safe.pipe";
 import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
-import { MagicMirrorControlCenterComponent } from './components/magic-mirror-control-center/magic-mirror-control-center.component';
-import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
+import { MagicMirrorControlCenterComponent } from "./components/magic-mirror-control-center/magic-mirror-control-center.component";
+import { ConfirmationDialogComponent } from "./components/confirmation-dialog/confirmation-dialog.component";
 
 @NgModule({
   declarations: [

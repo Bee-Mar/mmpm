@@ -19,7 +19,7 @@ export class RestApiService {
 
   constructor(private http: HttpClient) {}
 
-  public basicGet(path: string): Observable<any> {
+  public retrieve(path: string): Observable<any> {
     return this.http.get<any>(
       this.BASE_API_URL + `${path}`,
       {
@@ -32,9 +32,7 @@ export class RestApiService {
       this.BASE_API_URL + "/refresh-modules",
       {
         headers: httpOptions()
-      }).pipe(retry(1),
-      catchError(this.handleError)
-    );
+      }).pipe(retry(1), catchError(this.handleError));
   }
 
   public getMagicMirrorConfig() {
@@ -58,8 +56,7 @@ export class RestApiService {
           }),
           responseType: "text",
           reportProgress: true
-        }
-      ).pipe(retry(1), catchError(this.handleError));
+        }).pipe(retry(1), catchError(this.handleError));
   }
 
   public updateMagicMirrorConfig(code: string): Observable<Response> {
@@ -72,8 +69,7 @@ export class RestApiService {
           headers: httpOptions({
             "Content-Type": "application/x-www-form-urlencoded"
           })
-        }
-      ).pipe(retry(1), catchError(this.handleError));
+        }).pipe(retry(1), catchError(this.handleError));
   }
 
   public addExternalModuleSource(externalSource: MagicMirrorPackage): Observable<any> {
@@ -86,8 +82,7 @@ export class RestApiService {
           headers: httpOptions({
             "Content-Type": "application/x-www-form-urlencoded"
           })
-        }
-      ).pipe(retry(1), catchError(this.handleError));
+        }).pipe(retry(1), catchError(this.handleError));
   }
 
   public upgradeModules(selectedModules: MagicMirrorPackage[]): Observable<any> {
@@ -100,18 +95,20 @@ export class RestApiService {
           headers: httpOptions({
             "Content-Type": "application/x-www-form-urlencoded"
           })
-        }
-      ).pipe(retry(1), catchError(this.handleError));
+        }).pipe(retry(5), catchError(this.handleError));
   }
 
   public removeExternalModuleSource(externalSources: MagicMirrorPackage[]): Observable<any> {
     return this.http.request(
       "DELETE",
-      this.BASE_API_URL + "/remove-external-module-source", {
+      this.BASE_API_URL + "/remove-external-module-source",
+      {
         body: {
-          "external-sources": externalSources
-        },
-        headers: httpOptions({ "Content-Type": "text/plain" })
+        "external-sources": externalSources
+      },
+        headers: httpOptions({
+          "Content-Type": "text/plain"
+        })
       }).pipe(retry(1), catchError(this.handleError));
   }
 

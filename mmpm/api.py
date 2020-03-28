@@ -149,6 +149,7 @@ def get_magicmirror_modules() -> dict:
     return __modules__()
 
 
+
 @app.route(__api__('install-modules'), methods=[POST])
 def install_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
@@ -266,28 +267,73 @@ def update_magicmirror_config() -> str:
 
 @app.route(__api__('start-magicmirror'), methods=[GET])
 def start_magicmirror() -> str:
-    utils.run_cmd(['cd', utils.MAGICMIRROR_ROOT, '&&', 'npm', 'start', '&', ])
+    os.system(f'cd {utils.MAGICMIRROR_ROOT} & npm start &')
     return json.dumps(True)
 
 
 @app.route(__api__('restart-magicmirror'), methods=[GET])
 def restart_magicmirror() -> str:
-    os.system(f'for process in $(pgrep chromium); do kill -9 $process; done && cd {utils.MAGICMIRROR_ROOT} && ./run-start.sh &')
+    '''
+    Restart the MagicMirror by killing all Chromium processes, the
+    re-running the startup script for MagicMirror
+
+    Parameters:
+        None
+
+    Returns:
+    # there really isn't an easy way to capture return codes for the background process, so, for the first version, let's just be lazy
+    '''
+    # there really isn't an easy way to capture return codes for the background process, so, for the first version, let's just be lazy for now
+    # need to find way to capturing return codes
+    os.system(f'for process in $(pgrep chromium); do kill -9 $process; done ; cd {utils.MAGICMIRROR_ROOT} ; ./run-start.sh &')
     return json.dumps(True)
+
 
 @app.route(__api__('stop-magicmirror'), methods=[GET])
 def stop_magicmirror() -> str:
+    '''
+    Stop the MagicMirror by killing all Chromium processes
+
+    Parameters:
+        None
+
+    Returns:
+        True, regardless of outcome, only to signal the command actually ran
+    '''
+    # need to find way to capturing return codes
     os.system('for process in $(pgrep chromium); do kill -9 $process; done')
     return json.dumps(True)
 
 
 @app.route(__api__('restart-raspberrypi'), methods=[GET])
 def restart_raspberrypi() -> str:
-    utils.run_cmd(['sudo', 'reboot'])
-    return json.dumps(True)
+    '''
+    Reboot the RaspberryPi
+
+    Parameters:
+        None
+
+    Returns:
+        success (bool): If the command fails, False is returned. If success, the return will never reach the interface
+    '''
+
+    return_code, _, _ = utils.run_cmd(['sudo', 'reboot'])
+    # if success, it'll never get the response, but we'll know if it fails
+    return json.dumps(bool(not return_code))
 
 
-@app.route(__api__('turn-off-raspberrypi'), methods=[GET])
+@app.route(__api__('shutdown-raspberrypi'), methods=[GET])
 def turn_off_raspberrypi() -> str:
-    utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
-    return json.dumps(True)
+    '''
+    Shut down the RaspberryPi
+
+    Parameters:
+        None
+
+    Returns:
+        success (bool): If the command fails, False is returned. If success, the return will never reach the interface
+    '''
+
+    return_code, _, _ = utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
+    # if success, it'll never get the response, but we'll know if it fails
+    return json.dumps(bool(not return_code))

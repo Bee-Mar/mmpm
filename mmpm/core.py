@@ -576,10 +576,11 @@ def retrieve_modules() -> dict:
     modules: dict = {}
 
     try:
-        web_page: object = urlopen(utils.MAGICMIRROR_MODULES_URL).read()
+        url = urlopen(utils.MAGICMIRROR_MODULES_URL)
+        web_page = url.read()
     except HTTPError:
         utils.error_msg("Unable to retrieve MagicMirror modules. Is your internet connection down?")
-        return None
+        return {}
 
     soup = BeautifulSoup(web_page, "html.parser")
     table_soup: list = soup.find_all("table")

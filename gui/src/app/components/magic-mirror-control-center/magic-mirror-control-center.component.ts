@@ -4,6 +4,14 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 
+interface Tile {
+  icon: string;
+  cols: number;
+  rows: number;
+  tooltip: string;
+  url: string;
+}
+
 @Component({
   selector: "app-magic-mirror-control-center",
   templateUrl: "./magic-mirror-control-center.component.html",
@@ -16,14 +24,55 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     public dialog: MatDialog
   ) {}
 
+  tiles: Tile[] = [
+    {
+      icon: "refresh",
+      tooltip: "Restart MagicMirror",
+      cols: 1,
+      rows: 1,
+      url: "/restart-magicmirror"
+    },
+    {
+      icon: "live_tv",
+      tooltip: "Start MagicMirror",
+      cols: 1,
+      rows: 1,
+      url: "/start-magicmirror"
+    },
+    {
+      icon: "tv_off",
+      tooltip: "Stop MagicMirror",
+      cols: 1,
+      rows: 1,
+      url: "/stop-magicmirror"
+    },
+    {
+      icon: "power_settings_new",
+      tooltip: "Restart RaspberryPi",
+      cols: 1,
+      rows: 1,
+      url: "/restart-raspberrypi"
+    },
+    {
+      icon: "power_off",
+      tooltip: "Shutdown RaspberryPi",
+      cols: 2,
+      rows: 1,
+      url: "/shutdown-raspberrypi"
+    }
+  ];
   private snackbarSettings: object = { duration: 3000 };
 
   private working = () => {
     this.snackbar.open(
-      "This may take a moment to have an effect ...",
+      "This may take a moment ...",
       "Close",
       this.snackbarSettings
     );
+  };
+
+  private executed = () => {
+    this.snackbar.open("Process executed", "Close", this.snackbarSettings);
   };
 
   private executing = () => {
@@ -32,22 +81,20 @@ export class MagicMirrorControlCenterComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  onSendControlSignal(url: string): void {
+  sendControlSignal(url: string): void {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      height: "33vh",
-      width: "33vh"
+      height: "15vh",
+      width: "15vw"
     });
 
-    dialogRef.afterClosed().subscribe((response) => {
-      if (response === false) {
-        return;
+    dialogRef.afterClosed().subscribe(response => {
+      if (response === true) {
+        this.executing();
+
+        this.api.retrieve(url).subscribe(response => {
+          (url === "/restart-magicmirror" || url === "/start-magicmirror") ? this.working() : this.executed();
+        });
       }
-    });
-
-    this.executing();
-
-    this.api.basicGet(url).subscribe((response) => {
-      this.working();
     });
   }
 }

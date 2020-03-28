@@ -262,3 +262,32 @@ def update_magicmirror_config() -> str:
     except IOError:
         return json.dumps(False)
     return json.dumps(True)
+
+
+@app.route(__api__('start-magicmirror'), methods=[GET])
+def start_magicmirror() -> str:
+    utils.run_cmd(['cd', utils.MAGICMIRROR_ROOT, '&&', 'npm', 'start', '&', ])
+    return json.dumps(True)
+
+
+@app.route(__api__('restart-magicmirror'), methods=[GET])
+def restart_magicmirror() -> str:
+    os.system(f'for process in $(pgrep chromium); do kill -9 $process; done && cd {utils.MAGICMIRROR_ROOT} && ./run-start.sh &')
+    return json.dumps(True)
+
+@app.route(__api__('stop-magicmirror'), methods=[GET])
+def stop_magicmirror() -> str:
+    os.system('for process in $(pgrep chromium); do kill -9 $process; done')
+    return json.dumps(True)
+
+
+@app.route(__api__('restart-raspberrypi'), methods=[GET])
+def restart_raspberrypi() -> str:
+    utils.run_cmd(['sudo', 'reboot'])
+    return json.dumps(True)
+
+
+@app.route(__api__('turn-off-raspberrypi'), methods=[GET])
+def turn_off_raspberrypi() -> str:
+    utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
+    return json.dumps(True)

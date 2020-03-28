@@ -1,0 +1,46 @@
+<div style="top: 50%; ">
+  <button
+    mat-raised-button
+    matTooltip="Restart MagicMirror"
+    (click)="onSendControlSignal('/restart-magicmirror')">
+    <mat-icon>
+      refresh
+    </mat-icon>
+  </button>
+
+  <button
+    mat-raised-button
+    matTooltip="Start MagicMirror"
+    (click)="onSendControlSignal('/start-magicmirror')">
+    <mat-icon>
+      live_tv
+    </mat-icon>
+  </button>
+
+  <button
+    mat-raised-button
+    matTooltip="Stop MagicMirror"
+    (click)="onSendControlSignal('/stop-magicmirror')">
+    <mat-icon>
+      tv_off
+    </mat-icon>
+  </button>
+
+  <button
+    mat-raised-button
+    matTooltip="Restart RaspberryPi"
+    (click)="onSendControlSignal('/restart-raspberrypi')">
+    <mat-icon>
+      power_settings_new
+    </mat-icon>
+  </button>
+
+  <button
+    mat-raised-button
+    matTooltip="Turn off RaspberryPi"
+    (click)="onSendControlSignal('/turn-off-raspberrypi')">
+    <mat-icon>
+      power_off
+    </mat-icon>
+  </button>
+</div>

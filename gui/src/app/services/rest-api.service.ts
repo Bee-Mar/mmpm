@@ -19,7 +19,7 @@ export class RestApiService {
 
   constructor(private http: HttpClient) {}
 
-  public getModules(path: string): Observable<any> {
+  public basicGet(path: string): Observable<any> {
     return this.http.get<any>(
       this.BASE_API_URL + `${path}`,
       {

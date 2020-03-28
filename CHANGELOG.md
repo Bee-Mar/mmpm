@@ -152,3 +152,8 @@
 # Version 0.992
 
 - Upping the tag number
+
+# Version 0.998
+
+- added tab for user to control Restart, Start, and Stop the MagicMirror, as well as Reboot and
+  Power-off the RaspberryPi

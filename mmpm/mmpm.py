@@ -3,7 +3,7 @@
 import sys
 from mmpm import utils, colors, core, opts
 
-__version__ = 0.8
+__version__ = 1.05
 
 
 def main(argv):
@@ -69,13 +69,11 @@ def main(argv):
 
     elif args.enhance_mmpm or args.force_refresh or is_expired:
         if args.force_refresh or is_expired:
-            message = "Performing automated check for MMPM update: "
-            print("\n")
-            utils.separator(message)
-            print(colors.B_CYAN + "Performing automated check for MMPM update" + colors.RESET + ": ")
-            utils.separator(message)
-            print("\n")
+            message = " Automated check for MMPM updates as part of snapshot refresh ... "
+        else:
+            message = " Checking for MMPM updates ... "
 
+        utils.plain_print(utils.green_plus() + message)
         core.check_for_mmpm_enhancements(assume_yes=args.yes, gui=args.GUI)
 
     elif args.add_ext_module_src:

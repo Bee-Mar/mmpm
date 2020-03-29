@@ -83,8 +83,10 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
                 utils.separator(message)
                 return True
 
+            print(utils.done())
+
             while not valid_response:
-                print(f'Currently installed version: {mmpm.__version__}')
+                print(f'\nCurrently installed version: {mmpm.__version__}')
                 print(f'Available version: {version_number}\n')
 
                 response = "yes" if assume_yes else input(
@@ -109,7 +111,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
                     os.system('rm -rf /tmp/mmpm')
 
                     try:
-                        return_code, _, stderr = utils.run_cmd(['git', 'clone', utils.MMPM_REPO_URL])
+                        return_code, _, stderr = utils.clone('mmpm', utils.MMPM_REPO_URL)
                     except OSError:
                         utils.error_msg('Failed to clone MMPM repo')
                         sys.exit(1)
@@ -118,16 +120,10 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
                         utils.error_msg(stderr)
                         sys.exit(1)
 
-                    try:
-                        os.chdir('/tmp/mmpm')
-                        return_code, _, stderr = utils.run_cmd(['make', 'reinstall'])
-                    except OSError:
-                        utils.error_msg('Failled to install MMPM')
-                        sys.exit(1)
+                    os.chdir('/tmp/mmpm')
 
-                    if return_code:
-                        utils.error_msg(stderr)
-                        sys.exit(1)
+                    # if the user needs to be prompted for their password, this can't be a subprocess
+                    os.system('make reinstall')
 
                     os.chdir(original_dir)
                     log.logger.info(f'Changing back to original working directory: {original_dir}')
@@ -137,7 +133,8 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
                 else:
                     utils.warning_msg("Respond with yes/no or y/n.")
         else:
-            print("No enhancements available for MMPM. You have the latest version.")
+            print(utils.done())
+            print("\nNo enhancements available for MMPM. You have the latest version.")
             log.logger.info('No newer version of MMPM available')
             return False
         return True
@@ -199,7 +196,7 @@ def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, 
                     if stdout:
                         updates_list.append(title)
 
-                    utils.done()
+                    print(utils.done())
 
                 elif upgrade:
                     utils.plain_print(f"Requesting upgrade for {title}")
@@ -209,7 +206,7 @@ def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, 
                         utils.error_msg(stderr)
                         return False
 
-                    utils.done()
+                    print(utils.done())
 
                     if "Already up to date." in stdout:
                         print(stdout)
@@ -348,12 +345,7 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
                     print(colors.RESET + "Installing " + colors.B_CYAN + f"{title}" + colors.B_YELLOW + " @ " + colors.RESET + f"{target}")
 
                     utils.separator(message)
-                    utils.plain_print(colors.RESET + f"\nCloning {title} repository " + colors.RESET)
-
-                    # by using "repo.split()", it allows the user to bake in
-                    # additional commands when making custom sources
-                    # ie. git clone [repo] -b [branch] [target]
-                    error_code, _, stderr = utils.run_cmd(['git', 'clone'] + repo.split() + [target])
+                    error_code, _, stderr = utils.clone(title, repo, target)
 
                     if error_code:
                         utils.warning_msg("\n" + stderr)
@@ -361,7 +353,7 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
                         install_next = True
                         continue
 
-                    utils.done()
+                    print(utils.done())
                     error: str = utils.handle_installation_process()
 
                     if error:
@@ -452,14 +444,14 @@ def install_magicmirror(gui=False) -> bool:
                         utils.error_msg(stderr)
                         return False
 
-                    utils.done()
+                    print(utils.done())
                     error_code, _, stderr = utils.npm_install()
 
                     if error_code:
                         utils.error_msg(stderr)
                         valid_response = True
 
-                    utils.done()
+                    print(utils.done())
                 else:
                     utils.warning_msg("Respond with yes/no or y/n.")
     except Exception:
@@ -546,14 +538,14 @@ def load_modules(force_refresh: bool = False) -> dict:
 
     # if the snapshot has expired, or doesn't exist, get a new one
     if force_refresh:
-        utils.plain_print(colors.RESET + "Refreshing MagicMirror module snapshot ... ")
+        utils.plain_print(utils.green_plus() + " Refreshing MagicMirror module snapshot ... ")
         modules = retrieve_modules()
 
         # save the new snapshot
         with open(utils.SNAPSHOT_FILE, "w") as snapshot:
             json.dump(modules, snapshot)
 
-        utils.done()
+        print(utils.done())
 
     else:
         with open(utils.SNAPSHOT_FILE, "r") as snapshot_file:

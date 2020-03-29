@@ -3,10 +3,8 @@ import re
 import os
 import json
 import datetime
-import subprocess
 import shutil
 import sys
-import time
 from textwrap import fill
 from tabulate import tabulate
 from urllib.error import HTTPError
@@ -83,7 +81,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
                 utils.separator(message)
                 print(message)
                 utils.separator(message)
-                return
+                return True
 
             while not valid_response:
                 print(f'Currently installed version: {mmpm.__version__}')
@@ -433,7 +431,7 @@ def install_magicmirror(gui=False) -> bool:
                     print(colors.B_MAGENTA + "Aborting MagicMirror update")
                     break
 
-                elif response in ("yes", "y"):
+                if response in ("yes", "y"):
                     os.chdir(utils.MAGICMIRROR_ROOT)
 
                     print(colors.B_CYAN + "Checking for updates..." + colors.RESET)
@@ -447,22 +445,21 @@ def install_magicmirror(gui=False) -> bool:
                         print("No updates available for MagicMirror.")
                         break
 
-                    else:
-                        print(colors.B_CYAN + "Updates found for MagicMirror. " + colors.RESET + "Requesting upgrades...")
-                        error_code, _, stderr = utils.run_cmd(['git', 'pull'])
+                    print(colors.B_CYAN + "Updates found for MagicMirror. " + colors.RESET + "Requesting upgrades...")
+                    error_code, _, stderr = utils.run_cmd(['git', 'pull'])
 
-                        if error_code:
-                            utils.error_msg(stderr)
-                            return False
+                    if error_code:
+                        utils.error_msg(stderr)
+                        return False
 
-                        utils.done()
-                        error_code, _, stderr = utils.npm_install()
+                    utils.done()
+                    error_code, _, stderr = utils.npm_install()
 
-                        if error_code:
-                            utils.error_msg(stderr)
-                            valid_response = True
+                    if error_code:
+                        utils.error_msg(stderr)
+                        valid_response = True
 
-                        utils.done()
+                    utils.done()
                 else:
                     utils.warning_msg("Respond with yes/no or y/n.")
     except Exception:

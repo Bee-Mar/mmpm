@@ -165,3 +165,7 @@
 # Version 1.0
 
 - Travis CI doesn't read 4 decimals on tag precision
+
+# Version 1.05
+
+- Prettified stdout messaging, and added upgrade option for MMPM from GUI

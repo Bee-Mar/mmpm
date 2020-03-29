@@ -11,7 +11,6 @@ from shelljob.proc import Group
 from flask_socketio import SocketIO
 from typing import Tuple
 import os
-import subprocess
 
 
 MMPM_EXECUTABLE: list = [os.path.join(os.path.expanduser('~'), '.local', 'bin', 'mmpm')]
@@ -91,39 +90,6 @@ def __stream_cmd_output__(process: Group, cmd: list):
         pass
 
 
-def __processess__(process_name: str):
-    log.logger.info('Checking for MagicMirror related proceses')
-    pids = subprocess.Popen(['pgrep', process_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, _ = pids.communicate()
-    found = bool(stdout.decode('utf-8'))
-    log.logger.info(f'Found processes: {found}')
-    return found
-
-
-def __kill_magicmirror_processes__():
-    log.logger.info('Killing MagicMirror processes')
-
-    log.logger.info('Killing all chromium processes')
-    os.system('for process in $(pgrep chromium); do kill -9 $process; done')
-
-    log.logger.info('Killing all node processes')
-    os.system('for process in $(pgrep node); do kill -9 $process; done')
-
-    log.logger.info('Killing all npm processes')
-    os.system('for process in $(pgrep npm); do kill -9 $process; done')
-
-
-def __start_magicmirror__():
-    log.logger.info('Starting MagicMirror')
-
-    original_dir = os.getcwd()
-    os.chdir(utils.MAGICMIRROR_ROOT)
-
-    log.logger.info("Running 'npm start' in the background")
-    os.system('npm start &')
-    os.chdir(original_dir)
-
-
 @socketio.on_error()
 def error_handler(error) -> Tuple[str, int]:
     '''
@@ -182,7 +148,6 @@ def server_error(error) -> Tuple[str, int]:
 @app.route(__api__('all-modules'), methods=[GET])
 def get_magicmirror_modules() -> dict:
     return __modules__()
-
 
 
 @app.route(__api__('install-modules'), methods=[POST])
@@ -316,12 +281,12 @@ def start_magicmirror() -> str:
     # need to find way to capturing return codes
 
     # if these processes are all running, we assume MagicMirror is running currently
-    if __processess__('chromium') and __processess__('node') and __processess__('npm'):
+    if utils.get_pids('chromium') and utils.get_pids('node') and utils.get_pids('npm'):
         log.logger.info('MagicMirror appears to be running already. Returning False.')
         return json.dumps(False)
 
     log.logger.info('MagicMirror does not appear to be running currently. Returning True.')
-    __start_magicmirror__()
+    utils.start_magicmirror()
     return json.dumps(True)
 
 
@@ -338,8 +303,8 @@ def restart_magicmirror() -> str:
         bool: Always True only as a signal the process was called
     '''
     # same issue as the start-magicmirror api call
-    __kill_magicmirror_processes__()
-    __start_magicmirror__()
+    utils.kill_magicmirror_processes()
+    utils.start_magicmirror()
     return json.dumps(True)
 
 
@@ -355,7 +320,7 @@ def stop_magicmirror() -> str:
         bool: Always True only as a signal the process was called
     '''
     # same sort of issue as the start-magicmirror call
-    __kill_magicmirror_processes__()
+    utils.kill_magicmirror_processes()
     return json.dumps(True)
 
 
@@ -372,7 +337,7 @@ def restart_raspberrypi() -> str:
     '''
 
     log.logger.info('Restarting RaspberryPi')
-    __kill_magicmirror_processes__()
+    utils.kill_magicmirror_processes()
     return_code, _, _ = utils.run_cmd(['sudo', 'reboot'])
     # if success, it'll never get the response, but we'll know if it fails
     return json.dumps(bool(not return_code))
@@ -392,7 +357,7 @@ def turn_off_raspberrypi() -> str:
 
     log.logger.info('Shutting down RaspberryPi')
     # if success, we'll never get the response, but we'll know if it fails
-    __kill_magicmirror_processes__()
+    utils.kill_magicmirror_processes()
     return_code, _, _ = utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
     return json.dumps(bool(not return_code))
 
@@ -404,8 +369,8 @@ def upgrade_magicmirror() -> str:
     Response(__stream_cmd_output__(process, ['-M', '--GUI']), mimetype='text/plain')
     log.logger.info('Finished installing')
 
-    if __processess__('chromium') and __processess__('node') and __processess__('npm'):
-        __kill_magicmirror_processes__()
-        __start_magicmirror__()
+    if utils.get_pids('chromium') and utils.get_pids('node') and utils.get_pids('npm'):
+        utils.kill_magicmirror_processes()
+        utils.start_magicmirror()
 
     return json.dumps(True)

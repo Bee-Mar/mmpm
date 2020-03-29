@@ -378,3 +378,55 @@ def handle_installation_process() -> str:
     print('\n')
     log.logger.info(f'Exiting installation handler from {os.getcwd()}')
     return ''
+
+
+def get_pids(process_name: str) -> List[str]:
+    '''
+    Kills all processes of given name
+
+    Parameters:
+        process (str): the name of the process
+
+    Returns:
+        processes (List[str]): list of the processes IDs found
+    '''
+
+    log.logger.info(f'Getting process IDs for {process_name} proceses')
+    pids = subprocess.Popen(['pgrep', process_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, _ = pids.communicate()
+    processes = stdout.decode('utf-8')
+    log.logger.info(f'Found processes: {processes}')
+    return [proc_id for proc_id in processes.split('\n') if proc_id]
+
+
+def kill_pids(process: str):
+    '''
+    Kills all processes of given name
+
+    Parameters:
+        process (str): the name of the process
+
+    Returns:
+        processes (str): the processes IDs found
+    '''
+    log.logger.info(f'Killing all processes of type {process}')
+    os.system(f'for process in $(pgrep {process}); do kill -9 $process; done')
+
+
+def kill_magicmirror_processes():
+    ''' Kills all processes commonly related to MagicMirror '''
+    kill_pids('chromium')
+    kill_pids('node')
+    kill_pids('npm')
+
+
+def start_magicmirror():
+    ''' Launches MagicMirror '''
+    log.logger.info('Starting MagicMirror')
+
+    original_dir = os.getcwd()
+    os.chdir(utils.MAGICMIRROR_ROOT)
+
+    log.logger.info("Running 'npm start' in the background")
+    os.system('npm start &')
+    os.chdir(original_dir)

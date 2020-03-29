@@ -3,12 +3,14 @@ import { RestApiService } from "src/app/services/rest-api.service";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
+import { LiveTerminalFeedDialogComponent } from "src/app/components/live-terminal-feed-dialog/live-terminal-feed-dialog.component";
 
 interface Tile {
   icon: string;
   cols: number;
   rows: number;
   tooltip: string;
+  message: string;
   url: string;
 }
 
@@ -24,43 +26,62 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     public dialog: MatDialog
   ) {}
 
-  tiles: Tile[] = [
-    {
-      icon: "refresh",
-      tooltip: "Restart MagicMirror",
-      cols: 1,
-      rows: 1,
-      url: "/restart-magicmirror"
-    },
+  private liveTerminalFeedDialogSettings: object = {
+    width: "75vw",
+    height: "75vh"
+  };
+
+  public tiles: Tile[] = [
     {
       icon: "live_tv",
       tooltip: "Start MagicMirror",
       cols: 1,
       rows: 1,
-      url: "/start-magicmirror"
+      url: "/start-magicmirror",
+      message: "MagicMirror will be started."
     },
     {
       icon: "tv_off",
       tooltip: "Stop MagicMirror",
       cols: 1,
       rows: 1,
-      url: "/stop-magicmirror"
+      url: "/stop-magicmirror",
+      message: "MagicMirror will be stopped."
+    },
+    {
+      icon: "refresh",
+      tooltip: "Restart MagicMirror",
+      cols: 1,
+      rows: 1,
+      url: "/restart-magicmirror",
+      message: "MagicMirror will be restarted."
+    },
+    {
+      icon: "system_update",
+      tooltip: "Upgrade MagicMirror",
+      cols: 1,
+      rows: 1,
+      url: "/upgrade-magicmirror",
+      message: "MagicMirror will be upgraded and restarted, if running."
     },
     {
       icon: "power_settings_new",
       tooltip: "Restart RaspberryPi",
       cols: 1,
       rows: 1,
-      url: "/restart-raspberrypi"
+      url: "/restart-raspberrypi",
+      message: "Your RaspberryPi will be rebooted."
     },
     {
       icon: "power_off",
       tooltip: "Shutdown RaspberryPi",
-      cols: 2,
+      cols: 1,
       rows: 1,
-      url: "/shutdown-raspberrypi"
-    }
+      url: "/shutdown-raspberrypi",
+      message: "Your RaspberryPi will be powered off."
+    },
   ];
+
   private snackbarSettings: object = { duration: 5000 };
 
   private working = () => {
@@ -89,16 +110,22 @@ export class MagicMirrorControlCenterComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  sendControlSignal(url: string): void {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+  public sendControlSignal(url: string, message: string): void {
+
+    const data = {
       height: "15vh",
-      width: "15vw"
-    });
+      width: "33vw",
+      data: { message }
+    };
+
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, data);
 
     dialogRef.afterClosed().subscribe((response) => {
       if (!response) return;
 
-      this.executing();
+      if (url === "/upgrade-magicmirror") {
+        this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
+      }
 
       this.api.retrieve(url).subscribe((success) => {
         if (url === "/start-magicmirror") {

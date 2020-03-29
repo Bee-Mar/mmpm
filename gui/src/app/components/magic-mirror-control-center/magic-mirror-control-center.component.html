@@ -7,7 +7,7 @@
       matTooltip="{{ tile.tooltip }}"
       color="#FFFFFF"
       >
-      <button style="background-color: #00bcd4;" mat-fab (click)="sendControlSignal(tile.url)">
+      <button style="background-color: #00bcd4;" mat-fab (click)="sendControlSignal(tile.url, tile.message)">
         <mat-icon>
           {{ tile.icon }}
         </mat-icon>

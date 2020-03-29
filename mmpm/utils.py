@@ -113,6 +113,36 @@ def separator(message):
     print(colors.RESET + "-" * len(message), flush=True)
 
 
+def assert_snapshot_directory() -> bool:
+    if not os.path.exists(utils.MMPM_CONFIG_DIR):
+        try:
+            os.mkdir(utils.MMPM_CONFIG_DIR)
+        except OSError:
+            utils.error_msg('Failed to create directory for snapshot')
+            return False
+    return True
+
+
+def snapshot_exists() -> bool:
+    return os.path.exists(utils.SNAPSHOT_FILE)
+
+
+def calc_snapshot_timestamps() -> Tuple[float, float]:
+    curr_snap = next_snap = None
+
+    if snapshot_exists():
+        curr_snap = os.path.getmtime(utils.SNAPSHOT_FILE)
+        next_snap = curr_snap + 6 * 60 * 60
+
+    return curr_snap, next_snap
+
+
+def should_refresh_modules(current_snapshot: float, next_snapshot: float) -> bool:
+    if not current_snapshot and not next_snapshot:
+        return True
+    return not snapshot_exists() or next_snapshot - time.time() <= 0.0
+
+
 def run_cmd(command: List[str], progress=True) -> Tuple[int, str, str]:
     '''
     Executes shell command and captures errors

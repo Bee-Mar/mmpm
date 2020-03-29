@@ -1,5 +1,5 @@
-import { Component, OnInit } from "@angular/core";
-import {MatDialogRef } from "@angular/material/dialog";
+import { Component, OnInit, Inject } from "@angular/core";
+import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 
 @Component({
   selector: "app-confirmation-dialog",
@@ -7,15 +7,24 @@ import {MatDialogRef } from "@angular/material/dialog";
   styleUrls: ["./confirmation-dialog.component.scss"]
 })
 export class ConfirmationDialogComponent implements OnInit {
-  constructor(private dialogRef: MatDialogRef<ConfirmationDialogComponent>) {}
+  public customMessage: string;
 
-  ngOnInit(): void {}
+  constructor(
+    private dialogRef: MatDialogRef<ConfirmationDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+) {}
 
-  onConfirm(confirmed: boolean): void {
+  ngOnInit(): void {
+    if (this.data) {
+      this.customMessage = this.data.message;
+    }
+  }
+
+  public onConfirm(confirmed: boolean): void {
     this.dialogRef.close(confirmed);
   }
 
-  onNoClick() {
+  public onNoClick() {
     this.dialogRef.close(false);
   }
 }

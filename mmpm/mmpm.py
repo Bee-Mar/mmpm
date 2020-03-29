@@ -3,7 +3,7 @@
 import sys
 from mmpm import utils, colors, core, opts
 
-__version__ = 1.0
+__version__ = 0.8
 
 
 def main(argv):
@@ -15,7 +15,14 @@ def main(argv):
         print(colors.B_CYAN + "MMPM Version: " + colors.B_WHITE + "{}".format(__version__))
         sys.exit(0)
 
-    modules, curr_snap, next_snap, checked_enhancements = core.load_modules(args.force_refresh)
+    current_snapshot, next_snapshot = utils.calc_snapshot_timestamps()
+    is_expired = utils.should_refresh_modules(current_snapshot, next_snapshot)
+
+    if args.force_refresh:
+        modules = core.load_modules(force_refresh=args.force_refresh)
+
+    else:
+        modules = core.load_modules(force_refresh=is_expired)
 
     if not modules:
         utils.error_msg('Fatal. No modules found.')
@@ -34,7 +41,7 @@ def main(argv):
         core.install_modules(modules, args.install)
 
     elif args.install_magicmirror:
-        core.install_magicmirror()
+        core.install_magicmirror(args.GUI)
 
     elif args.remove and args.ext_module_src:
         core.remove_external_module_source(args.remove)
@@ -51,8 +58,8 @@ def main(argv):
 
         core.display_modules(installed_modules)
 
-    elif args.snapshot_details or args.force_refresh:
-        core.snapshot_details(modules, curr_snap, next_snap)
+    elif args.snapshot_details:
+        core.snapshot_details(modules)
 
     elif args.update:
         core.enhance_modules(modules, update=True)
@@ -60,14 +67,23 @@ def main(argv):
     elif args.upgrade:
         core.enhance_modules(modules, upgrade=True, modules_to_upgrade=args.upgrade[0])
 
-    elif args.enhance_mmpm and not checked_enhancements:
-        core.check_for_mmpm_enhancements()
+    elif args.enhance_mmpm or args.force_refresh or is_expired:
+        if args.force_refresh or is_expired:
+            message = "Performing automated check for MMPM update: "
+            print("\n")
+            utils.separator(message)
+            print(colors.B_CYAN + "Performing automated check for MMPM update" + colors.RESET + ": ")
+            utils.separator(message)
+            print("\n")
+
+        core.check_for_mmpm_enhancements(assume_yes=args.yes, gui=args.GUI)
 
     elif args.add_ext_module_src:
         core.add_external_module_source()
 
     elif args.magicmirror_config:
         core.edit_magicmirror_config()
+
 
 
 if __name__ == "__main__":

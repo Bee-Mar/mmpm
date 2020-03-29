@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 import re
 import os
-import time
 import json
 import datetime
 import subprocess
 import shutil
 import sys
+import time
 from textwrap import fill
 from tabulate import tabulate
 from urllib.error import HTTPError
@@ -14,11 +14,11 @@ from urllib.request import urlopen
 from collections import defaultdict
 from bs4 import BeautifulSoup
 from mmpm import colors, utils, mmpm
-from typing import List, Tuple
+from typing import List
 from mmpm.utils import log
 
 
-def snapshot_details(modules: dict, curr_snap: str, next_snap: str) -> None:
+def snapshot_details(modules: dict) -> None:
     '''
     Displays information regarding the most recent 'snapshot_file', ie. when it
     was taken, when the next scheduled snapshot will be taken, how many module
@@ -27,8 +27,6 @@ def snapshot_details(modules: dict, curr_snap: str, next_snap: str) -> None:
 
     Parameters:
         modules (dict): Dictionary of MagicMirror modules
-        curr_snap (str): Timestamp of current snapshot
-        next_snap (str): Timestamp of when next snapshot will be taken
 
     Returns:
         None
@@ -37,16 +35,21 @@ def snapshot_details(modules: dict, curr_snap: str, next_snap: str) -> None:
     num_categories: int = len(modules.keys())
     num_modules: int = 0
 
+    current_snapshot, next_snapshot = utils.calc_snapshot_timestamps()
+    curr_snap_date = datetime.datetime.fromtimestamp(int(current_snapshot))
+    next_snap_date = datetime.datetime.fromtimestamp(int(next_snapshot))
+
     for value in modules.values():
         num_modules += len(value)
 
-    print(colors.B_YELLOW + "\nMost recent snapshot of MagicMirror Modules taken: " + colors.B_WHITE + f"{curr_snap}")
-    print(colors.B_YELLOW + "The next snapshot will be taken on or after: " + colors.B_WHITE + f" {next_snap}\n")
-    print(colors.B_GREEN + "Module Categories: " + colors.B_WHITE + f"{num_categories}")
-    print(colors.B_GREEN + "Modules Available: " + colors.B_WHITE + f"{num_modules}\n")
+    print(colors.B_YELLOW + "Most recent snapshot of MagicMirror Modules taken" + colors.B_WHITE + f": {curr_snap_date}")
+    print(colors.B_YELLOW + "The next snapshot will be taken on or after" + colors.B_WHITE + f": {next_snap_date}\n")
+    print(colors.B_GREEN + "Module Categories" + colors.B_WHITE + f": {num_categories}")
+    print(colors.B_GREEN + "Modules Available" + colors.B_WHITE + f": {num_modules}\n")
 
 
-def check_for_mmpm_enhancements() -> bool:
+
+def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     '''
     Scrapes the main file of MMPM off the github repo, and compares the current
     version, versus the one available in the master branch. If there is a newer
@@ -73,11 +76,20 @@ def check_for_mmpm_enhancements() -> bool:
             log.logger.info(f'Found newer version of MMPM: {version_number}')
             valid_response = False
 
+            if gui:
+                print(f'Currently installed version: {mmpm.__version__}')
+                print(f'Available version: {version_number}\n')
+                message = f"A newer version of MMPM is available ({version_number}). Please upgrade via terminal using 'mmpm -e'"
+                utils.separator(message)
+                print(message)
+                utils.separator(message)
+                return
+
             while not valid_response:
                 print(f'Currently installed version: {mmpm.__version__}')
                 print(f'Available version: {version_number}\n')
 
-                response = input(
+                response = "yes" if assume_yes else input(
                     colors.B_GREEN + "A newer version of MMPM is available\n\n" +
                     colors.RESET + "Would you like to upgrade now?" + colors.B_WHITE + " [yes/y | no/n]: " +
                     colors.RESET
@@ -86,18 +98,39 @@ def check_for_mmpm_enhancements() -> bool:
                 if response in ("yes", "y"):
                     valid_response = True
                     original_dir = os.getcwd()
+
+                    message = "Upgrading MMPM"
+
+                    utils.separator(message)
+                    print(colors.B_CYAN + message + colors.RESET)
+                    utils.separator(message)
+
                     log.logger.info(f'User chose to update MMPM with {original_dir} as the starting directory')
 
                     os.chdir(os.path.join('/', 'tmp'))
+                    os.system('rm -rf /tmp/mmpm')
 
-                    # in case it existed previously
-                    utils.run_cmd(['rm', '-rf', os.path.join('/', 'tmp', 'mmpm')], progress=False)
+                    try:
+                        return_code, _, stderr = utils.run_cmd(['git', 'clone', utils.MMPM_REPO_URL])
+                    except OSError:
+                        utils.error_msg('Failed to clone MMPM repo')
+                        sys.exit(1)
 
-                    # because of the lengthy installation process, it's better
-                    # to have everything printed to stdout for the user to see,
-                    # rather than run as subprocess, hiding the output
+                    if return_code:
+                        utils.error_msg(stderr)
+                        sys.exit(1)
 
-                    os.system(f'git clone {utils.MMPM_REPO_URL} -b develop && cd mmpm && make reinstall')
+                    try:
+                        os.chdir('/tmp/mmpm')
+                        return_code, _, stderr = utils.run_cmd(['make', 'reinstall'])
+                    except OSError:
+                        utils.error_msg('Failled to install MMPM')
+                        sys.exit(1)
+
+                    if return_code:
+                        utils.error_msg(stderr)
+                        sys.exit(1)
+
                     os.chdir(original_dir)
                     log.logger.info(f'Changing back to original working directory: {original_dir}')
 
@@ -365,7 +398,7 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
     return False
 
 
-def install_magicmirror() -> bool:
+def install_magicmirror(gui=False) -> bool:
     '''
     Installs MagicMirror. First checks if a MagicMirror installation can be
     found, and if one is found, prompts user to update the MagicMirror.
@@ -383,49 +416,53 @@ def install_magicmirror() -> bool:
     original_dir: str = os.getcwd()
 
     try:
-        if not os.path.exists(os.path.join(utils.MAGICMIRROR_ROOT)):
+        if not os.path.exists(utils.MAGICMIRROR_ROOT):
             print(colors.B_CYAN + "MagicMirror directory not found. " + colors.RESET + "Installing MagicMirror..." + colors.RESET)
             os.system('bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"')
 
         else:
-            message = colors.B_CYAN + "MagicMirror directory found. " + colors.RESET + "Would you like to check for updates? [yes/no | y/n]: "
+            if not gui:
+                message = colors.B_CYAN + "MagicMirror directory found. " + colors.RESET + "Would you like to check for updates? [yes/no | y/n]: "
+
             valid_response = False
 
             while not valid_response:
-                response: str = input(message)
+                response: str = 'yes' if gui else input(message)
 
-                if response in ("yes", "y"):
-                    os.chdir(os.path.join(utils.HOME_DIR, 'MagicMirror'))
+                if response in ("no", "n"):
+                    print(colors.B_MAGENTA + "Aborting MagicMirror update")
+                    break
+
+                elif response in ("yes", "y"):
+                    os.chdir(utils.MAGICMIRROR_ROOT)
 
                     print(colors.B_CYAN + "Checking for updates..." + colors.RESET)
-                    git_status = subprocess.run(["git", "fetch", "--dry-run"], stdout=subprocess.PIPE)
+                    return_code, stdout, stderr = utils.run_cmd(['git', 'fetch', '--dry-run'])
 
-                    if git_status.stdout:
+                    if return_code:
+                        utils.error_msg(stderr)
+                        break
+
+                    if not stdout:
+                        print("No updates available for MagicMirror.")
+                        break
+
+                    else:
                         print(colors.B_CYAN + "Updates found for MagicMirror. " + colors.RESET + "Requesting upgrades...")
                         error_code, _, stderr = utils.run_cmd(['git', 'pull'])
 
                         if error_code:
-                            utils.warning_msg(stderr)
-                            break
+                            utils.error_msg(stderr)
+                            return False
 
                         utils.done()
                         error_code, _, stderr = utils.npm_install()
 
                         if error_code:
-                            utils.warning_msg(stderr)
-                            break
+                            utils.error_msg(stderr)
+                            valid_response = True
 
                         utils.done()
-
-                    else:
-                        print("No updates available for MagicMirror.")
-
-                    valid_response = True
-
-                elif response in ("no", "n"):
-                    print(colors.B_MAGENTA + "Aborted MagicMirror update.")
-                    valid_response = True
-
                 else:
                     utils.warning_msg("Respond with yes/no or y/n.")
     except Exception:
@@ -490,7 +527,7 @@ def remove_modules(modules: dict, modules_to_remove: List[str]) -> bool:
     os.chdir(original_dir)
     return True
 
-def load_modules(force_refresh: bool = False) -> Tuple[dict, datetime.datetime, datetime.datetime, bool]:
+def load_modules(force_refresh: bool = False) -> dict:
     '''
     Reads in modules from the hidden 'snapshot_file'  and checks if the file is
     out of date. If so, the modules are gathered again from the MagicMirror 3rd
@@ -505,43 +542,21 @@ def load_modules(force_refresh: bool = False) -> Tuple[dict, datetime.datetime, 
     '''
 
     modules: dict = {}
-    curr_snap: float = None
-    next_snap: float = None
-    refresh_interval: int = 6
 
-    checked_for_enhancements: bool = False
-    snapshot_exists: bool = os.path.exists(utils.SNAPSHOT_FILE)
-
-    if not snapshot_exists and not os.path.exists(utils.MMPM_CONFIG_DIR):
-        try:
-            os.mkdir(utils.MMPM_CONFIG_DIR)
-        except OSError:
-            utils.error_msg('Failed to create directory for snapshot')
-            return None, None, None, None
-
-    if not force_refresh and snapshot_exists:
-        curr_snap = os.path.getmtime(utils.SNAPSHOT_FILE)
-        next_snap = curr_snap + refresh_interval * 60 * 60
-    else:
-        next_snap = curr_snap = time.time()
+    if not utils.assert_snapshot_directory():
+        utils.error_msg('Failed to create directory for MagicMirror snapshot')
+        sys.exit(1)
 
     # if the snapshot has expired, or doesn't exist, get a new one
-    if not snapshot_exists or force_refresh or next_snap - time.time() <= 0.0:
-        utils.plain_print(colors.B_CYAN + "Refreshing MagicMirror module snapshot... ")
+    if force_refresh:
+        utils.plain_print(colors.RESET + "Refreshing MagicMirror module snapshot ... ")
         modules = retrieve_modules()
 
-        with open(utils.SNAPSHOT_FILE, "w") as snapshot:  # save the new snapshot
+        # save the new snapshot
+        with open(utils.SNAPSHOT_FILE, "w") as snapshot:
             json.dump(modules, snapshot)
 
-        utils.plain_print(colors.RESET + "Retrieval complete.\n")
-
-        curr_snap = os.path.getmtime(utils.SNAPSHOT_FILE)
-        next_snap = curr_snap + refresh_interval * 60 * 60
-
-        utils.plain_print(colors.B_CYAN + "Automated check for MMPM enhancements... " + colors.RESET)
-
-        check_for_mmpm_enhancements()
-        checked_for_enhancements = True
+        utils.done()
 
     else:
         with open(utils.SNAPSHOT_FILE, "r") as snapshot_file:
@@ -554,10 +569,7 @@ def load_modules(force_refresh: bool = False) -> Tuple[dict, datetime.datetime, 
         except Exception:
             utils.warning_msg(f'Failed to load data from {utils.MMPM_EXTERNAL_SOURCES_FILE}.')
 
-    curr_snap_date = datetime.datetime.fromtimestamp(int(curr_snap))
-    next_snap_date = datetime.datetime.fromtimestamp(int(next_snap))
-
-    return modules, curr_snap_date, next_snap_date, checked_for_enhancements
+    return modules
 
 
 def retrieve_modules() -> dict:

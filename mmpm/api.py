@@ -62,7 +62,7 @@ def __modules__() -> dict:
     Returns:
         dict
     '''
-    modules, _, _, _ = core.load_modules()
+    modules = core.load_modules()
     return modules
 
 
@@ -274,7 +274,7 @@ def remove_external_module_source() -> str:
 def force_refresh_magicmirror_modules() -> str:
     log.logger.info(f'Recieved request to refresh modules')
     process: Group = Group()
-    Response(__stream_cmd_output__(process, ['-f']), mimetype='text/plain')
+    Response(__stream_cmd_output__(process, ['-f', '--GUI']), mimetype='text/plain')
     log.logger.info('Finished refresh')
     return json.dumps(True)
 
@@ -372,6 +372,7 @@ def restart_raspberrypi() -> str:
     '''
 
     log.logger.info('Restarting RaspberryPi')
+    __kill_magicmirror_processes__()
     return_code, _, _ = utils.run_cmd(['sudo', 'reboot'])
     # if success, it'll never get the response, but we'll know if it fails
     return json.dumps(bool(not return_code))
@@ -391,5 +392,20 @@ def turn_off_raspberrypi() -> str:
 
     log.logger.info('Shutting down RaspberryPi')
     # if success, we'll never get the response, but we'll know if it fails
+    __kill_magicmirror_processes__()
     return_code, _, _ = utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
     return json.dumps(bool(not return_code))
+
+
+@app.route(__api__('upgrade-magicmirror'), methods=[GET])
+def upgrade_magicmirror() -> str:
+    log.logger.info(f'Request to upgrade MagicMirror')
+    process: Group = Group()
+    Response(__stream_cmd_output__(process, ['-M', '--GUI']), mimetype='text/plain')
+    log.logger.info('Finished installing')
+
+    if __processess__('chromium') and __processess__('node') and __processess__('npm'):
+        __kill_magicmirror_processes__()
+        __start_magicmirror__()
+
+    return json.dumps(True)

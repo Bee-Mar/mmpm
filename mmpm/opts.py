@@ -81,14 +81,7 @@ def get_user_args() -> object:
         '-s',
         '--search',
         nargs=1,
-        help='''
-            List all modules whose details match the search term(s). Attempts
-            to match the search string to the category name, followed by
-            attempting to match substrings within the title, description, or
-            author. For any searches containing more than one word, surround
-            the search in quotations. When searches for category names fail,
-            the search automatically becomes non-case-sensitive.
-            '''
+        help='''List all modules whose details match given search string'''
     )
 
     arg_parser.add_argument(
@@ -105,11 +98,7 @@ def get_user_args() -> object:
         '-M',
         '--install-magicmirror',
         action='store_true',
-        help='''
-            Installs the most recent version of MagicMirror. If an existing
-            installation of MagicMirror is found, it will check for updates.
-            Otherwise, it will perform a new installation.
-            '''
+        help='''Installs the most recent version of MagicMirror'''
     )
 
     arg_parser.add_argument(
@@ -164,6 +153,21 @@ def get_user_args() -> object:
         '--ext-module-src',
         action='store_true',
         help='Used in conjuction with --remove to unregister an external module source'
+    )
+
+    arg_parser.add_argument(
+        '-y',
+        '--yes',
+        action='store_true',
+        default=False,
+        help='Assume yes for anything interactive'
+    )
+
+    arg_parser.add_argument(
+        '--GUI',
+        action='store_true',
+        default=False,
+        help=argparse.SUPPRESS
     )
 
     if len(sys.argv) < 2:

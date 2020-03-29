@@ -1,7 +1,7 @@
 <div style="display: flex; align-items: center; justify-content: center;">
-  <h3>Are you sure?</h3>
+  <h3>{{ customMessage ? 'Are you sure? ' + customMessage : 'Are you sure?' }}</h3>
 </div>
 <div style="display: flex; align-items: center; justify-content: center;">
-  <button mat-raised-button style="margin-right: 3em;" (click)="onConfirm(true)">Yes</button>
+  <button mat-raised-button style="margin-right: 3em; background-color: white; color: black;" (click)="onConfirm(true)">Yes</button>
   <button mat-raised-button color="accent" (click)="onConfirm(false)">No</button>
 </div>

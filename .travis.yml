@@ -14,8 +14,8 @@ matrix:
       - pip install -r requirements.txt
       - pip install .
     script:
-      - bash tests/travis-ci/mypy.sh
-      - bash tests/travis-ci/pylint.sh
+      - bash tests/travis-ci/mypy
+      - bash tests/travis-ci/pylint
 
   - language: python
     python:
@@ -31,8 +31,8 @@ matrix:
       - pip install -r requirements.txt
       - pip install .
     script:
-      - bash tests/travis-ci/mypy.sh
-      - bash tests/travis-ci/pylint.sh
+      - bash tests/travis-ci/mypy
+      - bash tests/travis-ci/pylint
 
   - language: python
     python:
@@ -48,8 +48,8 @@ matrix:
       - pip install -r requirements.txt
       - pip install .
     script:
-      - bash tests/travis-ci/mypy.sh
-      - bash tests/travis-ci/pylint.sh
+      - bash tests/travis-ci/mypy
+      - bash tests/travis-ci/pylint
 
   - language: nodejs
     node_js:
@@ -60,8 +60,8 @@ matrix:
       - node_modules/@angular/cli/bin/ng build --prod --deploy-url static/
       - cd ..
     script:
-      - bash tests/travis-ci/eslint.sh
-      - bash scripts/compress-static-files.sh
+      - bash tests/travis-ci/eslint
+      - bash scripts/travis-ci/compress-static-files
     deploy:
       provider: releases
       skip_cleanup: true

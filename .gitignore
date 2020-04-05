@@ -5,7 +5,6 @@ dist
 mmpm.egg-info
 gui/build
 gui/.clangd
-gui/src/.clang-format
 configs/*.service
 .mypy_cache
-mmpm-gui.tar.gz
+mmpm-gui.tar*.gz

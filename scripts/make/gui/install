@@ -4,13 +4,15 @@ printf -- "-------------------------------"
 printf "\n| \e[92mInstalling GUI Static Files\e[0m |"
 printf "\n-------------------------------\n"
 
+VERSION=$(git describe --tags --abbrev=0)
+
 sudo rm -rf /var/www/mmpm/static
 sudo mkdir -p /var/www/mmpm/{static,templates}
 
-sudo tar xvf mmpm-gui.tar.gz -C /var/www/mmpm
+sudo tar xvf mmpm-gui-$VERSION.tar.gz -C /var/www/mmpm
 
 sudo cp /var/www/mmpm/static/index.html /var/www/mmpm/templates/
 
-rm mmpm-gui.tar.gz
+rm mmpm-gui-$VERSION.tar.gz
 
 printf "\n\033[1;36mMMPM GUI Static Files Installed \e[0m\n"

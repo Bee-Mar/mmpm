@@ -1,5 +1,8 @@
 #!/bin/bash
 
 cd gui/build
-tar czf mmpm-gui.tar.gz static && mv *gz ../..
+
+VERSION=$(git describe --tags --abbrev=0)
+
+tar czf mmpm-gui-$VERSION.tar.gz static && mv *gz ../..
 cd ../../

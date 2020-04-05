@@ -26,6 +26,7 @@ matrix:
       - cd gui
       - npm install
       - node_modules/@angular/cli/bin/ng build --prod --deploy-url static/
+      - cd ..
     install:
       - make
     script:

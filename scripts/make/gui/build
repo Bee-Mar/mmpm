@@ -6,6 +6,7 @@ printf "\n-------------------------------\n"
 
 VERSION=$(git describe --tags --abbrev=0)
 
-wget https://github.com/Bee-Mar/mmpm/releases/download/$VERSION/mmpm-gui-$VERSION.tar.gz
+# wget https://github.com/Bee-Mar/mmpm/releases/download/$VERSION/mmpm-gui-$VERSION.tar.gz
+wget https://github.com/Bee-Mar/mmpm/releases/download/$VERSION/mmpm-gui.tar.gz
 
 printf "\n\033[1;36mMMPM GUI Static Files Retrieved \e[0m\n"

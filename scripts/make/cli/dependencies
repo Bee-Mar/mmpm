@@ -7,7 +7,7 @@ printf "\n------------------------------\n"
 . /etc/os-release
 
 [[ $NAME == *Raspbian* || $NAME == *Ubuntu* ]] && sudo apt install python3-pip -y
-[[ $NAME == *Arch* ]] && sudo pacman -Sy python-pip
+[[ $NAME == *Arch* ]] && sudo pacman -Sy python-pip --noconfirm
 
 pip3 install --user --upgrade -v setuptools wheel
 pip3 install --user -r requirements.txt -v

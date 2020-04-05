@@ -12,9 +12,9 @@ if [[ $NAME == *Ubuntu* || $NAME == *Raspbian* ]]; then
     sudo apt install nodejs -y
 
 elif [[ $NAME == *Arch* ]]; then
-    sudo pacman -Sy nginx-mainline curl
+    sudo pacman -Sy nginx-mainline curl --noconfirm
     curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-    sudo pacman -Sy nodejs
+    sudo pacman -Sy nodejs --noconfirm
 fi
 
 sudo systemctl stop nginx # in case anything is already loaded

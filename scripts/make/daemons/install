@@ -13,26 +13,30 @@ mkdir -vp ~/.config/mmpm/log ~/.config/mmpm/configs
 
 rm -f $CONFIGS_DIR/*service
 
+# --- START: SystemD Service Config Files
+# MMPM SystemdD Service
 printf "[Unit]\n" >> $CONFIGS_DIR/mmpm.service
 printf "Description=MMPM Gunicorn daemon\n" >> $CONFIGS_DIR/mmpm.service
 printf "After=network.target\n\n" >> $CONFIGS_DIR/mmpm.service
 
 printf "[Install]\n" >> $CONFIGS_DIR/mmpm.service
 printf "WantedBy=multi-user.target\n\n" >> $CONFIGS_DIR/mmpm.service
+
 printf "[Service]\n" >> $CONFIGS_DIR/mmpm.service
-printf "Type=notify\n" >> $CONFIGS_DIR/mmpm.service
 printf "User=$USER\n" >> $CONFIGS_DIR/mmpm.service
-printf "Group=$USER\n" >> $CONFIGS_DIR/mmpm.service
+printf "Type=notify\n" >> $CONFIGS_DIR/mmpm.service
 printf "ExecStart=$HOME/.local/bin/gunicorn --worker-class eventlet -w 1 -c $HOME/.config/mmpm/configs/gunicorn.conf.py mmpm.wsgi:app -u $USER\n" >> $CONFIGS_DIR/mmpm.service
 printf "ExecReload=/bin/kill -s HUP \$MAINPID\n" >> $CONFIGS_DIR/mmpm.service
 printf "KillMode=mixed\n" >> $CONFIGS_DIR/mmpm.service
 printf "TimeoutStopSec=5\n" >> $CONFIGS_DIR/mmpm.service
 printf "PrivateTmp=true\n" >> $CONFIGS_DIR/mmpm.service
 
+# MMPM-WebSSH SystemdD Service
 printf "[Unit]\n" >> $CONFIGS_DIR/mmpm-webssh.service
 printf "Description=MMPM WebSSH daemon\n" >> $CONFIGS_DIR/mmpm-webssh.service
 printf "After=syslog.target network.target\n" >> $CONFIGS_DIR/mmpm-webssh.service
 printf "StartLimitBurst=5, StartLimitIntervalSec=1\n\n" >> $CONFIGS_DIR/mmpm-webssh.service
+
 printf "[Service]\n" >> ./$CONFIGS_DIR/mmpm-webssh.service
 printf "User=$USER\n" >> $CONFIGS_DIR/mmpm-webssh.service
 printf "WorkingDirectory=$HOME\n" >> $CONFIGS_DIR/mmpm-webssh.service
@@ -42,8 +46,10 @@ printf "Type=simple\n" >> $CONFIGS_DIR/mmpm-webssh.service
 printf "PIDFile=/var/run/webssh.pid\n" >> $CONFIGS_DIR/mmpm-webssh.service
 printf "Restart=on-failure\n" >> $CONFIGS_DIR/mmpm-webssh.service
 printf "RestartSec=1\n\n" >> $CONFIGS_DIR/mmpm-webssh.service
+
 printf "[Install]\n" >> $CONFIGS_DIR/mmpm-webssh.service
 printf "WantedBy=multi-user.target\n" >> $CONFIGS_DIR/mmpm-webssh.service
+# --- END: SystemD Service Config Files
 
 sudo cp -v configs/*.service /etc/systemd/system/
 
@@ -67,3 +73,4 @@ sudo systemctl restart nginx.service --no-pager
 printf "\n\033[1;36mMMPM GUI Installed \e[0m\n"
 printf "\nThe MMPM GUI is being served the IP address of your default interface at port $MMPM_PROXY_PORT"
 printf "\nBest guess: http://$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):$MMPM_PROXY_PORT\n\n"
+

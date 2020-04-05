@@ -8,6 +8,8 @@ mkdir -vp ~/.config/mmpm/log ~/.config/mmpm/configs
 
 pip3 install --user . -v
 
+$HOME/.local/bin/mmpm -f
+
 printf "\n\033[1;36mMMPM CLI Installed \e[0m\n"
 
 printf -- "-------------------------------------------------------"

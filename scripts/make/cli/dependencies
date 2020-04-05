@@ -1,0 +1,13 @@
+#!/bin/bash
+
+printf -- "------------------------------"
+printf "\n| \e[92mGathering CLI dependencies\e[0m |"
+printf "\n------------------------------\n"
+
+. /etc/os-release
+
+[[ $NAME == *Raspbian* || $NAME == *Ubuntu* ]] && sudo apt install python3-pip -y
+[[ $NAME == *Arch* ]] && sudo pacman -Sy python-pip
+
+pip3 install --user --upgrade -v setuptools wheel
+pip3 install --user -r requirements.txt -v

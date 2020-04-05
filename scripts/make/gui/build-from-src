@@ -1,0 +1,9 @@
+#!/bin/bash
+
+printf -- "---------------------"
+printf "\n| \e[92mBuilding MMPM GUI\e[0m |"
+printf "\n---------------------\n"
+
+npm install --prefix gui
+
+cd gui && node_modules/@angular/cli/bin/ng build --prod --deploy-url static/

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+printf -- "------------------------"
+printf "\n| \e[92mInstalling MMPM GUI \e[0m |"
+printf "\n------------------------\n"
+
+sudo rm -rvf /var/www/mmpm/{static,templates}
+
+sudo mkdir -p /var/www/mmpm/templates && \
+	sudo cp -vr gui/build/static /var/www/mmpm && \
+	sudo cp /var/www/mmpm/static/index.html /var/www/mmpm/templates

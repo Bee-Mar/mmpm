@@ -1,0 +1,7 @@
+#!/bin/bash
+
+printf -- "--------------------------------------------"
+printf "\n| \e[92mRemoving legacy installation destination\e[0m |"
+printf "\n--------------------------------------------\n"
+
+sudo rm -vf /usr/local/bin/mmpm

@@ -26,6 +26,8 @@ matrix:
       - cd gui
       - npm install
       - node_modules/@angular/cli/bin/ng build --prod --deploy-url static/
+    install:
+      - make
     script:
       - cd ..
       - bash tests/travis-ci/eslint.sh

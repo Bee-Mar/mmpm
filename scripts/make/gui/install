@@ -1,10 +1,16 @@
 #!/bin/bash
 
-wget https://github.com/Bee-Mar/mmpm/releases/download/$(git describe --tags --abbrev=0)/mmpm-gui.tar.gz
+printf -- "-------------------------------"
+printf "\n| \e[92mInstalling GUI Static Files\e[0m |"
+printf "\n-------------------------------\n"
 
 sudo rm -rf /var/www/mmpm/static
 sudo mkdir -p /var/www/mmpm/{static,templates}
+
 sudo tar xvf mmpm-gui.tar.gz -C /var/www/mmpm
+
 sudo cp /var/www/mmpm/static/index.html /var/www/mmpm/templates/
 
 rm mmpm-gui.tar.gz
+
+printf "\n\033[1;36mMMPM GUI Static Files Installed \e[0m\n"

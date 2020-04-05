@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# localhost ports for the server
+MMPM_LOCALHOST_PORT=7891
+WEBSSH_LOCALHOST_PORT=7893
+
+# where the localhost ports get proxied to (outward facing)
+# AKA, the 'listen' ports in the NGINX config (mmpm.conf)
+MMPM_PROXY_PORT=7890
+WEBSSH_PROXY_PORT=7892

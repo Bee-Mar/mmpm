@@ -1,0 +1,19 @@
+#!/bin/bash
+
+printf -- "--------------------------"
+printf "\n| \e[92mRemoving MMPM Daemons \e[0m |"
+printf "\n--------------------------\n"
+
+sudo systemctl stop mmpm.service
+sudo systemctl disable mmpm.service
+sudo systemctl stop mmpm-webssh.service
+sudo systemctl disable mmpm-webssh.service
+sudo rm -vf /etc/systemd/system/mmpm* /var/log/mmpm*.log
+sudo systemctl daemon-reload
+sudo systemctl reset-failed
+sudo rm -vf /etc/nginx/sites-available/mmpm.conf
+sudo rm -vf /etc/nginx/sites-enabled/mmpm.conf
+sudo systemctl restart nginx
+rm -rvf ~/.config/mmpm
+
+printf "\n\033[1;36mMMPM Daemons Removed\e[0m\n"

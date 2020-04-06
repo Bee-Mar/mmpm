@@ -169,3 +169,7 @@
 # Version 1.05
 
 - Prettified stdout messaging, and added upgrade option for MMPM from GUI
+
+# Version 1.08
+
+- Added installation rules for Arch Linux, and broke apart Makefile

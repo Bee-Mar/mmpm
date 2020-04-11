@@ -36,9 +36,9 @@ The supported features are comprised of the following categories:
 
 See the [MMPM Installation](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installation) and [MMPM Removal](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Removal) sections of the wiki for installation and removal instructions, respectively.
 
-## Refer to the Wiki First
+## Refer to the Wiki and Log Files First
 
-If any issues arise, please consult the wiki first, which can be found [here](https://github.com/Bee-Mar/mmpm/wiki).
+If any issues arise, please consult the wiki first, which can be found [here](https://github.com/Bee-Mar/mmpm/wiki). Additionally, please examine the log files for `MMPM` located in `~/.config/mmpm/log/`, and post any relevant information when creating an issue.
 
 ## GUI Demo
 

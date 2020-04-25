@@ -173,3 +173,8 @@
 # Version 1.08
 
 - Added installation rules for Arch Linux, and broke apart Makefile
+
+# Version 1.09
+
+- Version locked at 0.5.6 for `shelljob`. Currently, newer versions fail to get retrieved by PyPi (PR: @herostrat)
+- Changed MagicMirror installer script URL (PR: @herostrat)

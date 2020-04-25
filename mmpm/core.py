@@ -408,7 +408,7 @@ def install_magicmirror(gui=False) -> bool:
     try:
         if not os.path.exists(utils.MAGICMIRROR_ROOT):
             print(colors.B_CYAN + "MagicMirror directory not found. " + colors.RESET + "Installing MagicMirror..." + colors.RESET)
-            os.system('bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"')
+            os.system('bash -c "$(curl -sL https://raw.githubusercontent.com/sdetweil/MagicMirror_scripts/master/raspberry.sh)"')
 
         else:
             if not gui:

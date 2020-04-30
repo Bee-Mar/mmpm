@@ -649,7 +649,7 @@ def retrieve_modules() -> dict:
                                 desc += contents.string
 
                 modules[categories[index]].append({
-                    utils.TITLE: title,
+                    utils.TITLE: utils.sanitize_name(title),
                     utils.REPOSITORY: repo,
                     utils.AUTHOR: author,
                     utils.DESCRIPTION: desc

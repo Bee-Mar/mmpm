@@ -7,6 +7,7 @@ import logging.handlers
 import time
 from os.path import join
 from typing import List, Optional, Tuple
+from re import sub
 from mmpm import colors
 
 # String constants
@@ -200,6 +201,17 @@ def get_file_path(path: str) -> str:
     '''
     return path if os.path.exists(path) else ''
 
+def sanitize_name(orig_name: str) -> str:
+    '''
+    Sanitizes a file- or foldername in that it removes bad characters.
+
+    Parameters:
+        orig_name (str): A file- or foldername with potential bad characters
+
+    Returns:
+        a cleaned version of the file- or foldername
+    '''
+    return sub('[//]', '', orig_name)
 
 def open_default_editor(file_path: str) -> Optional[None]:
     '''

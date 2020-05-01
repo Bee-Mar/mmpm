@@ -45,7 +45,7 @@ def main(argv):
 
     elif args.remove:
         if args.ext_module_src:
-            core.remove_external_module_source(modules, [utils.sanitize_name(module) for module in args.remove])
+            core.remove_external_module_source([utils.sanitize_name(module) for module in args.remove])
         else:
             core.remove_modules(modules, [utils.sanitize_name(module) for module in args.remove])
 

@@ -173,3 +173,7 @@
 # Version 1.08
 
 - Added installation rules for Arch Linux, and broke apart Makefile
+
+# Version 1.09
+
+- Bug fix. Changed method of loading requirements from requirements.txt within setup.py

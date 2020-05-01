@@ -176,4 +176,9 @@
 
 # Version 1.09
 
+- Updated url for MagicMirror installer script, (contributor: herostrat)
+- Fixed installation by placing version lock on `shelljob` module (contributor: herostrat)
+
+# Version 1.10
+
 - Bug fix. Changed method of loading requirements from requirements.txt within setup.py

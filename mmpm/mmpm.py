@@ -38,24 +38,16 @@ def main(argv):
         core.display_modules(core.search_modules(modules, args.search))
 
     elif args.install:
-        install_cleaned = []
-        for module in args.install:
-            install_cleaned.append(utils.sanitize_name(module))
-
-        core.install_modules(modules, install_cleaned)
+        core.install_modules(modules, [utils.sanitize_name(module) for module in args.install])
 
     elif args.install_magicmirror:
         core.install_magicmirror(args.GUI)
 
     elif args.remove:
-        remove_cleaned = []
-        for module in args.remove:
-            remove_cleaned.append(utils.sanitize_name(module))
-
         if args.ext_module_src:
-            core.remove_external_module_source(remove_cleaned)
+            core.remove_external_module_source(modules, [utils.sanitize_name(module) for module in args.remove])
         else:
-            core.remove_modules(modules, remove_cleaned)
+            core.remove_modules(modules, [utils.sanitize_name(module) for module in args.remove])
 
     elif args.list_installed:
         installed_modules = core.get_installed_modules(modules)

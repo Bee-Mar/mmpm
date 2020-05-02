@@ -182,3 +182,9 @@
 # Version 1.10
 
 - Bug fix. Changed method of loading requirements from requirements.txt within setup.py
+
+# Version 1.11
+
+- Bug fix. Added module name santizing, fixing installation issues with module names with slashes (contributor: herostrat)
+- Bug fix. Confusing messaging when multiple modules are installed, making it unclear which modules
+  failed to install properly

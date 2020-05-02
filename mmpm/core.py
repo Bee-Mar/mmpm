@@ -358,7 +358,12 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
 
                     if error:
                         utils.error_msg(error)
+                        failed_install_path = os.path.join(modules_dir, title)
+                        message = f"Failed to install {title}, removing the directory: '{failed_install_path}'"
+                        utils.error_msg(message)
+                        log.logger.info(message)
                         failed_installs.append(title)
+                        utils.run_cmd(['rm', '-rf', failed_install_path], progress=False)
 
                     else:
                         successful_installs.append(title)
@@ -370,19 +375,12 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
             if install_next:
                 break
 
-    for module in failed_installs:
-        failed_install_path = os.path.join(modules_dir, module)
-        message = f"Failed to install {title}, removing the directory: '{failed_install_path}'"
-        log.logger.info(message)
-        utils.error_msg(message)
-        utils.run_cmd(['rm', '-rf', failed_install_path], progress=False)
-
     for module in modules_to_install:
         if module not in successful_installs and module not in existing_modules and module not in failed_installs:
             utils.warning_msg(f"Unable to match '{module}' with installation candidate. Is the casing correct?")
 
     if successful_installs:
-        print(f"The installed modules may need additional configuring within '{utils.MAGICMIRROR_CONFIG_FILE}'")
+        print(colors.B_WHITE + f"\nThe installed modules may need additional configuring within '{utils.MAGICMIRROR_CONFIG_FILE}'" + colors.RESET)
         return True
 
     return False

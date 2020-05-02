@@ -449,7 +449,7 @@ def handle_installation_process() -> str:
             else:
                 print(done())
 
-    print('\n')
+    print(green_plus() + f' Installation ' + done())
     log.logger.info(f'Exiting installation handler from {os.getcwd()}')
     return ''
 

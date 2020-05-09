@@ -35,7 +35,7 @@ def main(argv):
         core.display_modules(modules, list_categories=True)
 
     elif args.search:
-        core.display_modules(core.search_modules(modules, args.search))
+        core.display_modules(core.search_modules(modules, args.search[0]))
 
     elif args.install:
         core.install_modules(modules, [utils.sanitize_name(module) for module in args.install])

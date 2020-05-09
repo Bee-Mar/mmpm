@@ -110,11 +110,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
                     os.chdir(os.path.join('/', 'tmp'))
                     os.system('rm -rf /tmp/mmpm')
 
-                    try:
-                        return_code, _, stderr = utils.clone('mmpm', utils.MMPM_REPO_URL)
-                    except OSError:
-                        utils.error_msg('Failed to clone MMPM repo')
-                        sys.exit(1)
+                    return_code, _, stderr = utils.clone('mmpm', utils.MMPM_REPO_URL)
 
                     if return_code:
                         utils.error_msg(stderr)
@@ -231,7 +227,7 @@ def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, 
                 print(f"{module}")
     return True
 
-def search_modules(modules: dict, search: str) -> dict:
+def search_modules(modules: dict, query: str) -> dict:
     '''
     Used to search the 'modules' for either a category, or keyword/phrase
     appearing within module descriptions. If the argument supplied is a
@@ -241,47 +237,31 @@ def search_modules(modules: dict, search: str) -> dict:
 
     Parameters:
         modules (dict): Dictionary of MagicMirror modules
-        search (str): Search query
+        query (str): Search query
 
     Returns:
         dict
     '''
 
     search_results: dict = {}
-    query: str = search[0]
 
-    try:
-        if modules[query]:
-            search_results[query] = modules[query]
-            return search_results
+    if query in modules:
+        return {query: modules[query]}
 
-    except KeyError:
-        pass
+    search_results = defaultdict(list)
+    query = query.lower()
 
-    try:
-        search_results = defaultdict(list)
-        query = query.lower()
+    for category, _modules in modules.items():
+        for module in _modules:
+            if query not in module[utils.DESCRIPTION].lower() and query not in module[utils.TITLE].lower() and query not in module[utils.AUTHOR].lower():
+                continue
 
-        for key, value in modules.items():
-            for index, _ in enumerate(value):
-                title = value[index][utils.TITLE]
-                desc = value[index][utils.DESCRIPTION]
-                repo = value[index][utils.REPOSITORY]
-                author = value[index][utils.AUTHOR]
-
-                if query in title.lower() or query in desc.lower() or query in author.lower():
-                    entry = {
-                        utils.TITLE: title,
-                        utils.REPOSITORY: repo,
-                        utils.AUTHOR: author,
-                        utils.DESCRIPTION: desc
-                    }
-
-                    if entry not in search_results[key]:
-                        search_results[key].append(entry)
-
-    except KeyError:
-        pass
+            search_results[category].append({
+                utils.TITLE: module[utils.TITLE],
+                utils.REPOSITORY: module[utils.REPOSITORY],
+                utils.AUTHOR: module[utils.AUTHOR],
+                utils.DESCRIPTION: module[utils.DESCRIPTION]
+            })
 
     return search_results
 
@@ -320,7 +300,7 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
     for module_to_install in modules_to_install:
         install_next: bool = False
 
-        for _, category in modules.items():
+        for category in modules.values():
             for module in category:
                 if module[utils.TITLE] == module_to_install:
                     log.logger.info(f'Matched {module[utils.TITLE]} to installation candidate')
@@ -594,6 +574,7 @@ def retrieve_modules() -> dict:
         new_category: object = categories_soup[index].contents[last_element]
 
         if new_category != "General Advice":
+            #categories.append(re.sub(' // ', '/', new_category))
             categories.append(new_category)
 
     tr_soup: list = []
@@ -673,11 +654,11 @@ def display_modules(modules: dict, list_categories: bool = False) -> None:
     if list_categories:
         headers: List[str] = [
             colors.B_CYAN + "Category",
-            colors.B_CYAN + "Number of Modules" + colors.RESET
+            colors.B_CYAN + "Modules" + colors.RESET
         ]
 
         rows: List[List[object]] = [[key, len(modules[key])] for key in modules.keys()]
-        print(tabulate(rows, headers, tablefmt="fancy_grid"))
+        print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))
         return
 
     headers = [
@@ -689,15 +670,16 @@ def display_modules(modules: dict, list_categories: bool = False) -> None:
     ]
 
     rows = []
+    MAX_LENGTH: int = 66
 
-    for category, details in modules.items():
-        for index, _ in enumerate(details):
+    for category, _modules in modules.items():
+        for module in _modules:
             rows.append([
                 category,
-                details[index][utils.TITLE],
-                fill(details[index][utils.REPOSITORY]),
-                fill(details[index][utils.AUTHOR], width=12),
-                fill(details[index][utils.DESCRIPTION], width=15)
+                module[utils.TITLE],
+                fill(module[utils.REPOSITORY]),
+                fill(module[utils.AUTHOR]),
+                fill(module[utils.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[utils.DESCRIPTION]) > MAX_LENGTH else module[utils.DESCRIPTION], width=30)
             ])
 
     print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))

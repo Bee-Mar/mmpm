@@ -201,6 +201,7 @@ def get_file_path(path: str) -> str:
     '''
     return path if os.path.exists(path) else ''
 
+
 def sanitize_name(orig_name: str) -> str:
     '''
     Sanitizes a file- or foldername in that it removes bad characters.
@@ -212,6 +213,7 @@ def sanitize_name(orig_name: str) -> str:
         a cleaned version of the file- or foldername
     '''
     return sub('[//]', '', orig_name)
+
 
 def open_default_editor(file_path: str) -> Optional[None]:
     '''

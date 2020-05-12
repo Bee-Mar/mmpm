@@ -16,9 +16,11 @@
 | --------------- | --------------------------------- |
 | Brandon Marlowe | bpmarlowe-software@protonmail.com |
 
-The MagicMirror Package Manager (`mmpm`) is both a command line and web interface designed to simplify the installation, removal, and maintenance of MagicMirror modules.
+The MagicMirror Package Manager (`mmpm`) is both a command line and web interface designed to simplify the installation, removal, and maintenance of MagicMirror modules. 
 
-<i>Consider this project to be in an Alpha state, so don't get too picky just yet, as you most likely will discover some bugs I was unable to find.</i>
+<i>Consider this project to be in an Alpha state, so don't get too picky just yet, as you most likely will discover some bugs I was unable to find.</i> 
+
+The MagicMirror Package Manager is featured as an alternative installation method on the [MagicMirror Documentation](https://docs.magicmirror.builders/getting-started/installation.html#alternative-installation-methods).
 
 The supported features are comprised of the following categories:
 

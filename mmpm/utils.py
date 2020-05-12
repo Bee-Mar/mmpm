@@ -9,6 +9,7 @@ from os.path import join
 from typing import List, Optional, Tuple
 from re import sub
 from mmpm import colors
+from shutil import which
 
 # String constants
 MMPM_ENV_VAR: str = 'MMPM_MAGICMIRROR_ROOT'
@@ -503,14 +504,38 @@ def kill_magicmirror_processes() -> None:
         None
     '''
 
-    kill_pids_of_process('chromium')
-    kill_pids_of_process('node')
-    kill_pids_of_process('npm')
+    processes = ['node', 'npm', 'electron']
+
+    log.logger('Killing processes associated with MagicMirror: {processes}')
+
+    for process in processes:
+        kill_pids_of_process(process)
+
+
+def stop_magicmirror() -> None:
+    '''
+    Stops MagicMirror using pm2, if found, otherwise the associated
+    processes are killed
+
+    Parameters:
+       None
+
+    Returns:
+        None
+    '''
+    if which('pm2'):
+        log.logger.info("Using 'pm2' to stop MagicMirror")
+        return_code, stdout, stderr = run_cmd(['pm2', 'stop', 'MagicMirror'])
+        log.logger.info(f'pm2 stdout: {stdout}')
+        log.logger.info(f'pm2 stderr: {stderr}')
+    else:
+        kill_magicmirror_processes()
 
 
 def start_magicmirror() -> None:
     '''
-    Launches MagicMirror
+    Launches MagicMirror using pm2, if found, otherwise a 'npm start' is run as
+    a background process
 
     Parameters:
        None
@@ -523,5 +548,36 @@ def start_magicmirror() -> None:
     os.chdir(MAGICMIRROR_ROOT)
 
     log.logger.info("Running 'npm start' in the background")
-    os.system('npm start &')
+
+    if which('pm2'):
+        log.logger.info("Using 'pm2' to start MagicMirror")
+        return_code, stdout, stderr = run_cmd(['pm2', 'start', 'MagicMirror'])
+        log.logger.info(f'pm2 stdout: {stdout}')
+        log.logger.info(f'pm2 stderr: {stderr}')
+    else:
+        log.logger.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
+        os.system('npm start &')
+
     os.chdir(original_dir)
+
+
+def restart_magicmirror() -> None:
+    '''
+    Restarts MagicMirror using pm2, if found, otherwise the associated
+    processes are killed and 'npm start' is re-run a background process
+
+    Parameters:
+       None
+
+    Returns:
+        None
+    '''
+    if which('pm2'):
+        log.logger.info("Using 'pm2' to restart MagicMirror")
+        return_code, stdout, stderr = run_cmd(['pm2', 'restart', 'MagicMirror'])
+        log.logger.info(f'pm2 stdout: {stdout}')
+        log.logger.info(f'pm2 stderr: {stderr}')
+    else:
+        stop_magicmirror()
+        start_magicmirror()
+

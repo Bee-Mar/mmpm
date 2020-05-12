@@ -188,3 +188,8 @@
 - Bug fix. Added module name santizing, fixing installation issues with module names with slashes (contributor: herostrat)
 - Bug fix. Confusing messaging when multiple modules are installed, making it unclear which modules
   failed to install properly
+
+# Version 1.12
+
+- Bug fix (#23). Added `electron` to the list of processes to kill when stopping MagicMirror, and
+  updated util functions to use pm2 for MagicMirror controls

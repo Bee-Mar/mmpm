@@ -303,8 +303,7 @@ def restart_magicmirror() -> str:
         bool: Always True only as a signal the process was called
     '''
     # same issue as the start-magicmirror api call
-    utils.kill_magicmirror_processes()
-    utils.start_magicmirror()
+    utils.restart_magicmirror()
     return json.dumps(True)
 
 
@@ -320,7 +319,7 @@ def stop_magicmirror() -> str:
         bool: Always True only as a signal the process was called
     '''
     # same sort of issue as the start-magicmirror call
-    utils.kill_magicmirror_processes()
+    utils.stop_magicmirror()
     return json.dumps(True)
 
 
@@ -337,7 +336,7 @@ def restart_raspberrypi() -> str:
     '''
 
     log.logger.info('Restarting RaspberryPi')
-    utils.kill_magicmirror_processes()
+    utils.stop_magicmirror()
     return_code, _, _ = utils.run_cmd(['sudo', 'reboot'])
     # if success, it'll never get the response, but we'll know if it fails
     return json.dumps(bool(not return_code))
@@ -357,7 +356,7 @@ def turn_off_raspberrypi() -> str:
 
     log.logger.info('Shutting down RaspberryPi')
     # if success, we'll never get the response, but we'll know if it fails
-    utils.kill_magicmirror_processes()
+    utils.stop_magicmirror()
     return_code, _, _ = utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
     return json.dumps(bool(not return_code))
 
@@ -369,8 +368,7 @@ def upgrade_magicmirror() -> str:
     Response(__stream_cmd_output__(process, ['-M', '--GUI']), mimetype='text/plain')
     log.logger.info('Finished installing')
 
-    if utils.get_pids('chromium') and utils.get_pids('node') and utils.get_pids('npm'):
-        utils.kill_magicmirror_processes()
-        utils.start_magicmirror()
+    if utils.get_pids('node') and utils.get_pids('npm') and utils.get_pids('electron'):
+        utils.restart_magicmirror()
 
     return json.dumps(True)

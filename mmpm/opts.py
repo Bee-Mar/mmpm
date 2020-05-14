@@ -137,9 +137,9 @@ def get_user_args() -> object:
 
     arg_parser.add_argument(
         '-X',
-        '--add-ext-module-src',
+        '--add-ext-module',
         action='store_true',
-        help='Register external module source'
+        help='Register modules not found in the 3rd Party Wiki in the MMPM database'
     )
 
     arg_parser.add_argument(
@@ -150,9 +150,9 @@ def get_user_args() -> object:
     )
 
     arg_parser.add_argument(
-        '--ext-module-src',
+        '--ext-module',
         action='store_true',
-        help='Used in conjuction with --remove to unregister an external module source'
+        help='Used in conjuction with --remove to completely remove an external module source from your configuration'
     )
 
     arg_parser.add_argument(
@@ -168,6 +168,14 @@ def get_user_args() -> object:
         action='store_true',
         default=False,
         help=argparse.SUPPRESS
+    )
+
+    arg_parser.add_argument(
+        '-A',
+        '--active-modules',
+        action='store_true',
+        default=False,
+        help="List the modules currently active/enabled in MagicMirror. This is based upon the modules 'disabled' status in the MagicMirror config"
     )
 
     if len(sys.argv) < 2:

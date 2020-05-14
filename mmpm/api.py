@@ -207,7 +207,7 @@ def get_external__modules__sources() -> dict:
 
 
 @app.route(__api__('add-external-module-source'), methods=[POST])
-def add_external_module_source() -> str:
+def add_external_module() -> str:
     external_source: dict = request.get_json(force=True)['external-source']
     try:
         success: bool = core.add_external_module_source(

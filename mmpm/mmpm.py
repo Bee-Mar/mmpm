@@ -76,11 +76,14 @@ def main(argv):
         utils.plain_print(utils.green_plus() + message)
         core.check_for_mmpm_enhancements(assume_yes=args.yes, gui=args.GUI)
 
-    elif args.add_ext_module_src:
+    elif args.add_ext_module:
         core.add_external_module_source()
 
     elif args.magicmirror_config:
         core.edit_magicmirror_config()
+
+    elif args.active_modules:
+        core.get_active_modules()
 
 
 

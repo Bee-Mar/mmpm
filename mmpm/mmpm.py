@@ -77,7 +77,7 @@ def main(argv):
         core.check_for_mmpm_enhancements(assume_yes=args.yes, gui=args.GUI)
 
     elif args.add_ext_module:
-        core.add_external_module_source()
+        core.add_external_module()
 
     elif args.magicmirror_config:
         core.edit_magicmirror_config()

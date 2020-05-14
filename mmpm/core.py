@@ -870,7 +870,7 @@ def get_active_modules() -> None:
         dummy.write('console.log(JSON.stringify(config))')
 
     return_code, stdout, stderr = utils.run_cmd(['node', dummy_config], progress=False)
-    config: str = json.loads(stdout.split('\n')[0])
+    config: dict = json.loads(stdout.split('\n')[0])
 
     # using -f so any errors can be ignored
     utils.run_cmd(['rm', '-f', dummy_config], progress=False)

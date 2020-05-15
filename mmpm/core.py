@@ -5,6 +5,7 @@ import json
 import datetime
 import shutil
 import sys
+from socket import gethostname, gethostbyname
 from textwrap import fill
 from tabulate import tabulate
 from urllib.error import HTTPError
@@ -893,3 +894,35 @@ def get_active_modules() -> None:
 
     print(tabulate(rows, headers=headers, tablefmt='fancy_grid'))
 
+
+def get_web_interface_url() -> str:
+
+    '''
+    Parses the MMPM nginx conf file for the port number assigned to the web
+    interface, and returns a string containing containing the host IP and
+    assigned port.
+
+    Parameters:
+        None
+
+    Returns:
+        str: The URL of the MMPM web interface
+    '''
+
+    mmpm_conf_path = '/etc/nginx/sites-enabled/mmpm.conf'
+
+    if not os.path.exists(mmpm_conf_path):
+        utils.error_msg('The MMPM nginx configuration file does not appear to exist')
+        sys.exit(1)
+
+    # this value needs to be retrieved dynamically in case the user modifies the nginx conf
+    with open(mmpm_conf_path, 'r') as conf:
+        mmpm_conf = conf.read()
+
+    try:
+        port: str = re.findall(r"listen\s?\d+", mmpm_conf)[0].split()[1]
+    except IndexError:
+        utils.error_msg('Unable to retrieve the port number of the MMPM web interface')
+        sys.exit(1)
+
+    return f'http://{gethostbyname(gethostname())}:{port}'

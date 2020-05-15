@@ -85,6 +85,8 @@ def main(argv):
     elif args.active_modules:
         core.get_active_modules()
 
+    elif args.web_url:
+        print(f'The MMPM web interface is live at: {core.get_web_interface_url()}')
 
 
 if __name__ == "__main__":

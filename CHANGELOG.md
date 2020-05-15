@@ -193,3 +193,9 @@
 
 - Bug fix (#23). Added `electron` to the list of processes to kill when stopping MagicMirror, and
   updated util functions to use pm2 for MagicMirror controls
+
+# Version 1.13
+
+- Enhancment (#26). Added command line option to display the MMPM web interface URL
+- Enhancment (#27). Added command line option to display the currently enabled modules
+

@@ -178,6 +178,14 @@ def get_user_args() -> object:
         help="List the modules currently active/enabled in MagicMirror. This is based upon the modules 'disabled' status in the MagicMirror config"
     )
 
+    arg_parser.add_argument(
+        '-W',
+        '--web-url',
+        action='store_true',
+        default=False,
+        help='Display the URL of the MMPM web interface'
+    )
+
     if len(sys.argv) < 2:
         arg_parser.print_help()
         sys.exit(0)

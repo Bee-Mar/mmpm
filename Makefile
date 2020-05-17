@@ -54,13 +54,13 @@ install-cli:
 install-gui:
 	@$(SHELL) $(GUI)/install
 
+install-gui-from-src:
+	@$(SHELL) $(GUI)/install-from-src
+
 daemons: install-daemons
 
 install-daemons:
 	@$(SHELL) $(DAEMONS)/install
-
-install-gui-from-src:
-	@$(SHELL) $(DAEMONS)/install-from-src
 
 reinstall: uninstall build-cli install-cli build-gui install-gui reinstall-daemons
 

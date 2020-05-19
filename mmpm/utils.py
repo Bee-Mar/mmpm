@@ -18,8 +18,8 @@ class MMPMLogger():
     ~/.config/mmpm/log
     '''
     def __init__(self):
-        self.log_file: str = os.path.join(consts.MMPM_CONFIG_DIR, 'log', 'mmpm-cli-interface.log')
-        self.log_format = '%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s'
+        self.log_file: str = consts.MMPM_LOG_FILE
+        self.log_format: str = '%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s'
         logging.basicConfig(filename=self.log_file, format=self.log_format)
         logger: logging.Logger = logging.getLogger()
         logger.setLevel(logging.INFO)

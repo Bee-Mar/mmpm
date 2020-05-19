@@ -3,7 +3,7 @@
 import sys
 from mmpm import utils, colors, core, opts
 
-__version__ = 1.13
+__version__ = 1.15
 
 
 def main(argv):
@@ -85,11 +85,8 @@ def main(argv):
         if args.details:
             core.snapshot_details(modules)
 
-    elif args.subcommand == opts.TAIL:
-        if args.mmpm:
-            pass
-        elif args.gunicorn:
-            pass
+    elif args.subcommand == opts.LOGS:
+        core.display_log_files(args.mmpm_logs, args.gunicorn_logs, args.tail)
 
     elif args.mmpm_update or args.snapshot_refresh or should_refresh:
         if args.force_refresh or should_refresh:

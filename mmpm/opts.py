@@ -3,6 +3,7 @@
 import argparse
 import sys
 from mmpm.consts import MMPM_WIKI_URL
+import argcomplete
 
 # subcommand names (these could go in consts.py, but for the sake of mnemonics for mmpm.py, they'll stay)
 MODULE = 'module'
@@ -11,7 +12,7 @@ SHOW = 'show'
 MAGICMIRROR = 'magicmirror'
 OPEN = 'open'
 ADD_EXT_MODULE = 'add-ext-module'
-TAIL = 'tail'
+LOGS = 'logs'
 
 
 def get_user_args() -> object:
@@ -78,9 +79,10 @@ def get_user_args() -> object:
     add_ext_module_parser.add_argument('-d', '--description', type=str, help='description external module', dest='description')
     add_ext_module_parser.add_argument('--remove', type=str, help='remove external module (similar pattern of add-apt-repository --remove)', dest='remove')
 
-    open_parser = subparsers.add_parser(TAIL, help='tail the MMPM and/or Gunicorn log files')
-    open_parser.add_argument('-m', '--mmpm', action='store_true', help='tail the MMPM log files', dest='mmpm')
-    open_parser.add_argument('-g', '--gunicorn', type=list, help='tail the Gunicorn log files', dest='gunicorn')
+    open_parser = subparsers.add_parser(LOGS, help='display the MMPM and/or Gunicorn log files')
+    open_parser.add_argument('-t', '--tail', action='store_true', help='tail the log file(s) in real time (used in conjuction with -m and/or -g)', dest='tail')
+    open_parser.add_argument('-m', '--mmpm', action='store_true', help='cat the MMPM log files', dest='mmpm_logs')
+    open_parser.add_argument('-g', '--gunicorn', action='store_true', help='cat the Gunicorn log files', dest='gunicorn_logs')
 
     magicmirror_parser = subparsers.add_parser(MAGICMIRROR, help='subcommands to control the MagicMirror')
     magicmirror_parser.add_argument('-i', '--install', action='store_true', help='install the most recent version of MagicMirror', dest='install')
@@ -90,6 +92,7 @@ def get_user_args() -> object:
     magicmirror_parser.add_argument('--start', action='store_true', help='start the MagicMirror (works with pm2)', dest='start')
     magicmirror_parser.add_argument('--stop', action='store_true', help='stop the MagicMirror (works with pm2)', dest='stop')
     magicmirror_parser.add_argument('--restart', action='store_true', help='restart the MagicMirror (works with pm2)', dest='start')
+    #magicmirror_parser.add_argument('--rotate', action='store_true', choices=['0', '90', '180', '270'], help='rotate MagicMirror screen', dest='rotate')
 
     arg_parser.add_argument('-u', '--update', action='store_true', help='Checks if upgrades are available for MMPM', dest='mmpm_update')
     arg_parser.add_argument('-U', '--upgrade', action='store_true', help='upgrade MMPM, if available', dest='mmpm_upgrade')
@@ -103,4 +106,5 @@ def get_user_args() -> object:
         arg_parser.print_help()
         sys.exit(0)
 
+    argcomplete.autocomplete(arg_parser)
     return arg_parser.parse_args()

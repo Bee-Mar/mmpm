@@ -16,6 +16,8 @@ from mmpm import colors, utils, mmpm, consts
 from typing import List
 from mmpm.utils import log
 from shutil import which
+import subprocess
+import select
 
 
 def snapshot_details(modules: dict) -> None:
@@ -1029,4 +1031,27 @@ def restart_magicmirror() -> None:
     else:
         stop_magicmirror()
         start_magicmirror()
+
+
+def display_log_files(mmpm_logs: bool = False, gunicorn_logs: bool = False, tail: bool = False) -> None:
+    logs: List[str] = []
+
+    if mmpm_logs:
+        if os.path.exists(consts.MMPM_LOG_FILE):
+            logs.append(consts.MMPM_LOG_FILE)
+        else:
+            utils.error_msg('MMPM log file not found')
+
+    if gunicorn_logs:
+        if os.path.exists(consts.GUNICORN_LOG_ACCESS_LOG_FILE):
+            logs.append(consts.GUNICORN_LOG_ACCESS_LOG_FILE)
+        else:
+            utils.error_msg('Gunicorn access log file not found')
+        if os.path.exists(consts.GUNICORN_LOG_ERROR_LOG_FILE):
+            logs.append(consts.GUNICORN_LOG_ERROR_LOG_FILE)
+        else:
+            utils.error_msg('Gunicorn error log file not found')
+
+    if logs:
+        os.system(f"{'tail -F' if tail else 'cat'} {' '.join(logs)}")
 

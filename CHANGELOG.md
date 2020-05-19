@@ -199,3 +199,12 @@
 - Enhancment (#26). Added command line option to display the MMPM web interface URL
 - Enhancment (#27). Added command line option to display the currently enabled modules
 
+# Version 1.15
+
+- Code cleanup. Split up files more appropriately
+- Enhancment. Split up functionality of command line options into groups
+- Enhancment. Added options for user to control MagicMirror from CLI (similar to GUI)
+- Enhancment. Added ability for user to add new external module title, author, repo, and description
+  from CLI without prompt required
+- Enhancment. Added ability for user to open the MMPM GUI from terminal, and display the URL
+- Enhancement. Added ability for user to view log files from CLI

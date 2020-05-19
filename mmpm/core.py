@@ -829,7 +829,7 @@ def remove_external_module_source(titles: str = None) -> bool:
     return True
 
 
-def edit_magicmirror_config() -> bool:
+def open_magicmirror_config() -> bool:
     '''
     Allows user to edit the MagicMirror config file using their $EDITOR
 
@@ -843,6 +843,7 @@ def edit_magicmirror_config() -> bool:
         utils.open_default_editor(utils.get_file_path(consts.MAGICMIRROR_CONFIG_FILE))
         return True
     except Exception:
+        utils.error_msg(f'{consts.MAGICMIRROR_CONFIG_FILE} not found. Is the MAGICMIRROR_ROOT env variable set?')
         return False
 
 
@@ -897,7 +898,6 @@ def get_active_modules() -> None:
 
 
 def get_web_interface_url() -> str:
-
     '''
     Parses the MMPM nginx conf file for the port number assigned to the web
     interface, and returns a string containing containing the host IP and
@@ -913,7 +913,7 @@ def get_web_interface_url() -> str:
     mmpm_conf_path = '/etc/nginx/sites-enabled/mmpm.conf'
 
     if not os.path.exists(mmpm_conf_path):
-        utils.error_msg('The MMPM nginx configuration file does not appear to exist')
+        utils.error_msg('The MMPM nginx configuration file does not appear to exist. Is the GUI installed?')
         sys.exit(1)
 
     # this value needs to be retrieved dynamically in case the user modifies the nginx conf
@@ -927,6 +927,24 @@ def get_web_interface_url() -> str:
         sys.exit(1)
 
     return f'http://{gethostbyname(gethostname())}:{port}'
+
+
+def open_mmpm_gui() -> bool:
+    '''
+    Attempts to open the MMPM web interface using 'xdg-open'
+
+    Parameters:
+        None
+
+    Returns:
+        bool: True upon sucess, False upon failure
+    '''
+    return_code, _, stderr = utils.run_cmd(['xdg-open', get_web_interface_url()])
+
+    if return_code:
+        utils.error_msg(stderr)
+        return False
+    return True
 
 
 def stop_magicmirror() -> None:

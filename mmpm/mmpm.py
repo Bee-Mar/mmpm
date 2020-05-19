@@ -55,9 +55,9 @@ def main(argv):
 
     elif args.subcommand == opts.OPEN:
         if args.config:
-            core.edit_magicmirror_config()
+            core.open_magicmirror_config()
         elif args.gui:
-            pass
+            core.open_mmpm_gui()
 
     elif args.subcommand == opts.ADD_EXT_MODULE:
         if args.remove:

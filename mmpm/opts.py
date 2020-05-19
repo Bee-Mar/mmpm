@@ -66,7 +66,7 @@ def get_user_args() -> object:
 
     open_parser = subparsers.add_parser(OPEN, help='subcommands to open MagicMirror config or MMPM GUI')
     open_parser.add_argument('-c', '--config', action='store_true', help='open MagicMirror config in your $EDITOR', dest='config')
-    open_parser.add_argument('-g', '--gui', type=list, help='open the MMPM GUI in your browser', dest='gui')
+    open_parser.add_argument('-g', '--gui', action='store_true', help='open the MMPM GUI in your browser', dest='gui')
 
     add_ext_module_parser = subparsers.add_parser(ADD_EXT_MODULE, help='manually add a module to the database not found in the 3rd Party Wiki')
     add_ext_module_parser.add_argument('-t', '--title', type=str, help='title of external module', dest='title')

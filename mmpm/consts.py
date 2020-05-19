@@ -28,3 +28,4 @@ EXTERNAL_MODULE_SOURCES: str = 'External Module Sources'
 MMPM_LOG_FILE: str = join(MMPM_CONFIG_DIR, 'log', 'mmpm-cli-interface.log')
 GUNICORN_LOG_ACCESS_LOG_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-gunicorn-access.log')
 GUNICORN_LOG_ERROR_LOG_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-gunicorn-error.log')
+LIBMMPM_SHARED_OBJECT: str = join('/', 'usr', 'local', 'lib', 'mmpm', 'libmmpm.so')

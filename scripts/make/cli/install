@@ -6,9 +6,14 @@ printf "\n------------------------\n"
 
 mkdir -vp ~/.config/mmpm/log ~/.config/mmpm/configs
 
+cd lib && make && cd ~-
+
+sudo mkdir -p /usr/local/lib/mmpm
+sudo cp lib/libmmpm.so /usr/local/lib/mmpm
+
 pip3 install --user . -v
 
-$HOME/.local/bin/mmpm -f
+$HOME/.local/bin/mmpm snapshot --refresh
 
 printf "\n\033[1;36mMMPM CLI Installed \e[0m\n"
 

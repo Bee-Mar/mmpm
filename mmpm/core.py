@@ -656,37 +656,52 @@ def display_modules(modules: dict, list_categories: bool = False) -> None:
     '''
 
     if list_categories:
-        headers: List[str] = [
-            colors.B_CYAN + "Category",
-            colors.B_CYAN + "Modules" + colors.RESET
+        rows: List[str] = [
+            [
+                bytes(colors.B_CYAN + "Category", 'utf-8'),
+                bytes(colors.B_CYAN + "Modules" + colors.RESET, 'utf-8')
+            ]
         ]
 
         rows: List[List[object]] = [[key, len(modules[key])] for key in modules.keys()]
-        print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))
+        utils.display_table(rows)
         return
 
-    headers = [
-        colors.B_CYAN + "Category",
-        consts.TITLE,
-        consts.REPOSITORY,
-        consts.AUTHOR,
-        consts.DESCRIPTION + colors.RESET
+    rows = [
+        [
+            bytes(colors.B_CYAN + "Category", 'utf-8'),
+            bytes(consts.TITLE, 'utf-8'),
+            bytes(consts.REPOSITORY, 'utf-8'),
+            bytes(consts.AUTHOR, 'utf-8'),
+            bytes(consts.DESCRIPTION + colors.RESET, 'utf-8')
+        ]
     ]
 
-    rows = []
     MAX_LENGTH: int = 66
+
+    rows = 0
+
+    for value in modules.values():
+        rows += len(value)
+
+    #table = utils.create_table(rows=rows, columns=len(rows[0]))
+
+    #for i, row in enumerate(data):
+    #    for j, column in enumerate(data[i]):
+    #        table[i][j] = data[i][j]
+
 
     for category, _modules in modules.items():
         for module in _modules:
             rows.append([
-                category,
-                module[consts.TITLE],
-                fill(module[consts.REPOSITORY]),
-                fill(module[consts.AUTHOR]),
-                fill(module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION], width=30)
+                bytes(category, 'utf-8'),
+                bytes(module[consts.TITLE], 'utf-8'),
+                bytes(module[consts.REPOSITORY], 'utf-8'),
+                bytes(module[consts.AUTHOR], 'utf-8'),
+                bytes(module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION], 'utf-8')
             ])
 
-    print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))
+    utils.display_table(rows)
 
 
 def get_installed_modules(modules: dict) -> dict:

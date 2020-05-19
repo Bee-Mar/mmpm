@@ -25,16 +25,15 @@ def get_user_args() -> object:
             '''
     )
 
-    arg_parser.add_argument(
-        '-u',
-        '--update',
-        action='store_true',
-        help='''
-            Check for updates for each of the currently installed modules.
-            '''
-    )
+    subparsers = arg_parser.add_subparsers(title='MMPM subcommands', description='use `mmpm <sub-command> --help` to see more details')
 
-    arg_parser.add_argument(
+    module_parser = subparsers.add_parser('module', help='subcommands to handle installation, removal, updating, and/or upgrading of MagicMirror modules')
+    module_parser.add_argument('-i', '--install', nargs='+', help='install module(s) with given case-sensitive name(s) separated by spaces')
+    module_parser.add_argument('-r', '--remove', nargs='+', help='remove module(s) with given case-sensitive name(s) separated by spaces')
+    module_parser.add_argument('-s', '--search', nargs=1, help='list all modules whose details match given search string')
+    module_parser.add_argument('-y', '--yes', action='store_true', default=False, help='assume yes')
+    module_parser.add_argument('-u', '--update', action='store_true', help='check for updates for each of the currently installed modules.')
+    module_parser.add_argument(
         '-U',
         '--upgrade',
         action='append',
@@ -46,145 +45,41 @@ def get_user_args() -> object:
             '''
     )
 
-    arg_parser.add_argument(
-        '-e',
-        '--enhance-mmpm',
-        action='store_true',
-        help='''
-            Checks if enhancements are available for MMPM.  User will be
-            prompted if an upgrade is available.
-            '''
-    )
+    snapshot_parser = subparsers.add_parser('snapshot', help='subcommands to refresh snapshot or display basic details about snapshot')
+    snapshot_parser.add_argument('-r', '--refresh', action='store_true', help='forces a refresh of the modules snapshot.')
+    snapshot_parser.add_argument('-d', '--details', action='store_true', help='display details about the most recent MagicMirror modules snapshot')
 
-    arg_parser.add_argument(
-        '-a',
-        '--all',
-        action='store_true',
-        help='Lists all currently available modules.'
-    )
+    show_parser = subparsers.add_parser('show')
+    show_parser.add_argument('-s', '--status', action='store_true', help='show the status of modules on your MagicMirror')
+    show_parser.add_argument('-i', '--installed', action='store_true', help='show all currently installed modules')
+    show_parser.add_argument('-c', '--categories', action='store_true', help='show all module categories')
+    show_parser.add_argument('-a', '--all', action='store_true', help='show all modules available in the marketplace')
+    show_parser.add_argument('-g', '--gui-url', action='store_true', help='show the URL of the MMPM GUI')
+    show_parser.add_argument('-v', '--version', action='store_true', help='display MMPM version number')
 
-    arg_parser.add_argument(
-        '-f',
-        '--force-refresh',
-        action='store_true',
-        help='Forces a refresh of the modules snapshot.'
-    )
+    open_parser = subparsers.add_parser('open', help='subcommand to open MagicMirror config or MMPM GUI')
+    open_parser.add_argument('-c', '--config', action='store_true', help='open MagicMirror config in your $EDITOR')
+    open_parser.add_argument('-g', '--gui', type=list, help='open the MMPM GUI in your browser')
 
-    arg_parser.add_argument(
-        '-c',
-        '--categories',
-        action='store_true',
-        help='Lists names of all module categories.'
-    )
+    add_ext_module_parser = subparsers.add_parser('add-ext-module', help='manually add a module to the database not found in the 3rd Party Wiki')
+    add_ext_module_parser.add_argument('-t', '--title', type=str, help='title of external module')
+    add_ext_module_parser.add_argument('-a', '--author', type=str, help='author of external module')
+    add_ext_module_parser.add_argument('-r', '--repo', type=str, help='repo URL of external module')
+    add_ext_module_parser.add_argument('-d', '--description', type=str, help='description external module')
+    add_ext_module_parser.add_argument('--remove', type=str, help='remove external module (similar pattern of add-apt-repository --remove)')
 
-    arg_parser.add_argument(
-        '-s',
-        '--search',
-        nargs=1,
-        help='''List all modules whose details match given search string'''
-    )
+    open_parser = subparsers.add_parser('tail', help='tail the MMPM and/or Gunicorn log files')
+    open_parser.add_argument('-m', '--mmpm', action='store_true', help='tail the MMPM log files')
+    open_parser.add_argument('-g', '--gunicorn', type=list, help='tail the Gunicorn log files')
 
-    arg_parser.add_argument(
-        '-d',
-        '--snapshot-details',
-        action='store_true',
-        help='''
-            Display details about the most recent snapshot of the MagicMirror
-            3rd Party Modules taken.
-            '''
-    )
 
-    arg_parser.add_argument(
-        '-M',
-        '--install-magicmirror',
-        action='store_true',
-        help='''Installs the most recent version of MagicMirror'''
-    )
+    arg_parser.add_argument('-u', '--update', action='store_true', help='Checks if upgrades are available for MMPM')
+    arg_parser.add_argument('-U', '--upgrade', action='store_true', help='upgrade MMPM, if available')
+    arg_parser.add_argument('-M', '--install-magicmirror', action='store_true', help='install the most recent version of MagicMirror')
+    arg_parser.add_argument( '-y', '--yes', action='store_true', default=False, help='Assume yes for anything interactive')
 
-    arg_parser.add_argument(
-        '-i',
-        '--install',
-        nargs='+',
-        help='''
-            Install module(s) with given case-sensitive name(s) separated by
-            spaces
-            '''
-    )
-
-    arg_parser.add_argument(
-        '-r',
-        '--remove',
-        nargs='+',
-        help='''
-            Remove module(s) with given case-sensitive name(s) separated by
-            spaces
-            '''
-    )
-
-    arg_parser.add_argument(
-        '-l',
-        '--list-installed',
-        action='store_true',
-        help='List all currently installed modules'
-    )
-
-    arg_parser.add_argument(
-        '-v',
-        '--version',
-        action='store_true',
-        help='Display MMPM version'
-    )
-
-    arg_parser.add_argument(
-        '-X',
-        '--add-ext-module',
-        action='store_true',
-        help='Register modules not found in the 3rd Party Wiki in the MMPM database'
-    )
-
-    arg_parser.add_argument(
-        '-C',
-        '--magicmirror-config',
-        action='store_true',
-        help='Open MagicMirror config file in your $EDITOR'
-    )
-
-    arg_parser.add_argument(
-        '--ext-module',
-        action='store_true',
-        help='Used in conjuction with --remove to completely remove an external module source from your configuration'
-    )
-
-    arg_parser.add_argument(
-        '-y',
-        '--yes',
-        action='store_true',
-        default=False,
-        help='Assume yes for anything interactive'
-    )
-
-    arg_parser.add_argument(
-        '--GUI',
-        action='store_true',
-        default=False,
-        help=argparse.SUPPRESS
-    )
-
-    arg_parser.add_argument(
-        '-A',
-        '--active-modules',
-        action='store_true',
-        default=False,
-        help="List the modules currently active/enabled in MagicMirror. This is based upon the modules 'disabled' status in the MagicMirror config"
-    )
-
-    arg_parser.add_argument(
-        '-W',
-        '--web-url',
-        action='store_true',
-        default=False,
-        help='Display the URL of the MMPM web interface'
-    )
+    #hidden argument used for the GUI interface
+    arg_parser.add_argument('--GUI', action='store_true', default=False, help=argparse.SUPPRESS)
 
     if len(sys.argv) < 2:
         arg_parser.print_help()

@@ -38,10 +38,31 @@ def get_user_args() -> object:
     subparsers = arg_parser.add_subparsers(title='MMPM subcommands', description='use `mmpm <sub-command> --help` to see more details', dest='subcommand')
 
     module_parser = subparsers.add_parser(MODULE, help='manage installation, removal, updating, and/or upgrading of MagicMirror modules')
-    module_parser.add_argument('-i', '--install', nargs='+', help='install module(s) with given case-sensitive name(s) separated by spaces', dest='install')
-    module_parser.add_argument('-r', '--remove', nargs='+', help='remove module(s) with given case-sensitive name(s) separated by spaces', dest='remove')
     module_parser.add_argument('-s', '--search', nargs=1, help='list all modules whose details match given search string', dest='search')
-    module_parser.add_argument('-u', '--update', action='store_true', help='check for updates for each of the currently installed modules.', dest='update')
+    module_parser.add_argument(
+            '-i',
+            '--install',
+            nargs='+',
+            help='install module(s) with given case-sensitive name(s) separated by spaces',
+            dest='install'
+    )
+
+    module_parser.add_argument(
+            '-r',
+            '--remove',
+            nargs='+',
+            help='remove module(s) with given case-sensitive name(s) separated by spaces',
+            dest='remove'
+    )
+
+    module_parser.add_argument(
+            '-u',
+            '--update',
+            action='store_true',
+            help='check for updates for each of the currently installed modules.',
+            dest='update'
+    )
+
     module_parser.add_argument(
         '-U',
         '--upgrade',
@@ -57,7 +78,13 @@ def get_user_args() -> object:
 
     snapshot_parser = subparsers.add_parser(SNAPSHOT, help='subcommands to refresh snapshot or display basic details about snapshot')
     snapshot_parser.add_argument('-r', '--refresh', action='store_true', help='forces a refresh of the modules snapshot.', dest='refresh')
-    snapshot_parser.add_argument('-d', '--details', action='store_true', help='display details about the most recent MagicMirror modules snapshot', dest='details')
+    snapshot_parser.add_argument(
+            '-d',
+            '--details',
+            action='store_true',
+            help='display details about the most recent MagicMirror modules snapshot',
+            dest='details'
+    )
 
     show_parser = subparsers.add_parser(SHOW, help='subcommands to show more details about modules and other MMPM utilities')
     show_parser.add_argument('-i', '--installed', action='store_true', help='show all currently installed modules', dest='installed')
@@ -77,22 +104,45 @@ def get_user_args() -> object:
     add_ext_module_parser.add_argument('-a', '--author', type=str, help='author of external module', dest='author')
     add_ext_module_parser.add_argument('-r', '--repo', type=str, help='repo URL of external module', dest='repo')
     add_ext_module_parser.add_argument('-d', '--description', type=str, help='description external module', dest='description')
-    add_ext_module_parser.add_argument('--remove', type=str, help='remove external module (similar pattern of add-apt-repository --remove)', dest='remove')
+    add_ext_module_parser.add_argument(
+            '--remove',
+            type=str,
+            help='remove external module (similar pattern of add-apt-repository --remove)',
+            dest='remove'
+    )
 
     open_parser = subparsers.add_parser(LOGS, help='display the MMPM and/or Gunicorn log files')
-    open_parser.add_argument('-t', '--tail', action='store_true', help='tail the log file(s) in real time (used in conjuction with -m and/or -g)', dest='tail')
     open_parser.add_argument('-m', '--mmpm', action='store_true', help='cat the MMPM log files', dest='mmpm_logs')
     open_parser.add_argument('-g', '--gunicorn', action='store_true', help='cat the Gunicorn log files', dest='gunicorn_logs')
+    open_parser.add_argument(
+            '-t',
+            '--tail',
+            action='store_true',
+            help='tail the log file(s) in real time (used in conjuction with -m and/or -g)', dest='tail'
+    )
 
     magicmirror_parser = subparsers.add_parser(MAGICMIRROR, help='subcommands to control the MagicMirror')
-    magicmirror_parser.add_argument('-i', '--install', action='store_true', help='install the most recent version of MagicMirror', dest='install')
-    magicmirror_parser.add_argument('-u', '--update', action='store_true', help='Checks if upgrades are available for MMPM', dest='update')
-    magicmirror_parser.add_argument('-U', '--upgrade', action='store_true', help='upgrade MMPM, if available', dest='upgrade')
     magicmirror_parser.add_argument('--status', action='store_true', help='show the status of modules on your MagicMirror', dest='status')
     magicmirror_parser.add_argument('--start', action='store_true', help='start the MagicMirror (works with pm2)', dest='start')
     magicmirror_parser.add_argument('--stop', action='store_true', help='stop the MagicMirror (works with pm2)', dest='stop')
     magicmirror_parser.add_argument('--restart', action='store_true', help='restart the MagicMirror (works with pm2)', dest='start')
     #magicmirror_parser.add_argument('--rotate', action='store_true', choices=['0', '90', '180', '270'], help='rotate MagicMirror screen', dest='rotate')
+    magicmirror_parser.add_argument('-U', '--upgrade', action='store_true', help='upgrade MMPM, if available', dest='upgrade')
+    magicmirror_parser.add_argument(
+            '-u',
+            '--update',
+            action='store_true',
+            help='Checks if upgrades are available for MMPM', dest='update'
+    )
+
+    magicmirror_parser.add_argument(
+            '-i',
+            '--install',
+            action='store_true',
+            help='install the most recent version of MagicMirror',
+            dest='install'
+    )
+
 
     arg_parser.add_argument('-u', '--update', action='store_true', help='Checks if upgrades are available for MMPM', dest='mmpm_update')
     arg_parser.add_argument('-U', '--upgrade', action='store_true', help='upgrade MMPM, if available', dest='mmpm_upgrade')

@@ -743,16 +743,30 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
 
     print(colors.B_GREEN + "Register external module source\n" + colors.RESET)
 
-    if not title and not author and not repo and not desc:
-        try:
-            title = input("Title: ")
-            author = input("Author: ")
-            repo = input("Repository: ")
-            desc = input("Description: ")
+    try:
+        if not title:
+            title = input('Title: ')
+        else:
+            print(f'Title: {title}')
 
-        except KeyboardInterrupt:
-            print('\n')
-            sys.exit(1)
+        if not author:
+            author = input('Author: ')
+        else:
+            print(f'Author: {author}')
+
+        if not repo:
+            repo = input('Repository: ')
+        else:
+            print(f'Repository: {repo}')
+
+        if not desc:
+            desc = input('Description: ')
+        else:
+            print(f'Description: {desc}')
+
+    except KeyboardInterrupt:
+        print('\n')
+        sys.exit(1)
 
     new_source = {
         consts.TITLE: title,

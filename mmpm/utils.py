@@ -91,9 +91,9 @@ def separator(message) -> None:
 
 
 def assert_snapshot_directory() -> bool:
-    if not os.path.exists(MMPM_CONFIG_DIR):
+    if not os.path.exists(consts.MMPM_CONFIG_DIR):
         try:
-            os.mkdir(MMPM_CONFIG_DIR)
+            os.mkdir(consts.MMPM_CONFIG_DIR)
         except OSError:
             error_msg('Failed to create directory for snapshot')
             return False

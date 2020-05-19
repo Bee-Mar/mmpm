@@ -12,44 +12,83 @@ def main(argv):
     args: object = opts.get_user_args()
 
     if args.version:
-        print(colors.B_CYAN + "MMPM Version: " + colors.B_WHITE + "{}".format(__version__))
+        print(f'{__version__}')
         sys.exit(0)
 
     current_snapshot, next_snapshot = utils.calc_snapshot_timestamps()
-    is_expired = utils.should_refresh_modules(current_snapshot, next_snapshot)
+    is_expired = True if args.subcommand == opts.SNAPSHOT and args.refresh else utils.should_refresh_modules(current_snapshot, next_snapshot)
 
-    if args.force_refresh:
-        modules = core.load_modules(force_refresh=args.force_refresh)
-
-    else:
-        modules = core.load_modules(force_refresh=is_expired)
+    modules = core.load_modules(force_refresh=is_expired)
 
     if not modules:
-        utils.error_msg('Fatal. No modules found.')
+        utils.error_msg('Fatal. Unable to retrieve modules.')
         sys.exit(1)
 
-    if args.all:
-        core.display_modules(modules)
+    if args.subcommand == opts.SHOW:
+        if args.installed:
+            pass
+        elif args.categories:
+            core.display_modules(modules, list_categories=True)
+        elif args.all:
+            core.display_modules(modules)
+        elif args.gui_url:
+            print(f'The MMPM web interface is live at: {core.get_web_interface_url()}')
 
-    elif args.categories:
-        core.display_modules(modules, list_categories=True)
+    elif args.subcommand == opts.MODULE:
+        if args.install:
+            core.install_modules(modules, [utils.sanitize_name(module) for module in args.install])
+        elif args.remove:
+            pass
+        elif args.search:
+            core.display_modules(core.search_modules(modules, args.search[0]))
+        elif args.update:
+            pass
 
-    elif args.search:
-        core.display_modules(core.search_modules(modules, args.search[0]))
+    elif args.subcommand == opts.OPEN:
+        if args.config:
+            core.edit_magicmirror_config()
+        elif args.gui:
+            pass
 
-    elif args.install:
-        core.install_modules(modules, [utils.sanitize_name(module) for module in args.install])
+    elif args.subcommand == opts.ADD_EXT_MODULE:
+        if args.remove:
+            pass
+        else:
+            core.add_external_module(args.title, args.author, args.repo, args.description)
 
-    elif args.install_magicmirror:
-        core.install_magicmirror(args.GUI)
+    elif args.subcommand == opts.MAGICMIRROR:
+        if args.install:
+            core.install_magicmirror(args.GUI)
+        elif args.update:
+            pass
+        elif args.upgrade:
+            pass
+        elif args.status:
+            core.get_active_modules()
+        elif args.start:
+            pass
+        elif args.stop:
+            pass
+        elif args.restart:
+            pass
 
-    elif args.remove:
+    elif args.subcommand == opts.SNAPSHOT:
+        if args.details:
+            core.snapshot_details(modules)
+
+    elif args.subcommand == opts.TAIL:
+        if args.mmpm:
+            pass
+        elif args.gunicorn:
+            pass
+
+    elif args.module_remove:
         if args.ext_module_src:
             core.remove_external_module_source([utils.sanitize_name(module) for module in args.remove])
         else:
             core.remove_modules(modules, [utils.sanitize_name(module) for module in args.remove])
 
-    elif args.list_installed:
+    elif args.show_installed:
         installed_modules = core.get_installed_modules(modules)
 
         if not installed_modules:
@@ -58,16 +97,13 @@ def main(argv):
 
         core.display_modules(installed_modules)
 
-    elif args.snapshot_details:
-        core.snapshot_details(modules)
-
-    elif args.update:
+    elif args.module_update:
         core.enhance_modules(modules, update=True)
 
-    elif args.upgrade:
+    elif args.module_upgrade:
         core.enhance_modules(modules, upgrade=True, modules_to_upgrade=args.upgrade[0])
 
-    elif args.enhance_mmpm or args.force_refresh or is_expired:
+    elif args.mmpm_update or args.snapshot_refresh or is_expired:
         if args.force_refresh or is_expired:
             message = " Automated check for MMPM updates as part of snapshot refresh ... "
         else:
@@ -75,18 +111,6 @@ def main(argv):
 
         utils.plain_print(utils.green_plus() + message)
         core.check_for_mmpm_enhancements(assume_yes=args.yes, gui=args.GUI)
-
-    elif args.add_ext_module:
-        core.add_external_module()
-
-    elif args.magicmirror_config:
-        core.edit_magicmirror_config()
-
-    elif args.active_modules:
-        core.get_active_modules()
-
-    elif args.web_url:
-        print(f'The MMPM web interface is live at: {core.get_web_interface_url()}')
 
 
 if __name__ == "__main__":

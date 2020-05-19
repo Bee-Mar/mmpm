@@ -12,9 +12,10 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 from collections import defaultdict
 from bs4 import BeautifulSoup
-from mmpm import colors, utils, mmpm
+from mmpm import colors, utils, mmpm, consts
 from typing import List
 from mmpm.utils import log
+from shutil import which
 
 
 def snapshot_details(modules: dict) -> None:
@@ -64,7 +65,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     try:
         log.logger.info(f'Checking for MMPM enhancements. Current version: {mmpm.__version__}')
 
-        MMPM_FILE = urlopen(utils.MMPM_FILE_URL)
+        MMPM_FILE = urlopen(consts.MMPM_FILE_URL)
         contents: str = str(MMPM_FILE.read())
 
         version_line: List[str] = re.findall(r"__version__ = \d+\.\d+", contents)
@@ -111,7 +112,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
                     os.chdir(os.path.join('/', 'tmp'))
                     os.system('rm -rf /tmp/mmpm')
 
-                    return_code, _, stderr = utils.clone('mmpm', utils.MMPM_REPO_URL)
+                    return_code, _, stderr = utils.clone('mmpm', consts.MMPM_REPO_URL)
 
                     if return_code:
                         utils.error_msg(stderr)
@@ -162,7 +163,7 @@ def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, 
     '''
 
     original_dir: str = os.getcwd()
-    modules_dir: str = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
+    modules_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
     os.chdir(modules_dir)
 
     installed_modules: dict = get_installed_modules(modules)
@@ -177,8 +178,8 @@ def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, 
 
     for _, value in installed_modules.items():
         for index, _ in enumerate(value):
-            if value[index][utils.TITLE] in dirs:
-                title: str = value[index][utils.TITLE]
+            if value[index][consts.TITLE] in dirs:
+                title: str = value[index][consts.TITLE]
                 curr_module_dir: str = os.path.join(modules_dir, title)
                 os.chdir(curr_module_dir)
 
@@ -254,14 +255,14 @@ def search_modules(modules: dict, query: str) -> dict:
 
     for category, _modules in modules.items():
         for module in _modules:
-            if query not in module[utils.DESCRIPTION].lower() and query not in module[utils.TITLE].lower() and query not in module[utils.AUTHOR].lower():
+            if query not in module[consts.DESCRIPTION].lower() and query not in module[consts.TITLE].lower() and query not in module[consts.AUTHOR].lower():
                 continue
 
             search_results[category].append({
-                utils.TITLE: module[utils.TITLE],
-                utils.REPOSITORY: module[utils.REPOSITORY],
-                utils.AUTHOR: module[utils.AUTHOR],
-                utils.DESCRIPTION: module[utils.DESCRIPTION]
+                consts.TITLE: module[consts.TITLE],
+                consts.REPOSITORY: module[consts.REPOSITORY],
+                consts.AUTHOR: module[consts.AUTHOR],
+                consts.DESCRIPTION: module[consts.DESCRIPTION]
             })
 
     return search_results
@@ -281,7 +282,7 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
         bool: True upon success, False upon failure
     '''
 
-    modules_dir: str = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
+    modules_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
 
     if not os.path.exists(modules_dir):
         msg = "Failed to find MagicMirror root. Have you installed MagicMirror properly? "
@@ -303,11 +304,11 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
 
         for category in modules.values():
             for module in category:
-                if module[utils.TITLE] == module_to_install:
-                    log.logger.info(f'Matched {module[utils.TITLE]} to installation candidate')
-                    title = module[utils.TITLE]
+                if module[consts.TITLE] == module_to_install:
+                    log.logger.info(f'Matched {module[consts.TITLE]} to installation candidate')
+                    title = module[consts.TITLE]
                     target = os.path.join(os.getcwd(), title)
-                    repo = module[utils.REPOSITORY]
+                    repo = module[consts.REPOSITORY]
 
                     try:
                         os.mkdir(target)
@@ -361,7 +362,7 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
             utils.warning_msg(f"Unable to match '{module}' with installation candidate. Is the casing correct?")
 
     if successful_installs:
-        print(colors.B_WHITE + f"\nThe installed modules may need additional configuring within '{utils.MAGICMIRROR_CONFIG_FILE}'" + colors.RESET)
+        print(colors.B_WHITE + f"\nThe installed modules may need additional configuring within '{consts.MAGICMIRROR_CONFIG_FILE}'" + colors.RESET)
         return True
 
     return False
@@ -385,7 +386,7 @@ def install_magicmirror(gui=False) -> bool:
     original_dir: str = os.getcwd()
 
     try:
-        if not os.path.exists(utils.MAGICMIRROR_ROOT):
+        if not os.path.exists(consts.MAGICMIRROR_ROOT):
             print(colors.B_CYAN + "MagicMirror directory not found. " + colors.RESET + "Installing MagicMirror..." + colors.RESET)
             os.system('bash -c "$(curl -sL https://raw.githubusercontent.com/sdetweil/MagicMirror_scripts/master/raspberry.sh)"')
 
@@ -403,7 +404,7 @@ def install_magicmirror(gui=False) -> bool:
                     break
 
                 if response in ("yes", "y"):
-                    os.chdir(utils.MAGICMIRROR_ROOT)
+                    os.chdir(consts.MAGICMIRROR_ROOT)
 
                     print(colors.B_CYAN + "Checking for updates..." + colors.RESET)
                     return_code, stdout, stderr = utils.run_cmd(['git', 'fetch', '--dry-run'])
@@ -461,7 +462,7 @@ def remove_modules(modules: dict, modules_to_remove: List[str]) -> bool:
         utils.error_msg("No modules are currently installed.")
         return False
 
-    modules_dir: str = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
+    modules_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
     original_dir: str = os.getcwd()
 
     if not os.path.exists(modules_dir):
@@ -521,21 +522,21 @@ def load_modules(force_refresh: bool = False) -> dict:
         modules = retrieve_modules()
 
         # save the new snapshot
-        with open(utils.SNAPSHOT_FILE, "w") as snapshot:
+        with open(consts.SNAPSHOT_FILE, "w") as snapshot:
             json.dump(modules, snapshot)
 
         print(utils.done())
 
     else:
-        with open(utils.SNAPSHOT_FILE, "r") as snapshot_file:
+        with open(consts.SNAPSHOT_FILE, "r") as snapshot_file:
             modules = json.load(snapshot_file)
 
-    if os.path.exists(utils.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(utils.MMPM_EXTERNAL_SOURCES_FILE).st_size:
+    if os.path.exists(consts.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(consts.MMPM_EXTERNAL_SOURCES_FILE).st_size:
         try:
-            with open(utils.MMPM_EXTERNAL_SOURCES_FILE, "r") as f:
-                modules[utils.EXTERNAL_MODULE_SOURCES] = json.load(f)[utils.EXTERNAL_MODULE_SOURCES]
+            with open(consts.MMPM_EXTERNAL_SOURCES_FILE, "r") as f:
+                modules[consts.EXTERNAL_MODULE_SOURCES] = json.load(f)[consts.EXTERNAL_MODULE_SOURCES]
         except Exception:
-            utils.warning_msg(f'Failed to load data from {utils.MMPM_EXTERNAL_SOURCES_FILE}.')
+            utils.warning_msg(f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}.')
 
     return modules
 
@@ -556,7 +557,7 @@ def retrieve_modules() -> dict:
     modules: dict = {}
 
     try:
-        url = urlopen(utils.MAGICMIRROR_MODULES_URL)
+        url = urlopen(consts.MAGICMIRROR_MODULES_URL)
         web_page = url.read()
     except HTTPError:
         utils.error_msg("Unable to retrieve MagicMirror modules. Is your internet connection down?")
@@ -591,10 +592,10 @@ def retrieve_modules() -> dict:
             if column_number > 0:
                 td_soup: list = tr_soup[index][column_number].find_all("td")
 
-                title: str = "N/A"
-                repo: str = "N/A"
-                author: str = "N/A"
-                desc: str = "N/A"
+                title: str = consts.NOT_AVAILABLE
+                repo: str = consts.NOT_AVAILABLE
+                author: str = consts.NOT_AVAILABLE
+                desc: str = consts.NOT_AVAILABLE
 
                 for idx, _ in enumerate(td_soup):
                     if idx == 0:
@@ -629,10 +630,10 @@ def retrieve_modules() -> dict:
                                 desc += contents.string
 
                 modules[categories[index]].append({
-                    utils.TITLE: utils.sanitize_name(title),
-                    utils.REPOSITORY: repo,
-                    utils.AUTHOR: author,
-                    utils.DESCRIPTION: desc
+                    consts.TITLE: utils.sanitize_name(title),
+                    consts.REPOSITORY: repo,
+                    consts.AUTHOR: author,
+                    consts.DESCRIPTION: desc
                 })
 
     return modules
@@ -664,10 +665,10 @@ def display_modules(modules: dict, list_categories: bool = False) -> None:
 
     headers = [
         colors.B_CYAN + "Category",
-        utils.TITLE,
-        utils.REPOSITORY,
-        utils.AUTHOR,
-        utils.DESCRIPTION + colors.RESET
+        consts.TITLE,
+        consts.REPOSITORY,
+        consts.AUTHOR,
+        consts.DESCRIPTION + colors.RESET
     ]
 
     rows = []
@@ -677,10 +678,10 @@ def display_modules(modules: dict, list_categories: bool = False) -> None:
         for module in _modules:
             rows.append([
                 category,
-                module[utils.TITLE],
-                fill(module[utils.REPOSITORY]),
-                fill(module[utils.AUTHOR]),
-                fill(module[utils.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[utils.DESCRIPTION]) > MAX_LENGTH else module[utils.DESCRIPTION], width=30)
+                module[consts.TITLE],
+                fill(module[consts.REPOSITORY]),
+                fill(module[consts.AUTHOR]),
+                fill(module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION], width=30)
             ])
 
     print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))
@@ -700,7 +701,7 @@ def get_installed_modules(modules: dict) -> dict:
         installed_modules (dict): Dictionary of installed MagicMirror modules
     '''
 
-    modules_dir: str = os.path.join(utils.MAGICMIRROR_ROOT, 'modules')
+    modules_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
     original_dir: str = os.getcwd()
 
     if not os.path.exists(modules_dir):
@@ -716,7 +717,7 @@ def get_installed_modules(modules: dict) -> dict:
 
     for category, module_names in modules.items():
         for module in module_names:
-            if module[utils.TITLE] in module_dirs:
+            if module[consts.TITLE] in module_dirs:
                 installed_modules.setdefault(category, []).append(module)
 
     os.chdir(original_dir)
@@ -754,33 +755,33 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
             sys.exit(1)
 
     new_source = {
-        utils.TITLE: title,
-        utils.REPOSITORY: repo,
-        utils.AUTHOR: author,
-        utils.DESCRIPTION: desc
+        consts.TITLE: title,
+        consts.REPOSITORY: repo,
+        consts.AUTHOR: author,
+        consts.DESCRIPTION: desc
     }
 
     try:
-        if os.path.exists(utils.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(utils.MMPM_EXTERNAL_SOURCES_FILE).st_size:
+        if os.path.exists(consts.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(consts.MMPM_EXTERNAL_SOURCES_FILE).st_size:
             config: dict = {}
 
-            with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
-                config[utils.EXTERNAL_MODULE_SOURCES] = json.load(
-                    mmpm_ext_srcs)[utils.EXTERNAL_MODULE_SOURCES]
+            with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
+                config[consts.EXTERNAL_MODULE_SOURCES] = json.load(
+                    mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES]
 
-            for module in config[utils.EXTERNAL_MODULE_SOURCES]:
-                if module[utils.TITLE] == title:
+            for module in config[consts.EXTERNAL_MODULE_SOURCES]:
+                if module[consts.TITLE] == title:
                     utils.error_msg(f"A module named '{title}' already exists")
                     return False
 
-            with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
-                config[utils.EXTERNAL_MODULE_SOURCES].append(new_source)
+            with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
+                config[consts.EXTERNAL_MODULE_SOURCES].append(new_source)
                 json.dump(config, mmpm_ext_srcs)
         else:
-            with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
-                json.dump({utils.EXTERNAL_MODULE_SOURCES: [new_source]}, mmpm_ext_srcs)
+            with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
+                json.dump({consts.EXTERNAL_MODULE_SOURCES: [new_source]}, mmpm_ext_srcs)
 
-        print(colors.B_WHITE + f"\nSuccessfully added {title} to '{utils.EXTERNAL_MODULE_SOURCES}'\n" + colors.RESET)
+        print(colors.B_WHITE + f"\nSuccessfully added {title} to '{consts.EXTERNAL_MODULE_SOURCES}'\n" + colors.RESET)
     except IOError:
         utils.error_msg('Failed to save external module')
         return False
@@ -800,28 +801,28 @@ def remove_external_module_source(titles: str = None) -> bool:
     '''
 
     try:
-        if os.path.exists(utils.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(utils.MMPM_EXTERNAL_SOURCES_FILE).st_size:
+        if os.path.exists(consts.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(consts.MMPM_EXTERNAL_SOURCES_FILE).st_size:
             config: dict = {}
             successful_removals: list = []
 
-            with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
-                config[utils.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[utils.EXTERNAL_MODULE_SOURCES]
+            with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
+                config[consts.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES]
 
             for title in titles:
-                for module in config[utils.EXTERNAL_MODULE_SOURCES]:
-                    if module[utils.TITLE] == title:
-                        config[utils.EXTERNAL_MODULE_SOURCES].remove(module)
-                        successful_removals.append(module[utils.TITLE])
+                for module in config[consts.EXTERNAL_MODULE_SOURCES]:
+                    if module[consts.TITLE] == title:
+                        config[consts.EXTERNAL_MODULE_SOURCES].remove(module)
+                        successful_removals.append(module[consts.TITLE])
 
             if not successful_removals:
                 utils.error_msg('No external sources found matching provided query')
                 return False
 
             # if the error_msg was triggered, there's no need to even bother writing back to the file
-            with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
+            with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 json.dump(config, mmpm_ext_srcs)
 
-            print(colors.B_GREEN + f"Successfully removed {', '.join(successful_removals)} from '{utils.EXTERNAL_MODULE_SOURCES}'" + colors.RESET)
+            print(colors.B_GREEN + f"Successfully removed {', '.join(successful_removals)} from '{consts.EXTERNAL_MODULE_SOURCES}'" + colors.RESET)
     except IOError:
         utils.error_msg('Failed to remove external module')
         return False
@@ -839,7 +840,7 @@ def edit_magicmirror_config() -> bool:
         bool: True upon success, False upon failure
     '''
     try:
-        utils.open_default_editor(utils.get_file_path(utils.MAGICMIRROR_CONFIG_FILE))
+        utils.open_default_editor(utils.get_file_path(consts.MAGICMIRROR_CONFIG_FILE))
         return True
     except Exception:
         return False
@@ -860,12 +861,12 @@ def get_active_modules() -> None:
         None
     '''
 
-    if not os.path.exists(utils.MAGICMIRROR_CONFIG_FILE):
+    if not os.path.exists(consts.MAGICMIRROR_CONFIG_FILE):
         utils.error_msg('MagicMirror config file not found')
         sys.exit(1)
 
-    dummy_config: str = f'{utils.MAGICMIRROR_ROOT}/config/dummy_config.js'
-    shutil.copyfile(utils.MAGICMIRROR_CONFIG_FILE, dummy_config)
+    dummy_config: str = f'{consts.MAGICMIRROR_ROOT}/config/dummy_config.js'
+    shutil.copyfile(consts.MAGICMIRROR_CONFIG_FILE, dummy_config)
 
     with open(dummy_config, 'a') as dummy:
         dummy.write('console.log(JSON.stringify(config))')
@@ -926,3 +927,74 @@ def get_web_interface_url() -> str:
         sys.exit(1)
 
     return f'http://{gethostbyname(gethostname())}:{port}'
+
+
+def stop_magicmirror() -> None:
+    '''
+    Stops MagicMirror using pm2, if found, otherwise the associated
+    processes are killed
+
+    Parameters:
+       None
+
+    Returns:
+        None
+    '''
+    if which('pm2'):
+        log.logger.info("Using 'pm2' to stop MagicMirror")
+        return_code, stdout, stderr = utils.run_cmd(['pm2', 'stop', 'MagicMirror'])
+        log.logger.info(f'pm2 stdout: {stdout}')
+        log.logger.info(f'pm2 stderr: {stderr}')
+    else:
+        utils.kill_magicmirror_processes()
+
+
+def start_magicmirror() -> None:
+    '''
+    Launches MagicMirror using pm2, if found, otherwise a 'npm start' is run as
+    a background process
+
+    Parameters:
+       None
+
+    Returns:
+        None
+    '''
+    log.logger.info('Starting MagicMirror')
+    original_dir = os.getcwd()
+    os.chdir(consts.MAGICMIRROR_ROOT)
+
+    log.logger.info("Running 'npm start' in the background")
+
+    if which('pm2'):
+        log.logger.info("Using 'pm2' to start MagicMirror")
+        return_code, stdout, stderr = utils.run_cmd(['pm2', 'start', 'MagicMirror'])
+        log.logger.info(f'pm2 stdout: {stdout}')
+        log.logger.info(f'pm2 stderr: {stderr}')
+    else:
+        log.logger.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
+        os.system('npm start &')
+
+    os.chdir(original_dir)
+
+
+def restart_magicmirror() -> None:
+    '''
+    Restarts MagicMirror using pm2, if found, otherwise the associated
+    processes are killed and 'npm start' is re-run a background process
+
+    Parameters:
+       None
+
+    Returns:
+        None
+    '''
+    if which('pm2'):
+        log.logger.info("Using 'pm2' to restart MagicMirror")
+        return_code, stdout, stderr = utils.run_cmd(['pm2', 'restart', 'MagicMirror'])
+        log.logger.info(f'pm2 stdout: {stdout}')
+        log.logger.info(f'pm2 stderr: {stderr}')
+    else:
+        stop_magicmirror()
+        start_magicmirror()
+

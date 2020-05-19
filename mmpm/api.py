@@ -5,7 +5,7 @@ eventlet.monkey_patch()
 import json
 from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
-from mmpm import core, utils
+from mmpm import core, utils, consts
 from mmpm.utils import log
 from shelljob.proc import Group
 from flask_socketio import SocketIO
@@ -197,10 +197,10 @@ def get_installed_magicmirror_modules() -> dict:
 
 @app.route(__api__('all-external-module-sources'), methods=[GET])
 def get_external__modules__sources() -> dict:
-    ext_sources: dict = {utils.EXTERNAL_MODULE_SOURCES: []}
+    ext_sources: dict = {consts.EXTERNAL_MODULE_SOURCES: []}
     try:
-        with open(utils.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
-            ext_sources[utils.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[utils.EXTERNAL_MODULE_SOURCES]
+        with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
+            ext_sources[consts.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES]
     except IOError:
         pass
     return ext_sources
@@ -246,7 +246,7 @@ def force_refresh_magicmirror_modules() -> str:
 
 @app.route(__api__('get-magicmirror-config'), methods=[GET])
 def get_magicmirror_config():
-    path: str = utils.MAGICMIRROR_CONFIG_FILE
+    path: str = consts.MAGICMIRROR_CONFIG_FILE
     result: str = send_file(path, attachment_filename='config.js') if path else ''
     log.logger.info('Retrieving MagicMirror config')
     return result
@@ -258,7 +258,7 @@ def update_magicmirror_config() -> str:
     log.logger.info('Saving MagicMirror config file')
 
     try:
-        with open(utils.MAGICMIRROR_CONFIG_FILE, 'w') as config:
+        with open(consts.MAGICMIRROR_CONFIG_FILE, 'w') as config:
             config.write(data.get('code'))
     except IOError:
         return json.dumps(False)
@@ -286,7 +286,7 @@ def start_magicmirror() -> str:
         return json.dumps(False)
 
     log.logger.info('MagicMirror does not appear to be running currently. Returning True.')
-    utils.start_magicmirror()
+    core.start_magicmirror()
     return json.dumps(True)
 
 
@@ -303,7 +303,7 @@ def restart_magicmirror() -> str:
         bool: Always True only as a signal the process was called
     '''
     # same issue as the start-magicmirror api call
-    utils.restart_magicmirror()
+    core.restart_magicmirror()
     return json.dumps(True)
 
 
@@ -319,7 +319,7 @@ def stop_magicmirror() -> str:
         bool: Always True only as a signal the process was called
     '''
     # same sort of issue as the start-magicmirror call
-    utils.stop_magicmirror()
+    core.stop_magicmirror()
     return json.dumps(True)
 
 
@@ -336,7 +336,7 @@ def restart_raspberrypi() -> str:
     '''
 
     log.logger.info('Restarting RaspberryPi')
-    utils.stop_magicmirror()
+    core.stop_magicmirror()
     return_code, _, _ = utils.run_cmd(['sudo', 'reboot'])
     # if success, it'll never get the response, but we'll know if it fails
     return json.dumps(bool(not return_code))
@@ -356,7 +356,7 @@ def turn_off_raspberrypi() -> str:
 
     log.logger.info('Shutting down RaspberryPi')
     # if success, we'll never get the response, but we'll know if it fails
-    utils.stop_magicmirror()
+    core.stop_magicmirror()
     return_code, _, _ = utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
     return json.dumps(bool(not return_code))
 
@@ -369,6 +369,6 @@ def upgrade_magicmirror() -> str:
     log.logger.info('Finished installing')
 
     if utils.get_pids('node') and utils.get_pids('npm') and utils.get_pids('electron'):
-        utils.restart_magicmirror()
+        core.restart_magicmirror()
 
     return json.dumps(True)

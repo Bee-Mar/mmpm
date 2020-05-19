@@ -2,9 +2,9 @@
 # pylint: disable=unused-argument
 import argparse
 import sys
-from mmpm.utils import MMPM_WIKI_URL
+from mmpm.consts import MMPM_WIKI_URL
 
-# subcommand names
+# subcommand names (these could go in consts.py, but for the sake of mnemonics for mmpm.py, they'll stay)
 MODULE = 'module'
 SNAPSHOT = 'snapshot'
 SHOW = 'show'

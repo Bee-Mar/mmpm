@@ -16,9 +16,9 @@ def main(argv):
         sys.exit(0)
 
     current_snapshot, next_snapshot = utils.calc_snapshot_timestamps()
-    is_expired = True if args.subcommand == opts.SNAPSHOT and args.refresh else utils.should_refresh_modules(current_snapshot, next_snapshot)
+    should_refresh = True if args.subcommand == opts.SNAPSHOT and args.refresh else utils.should_refresh_modules(current_snapshot, next_snapshot)
 
-    modules = core.load_modules(force_refresh=is_expired)
+    modules = core.load_modules(force_refresh=should_refresh)
 
     if not modules:
         utils.error_msg('Fatal. Unable to retrieve modules.')
@@ -26,7 +26,14 @@ def main(argv):
 
     if args.subcommand == opts.SHOW:
         if args.installed:
-            pass
+            installed_modules = core.get_installed_modules(modules)
+
+            if not installed_modules:
+                utils.error_msg("No modules are currently installed")
+                sys.exit(1)
+
+            core.display_modules(installed_modules)
+
         elif args.categories:
             core.display_modules(modules, list_categories=True)
         elif args.all:
@@ -38,11 +45,13 @@ def main(argv):
         if args.install:
             core.install_modules(modules, [utils.sanitize_name(module) for module in args.install])
         elif args.remove:
-            pass
+            core.remove_modules(modules, [utils.sanitize_name(module) for module in args.remove])
         elif args.search:
             core.display_modules(core.search_modules(modules, args.search[0]))
         elif args.update:
-            pass
+            core.enhance_modules(modules, update=True)
+        elif args.upgrade:
+            core.enhance_modules(modules, upgrade=True, modules_to_upgrade=args.upgrade[0])
 
     elif args.subcommand == opts.OPEN:
         if args.config:
@@ -52,7 +61,7 @@ def main(argv):
 
     elif args.subcommand == opts.ADD_EXT_MODULE:
         if args.remove:
-            pass
+            core.remove_external_module_source([utils.sanitize_name(module) for module in args.remove])
         else:
             core.add_external_module(args.title, args.author, args.repo, args.description)
 
@@ -66,11 +75,11 @@ def main(argv):
         elif args.status:
             core.get_active_modules()
         elif args.start:
-            pass
+            core.start_magicmirror()
         elif args.stop:
-            pass
+            core.stop_magicmirror()
         elif args.restart:
-            pass
+            core.restart_magicmirror()
 
     elif args.subcommand == opts.SNAPSHOT:
         if args.details:
@@ -82,29 +91,8 @@ def main(argv):
         elif args.gunicorn:
             pass
 
-    elif args.module_remove:
-        if args.ext_module_src:
-            core.remove_external_module_source([utils.sanitize_name(module) for module in args.remove])
-        else:
-            core.remove_modules(modules, [utils.sanitize_name(module) for module in args.remove])
-
-    elif args.show_installed:
-        installed_modules = core.get_installed_modules(modules)
-
-        if not installed_modules:
-            utils.error_msg("No modules are currently installed")
-            sys.exit(1)
-
-        core.display_modules(installed_modules)
-
-    elif args.module_update:
-        core.enhance_modules(modules, update=True)
-
-    elif args.module_upgrade:
-        core.enhance_modules(modules, upgrade=True, modules_to_upgrade=args.upgrade[0])
-
-    elif args.mmpm_update or args.snapshot_refresh or is_expired:
-        if args.force_refresh or is_expired:
+    elif args.mmpm_update or args.snapshot_refresh or should_refresh:
+        if args.force_refresh or should_refresh:
             message = " Automated check for MMPM updates as part of snapshot refresh ... "
         else:
             message = " Checking for MMPM updates ... "

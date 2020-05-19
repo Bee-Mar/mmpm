@@ -8,32 +8,8 @@ import time
 from os.path import join
 from typing import List, Optional, Tuple
 from re import sub
-from mmpm import colors
+from mmpm import colors, consts
 from shutil import which
-
-# String constants
-MMPM_ENV_VAR: str = 'MMPM_MAGICMIRROR_ROOT'
-MMPM_REPO_URL: str = "https://github.com/Bee-Mar/mmpm.git"
-MMPM_FILE_URL: str = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
-MMPM_WIKI_URL: str = 'https://github.com/Bee-Mar/mmpm/wiki'
-MAGICMIRROR_MODULES_URL: str = "https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules"
-MAKEFILE: str = 'Makefile'
-CMAKELISTS: str = 'CMakeLists.txt'
-PACKAGE_JSON: str = 'package.json'
-GEMFILE: str = 'Gemfile'
-
-HOME_DIR: str = os.path.expanduser("~")
-TITLE: str = 'Title'
-REPOSITORY: str = 'Repository'
-DESCRIPTION: str = 'Description'
-AUTHOR: str = 'Author'
-CATEGORY: str = 'Category'
-MAGICMIRROR_ROOT: str = os.environ[MMPM_ENV_VAR] if MMPM_ENV_VAR in os.environ else os.path.join(HOME_DIR, 'MagicMirror')
-MAGICMIRROR_CONFIG_FILE: str = join(MAGICMIRROR_ROOT, 'config', 'config.js')
-MMPM_CONFIG_DIR: str = join(HOME_DIR, '.config', 'mmpm')
-SNAPSHOT_FILE: str = join(MMPM_CONFIG_DIR, 'MagicMirror-modules-snapshot.json')
-MMPM_EXTERNAL_SOURCES_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
-EXTERNAL_MODULE_SOURCES: str = 'External Module Sources'
 
 
 class MMPMLogger():
@@ -42,7 +18,7 @@ class MMPMLogger():
     ~/.config/mmpm/log
     '''
     def __init__(self):
-        self.log_file: str = os.path.join(MMPM_CONFIG_DIR, 'log', 'mmpm-cli-interface.log')
+        self.log_file: str = os.path.join(consts.MMPM_CONFIG_DIR, 'log', 'mmpm-cli-interface.log')
         self.log_format = '%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s'
         logging.basicConfig(filename=self.log_file, format=self.log_format)
         logger: logging.Logger = logging.getLogger()
@@ -136,8 +112,8 @@ def calc_snapshot_timestamps() -> Tuple[float, float]:
     '''
     curr_snap = next_snap = None
 
-    if os.path.exists(SNAPSHOT_FILE):
-        curr_snap = os.path.getmtime(SNAPSHOT_FILE)
+    if os.path.exists(consts.SNAPSHOT_FILE):
+        curr_snap = os.path.getmtime(consts.SNAPSHOT_FILE)
         next_snap = curr_snap + 6 * 60 * 60
 
     return curr_snap, next_snap
@@ -156,7 +132,7 @@ def should_refresh_modules(current_snapshot: float, next_snapshot: float) -> boo
     '''
     if not current_snapshot and not next_snapshot:
         return True
-    return not os.path.exists(SNAPSHOT_FILE) or next_snapshot - time.time() <= 0.0
+    return not os.path.exists(consts.SNAPSHOT_FILE) or next_snapshot - time.time() <= 0.0
 
 
 def run_cmd(command: List[str], progress=True) -> Tuple[int, str, str]:
@@ -401,7 +377,7 @@ def handle_installation_process() -> str:
         stderr (str): Success if the string is empty, fail if not
     '''
 
-    if package_requirements_file_exists(PACKAGE_JSON):
+    if package_requirements_file_exists(consts.PACKAGE_JSON):
         error_code, _, stderr = npm_install()
 
         if error_code:
@@ -411,7 +387,7 @@ def handle_installation_process() -> str:
         else:
             print(done())
 
-    if package_requirements_file_exists(GEMFILE):
+    if package_requirements_file_exists(consts.GEMFILE):
         error_code, _, stderr = bundle_install()
 
         if error_code:
@@ -421,7 +397,7 @@ def handle_installation_process() -> str:
         else:
             print(done())
 
-    if package_requirements_file_exists(MAKEFILE):
+    if package_requirements_file_exists(consts.MAKEFILE):
         error_code, _, stderr = make()
 
         if error_code:
@@ -432,7 +408,7 @@ def handle_installation_process() -> str:
             print(done())
 
 
-    if package_requirements_file_exists(CMAKELISTS):
+    if package_requirements_file_exists(consts.CMAKELISTS):
         error_code, _, stderr = cmake()
 
         if error_code:
@@ -442,7 +418,7 @@ def handle_installation_process() -> str:
         else:
             print(done())
 
-        if package_requirements_file_exists(MAKEFILE):
+        if package_requirements_file_exists(consts.MAKEFILE):
             error_code, _, stderr = make()
 
             if error_code:
@@ -511,73 +487,4 @@ def kill_magicmirror_processes() -> None:
     for process in processes:
         kill_pids_of_process(process)
 
-
-def stop_magicmirror() -> None:
-    '''
-    Stops MagicMirror using pm2, if found, otherwise the associated
-    processes are killed
-
-    Parameters:
-       None
-
-    Returns:
-        None
-    '''
-    if which('pm2'):
-        log.logger.info("Using 'pm2' to stop MagicMirror")
-        return_code, stdout, stderr = run_cmd(['pm2', 'stop', 'MagicMirror'])
-        log.logger.info(f'pm2 stdout: {stdout}')
-        log.logger.info(f'pm2 stderr: {stderr}')
-    else:
-        kill_magicmirror_processes()
-
-
-def start_magicmirror() -> None:
-    '''
-    Launches MagicMirror using pm2, if found, otherwise a 'npm start' is run as
-    a background process
-
-    Parameters:
-       None
-
-    Returns:
-        None
-    '''
-    log.logger.info('Starting MagicMirror')
-    original_dir = os.getcwd()
-    os.chdir(MAGICMIRROR_ROOT)
-
-    log.logger.info("Running 'npm start' in the background")
-
-    if which('pm2'):
-        log.logger.info("Using 'pm2' to start MagicMirror")
-        return_code, stdout, stderr = run_cmd(['pm2', 'start', 'MagicMirror'])
-        log.logger.info(f'pm2 stdout: {stdout}')
-        log.logger.info(f'pm2 stderr: {stderr}')
-    else:
-        log.logger.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
-        os.system('npm start &')
-
-    os.chdir(original_dir)
-
-
-def restart_magicmirror() -> None:
-    '''
-    Restarts MagicMirror using pm2, if found, otherwise the associated
-    processes are killed and 'npm start' is re-run a background process
-
-    Parameters:
-       None
-
-    Returns:
-        None
-    '''
-    if which('pm2'):
-        log.logger.info("Using 'pm2' to restart MagicMirror")
-        return_code, stdout, stderr = run_cmd(['pm2', 'restart', 'MagicMirror'])
-        log.logger.info(f'pm2 stdout: {stdout}')
-        log.logger.info(f'pm2 stderr: {stderr}')
-    else:
-        stop_magicmirror()
-        start_magicmirror()
 

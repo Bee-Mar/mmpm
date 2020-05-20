@@ -8,3 +8,5 @@ gui/.clangd
 configs/*.service
 .mypy_cache
 mmpm-gui.tar*.gz
+lib/*.o
+lib/libmmpm.so

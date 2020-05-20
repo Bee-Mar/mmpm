@@ -8,4 +8,6 @@ pip3 uninstall mmpm -v -y
 rm -rvf ~/.config/mmpm
 sudo rm -rf /usr/local/lib/mmpm
 
+cd lib && make uninstall && cd ~-
+
 printf "\n\033[1;36mMMPM CLI Removed\e[0m\n"

@@ -20,3 +20,6 @@ clean:
 install:
 	sudo mkdir -p $(DESTINATION)
 	sudo install libmmpm.so $(DESTINATION)
+
+uninstall:
+	sudo rm -rf /usr/local/lib/mmpm

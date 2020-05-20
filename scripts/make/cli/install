@@ -6,7 +6,7 @@ printf "\n------------------------\n"
 
 mkdir -vp ~/.config/mmpm/log ~/.config/mmpm/configs
 
-cd lib && make && make install
+cd lib && make && make install && cd ~-
 
 pip3 install --user . -v
 

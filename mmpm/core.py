@@ -14,7 +14,7 @@ from collections import defaultdict
 from bs4 import BeautifulSoup
 from mmpm import colors, utils, mmpm, consts
 from typing import List
-from mmpm.utils import log
+from mmpm.utils import log, to_bytes
 from shutil import which
 import subprocess
 import select
@@ -655,53 +655,52 @@ def display_modules(modules: dict, list_categories: bool = False) -> None:
         None
     '''
 
-    if list_categories:
-        rows: List[str] = [
-            [
-                bytes(colors.B_CYAN + "Category", 'utf-8'),
-                bytes(colors.B_CYAN + "Modules" + colors.RESET, 'utf-8')
-            ]
-        ]
+    global_row: int = 1
 
-        rows: List[List[object]] = [[key, len(modules[key])] for key in modules.keys()]
-        utils.display_table(rows)
+    if list_categories:
+        rows: int = len(modules.keys()) + 1
+        columns: int = 2
+
+        table = utils.allocate_table_memory(rows, columns)
+
+        table[0][0] = to_bytes(consts.CATEGORY)
+        table[0][1] = to_bytes('Modules')
+
+        for key in modules.keys():
+            table[global_row][0] = to_bytes(key)
+            table[global_row][1] = to_bytes(str(len(modules[key])))
+
+            global_row += 1
+
+        utils.display_table(table, rows, columns)
         return
 
-    rows = [
-        [
-            bytes(colors.B_CYAN + "Category", 'utf-8'),
-            bytes(consts.TITLE, 'utf-8'),
-            bytes(consts.REPOSITORY, 'utf-8'),
-            bytes(consts.AUTHOR, 'utf-8'),
-            bytes(consts.DESCRIPTION + colors.RESET, 'utf-8')
-        ]
-    ]
+    MAX_LENGTH: int = 50
+    columns: int = 4
+    rows: int = 1 # to include the header row
 
-    MAX_LENGTH: int = 66
+    for row in modules.values():
+        rows += len(row)
 
-    rows = 0
+    table = utils.allocate_table_memory(rows, columns)
 
-    for value in modules.values():
-        rows += len(value)
-
-    #table = utils.create_table(rows=rows, columns=len(rows[0]))
-
-    #for i, row in enumerate(data):
-    #    for j, column in enumerate(data[i]):
-    #        table[i][j] = data[i][j]
-
+    table[0][0] = to_bytes(consts.CATEGORY)
+    table[0][1] = to_bytes(consts.TITLE)
+    table[0][2] = to_bytes(consts.REPOSITORY)
+    table[0][3] = to_bytes(consts.AUTHOR)
+    #table[0][4] = to_bytes(consts.DESCRIPTION)
 
     for category, _modules in modules.items():
-        for module in _modules:
-            rows.append([
-                bytes(category, 'utf-8'),
-                bytes(module[consts.TITLE], 'utf-8'),
-                bytes(module[consts.REPOSITORY], 'utf-8'),
-                bytes(module[consts.AUTHOR], 'utf-8'),
-                bytes(module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION], 'utf-8')
-            ])
+        for index, module in enumerate(_modules):
+            description = module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION]
+            table[global_row][0] = to_bytes(category)
+            table[global_row][1] = to_bytes(module[consts.TITLE])
+            table[global_row][2] = to_bytes(module[consts.REPOSITORY])
+            table[global_row][3] = to_bytes(module[consts.AUTHOR])
+            #table[global_row][4] = to_bytes(description)
+            global_row += 1
 
-    utils.display_table(rows)
+    utils.display_table(table, rows, columns)
 
 
 def get_installed_modules(modules: dict) -> dict:

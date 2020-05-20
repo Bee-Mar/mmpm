@@ -489,7 +489,7 @@ def kill_magicmirror_processes() -> None:
         kill_pids_of_process(process)
 
 
-def display_table(table: POINTER(POINTER(c_char_p))) -> None:
+def display_table(table: POINTER(POINTER(c_char_p)), rows: int, columns: int) -> None:
     '''
     Calls the shared lib of libfort + mmpm.c to print the contents of a
     provided matrix
@@ -502,26 +502,15 @@ def display_table(table: POINTER(POINTER(c_char_p))) -> None:
     '''
 
     libmmpm = cdll.LoadLibrary(consts.LIBMMPM_SHARED_OBJECT)
-    rows, columns = len(table), len(table[0])
 
     __display_table__ = libmmpm.display_table
     __display_table__.argtypes = [POINTER(POINTER(c_char_p)), c_int, c_int]
     __display_table__.restype = None
-
-    allocate_table_memory = libmmpm.allocate_table_memory
-    allocate_table_memory.argtypes = [c_int, c_int]
-    allocate_table_memory.restype = POINTER(POINTER(c_char_p))
-
     __display_table__(table, rows, columns)
 
 
-def create_table(rows: int, columns: int) -> POINTER(POINTER(c_char_p)):
+def allocate_table_memory(rows: int, columns: int) -> POINTER(POINTER(c_char_p)):
     libmmpm = cdll.LoadLibrary(consts.LIBMMPM_SHARED_OBJECT)
-    #rows, columns = len(data), len(data[0])
-
-    __display_table__ = libmmpm.display_table
-    __display_table__.argtypes = [POINTER(POINTER(c_char_p)), c_int, c_int]
-    __display_table__.restype = None
 
     allocate_table_memory = libmmpm.allocate_table_memory
     allocate_table_memory.argtypes = [c_int, c_int]
@@ -533,3 +522,7 @@ def create_table(rows: int, columns: int) -> POINTER(POINTER(c_char_p)):
 
 def fill_table_row(table: any, row: int, column: int, value: any) -> None:
     table[row][column] = value
+
+
+def to_bytes(string: str) -> bytes:
+    return bytes(string, 'utf-8')

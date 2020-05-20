@@ -6,10 +6,7 @@ printf "\n------------------------\n"
 
 mkdir -vp ~/.config/mmpm/log ~/.config/mmpm/configs
 
-cd lib && make && cd ~-
-
-sudo mkdir -p /usr/local/lib/mmpm
-sudo cp lib/libmmpm.so /usr/local/lib/mmpm
+cd lib && make && make install
 
 pip3 install --user . -v
 

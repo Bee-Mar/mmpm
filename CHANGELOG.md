@@ -193,3 +193,8 @@
 
 - Bug fix (#23). Added `electron` to the list of processes to kill when stopping MagicMirror, and
   updated util functions to use pm2 for MagicMirror controls
+
+# Version 1.13
+
+- Bug fix (#29). Corrected `log.info` to `log.logger.info` in utils.py within the
+  `kill_magicmirror_processes` function

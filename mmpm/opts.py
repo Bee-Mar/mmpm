@@ -35,10 +35,25 @@ def get_user_args() -> object:
             '''
     )
 
-    subparsers = arg_parser.add_subparsers(title='MMPM subcommands', description='use `mmpm <sub-command> --help` to see more details', dest='subcommand')
+    subparsers = arg_parser.add_subparsers(
+            title='MMPM subcommands',
+            description='use `mmpm <sub-command> --help` to see more details',
+            dest='subcommand'
+    )
 
-    module_parser = subparsers.add_parser(MODULE, help='manage installation, removal, updating, and/or upgrading of MagicMirror modules')
-    module_parser.add_argument('-s', '--search', nargs=1, help='list all modules whose details match given search string', dest='search')
+    # MODULE SUBCOMMANDS
+    module_parser = subparsers.add_parser(
+            MODULE,
+            help='manage installation, removal, updating, and/or upgrading of MagicMirror modules'
+    )
+
+    module_parser.add_argument(
+            '-s',
+            '--search',
+            nargs=1,
+            help='list all modules whose details match given search string', dest='search'
+    )
+
     module_parser.add_argument(
             '-i',
             '--install',
@@ -76,8 +91,19 @@ def get_user_args() -> object:
         dest='module_upgrade'
     )
 
-    snapshot_parser = subparsers.add_parser(SNAPSHOT, help='subcommands to refresh snapshot or display basic details about snapshot')
-    snapshot_parser.add_argument('-r', '--refresh', action='store_true', help='forces a refresh of the modules snapshot.', dest='refresh')
+    # SNAPSHOT SUBCOMMANDS
+    snapshot_parser = subparsers.add_parser(
+            SNAPSHOT,
+            help='subcommands to refresh snapshot or display basic details about snapshot'
+    )
+
+    snapshot_parser.add_argument(
+            '-r',
+            '--refresh',
+            action='store_true',
+            help='forces a refresh of the modules snapshot.', dest='refresh'
+    )
+
     snapshot_parser.add_argument(
             '-d',
             '--details',
@@ -86,24 +112,110 @@ def get_user_args() -> object:
             dest='details'
     )
 
-    show_parser = subparsers.add_parser(SHOW, help='subcommands to show more details about modules and other MMPM utilities')
-    show_parser.add_argument('-i', '--installed', action='store_true', help='show all currently installed modules', dest='installed')
-    show_parser.add_argument('-c', '--categories', action='store_true', help='show all module categories', dest='categories')
-    show_parser.add_argument('-a', '--all', action='store_true', help='show all modules available in the marketplace', dest='all')
-    show_parser.add_argument('-g', '--gui-url', action='store_true', help='show the URL of the MMPM GUI', dest='gui_url')
+    # SHOW SUBCOMMANDS
+    show_parser = subparsers.add_parser(
+            SHOW,
+            help='subcommands to show more details about modules and other MMPM utilities'
+    )
 
-    open_parser = subparsers.add_parser(OPEN, help='subcommands to open MagicMirror config or MMPM GUI')
-    open_parser.add_argument('-c', '--config', action='store_true', help='open MagicMirror config in your $EDITOR', dest='config')
-    open_parser.add_argument('-g', '--gui', action='store_true', help='open the MMPM GUI in your browser', dest='gui')
+    show_parser.add_argument(
+            '-i',
+            '--installed',
+            action='store_true',
+            help='show all currently installed modules', dest='installed'
+    )
 
+    show_parser.add_argument(
+            '-c',
+            '--categories',
+            action='store_true',
+            help='show all module categories',
+            dest='categories'
+    )
+
+    show_parser.add_argument(
+            '-a',
+            '--all',
+            action='store_true',
+            help='show all modules available in the marketplace', dest='all'
+    )
+
+    show_parser.add_argument(
+            '-g',
+            '--gui-url',
+            action='store_true',
+            help='show the URL of the MMPM GUI',
+            dest='gui_url'
+    )
+
+    show_parser.add_argument(
+            '--table',
+            action='store_true',
+            help='display output in table format, where applicable',
+            dest='table_formatted'
+    )
+
+
+    # OPEN SUBCOMMANDS
+    open_parser = subparsers.add_parser(
+            OPEN,
+            help='subcommands to open MagicMirror config or MMPM GUI'
+    )
+
+    open_parser.add_argument(
+            '-c',
+            '--config',
+            action='store_true',
+            help='open MagicMirror config in your $EDITOR',
+            dest='config'
+    )
+
+    open_parser.add_argument(
+            '-g',
+            '--gui',
+            action='store_true',
+            help='open the MMPM GUI in your browser',
+            dest='gui'
+    )
+
+    # ADD EXTERNAL MODULE SUBCOMMANDS
     add_ext_module_parser = subparsers.add_parser(
             ADD_EXT_MODULE,
-            help='manually add a module to the database not found in the 3rd Party Wiki (can be extecuted without any arguments)'
+            help='manually add a module to the database not found in the 3rd Party Wiki'
     )
-    add_ext_module_parser.add_argument('-t', '--title', type=str, help='title of external module', dest='title')
-    add_ext_module_parser.add_argument('-a', '--author', type=str, help='author of external module', dest='author')
-    add_ext_module_parser.add_argument('-r', '--repo', type=str, help='repo URL of external module', dest='repo')
-    add_ext_module_parser.add_argument('-d', '--description', type=str, help='description external module', dest='description')
+
+    add_ext_module_parser.add_argument(
+            '-t',
+            '--title',
+            type=str,
+            help='title of external module (will be prompted if not provided)',
+            dest='title'
+    )
+
+    add_ext_module_parser.add_argument(
+            '-a',
+            '--author',
+            type=str,
+            help='author of external module (will be prompted if not provided)',
+            dest='author'
+    )
+
+    add_ext_module_parser.add_argument(
+            '-r',
+            '--repo',
+            type=str,
+            help='repo URL of external module (will be prompted if not provided)',
+            dest='repo'
+    )
+
+    add_ext_module_parser.add_argument(
+            '-d',
+            '--description',
+            type=str,
+            help='description external module (will be prompted if not provided)',
+            dest='description'
+    )
+
     add_ext_module_parser.add_argument(
             '--remove',
             type=str,
@@ -111,23 +223,85 @@ def get_user_args() -> object:
             dest='remove'
     )
 
-    open_parser = subparsers.add_parser(LOGS, help='display the MMPM and/or Gunicorn log files')
-    open_parser.add_argument('-m', '--mmpm', action='store_true', help='cat the MMPM log files', dest='mmpm_logs')
-    open_parser.add_argument('-g', '--gunicorn', action='store_true', help='cat the Gunicorn log files', dest='gunicorn_logs')
-    open_parser.add_argument(
+    # LOGS SUBCOMMANDS
+    logs_parser = subparsers.add_parser(
+            LOGS,
+            help='display the MMPM and/or Gunicorn log files'
+    )
+
+    logs_parser.add_argument(
+            '-m',
+            '--mmpm',
+            action='store_true',
+            help='cat the MMPM log files',
+            dest='mmpm_logs'
+    )
+
+    logs_parser.add_argument(
+            '-g',
+            '--gunicorn',
+            action='store_true',
+            help='cat the Gunicorn log files',
+            dest='gunicorn_logs'
+    )
+
+    logs_parser.add_argument(
             '-t',
             '--tail',
             action='store_true',
             help='tail the log file(s) in real time (used in conjuction with -m and/or -g)', dest='tail'
     )
 
-    magicmirror_parser = subparsers.add_parser(MAGICMIRROR, help='subcommands to control the MagicMirror')
-    magicmirror_parser.add_argument('--status', action='store_true', help='show the status of modules on your MagicMirror', dest='status')
-    magicmirror_parser.add_argument('--start', action='store_true', help='start the MagicMirror (works with pm2)', dest='start')
-    magicmirror_parser.add_argument('--stop', action='store_true', help='stop the MagicMirror (works with pm2)', dest='stop')
-    magicmirror_parser.add_argument('--restart', action='store_true', help='restart the MagicMirror (works with pm2)', dest='start')
-    #magicmirror_parser.add_argument('--rotate', action='store_true', choices=['0', '90', '180', '270'], help='rotate MagicMirror screen', dest='rotate')
-    magicmirror_parser.add_argument('-U', '--upgrade', action='store_true', help='upgrade MMPM, if available', dest='upgrade')
+    # MAGICMIRROR SUBCOMMANDS
+    magicmirror_parser = subparsers.add_parser(
+            MAGICMIRROR,
+            help='subcommands to control the MagicMirror'
+    )
+
+    magicmirror_parser.add_argument(
+            '--status',
+            action='store_true',
+            help='show the status of modules on your MagicMirror',
+            dest='status'
+    )
+
+    magicmirror_parser.add_argument(
+            '--start',
+            action='store_true',
+            help='start the MagicMirror (works with pm2)',
+            dest='start'
+    )
+
+    magicmirror_parser.add_argument(
+            '--stop',
+            action='store_true',
+            help='stop the MagicMirror (works with pm2)',
+            dest='stop'
+    )
+
+    magicmirror_parser.add_argument(
+            '--restart',
+            action='store_true',
+            help='restart the MagicMirror (works with pm2)',
+            dest='start'
+    )
+
+    #magicmirror_parser.add_argument(
+    #        '--rotate',
+    #        action='store_true',
+    #        choices=['0', '90', '180', '270'],
+    #        help='rotate MagicMirror screen',
+    #        dest='rotate'
+    #)
+
+    magicmirror_parser.add_argument(
+            '-U',
+            '--upgrade',
+            action='store_true',
+            help='upgrade MMPM, if available',
+            dest='upgrade'
+    )
+
     magicmirror_parser.add_argument(
             '-u',
             '--update',
@@ -143,18 +317,52 @@ def get_user_args() -> object:
             dest='install'
     )
 
+    # MMPM AND GLOBAL OPTIONS
+    arg_parser.add_argument(
+            '-u',
+            '--update',
+            action='store_true',
+            help='Checks if upgrades are available for MMPM',
+            dest='mmpm_update'
+    )
 
-    arg_parser.add_argument('-u', '--update', action='store_true', help='Checks if upgrades are available for MMPM', dest='mmpm_update')
-    arg_parser.add_argument('-U', '--upgrade', action='store_true', help='upgrade MMPM, if available', dest='mmpm_upgrade')
-    arg_parser.add_argument( '-y', '--yes', action='store_true', default=False, help='Assume yes for anything interactive', dest='assume_yes')
+    arg_parser.add_argument(
+            '-U',
+            '--upgrade',
+            action='store_true',
+            help='upgrade MMPM, if available',
+            dest='mmpm_upgrade'
+    )
+
+    arg_parser.add_argument(
+            '-y',
+            '--yes',
+            action='store_true',
+            default=False,
+            help='Assume yes for anything interactive',
+            dest='assume_yes'
+    )
+
+    arg_parser.add_argument(
+            '-v',
+            '--version',
+            action='store_true',
+            help='display MMPM version number',
+            dest='version'
+    )
 
     #hidden argument used for the GUI interface
-    arg_parser.add_argument('--GUI', action='store_true', default=False, help=argparse.SUPPRESS, dest='GUI')
-    arg_parser.add_argument('-v', '--version', action='store_true', help='display MMPM version number', dest='version')
+    arg_parser.add_argument(
+            '--GUI',
+            action='store_true',
+            default=False,
+            help=argparse.SUPPRESS,
+            dest='GUI'
+    )
+
 
     if len(sys.argv) < 2:
         arg_parser.print_help()
         sys.exit(0)
 
-    argcomplete.autocomplete(arg_parser)
     return arg_parser.parse_args()

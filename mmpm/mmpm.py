@@ -32,12 +32,12 @@ def main(argv):
                 utils.error_msg("No modules are currently installed")
                 sys.exit(1)
 
-            core.display_modules(installed_modules)
+            core.display_modules(installed_modules, table_formatted=args.table_formatted)
 
         elif args.categories:
-            core.display_modules(modules, list_categories=True)
+            core.display_modules(modules, list_categories=True, table_formatted=args.table_formatted)
         elif args.all:
-            core.display_modules(modules)
+            core.display_modules(modules, table_formatted=args.table_formatted)
         elif args.gui_url:
             print(f'The MMPM web interface is live at: {core.get_web_interface_url()}')
 

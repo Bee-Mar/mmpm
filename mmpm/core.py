@@ -670,7 +670,7 @@ def retrieve_modules() -> dict:
     return modules
 
 
-def display_modules(modules: dict, list_categories: bool = False) -> None:
+def display_modules(modules: dict, list_categories: bool = False, table_formatted: bool = False) -> None:
     '''
     Depending on the user flags passed in from the command line, either all
     existing modules may be displayed, or the names of all categories of
@@ -687,53 +687,67 @@ def display_modules(modules: dict, list_categories: bool = False) -> None:
     global_row: int = 1
 
     if list_categories:
-        rows: int = len(modules.keys()) + 1
-        columns: int = 2
+
+        if table_formatted:
+            rows: int = len(modules.keys()) + 1
+            columns: int = 2
+
+            table = utils.allocate_table_memory(rows, columns)
+
+            table[0][0] = to_bytes(consts.CATEGORY)
+            table[0][1] = to_bytes('Modules')
+
+            for key in modules.keys():
+                table[global_row][0] = to_bytes(key)
+                table[global_row][1] = to_bytes(str(len(modules[key])))
+
+                global_row += 1
+
+            utils.display_table(table, rows, columns)
+        else:
+            for key in modules.keys():
+                print(colored_text(colors.B_GREEN, key), f'\n\tModules: {len(modules[key])}\n')
+        return
+
+
+    if table_formatted:
+        MAX_LENGTH: int = 80
+
+        columns: int = 3
+        rows: int = 1 # to include the header row
+
+        for row in modules.values():
+            rows += len(row)
 
         table = utils.allocate_table_memory(rows, columns)
 
         table[0][0] = to_bytes(consts.CATEGORY)
-        table[0][1] = to_bytes('Modules')
+        table[0][1] = to_bytes(consts.TITLE)
+        #table[0][2] = to_bytes(consts.REPOSITORY)
+        #table[0][3] = to_bytes(consts.AUTHOR)
+        table[0][2] = to_bytes(consts.DESCRIPTION)
 
-        for key in modules.keys():
-            print(f'{key} ({len(modules[key])})\n')
-            #table[global_row][0] = to_bytes(key)
-            #table[global_row][1] = to_bytes(str(len(modules[key])))
+        for category, _modules in modules.items():
+            for index, module in enumerate(_modules):
+                description = module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION]
+                table[global_row][0] = to_bytes(category)
+                table[global_row][1] = to_bytes(module[consts.TITLE])
+                #table[global_row][2] = to_bytes(module[consts.REPOSITORY])
+                #table[global_row][3] = to_bytes(module[consts.AUTHOR])
+                table[global_row][2] = to_bytes(description)
+                global_row += 1
 
-            global_row += 1
+        utils.display_table(table, rows, columns)
 
-        #utils.display_table(table, rows, columns)
-        return
+    else:
+        MAX_LENGTH: int = 66
 
-    MAX_LENGTH: int = 80
-    columns: int = 3
-    rows: int = 1 # to include the header row
-
-    for row in modules.values():
-        rows += len(row)
-
-    table = utils.allocate_table_memory(rows, columns)
-
-    table[0][0] = to_bytes(consts.CATEGORY)
-    table[0][1] = to_bytes(consts.TITLE)
-    #table[0][2] = to_bytes(consts.REPOSITORY)
-    #table[0][3] = to_bytes(consts.AUTHOR)
-    table[0][2] = to_bytes(consts.DESCRIPTION)
-
-    for category, _modules in modules.items():
-        for index, module in enumerate(_modules):
-            description = module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION]
-            table[global_row][0] = to_bytes(category)
-            table[global_row][1] = to_bytes(module[consts.TITLE])
-            #table[global_row][2] = to_bytes(module[consts.REPOSITORY])
-            #table[global_row][3] = to_bytes(module[consts.AUTHOR])
-            table[global_row][2] = to_bytes(description)
-            print(colored_text(colors.B_GREEN, f'{module[consts.TITLE]}'))
-            print(f'\t{description}')
-            print(f'\tCategory: {category}')
-            global_row += 1
-
-    #utils.display_table(table, rows, columns)
+        for category, _modules in modules.items():
+            for index, module in enumerate(_modules):
+                description = module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION]
+                print(colored_text(colors.B_GREEN, f'{module[consts.TITLE]}'))
+                print(f'\t{description}')
+                print(f'\tCategory: {category}\n')
 
 
 def get_installed_modules(modules: dict) -> dict:
@@ -790,7 +804,7 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
         (bool): Upon success, a True result is returned
     '''
 
-    print(colored_text(colors.B_GREEN, "Register external module source\n"))
+    print(colored_text(colors.B_GREEN, "Add new external module\n"))
 
     try:
         if not title:
@@ -829,12 +843,11 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
             config: dict = {}
 
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
-                config[consts.EXTERNAL_MODULE_SOURCES] = json.load(
-                    mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES]
+                config[consts.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES]
 
             for module in config[consts.EXTERNAL_MODULE_SOURCES]:
                 if module[consts.TITLE] == title:
-                    utils.error_msg(f"A module named '{title}' already exists")
+                    utils.error_msg(f"A module named '{title}' already exists. Please supply a unique name")
                     return False
 
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:

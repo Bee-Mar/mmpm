@@ -8,7 +8,7 @@ mkdir -vp ~/.config/mmpm/log ~/.config/mmpm/configs
 
 cd lib && make && make install && cd ~-
 
-pip3 install --user . -v
+pip3 install --user .
 
 $HOME/.local/bin/mmpm snapshot --refresh
 

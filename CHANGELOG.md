@@ -11,7 +11,7 @@
 - Added doc-strings to functions
 
 - Added new method `check_for_mmpm_enhancements` to check for updates to MMPM, which will run
-  intermittently, and prompt the user when one is found
+    intermittently, and prompt the user when one is found
 
 - The user may also run `check_for_mmpm_enhancements` by specifying the `-e` flag
 
@@ -208,3 +208,5 @@
   from CLI without prompt required
 - Enhancment. Added ability for user to open the MMPM GUI from terminal, and display the URL
 - Enhancement. Added ability for user to view log files from CLI
+- Bug fix (#29). Corrected `log.info` to `log.logger.info` in utils.py within the
+  `kill_magicmirror_processes` function

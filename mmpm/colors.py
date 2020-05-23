@@ -23,3 +23,4 @@ B_WHITE: str = B + Fore.WHITE
 
 N_GREEN: str = N + Fore.GREEN
 B_GREEN: str = B + Fore.GREEN
+

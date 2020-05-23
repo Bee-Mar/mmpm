@@ -13,6 +13,7 @@ from urllib.request import urlopen
 from collections import defaultdict
 from bs4 import BeautifulSoup
 from mmpm import colors, utils, mmpm, consts
+from mmpm.utils import colored_text
 from typing import List
 from mmpm.utils import log, to_bytes
 from shutil import which
@@ -44,10 +45,25 @@ def snapshot_details(modules: dict) -> None:
     for value in modules.values():
         num_modules += len(value)
 
-    print(colors.B_YELLOW + "Most recent snapshot of MagicMirror Modules taken" + colors.B_WHITE + f": {curr_snap_date}")
-    print(colors.B_YELLOW + "The next snapshot will be taken on or after" + colors.B_WHITE + f": {next_snap_date}\n")
-    print(colors.B_GREEN + "Module Categories" + colors.B_WHITE + f": {num_categories}")
-    print(colors.B_GREEN + "Modules Available" + colors.B_WHITE + f": {num_modules}\n")
+    print(
+        colored_text(colors.B_YELLOW, "Most recent snapshot of MagicMirror Modules taken:"),
+        colored_text(colors.B_WHITE, f'{curr_snap_date}')
+    )
+
+    print(
+        colored_text(colors.B_YELLOW, "The next snapshot will be taken on or after:"),
+        colored_text(colors.B_WHITE, f"{next_snap_date}\n")
+    )
+
+    print(
+        colored_text(colors.B_GREEN, "Module Categories:"),
+        colored_text(colors.B_WHITE, f"{num_categories}")
+    )
+
+    print(
+        colored_text(colors.B_GREEN, "Modules Available:"),
+        colored_text(colors.B_WHITE, f"{num_modules}\n")
+    )
 
 
 
@@ -94,9 +110,9 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
                 print(f'Available version: {version_number}\n')
 
                 response = "yes" if assume_yes else input(
-                    colors.B_GREEN + "A newer version of MMPM is available\n\n" +
-                    colors.RESET + "Would you like to upgrade now?" + colors.B_WHITE + " [yes/y | no/n]: " +
-                    colors.RESET
+                    colored_text(colors.B_GREEN, "A newer version of MMPM is available\n\n"),
+                    colored_text(colors.RESET, "Would you like to upgrade now?"),
+                    colored_text(colors.B_WHITE, " [yes/y | no/n]: ")
                 )
 
                 if response in ("yes", "y"):
@@ -106,7 +122,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
                     message = "Upgrading MMPM"
 
                     utils.separator(message)
-                    print(colors.B_CYAN + message + colors.RESET)
+                    print(colored_text(colors.B_CYAN, message))
                     utils.separator(message)
 
                     log.logger.info(f'User chose to update MMPM with {original_dir} as the starting directory')
@@ -224,9 +240,9 @@ def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, 
 
     if update:
         if not updates_list:
-            utils.plain_print(colors.RESET + "\nNo updates available.\n")
+            utils.plain_print(colored_text(colors.RESET, "\nNo updates available.\n"))
         else:
-            utils.plain_print(colors.B_MAGENTA + "Updates are available for the following modules:\n" + colors.RESET)
+            utils.plain_print(colored_text(colors.B_MAGENTA, "Updates are available for the following modules:\n"))
             for module in updates_list:
                 print(f"{module}")
     return True
@@ -326,7 +342,12 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
                     message = f"Installing {title} @ {target}"
                     utils.separator(message)
 
-                    print(colors.RESET + "Installing " + colors.B_CYAN + f"{title}" + colors.B_YELLOW + " @ " + colors.RESET + f"{target}")
+                    print(
+                        colored_text(colors.RESET, "Installing"),
+                        colored_text(colors.B_CYAN, f"{title}"),
+                        colored_text(colors.B_YELLOW, "@"),
+                        colored_text(colors.RESET, f"{target}")
+                    )
 
                     utils.separator(message)
                     error_code, _, stderr = utils.clone(title, repo, target)
@@ -364,7 +385,12 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
             utils.warning_msg(f"Unable to match '{module}' with installation candidate. Is the casing correct?")
 
     if successful_installs:
-        print(colors.B_WHITE + f"\nThe installed modules may need additional configuring within '{consts.MAGICMIRROR_CONFIG_FILE}'" + colors.RESET)
+        print(
+            colored_text(
+                colors.B_WHITE,
+                f"\nThe installed modules may need additional configuring within '{consts.MAGICMIRROR_CONFIG_FILE}'"
+            )
+        )
         return True
 
     return False
@@ -389,12 +415,15 @@ def install_magicmirror(gui=False) -> bool:
 
     try:
         if not os.path.exists(consts.MAGICMIRROR_ROOT):
-            print(colors.B_CYAN + "MagicMirror directory not found. " + colors.RESET + "Installing MagicMirror..." + colors.RESET)
+            print(
+                colored_text(colors.B_CYAN, "MagicMirror directory not found."),
+                "Installing MagicMirror..."
+            )
             os.system('bash -c "$(curl -sL https://raw.githubusercontent.com/sdetweil/MagicMirror_scripts/master/raspberry.sh)"')
 
         else:
             if not gui:
-                message = colors.B_CYAN + "MagicMirror directory found. " + colors.RESET + "Would you like to check for updates? [yes/no | y/n]: "
+                message = colored_text(colors.B_CYAN, "MagicMirror directory found.") + " Would you like to check for updates? [yes/no | y/n]: "
 
             valid_response = False
 
@@ -402,13 +431,13 @@ def install_magicmirror(gui=False) -> bool:
                 response: str = 'yes' if gui else input(message)
 
                 if response in ("no", "n"):
-                    print(colors.B_MAGENTA + "Aborting MagicMirror update")
+                    print(colored_text(colors.B_MAGENTA, "Aborting MagicMirror update"))
                     break
 
                 if response in ("yes", "y"):
                     os.chdir(consts.MAGICMIRROR_ROOT)
 
-                    print(colors.B_CYAN + "Checking for updates..." + colors.RESET)
+                    print(colored_text(colors.B_CYAN, "Checking for updates..."))
                     return_code, stdout, stderr = utils.run_cmd(['git', 'fetch', '--dry-run'])
 
                     if return_code:
@@ -419,7 +448,7 @@ def install_magicmirror(gui=False) -> bool:
                         print("No updates available for MagicMirror.")
                         break
 
-                    print(colors.B_CYAN + "Updates found for MagicMirror. " + colors.RESET + "Requesting upgrades...")
+                    print(colored_text(colors.B_CYAN, "Updates found for MagicMirror."), "Requesting upgrades...")
                     error_code, _, stderr = utils.run_cmd(['git', 'pull'])
 
                     if error_code:
@@ -487,10 +516,10 @@ def remove_modules(modules: dict, modules_to_remove: List[str]) -> bool:
             utils.warning_msg(f"The directory for '{module}' does not exist.")
 
     if successful_removals:
-        print(colors.B_GREEN + "The following modules were successfully deleted:" + colors.N)
+        print(colored_text(colors.B_GREEN, "The following modules were successfully deleted:"))
 
         for removal in successful_removals:
-            print(colors.RESET + f"{removal}")
+            print(colored_text(colors.RESET, f"{removal}"))
     else:
         utils.error_msg("Unable to remove modules.")
         return False
@@ -667,16 +696,17 @@ def display_modules(modules: dict, list_categories: bool = False) -> None:
         table[0][1] = to_bytes('Modules')
 
         for key in modules.keys():
-            table[global_row][0] = to_bytes(key)
-            table[global_row][1] = to_bytes(str(len(modules[key])))
+            print(f'{key} ({len(modules[key])})\n')
+            #table[global_row][0] = to_bytes(key)
+            #table[global_row][1] = to_bytes(str(len(modules[key])))
 
             global_row += 1
 
-        utils.display_table(table, rows, columns)
+        #utils.display_table(table, rows, columns)
         return
 
-    MAX_LENGTH: int = 50
-    columns: int = 4
+    MAX_LENGTH: int = 80
+    columns: int = 3
     rows: int = 1 # to include the header row
 
     for row in modules.values():
@@ -686,21 +716,24 @@ def display_modules(modules: dict, list_categories: bool = False) -> None:
 
     table[0][0] = to_bytes(consts.CATEGORY)
     table[0][1] = to_bytes(consts.TITLE)
-    table[0][2] = to_bytes(consts.REPOSITORY)
-    table[0][3] = to_bytes(consts.AUTHOR)
-    #table[0][4] = to_bytes(consts.DESCRIPTION)
+    #table[0][2] = to_bytes(consts.REPOSITORY)
+    #table[0][3] = to_bytes(consts.AUTHOR)
+    table[0][2] = to_bytes(consts.DESCRIPTION)
 
     for category, _modules in modules.items():
         for index, module in enumerate(_modules):
             description = module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION]
             table[global_row][0] = to_bytes(category)
             table[global_row][1] = to_bytes(module[consts.TITLE])
-            table[global_row][2] = to_bytes(module[consts.REPOSITORY])
-            table[global_row][3] = to_bytes(module[consts.AUTHOR])
-            #table[global_row][4] = to_bytes(description)
+            #table[global_row][2] = to_bytes(module[consts.REPOSITORY])
+            #table[global_row][3] = to_bytes(module[consts.AUTHOR])
+            table[global_row][2] = to_bytes(description)
+            print(colored_text(colors.B_GREEN, f'{module[consts.TITLE]}'))
+            print(f'\t{description}')
+            print(f'\tCategory: {category}')
             global_row += 1
 
-    utils.display_table(table, rows, columns)
+    #utils.display_table(table, rows, columns)
 
 
 def get_installed_modules(modules: dict) -> dict:
@@ -757,7 +790,7 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
         (bool): Upon success, a True result is returned
     '''
 
-    print(colors.B_GREEN + "Register external module source\n" + colors.RESET)
+    print(colored_text(colors.B_GREEN, "Register external module source\n"))
 
     try:
         if not title:
@@ -811,7 +844,7 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 json.dump({consts.EXTERNAL_MODULE_SOURCES: [new_source]}, mmpm_ext_srcs)
 
-        print(colors.B_WHITE + f"\nSuccessfully added {title} to '{consts.EXTERNAL_MODULE_SOURCES}'\n" + colors.RESET)
+        print(colored_text(colors.B_WHITE, f"\nSuccessfully added {title} to '{consts.EXTERNAL_MODULE_SOURCES}'\n"))
     except IOError:
         utils.error_msg('Failed to save external module')
         return False
@@ -852,7 +885,7 @@ def remove_external_module_source(titles: str = None) -> bool:
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 json.dump(config, mmpm_ext_srcs)
 
-            print(colors.B_GREEN + f"Successfully removed {', '.join(successful_removals)} from '{consts.EXTERNAL_MODULE_SOURCES}'" + colors.RESET)
+            print(colored_text(colors.B_GREEN, f"Successfully removed {', '.join(successful_removals)} from '{consts.EXTERNAL_MODULE_SOURCES}'"))
     except IOError:
         utils.error_msg('Failed to remove external module')
         return False
@@ -909,12 +942,12 @@ def get_active_modules() -> None:
     utils.run_cmd(['rm', '-f', dummy_config], progress=False)
 
     headers = [
-        colors.B_CYAN + 'Module' + colors.RESET,
-        colors.B_CYAN + 'Status' + colors.RESET
+        colored_text(colors.B_CYAN, 'Module'),
+        colored_text(colors.B_CYAN, 'Status')
     ]
 
-    ENABLED = colors.B_GREEN + 'Enabled' + colors.RESET
-    DISABLED = colors.B_RED + 'Disabled' + colors.RESET
+    ENABLED = colored_text(colors.B_GREEN, 'Enabled')
+    DISABLED = colored_text(colors.B_RED, 'Disabled')
 
     rows: list = []
 
@@ -1068,4 +1101,3 @@ def display_log_files(mmpm_logs: bool = False, gunicorn_logs: bool = False, tail
 
     if logs:
         os.system(f"{'tail -F' if tail else 'cat'} {' '.join(logs)}")
-

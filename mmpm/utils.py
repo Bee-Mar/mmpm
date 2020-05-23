@@ -62,7 +62,7 @@ def error_msg(msg: str) -> None:
     Parameters:
         msg (str): The error message to be printed to stdout
     '''
-    print(colors.B_RED + "ERROR: " + colors.RESET + msg)
+    print(colored_text(colors.B_RED, "ERROR:"), msg)
 
 
 def warning_msg(msg: str) -> None:
@@ -75,7 +75,7 @@ def warning_msg(msg: str) -> None:
     Returns:
         None
     '''
-    print(colors.B_YELLOW + "WARNING: " + colors.RESET + msg)
+    print(colored_text(colors.B_YELLOW, "WARNING:"), msg)
 
 
 def separator(message) -> None:
@@ -88,7 +88,7 @@ def separator(message) -> None:
     Returns:
         None
     '''
-    print(colors.RESET + "-" * len(message), flush=True)
+    print(colored_text(colors.RESET, "-" * len(message)), flush=True)
 
 
 def assert_snapshot_directory() -> bool:
@@ -208,7 +208,7 @@ def open_default_editor(file_path: str) -> Optional[None]:
     log.logger.info(f'Attempting to open {file_path} in users default editor')
 
     if not file_path:
-        error_msg(f'MagicMirror config file not found. Please ensure {MMPM_ENV_VAR} is set properly.')
+        error_msg(f'MagicMirror config file not found. Please ensure {consts.MMPM_ENV_VAR} is set properly.')
         sys.exit(1)
 
     editor = os.getenv('EDITOR') if os.getenv('EDITOR') else 'nano'
@@ -229,7 +229,7 @@ def done() -> str:
         message (str): The string 'done' in bright green
 
     '''
-    return colors.B_GREEN + "done" + colors.RESET
+    return colored_text(colors.B_GREEN, "done")
 
 
 def green_plus() -> str:
@@ -483,7 +483,7 @@ def kill_magicmirror_processes() -> None:
 
     processes = ['node', 'npm', 'electron']
 
-    log.logger('Killing processes associated with MagicMirror: {processes}')
+    log.logger.info('Killing processes associated with MagicMirror: {processes}')
 
     for process in processes:
         kill_pids_of_process(process)
@@ -491,8 +491,7 @@ def kill_magicmirror_processes() -> None:
 
 def display_table(table: POINTER(POINTER(c_char_p)), rows: int, columns: int) -> None:
     '''
-    Calls the shared lib of libfort + mmpm.c to print the contents of a
-    provided matrix
+    Calls the shared mmpm library to print the contents of a provided matrix
 
     Parameters:
         data: List[bytes]
@@ -525,4 +524,29 @@ def fill_table_row(table: any, row: int, column: int, value: any) -> None:
 
 
 def to_bytes(string: str) -> bytes:
+    '''
+    Wrapper method to convert a string to UTF-8 encoded bytes
+
+    Parameters:
+        string (str): The text that will be UTF-8 encoded
+
+    Returns:
+        message (str): The UTF-8 encoded string
+
+    '''
     return bytes(string, 'utf-8')
+
+
+def colored_text(color: str, message: str) -> str:
+    '''
+    Returns the `color` concatenated with the `message` string
+
+    Parameters:
+        message (str): The text that will be displayed in the `color`
+        color (str): The colorama color
+
+    Returns:
+        message (str): The original text concatenated with the colorama color
+    '''
+    return (color + message + colors.RESET)
+

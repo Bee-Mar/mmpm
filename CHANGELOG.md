@@ -198,4 +198,5 @@
 
 - Enhancment (#26). Added command line option to display the MMPM web interface URL
 - Enhancment (#27). Added command line option to display the currently enabled modules
-
+- Bug fix (#29). Corrected `log.info` to `log.logger.info` in utils.py within the
+  `kill_magicmirror_processes` function

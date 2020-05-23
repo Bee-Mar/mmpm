@@ -22,6 +22,7 @@ CMAKELISTS: str = 'CMakeLists.txt'
 PACKAGE_JSON: str = 'package.json'
 GEMFILE: str = 'Gemfile'
 
+BOOT_CONFIG_FILE: str = '/boot/config.txt'
 HOME_DIR: str = os.path.expanduser("~")
 TITLE: str = 'Title'
 REPOSITORY: str = 'Repository'
@@ -158,6 +159,33 @@ def should_refresh_modules(current_snapshot: float, next_snapshot: float) -> boo
         return True
     return not os.path.exists(SNAPSHOT_FILE) or next_snapshot - time.time() <= 0.0
 
+def rotate_display() -> None:
+    '''
+    Rotates the display of the RaspberryPi. Restart required for changes to take
+    effect
+
+    Paramets:
+        None
+
+    Returns:
+        None
+    '''
+    if not os.path.exists(f'{BOOT_CONFIG_FILE}.save'):
+        with open(BOOT_CONFIG_FILE, 'r') as fp:
+            bootConfigFile = fp.read()
+            fp.close()
+        with open(f'{BOOT_CONFIG_FILE}.save', 'w') as fp:
+            fp.write(bootConfigFile)
+            fp.close()
+
+    with open(f'{BOOT_CONFIG_FILE}.save', 'r') as fp:
+        bootConfigTemplate = fp.read()
+        fp.close()
+
+    with open('/boot/config.txt', 'w') as fp:
+        displayRotation = str(os.environ['DISPLAY_ROTATION'])
+        fp.write(bootConfigTemplate + f"display_rotate={displayRotation}\n")
+        fp.close()
 
 def run_cmd(command: List[str], progress=True) -> Tuple[int, str, str]:
     '''

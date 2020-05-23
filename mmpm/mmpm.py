@@ -9,14 +9,14 @@ __version__ = 1.15
 def main(argv):
     ''' Main entry point for CLI '''
 
-    args: object = opts.get_user_args()
+    args, additional_args = opts.get_user_args()
 
     if args.version:
         print(f'{__version__}')
         sys.exit(0)
 
     current_snapshot, next_snapshot = utils.calc_snapshot_timestamps()
-    should_refresh = True if args.subcommand == opts.SNAPSHOT and args.refresh else utils.should_refresh_modules(current_snapshot, next_snapshot)
+    should_refresh = True if args.subcommand == opts.DATABASE and args.refresh else utils.should_refresh_modules(current_snapshot, next_snapshot)
 
     modules = core.load_modules(force_refresh=should_refresh)
 
@@ -24,7 +24,7 @@ def main(argv):
         utils.error_msg('Fatal. Unable to retrieve modules.')
         sys.exit(1)
 
-    if args.subcommand == opts.SHOW:
+    if args.subcommand == opts.LIST:
         if args.installed:
             installed_modules = core.get_installed_modules(modules)
 
@@ -41,23 +41,25 @@ def main(argv):
         elif args.gui_url:
             print(f'The MMPM web interface is live at: {core.get_web_interface_url()}')
 
-    elif args.subcommand == opts.MODULE:
-        if args.install:
-            core.install_modules(modules, [utils.sanitize_name(module) for module in args.install])
-        elif args.remove:
-            core.remove_modules(modules, [utils.sanitize_name(module) for module in args.remove])
-        elif args.search:
-            core.display_modules(core.search_modules(modules, args.search[0]))
-        elif args.update:
-            core.enhance_modules(modules, update=True)
-        elif args.upgrade:
-            core.enhance_modules(modules, upgrade=True, modules_to_upgrade=args.upgrade[0])
+    #elif args.subcommand == opts.MODULE:
+    #    if args.install:
+    #        core.install_modules(modules, [utils.sanitize_name(module) for module in args.install])
+    #    elif args.remove:
+    #        core.remove_modules(modules, [utils.sanitize_name(module) for module in args.remove])
+    #    elif args.search:
+    #        core.display_modules(core.search_modules(modules, args.search[0]))
+    #    elif args.update:
+    #        core.enhance_modules(modules, update=True)
+    #    elif args.upgrade:
+    #        core.enhance_modules(modules, upgrade=True, modules_to_upgrade=args.upgrade[0])
 
     elif args.subcommand == opts.OPEN:
         if args.config:
             core.open_magicmirror_config()
         elif args.gui:
             core.open_mmpm_gui()
+        else:
+            utils.error_msg('No options provided. See `mmpm open --help`')
 
     elif args.subcommand == opts.ADD_EXT_MODULE:
         if args.remove:
@@ -65,7 +67,33 @@ def main(argv):
         else:
             core.add_external_module(args.title, args.author, args.repo, args.description)
 
-    elif args.subcommand == opts.MAGICMIRROR:
+    elif args.subcommand == opts.UPDATE:
+        if args.full:
+            pass
+        elif args.mmpm:
+            pass
+        elif args.magicmirror:
+            pass
+
+    elif args.subcommand == opts.INSTALL:
+        core.install_modules(modules, [utils.sanitize_name(module) for module in additional_args])
+
+    elif args.subcommand == opts.REMOVE:
+        if not additional_args:
+            utils.error_msg('No module names provided')
+        else:
+            core.remove_modules(modules, [utils.sanitize_name(module) for module in additional_args])
+
+    elif args.subcommand == opts.SEARCH:
+        core.display_modules(core.search_modules(modules, additional_args[0]), table_formatted=args.table_formatted)
+
+    elif args.subcommand == opts.UPGRADE:
+        if args.upgrade_full:
+            pass
+        if args.upgrade_modules:
+            pass
+
+    elif args.subcommand == opts.MM_CTL:
         if args.install:
             core.install_magicmirror(args.GUI)
         elif args.update:
@@ -81,21 +109,24 @@ def main(argv):
         elif args.restart:
             core.restart_magicmirror()
 
-    elif args.subcommand == opts.SNAPSHOT:
+    elif args.subcommand == opts.DATABASE:
         if args.details:
             core.snapshot_details(modules)
 
     elif args.subcommand == opts.LOGS:
-        core.display_log_files(args.mmpm_logs, args.gunicorn_logs, args.tail)
+        if not args.mmpm_logs and not args.gunicorn_logs and not args.gunicorn_logs:
+            core.display_log_files(True, True, False)
+        else:
+            core.display_log_files(args.mmpm_logs, args.gunicorn_logs, args.tail)
 
-    elif args.mmpm_update or args.snapshot_refresh or should_refresh:
-        if args.force_refresh or should_refresh:
+    elif args.subcommand and opts.UPDATE and args.mmpm or should_refresh:
+        if should_refresh:
             message = " Automated check for MMPM updates as part of snapshot refresh ... "
         else:
             message = " Checking for MMPM updates ... "
 
         utils.plain_print(utils.green_plus() + message)
-        core.check_for_mmpm_enhancements(assume_yes=args.yes, gui=args.GUI)
+        core.check_for_mmpm_enhancements(assume_yes=args.assume_yes, gui=args.GUI)
 
 
 if __name__ == "__main__":

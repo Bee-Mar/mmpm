@@ -81,7 +81,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     '''
 
     try:
-        log.logger.info(f'Checking for MMPM enhancements. Current version: {mmpm.__version__}')
+        log.logger.info(f'Checking for newer version of MMPM. Current version: {mmpm.__version__}')
 
         MMPM_FILE = urlopen(consts.MMPM_FILE_URL)
         contents: str = str(MMPM_FILE.read())
@@ -97,7 +97,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
             if gui:
                 print(f'Currently installed version: {mmpm.__version__}')
                 print(f'Available version: {version_number}\n')
-                message = f"A newer version of MMPM is available ({version_number}). Please upgrade via terminal using 'mmpm -e'"
+                message = f"A newer version of MMPM is available ({version_number}). Please upgrade via terminal using 'mmpm -U'"
                 utils.separator(message)
                 print(message)
                 utils.separator(message)
@@ -150,8 +150,8 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
                     utils.warning_msg("Respond with yes/no or y/n.")
         else:
             print(utils.done())
-            print("\nNo enhancements available for MMPM. You have the latest version.")
-            log.logger.info('No newer version of MMPM available')
+            print("\nNo upgrade available for MMPM. You have the latest version.")
+            log.logger.info('No newer version of MMPM found > {version_number} available. The current version is the latest')
             return False
         return True
     except HTTPError:

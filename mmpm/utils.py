@@ -147,7 +147,7 @@ def run_cmd(command: List[str], progress=True) -> Tuple[int, str, str]:
         Tuple[returncode (int), stdout (str), stderr (str)]
     '''
 
-    log.logger.info(f'Executing process {" ".join(command)}')
+    log.logger.info(f'Executing process `{" ".join(command)}`')
 
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 

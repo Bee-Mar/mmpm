@@ -6,7 +6,7 @@ import logging
 import logging.handlers
 import time
 from os.path import join
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, IO
 from re import sub
 from mmpm import colors, consts
 from shutil import which
@@ -549,4 +549,24 @@ def colored_text(color: str, message: str) -> str:
         message (str): The original text concatenated with the colorama color
     '''
     return (color + message + colors.RESET)
+
+
+def prompt_user(user_prompt: str, valid_yes: List[str], valid_no: List[str]) -> bool:
+    response = None
+
+    try:
+        while response not in (valid_yes, valid_no):
+            response = input(f"{user_prompt} [{'/'.join(valid_yes)}] or [{'/'.join(valid_no)}]: ")
+
+            if response in valid_yes:
+                return True
+            elif response in valid_no:
+                return False
+
+            else:
+                warning_msg(f"Respond with [{'/'.join(valid_yes)}] or [{'/'.join(valid_no)}]")
+    except KeyboardInterrupt:
+        return False
+
+    return False
 

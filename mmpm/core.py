@@ -158,8 +158,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
         return False
 
 
-
-def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, modules_to_upgrade: List[str] = None) -> bool:
+def upgrade_modules(modules: dict, modules_to_upgrade: List[str], assume_yes: bool = False):
     '''
     Depending on flags passed in as arguments:
 
@@ -190,9 +189,8 @@ def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, 
 
     dirs: List[str] = os.listdir(modules_dir)
 
-    if upgrade and modules_to_upgrade:
+    if modules_to_upgrade:
         dirs = modules_to_upgrade
-
 
     for _, value in installed_modules.items():
         for index, _ in enumerate(value):
@@ -201,51 +199,116 @@ def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, 
                 curr_module_dir: str = os.path.join(modules_dir, title)
                 os.chdir(curr_module_dir)
 
-                if update:
-                    utils.plain_print(f"Checking {title} for updates")
-                    error_code, stdout, stderr = utils.run_cmd(["git", "fetch", "--dry-run"])
+                utils.plain_print(f"Requesting upgrade for {title}")
+                error_code, stdout, stderr = utils.run_cmd(["git", "pull"])
 
-                    if error_code:
-                        utils.error_msg(stderr)
-                        return False
+                if error_code:
+                    utils.error_msg(stderr)
+                    return False
 
-                    if stdout:
-                        updates_list.append(title)
+                print(utils.done())
 
-                    print(utils.done())
+                if "Already up to date." in stdout:
+                    print(stdout)
+                    continue
 
-                elif upgrade:
-                    utils.plain_print(f"Requesting upgrade for {title}")
-                    error_code, stdout, stderr = utils.run_cmd(["git", "pull"])
+                error_msg: str = utils.handle_installation_process()
 
-                    if error_code:
-                        utils.error_msg(stderr)
-                        return False
+                if error_msg:
+                    utils.error_msg(error_msg)
+                    return False
 
-                    print(utils.done())
+            os.chdir(modules_dir)
 
-                    if "Already up to date." in stdout:
-                        print(stdout)
-                        continue
+    os.chdir(original_dir)
 
-                    error_msg: str = utils.handle_installation_process()
+    #yes = utils.prompt_user('Are you sure you want to upgrade?', ['yes', 'y'], ['no', 'n'])
 
-                    if error_msg:
-                        utils.error_msg(error_msg)
-                        return False
+    return True
+
+
+def check_for_module_updates(modules: dict):
+    '''
+    Depending on flags passed in as arguments:
+
+    Checks for available module updates, and alerts the user. Or, pulls latest
+    version of module(s) from the associated repos.
+
+    If upgrading, a user can upgrade all modules that have available upgrades
+    by ommitting additional arguments. Or, upgrade specific modules by
+    supplying their case-sensitive name(s) as an addtional argument.
+
+    Parameters:
+        modules (dict): Dictionary of MagicMirror modules
+        update (bool): Flag to update modules
+        upgrade (bool): Flag to upgrade modules
+        modules_to_upgrade (List[str]): List of modules to update/upgrade
+
+    Returns:
+        None
+    '''
+
+    original_dir: str = os.getcwd()
+    modules_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
+    os.chdir(modules_dir)
+
+    installed_modules: dict = get_installed_modules(modules)
+
+    updates_list: List[str] = []
+
+    dirs: List[str] = os.listdir(modules_dir)
+
+    for _, value in installed_modules.items():
+        for index, _ in enumerate(value):
+            if value[index][consts.TITLE] in dirs:
+                title: str = value[index][consts.TITLE]
+                curr_module_dir: str = os.path.join(modules_dir, title)
+                os.chdir(curr_module_dir)
+
+                utils.plain_print(f"Checking {title} for updates")
+                error_code, stdout, stderr = utils.run_cmd(["git", "fetch", "--dry-run"])
+
+                if error_code:
+                    utils.error_msg(stderr)
+                    return False
+
+                if stdout:
+                    updates_list.append(title)
+
+                print(utils.done())
 
                 os.chdir(modules_dir)
 
     os.chdir(original_dir)
 
-    if update:
-        if not updates_list:
-            utils.plain_print(colored_text(colors.RESET, "\nNo updates available.\n"))
-        else:
-            utils.plain_print(colored_text(colors.B_MAGENTA, "Updates are available for the following modules:\n"))
-            for module in updates_list:
-                print(f"{module}")
+    if not updates_list:
+        utils.plain_print(colored_text(colors.RESET, "\nNo updates available.\n"))
+    else:
+        utils.plain_print(colored_text(colors.B_MAGENTA, "Updates are available for the following modules:\n"))
+
+        modules_with_updates = {'Modules': updates_list}
+
+        for module in updates_list:
+            print(f"{module}")
+
+        read_mode = bool(os.stat(consts.MMPM_AVAILABLE_UPDATES_FILE).st_size)
+
+        if not os.path.exists(consts.MMPM_AVAILABLE_UPDATES_FILE):
+            return_code, stdout, stderr = utils.run_cmd(['touch', consts.MMPM_MODULE_UPDATES_FILE])
+
+            if return_code:
+                utils.error_msg(stderr)
+                sys.exit(1)
+
+        # naming schem is not great here, but just leaving for the moment
+        with open(consts.MMPM_AVAILABLE_UPDATES_FILE, 'r' if read_mode else 'w') as updates:
+            if read_mode:
+                data = json.load(updates)
+            else:
+                json.dump(updates_list, updates)
+
     return True
+
 
 def search_modules(modules: dict, query: str) -> dict:
     '''
@@ -394,6 +457,32 @@ def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
         return True
 
     return False
+
+
+def check_for_magicmirror_updates() -> bool:
+    if not os.path.exists(consts.MAGICMIRROR_ROOT):
+        utils.error_msg('MagicMirror directory not found in {const.MAGICMIRROR_ROOT}. If the MagicMirror root directory is elswhere, set the MMPM_MAGICMIRROR_ROOT env var to that location.')
+        return False
+
+    os.chdir(consts.MAGICMIRROR_ROOT)
+    utils.plain_print('Checking for MagicMirror updates')
+    return_code, stdout, stderr = utils.run_cmd(['git', 'fetch', '--dry-run'])
+
+    if return_code:
+        utils.error_msg(stderr)
+        return False
+
+    print(utils.done())
+
+    if stdout:
+        print(
+            colored_text(colors.B_CYAN, 'An update is available for MagicMirror'),
+            'Execute `mmpm upgrade --magicmirror` to perform the upgrade'
+        )
+
+    else:
+        print('No updates found for MagicMirror')
+
 
 
 def install_magicmirror(gui=False) -> bool:

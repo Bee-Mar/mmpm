@@ -41,18 +41,6 @@ def main(argv):
         elif args.gui_url:
             print(f'The MMPM web interface is live at: {core.get_web_interface_url()}')
 
-    #elif args.subcommand == opts.MODULE:
-    #    if args.install:
-    #        core.install_modules(modules, [utils.sanitize_name(module) for module in args.install])
-    #    elif args.remove:
-    #        core.remove_modules(modules, [utils.sanitize_name(module) for module in args.remove])
-    #    elif args.search:
-    #        core.display_modules(core.search_modules(modules, args.search[0]))
-    #    elif args.update:
-    #        core.enhance_modules(modules, update=True)
-    #    elif args.upgrade:
-    #        core.enhance_modules(modules, upgrade=True, modules_to_upgrade=args.upgrade[0])
-
     elif args.subcommand == opts.OPEN:
         if args.config:
             core.open_magicmirror_config()
@@ -73,7 +61,19 @@ def main(argv):
         elif args.mmpm:
             pass
         elif args.magicmirror:
+            core.check_for_magicmirror_updates()
+        else:
+            core.check_for_module_updates(modules)
+
+    elif args.subcommand == opts.UPGRADE:
+        if args.upgrade_all:
             pass
+        else:
+            core.upgrade_modules(
+                modules,
+                modules_to_upgrade=additional_args[0] if additional_args else [],
+                assume_yes=args.assume_yes
+            )
 
     elif args.subcommand == opts.INSTALL:
         core.install_modules(modules, [utils.sanitize_name(module) for module in additional_args])

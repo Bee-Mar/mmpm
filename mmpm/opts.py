@@ -17,6 +17,7 @@ ADD_EXT_MODULE = 'add-ext-module'
 LOGS = 'logs'
 UPDATE = 'update'
 UPGRADE = 'upgrade'
+ENV = 'env'
 
 
 def get_user_args() -> object:
@@ -378,6 +379,13 @@ def get_user_args() -> object:
         action='store_true',
         help='install the most recent version of MagicMirror',
         dest='install'
+    )
+
+    # ENV SUBCOMMANDS
+    env_parser = subparsers.add_parser(
+        ENV,
+        usage='\n  mmpm env',
+        help='display the MMPM environment variables and their value(s)'
     )
 
     # MMPM AND GLOBAL OPTIONS

@@ -15,7 +15,12 @@ PACKAGE_JSON: str = 'package.json'
 GEMFILE: str = 'Gemfile'
 NOT_AVAILABLE = 'N/A'
 
-MMPM_ENV_VAR: str = 'MMPM_MAGICMIRROR_ROOT'
+MMPM_MAGICMIRROR_ROOT: str = 'MMPM_MAGICMIRROR_ROOT'
+
+MMPM_ENV_VARS: dict = {
+        MMPM_MAGICMIRROR_ROOT: environ[MMPM_MAGICMIRROR_ROOT] if MMPM_MAGICMIRROR_ROOT in environ else join(HOME_DIR, 'MagicMirror')
+}
+
 MMPM_REPO_URL: str = "https://github.com/Bee-Mar/mmpm.git"
 MMPM_FILE_URL: str = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
 MMPM_WIKI_URL: str = 'https://github.com/Bee-Mar/mmpm/wiki'
@@ -31,6 +36,6 @@ GUNICORN_LOG_ACCESS_LOG_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-gunicorn-access.
 GUNICORN_LOG_ERROR_LOG_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-gunicorn-error.log')
 
 MAGICMIRROR_MODULES_URL: str = "https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules"
-MAGICMIRROR_ROOT: str = environ[MMPM_ENV_VAR] if MMPM_ENV_VAR in environ else join(HOME_DIR, 'MagicMirror')
+MAGICMIRROR_ROOT: str = MMPM_ENV_VARS[MMPM_MAGICMIRROR_ROOT]
 MAGICMIRROR_CONFIG_FILE: str = join(MAGICMIRROR_ROOT, 'config', 'config.js')
 

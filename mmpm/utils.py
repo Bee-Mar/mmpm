@@ -208,7 +208,7 @@ def open_default_editor(file_path: str) -> Optional[None]:
     log.logger.info(f'Attempting to open {file_path} in users default editor')
 
     if not file_path:
-        error_msg(f'MagicMirror config file not found. Please ensure {consts.MMPM_ENV_VAR} is set properly.')
+        error_msg(f'MagicMirror config file not found. Please ensure {consts.MMPM_ENV_VARS[consts.MMPM_MAGICMIRROR_ROOT]} is set properly.')
         sys.exit(1)
 
     editor = os.getenv('EDITOR') if os.getenv('EDITOR') else 'nano'

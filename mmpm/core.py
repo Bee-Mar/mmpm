@@ -354,7 +354,7 @@ def search_modules(modules: dict, query: str, case_sensitive: bool = False) -> d
     return search_results
 
 
-def install_modules(modules: dict, modules_to_install: List[str]) -> bool:
+def install_modules(modules: dict, modules_to_install: List[str], assume_yes: bool = False) -> bool:
     '''
     Compares list of 'modules_to_install' to modules found within the
     'modules', clones the repository within the ~/MagicMirror/modules
@@ -800,9 +800,8 @@ def display_modules(modules: dict, list_categories: bool = False, table_formatte
             utils.display_table(table, rows, columns)
         else:
             for key in modules.keys():
-                print(colored_text(colors.B_GREEN, key), f'\n\tModules: {len(modules[key])}\n')
+                print(colored_text(colors.N_GREEN, key), f'\n  Modules: {len(modules[key])}\n')
         return
-
 
     if table_formatted:
         MAX_LENGTH: int = 80
@@ -834,14 +833,13 @@ def display_modules(modules: dict, list_categories: bool = False, table_formatte
         utils.display_table(table, rows, columns)
 
     else:
-        MAX_LENGTH: int = 66
+        MAX_LENGTH: int = 90
 
         for category, _modules in modules.items():
             for index, module in enumerate(_modules):
-                description = module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION]
-                print(colored_text(colors.B_GREEN, f'{module[consts.TITLE]}'))
-                print(f'\t{description}')
-                print(f'\tCategory: {category}\n')
+                print(colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'))
+                print(f"  {module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION]}")
+                print(f'  Category: {category}\n')
 
 
 def get_installed_modules(modules: dict) -> dict:
@@ -1208,3 +1206,7 @@ def display_log_files(mmpm_logs: bool = False, gunicorn_logs: bool = False, tail
 
     if logs:
         os.system(f"{'tail -F' if tail else 'cat'} {' '.join(logs)}")
+
+def display_mmpm_env_vars() -> None:
+    for key, value in consts.MMPM_ENV_VARS.items():
+        print(f'{key}={value}')

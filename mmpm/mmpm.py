@@ -76,7 +76,11 @@ def main(argv):
             )
 
     elif args.subcommand == opts.INSTALL:
-        core.install_modules(modules, [utils.sanitize_name(module) for module in additional_args])
+        core.install_modules(
+            modules,
+            [utils.sanitize_name(module) for module in additional_args],
+            assume_yes=args.assume_yes
+        )
 
     elif args.subcommand == opts.REMOVE:
         if not additional_args:
@@ -122,7 +126,7 @@ def main(argv):
         else:
             core.display_log_files(args.mmpm_logs, args.gunicorn_logs, args.tail)
 
-    elif args.subcommand and opts.UPDATE and args.mmpm or should_refresh:
+    elif args.subcommand == opts.UPDATE and args.mmpm or should_refresh:
         if should_refresh:
             message = " Automated check for MMPM updates as part of snapshot refresh ... "
         else:
@@ -131,6 +135,11 @@ def main(argv):
         utils.plain_print(utils.green_plus() + message)
         core.check_for_mmpm_enhancements(assume_yes=args.assume_yes, gui=args.GUI)
 
+    elif args.subcommand == opts.ENV:
+        if additional_args:
+            utils.error_msg('`mmpm env` does not accept any additional arguments')
+        else:
+            core.display_mmpm_env_vars()
 
 if __name__ == "__main__":
     try:

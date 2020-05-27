@@ -85,7 +85,10 @@ def main(argv):
             core.remove_modules(modules, [utils.sanitize_name(module) for module in additional_args])
 
     elif args.subcommand == opts.SEARCH:
-        core.display_modules(core.search_modules(modules, additional_args[0]), table_formatted=args.table_formatted)
+        core.display_modules(
+            core.search_modules(modules, additional_args[0], case_sensitive=args.search_case_sensitive),
+            table_formatted=args.table_formatted
+        )
 
     elif args.subcommand == opts.UPGRADE:
         if args.upgrade_full:

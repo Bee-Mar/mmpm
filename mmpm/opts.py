@@ -32,6 +32,7 @@ def get_user_args() -> object:
 
     arg_parser = argparse.ArgumentParser(
         prog='mmpm',
+        usage='mmpm <subcommand> [option(s)]',
         epilog=f'More details at {MMPM_WIKI_URL}',
         description='''
             The MagicMirror Package Manager is a CLI designed to simplify the
@@ -41,13 +42,14 @@ def get_user_args() -> object:
 
     subparsers = arg_parser.add_subparsers(
         title='MMPM subcommands',
-        description='use `mmpm [name-of-sub-command] --help` to see more details',
+        description='use `mmpm <subcommand> --help` to see more details',
         dest='subcommand'
     )
 
     # SEARCH PARSER
     search_parser = subparsers.add_parser(
         SEARCH,
+        usage='\n  mmpm search <keyword> [--table] [--case-sensitive]',
         help='search for MagicMirror modules listed in the database'
     )
 
@@ -69,31 +71,52 @@ def get_user_args() -> object:
     # INSTALL PARSER
     install_parser = subparsers.add_parser(
         INSTALL,
+        usage='\n  mmpm install <module> [--yes]',
         help='install MagicMirror modules found in the database'
     )
 
+    install_parser.add_argument(
+        '-y',
+        '--yes',
+        action='store_true',
+        default=False,
+        help='assume yes for user response and do not show prompt',
+        dest='assume_yes'
+    )
+
     # REMOVE PARSER
-    install_parser = subparsers.add_parser(
+    remove_parser = subparsers.add_parser(
         REMOVE,
+        usage='\n  mmpm remove <module(s)> [--yes]',
         help='remove currently install modules'
+    )
+
+    remove_parser.add_argument(
+        '-y',
+        '--yes',
+        action='store_true',
+        default=False,
+        help='assume yes for user response and do not show prompt',
+        dest='assume_yes'
     )
 
     # UPDATE PARSER
     update_parser = subparsers.add_parser(
         UPDATE,
+        usage='\n  mmpm update <module(s)>\n  mmpm update [--mmpm] [--magicmirror] [--full]',
         help='check for updates to installed modules or MMPM'
     )
 
     update_parser.add_argument(
         '--mmpm',
         action='store_true',
-        help='check for updates to MMPM only'
+        help='only check for updates to MMPM'
     )
 
     update_parser.add_argument(
         '--magicmirror',
         action='store_true',
-        help='check for updates to MagicMirror only'
+        help='only check for updates to MagicMirror'
     )
 
     update_parser.add_argument(
@@ -104,6 +127,7 @@ def get_user_args() -> object:
 
     upgrade_parser = subparsers.add_parser(
         UPGRADE,
+        usage='\n  mmpm upgrade <module(s)> [--yes]\n  mmpm upgrade --all [--yes]',
         help='upgrade modules and/or MMPM'
     )
 
@@ -127,6 +151,7 @@ def get_user_args() -> object:
     # DATABASE SUBCOMMANDS
     database_parser = subparsers.add_parser(
         DATABASE,
+        usage='\n  mmpm db [--refresh] [--details]',
         help='subcommands to refresh or display basic details about the database'
     )
 
@@ -145,43 +170,44 @@ def get_user_args() -> object:
         dest='details'
     )
 
-    # LIST SUBCOMMANDS
-    show_parser = subparsers.add_parser(
+   # LIST SUBCOMMANDS
+    list_parser = subparsers.add_parser(
         LIST,
+        usage='\n  mmpm list [--installed] [--categories] [--all] [--gui-url] [--table]',
         help='subcommands to list items like installed modules, modules available, etc'
     )
 
-    show_parser.add_argument(
+    list_parser.add_argument(
         '-i',
         '--installed',
         action='store_true',
-        help='show all currently installed modules', dest='installed'
+        help='list all currently installed modules', dest='installed'
     )
 
-    show_parser.add_argument(
+    list_parser.add_argument(
         '-c',
         '--categories',
         action='store_true',
-        help='show all module categories',
+        help='list all module categories',
         dest='categories'
     )
 
-    show_parser.add_argument(
+    list_parser.add_argument(
         '-a',
         '--all',
         action='store_true',
-        help='show all modules available in the marketplace', dest='all'
+        help='list all modules available in the marketplace', dest='all'
     )
 
-    show_parser.add_argument(
+    list_parser.add_argument(
         '-g',
         '--gui-url',
         action='store_true',
-        help='show the URL of the MMPM GUI',
+        help='list the URL of the MMPM GUI',
         dest='gui_url'
     )
 
-    show_parser.add_argument(
+    list_parser.add_argument(
         '--table',
         action='store_true',
         help='display output in table format, where applicable',
@@ -191,6 +217,7 @@ def get_user_args() -> object:
     # OPEN SUBCOMMANDS
     open_parser = subparsers.add_parser(
         OPEN,
+        usage='\n  mmpm open [--config] [--gui]',
         help='subcommands to open MagicMirror config or MMPM GUI'
     )
 
@@ -213,6 +240,7 @@ def get_user_args() -> object:
     # ADD EXTERNAL MODULE SUBCOMMANDS
     add_ext_module_parser = subparsers.add_parser(
         ADD_EXT_MODULE,
+        usage='\n  mmpm add-ext-module [--title=<title>] [--author=<author>] [--repo=<repo>] [--description=<description>]\n  mmpm add-ext-module --remove <module>',
         help='manually add a module to the database not found in the 3rd Party Wiki'
     )
 
@@ -258,6 +286,7 @@ def get_user_args() -> object:
     # LOGS SUBCOMMANDS
     logs_parser = subparsers.add_parser(
         LOGS,
+        usage='\n  mmpm logs [--mmpm] [--gunicorn] [--tail]',
         help='display the MMPM and/or Gunicorn log files (displays all logs if no args are given)'
     )
 
@@ -287,6 +316,7 @@ def get_user_args() -> object:
     # MM_CTL SUBCOMMANDS
     mm_ctl_parser = subparsers.add_parser(
         MM_CTL,
+        usage='\n  mmpm mm-ctl [--status] [--restart] [--start] [--stop] [--update] [--upgrade] [--install]',
         help='subcommands to control MagicMirror'
     )
 
@@ -338,7 +368,8 @@ def get_user_args() -> object:
         '-u',
         '--update',
         action='store_true',
-        help='Checks if upgrades are available for MMPM', dest='update'
+        help='checks if upgrades are available for MMPM',
+        dest='update'
     )
 
     mm_ctl_parser.add_argument(

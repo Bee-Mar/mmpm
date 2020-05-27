@@ -310,7 +310,7 @@ def check_for_module_updates(modules: dict):
     return True
 
 
-def search_modules(modules: dict, query: str) -> dict:
+def search_modules(modules: dict, query: str, case_sensitive: bool = False) -> dict:
     '''
     Used to search the 'modules' for either a category, or keyword/phrase
     appearing within module descriptions. If the argument supplied is a
@@ -332,11 +332,16 @@ def search_modules(modules: dict, query: str) -> dict:
         return {query: modules[query]}
 
     search_results = defaultdict(list)
-    query = query.lower()
+
+    if case_sensitive:
+        not_a_match = lambda query, description, title, author : query not in description and query not in title and query not in author
+    else:
+        query = query.lower()
+        not_a_match = lambda query, description, title, author : query not in description.lower() and query not in title.lower() and query not in author.lower()
 
     for category, _modules in modules.items():
         for module in _modules:
-            if query not in module[consts.DESCRIPTION].lower() and query not in module[consts.TITLE].lower() and query not in module[consts.AUTHOR].lower():
+            if not_a_match(query, module[consts.DESCRIPTION], module[consts.TITLE], module[consts.AUTHOR]):
                 continue
 
             search_results[category].append({

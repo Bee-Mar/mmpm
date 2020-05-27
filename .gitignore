@@ -10,3 +10,4 @@ configs/*.service
 mmpm-gui.tar*.gz
 lib/*.o
 lib/libmmpm.so
+TODO.txt

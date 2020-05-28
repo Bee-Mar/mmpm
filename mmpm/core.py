@@ -6,7 +6,7 @@ import datetime
 import shutil
 import sys
 from socket import gethostname, gethostbyname
-from textwrap import fill
+from textwrap import fill, indent
 from tabulate import tabulate
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -310,7 +310,7 @@ def check_for_module_updates(modules: dict):
     return True
 
 
-def search_modules(modules: dict, query: str, case_sensitive: bool = False) -> dict:
+def search_modules(modules: dict, query: str, case_sensitive: bool = False, by_title_only: bool = False) -> dict:
     '''
     Used to search the 'modules' for either a category, or keyword/phrase
     appearing within module descriptions. If the argument supplied is a
@@ -335,6 +335,8 @@ def search_modules(modules: dict, query: str, case_sensitive: bool = False) -> d
 
     if case_sensitive:
         not_a_match = lambda query, description, title, author : query not in description and query not in title and query not in author
+    elif case_sensitive and by_title_only:
+        not_a_match = lambda query, description, title, author : query not in title
     else:
         query = query.lower()
         not_a_match = lambda query, description, title, author : query not in description.lower() and query not in title.lower() and query not in author.lower()
@@ -352,6 +354,19 @@ def search_modules(modules: dict, query: str, case_sensitive: bool = False) -> d
             })
 
     return search_results
+
+
+def show_module_details(modules: List[dict]) -> None:
+
+    MAX_LENGTH: int = 90
+
+    for category, _modules in modules.items():
+        for index, module in enumerate(_modules):
+            print(colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'))
+            print(f'  Category: {category}')
+            print(f'  Repository: {module[consts.REPOSITORY]}')
+            print(f'  Author: {module[consts.AUTHOR]}')
+            print(indent(fill(f'Description: {module[consts.DESCRIPTION]}\n', width=70), prefix='  '), '\n')
 
 
 def get_installation_candidates(modules: dict, modules_to_install: List[str]) -> list:
@@ -409,7 +424,7 @@ def install_module_helper(module: dict, target: str, modules_dir: str, assume_ye
     return True
 
 
-def install_modules(installation_candidates: dict, modules_to_install: List[str], assume_yes: bool = False) -> bool:
+def install_modules(installation_candidates: dict, assume_yes: bool = False) -> bool:
     '''
     Compares list of 'modules_to_install' to modules found within the
     'modules', clones the repository within the ~/MagicMirror/modules
@@ -436,7 +451,6 @@ def install_modules(installation_candidates: dict, modules_to_install: List[str]
         utils.error_msg('Unable to match query to installation candidates')
         return False
 
-    log.logger.info(f'User selected modules to install: {modules_to_install}')
 
     log.logger.info(f'Changing into MagicMirror modules directory {modules_dir}')
     os.chdir(modules_dir)
@@ -449,7 +463,11 @@ def install_modules(installation_candidates: dict, modules_to_install: List[str]
             prompt += f' \n{colored_text(colors.N_GREEN, candidate[consts.TITLE])} ({candidate[consts.REPOSITORY]})\nInstall?'
 
             if not utils.prompt_user(prompt):
+                log.logger.info(f'User not chose to install {candidate[consts.TITLE]}')
                 installation_candidates[index] = {}
+            else:
+                log.logger.info(f'User chose to install {candidate[consts.TITLE]}')
+
             print('')
 
     for module in installation_candidates:
@@ -643,7 +661,11 @@ def install_magicmirror(gui=False) -> bool:
     return True
 
 
-def remove_modules(modules: dict, modules_to_remove: List[str]) -> bool:
+def get_removal_candidates() -> list:
+    return []
+
+
+def remove_modules(modules: dict, modules_to_remove: List[str], assume_yes: bool = False) -> bool:
     '''
     Gathers list of modules currently installed in the ~/MagicMirror/modules
     directory, and removes each of the modules from the folder, if modules are
@@ -672,6 +694,8 @@ def remove_modules(modules: dict, modules_to_remove: List[str]) -> bool:
         msg += "You may also set the env variable 'MMPM_MAGICMIRROR_ROOT' to the MagicMirror root directory."
         utils.error_msg(msg)
         return False
+
+    removal_candidates = get_removal_candidates()
 
     os.chdir(modules_dir)
     successful_removals: List[str] = []
@@ -1123,7 +1147,7 @@ def open_magicmirror_config() -> bool:
         return False
 
 
-def get_active_modules() -> None:
+def get_active_modules(table_formatted: bool = False) -> None:
 
     '''
     Parses the MagicMirror config file for the modules listed, and reports
@@ -1139,38 +1163,50 @@ def get_active_modules() -> None:
     '''
 
     if not os.path.exists(consts.MAGICMIRROR_CONFIG_FILE):
-        utils.error_msg('MagicMirror config file not found')
+        utils.error_msg('MagicMirror config file not found. If this is a mistake, try setting the MMPM_MAGICMIRROR_ROOT env variable')
         sys.exit(1)
 
-    dummy_config: str = f'{consts.MAGICMIRROR_ROOT}/config/dummy_config.js'
-    shutil.copyfile(consts.MAGICMIRROR_CONFIG_FILE, dummy_config)
+    temp_config: str = f'{consts.MAGICMIRROR_ROOT}/config/temp_config.js'
+    shutil.copyfile(consts.MAGICMIRROR_CONFIG_FILE, temp_config)
 
-    with open(dummy_config, 'a') as dummy:
-        dummy.write('console.log(JSON.stringify(config))')
+    with open(temp_config, 'a') as temp:
+        temp.write('console.log(JSON.stringify(config))')
 
-    return_code, stdout, stderr = utils.run_cmd(['node', dummy_config], progress=False)
+    return_code, stdout, stderr = utils.run_cmd(['node', temp_config], progress=False)
     config: dict = json.loads(stdout.split('\n')[0])
 
     # using -f so any errors can be ignored
-    utils.run_cmd(['rm', '-f', dummy_config], progress=False)
+    utils.run_cmd(['rm', '-f', temp_config], progress=False)
 
-    headers = [
-        colored_text(colors.B_CYAN, 'Module'),
-        colored_text(colors.B_CYAN, 'Status')
-    ]
+    if 'modules' not in config or not config['modules']:
+        utils.error_msg(f'No modules found in {consts.MAGICMIRROR_CONFIG_FILE}')
 
-    ENABLED = colored_text(colors.B_GREEN, 'Enabled')
-    DISABLED = colored_text(colors.B_RED, 'Disabled')
+    if table_formatted:
+        headers = [
+            colored_text(colors.B_CYAN, 'Module'),
+            colored_text(colors.B_CYAN, 'Status')
+        ]
 
-    rows: list = []
+        ENABLED = colored_text(colors.B_GREEN, 'enabled')
+        DISABLED = colored_text(colors.B_RED, 'disabled')
 
-    for module_config in config['modules']:
-        rows.append([
-            module_config['module'],
-            DISABLED if 'disabled' in module_config and module_config['disabled'] else ENABLED
-        ])
+        rows: list = []
 
-    print(tabulate(rows, headers=headers, tablefmt='fancy_grid'))
+        for module_config in config['modules']:
+            rows.append([
+                module_config['module'],
+                DISABLED if 'disabled' in module_config and module_config['disabled'] else ENABLED
+            ])
+
+        print(tabulate(rows, headers=headers, tablefmt='fancy_grid'))
+
+    else:
+        for module_config in config['modules']:
+            print(
+                colored_text(colors.N_GREEN, module_config['module']),
+                f"\n  Status: {'disabled' if 'disabled' in module_config and module_config['disabled'] else 'enabled'}\n"
+            )
+
 
 
 def get_web_interface_url() -> str:
@@ -1215,7 +1251,7 @@ def open_mmpm_gui() -> bool:
     Returns:
         bool: True upon sucess, False upon failure
     '''
-    return_code, _, stderr = utils.run_cmd(['xdg-open', get_web_interface_url()])
+    return_code, _, stderr = utils.run_cmd(['xdg-open', get_web_interface_url()], progress=False)
 
     if return_code:
         utils.error_msg(stderr)

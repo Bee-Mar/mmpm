@@ -18,6 +18,7 @@ LOGS = 'logs'
 UPDATE = 'update'
 UPGRADE = 'upgrade'
 ENV = 'env'
+SHOW = 'show'
 
 
 def get_user_args() -> object:
@@ -239,8 +240,14 @@ def get_user_args() -> object:
         '-g',
         '--gui',
         action='store_true',
-        help='open the MMPM GUI in your browser',
+        help='open the MMPM GUI in your default browser using xdg-open',
         dest='gui'
+    )
+
+    show_parser = subparsers.add_parser(
+        SHOW,
+        usage='\n  mmpm show <module(s)>',
+        help='show details about one or more modules listed in the MagicMirror 3rd party database'
     )
 
     # ADD EXTERNAL MODULE SUBCOMMANDS
@@ -332,6 +339,13 @@ def get_user_args() -> object:
         action='store_true',
         help='show the status of modules on your MagicMirror',
         dest='status'
+    )
+
+    mm_ctl_parser.add_argument(
+        '--table',
+        action='store_true',
+        help='display output in table format, used with --status',
+        dest='table_formatted'
     )
 
     mm_ctl_parser.add_argument(

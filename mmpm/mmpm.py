@@ -40,7 +40,19 @@ def main(argv):
         elif args.all:
             core.display_modules(modules, table_formatted=args.table_formatted)
         elif args.gui_url:
-            print(f'The MMPM web interface is live at: {core.get_web_interface_url()}')
+            print(f'{core.get_web_interface_url()}')
+
+    elif args.subcommand == opts.SHOW:
+        if not additional_args:
+            utils.error_msg('No module(s) provided')
+            sys.exit(1)
+
+        results = [core.search_modules(modules, search, case_sensitive=True, by_title_only=True) for search in additional_args]
+
+        if not results[0]:
+            utils.error_msg('Unable to match query to module name(s). This search is case-sensitive')
+        else:
+            core.show_module_details(results[0])
 
     elif args.subcommand == opts.OPEN:
         if args.config:
@@ -82,17 +94,17 @@ def main(argv):
             [utils.sanitize_name(module) for module in additional_args],
         )
 
-        core.install_modules(
-            installation_candidates,
-            [utils.sanitize_name(module) for module in additional_args],
-            assume_yes=args.assume_yes
-        )
+        core.install_modules(installation_candidates, assume_yes=args.assume_yes)
 
     elif args.subcommand == opts.REMOVE:
         if not additional_args:
             utils.error_msg('No module names provided')
         else:
-            core.remove_modules(modules, [utils.sanitize_name(module) for module in additional_args])
+            core.remove_modules(
+                modules,
+                [utils.sanitize_name(module) for module in additional_args],
+                assume_yes=args.assume_yes
+            )
 
     elif args.subcommand == opts.SEARCH:
         core.display_modules(
@@ -114,7 +126,7 @@ def main(argv):
         elif args.upgrade:
             pass
         elif args.status:
-            core.get_active_modules()
+            core.get_active_modules(table_formatted=args.table_formatted)
         elif args.start:
             core.start_magicmirror()
         elif args.stop:

@@ -87,7 +87,10 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
         MMPM_FILE = urlopen(consts.MMPM_FILE_URL)
         contents: str = str(MMPM_FILE.read())
 
-    except HTTPError:
+    except HTTPError as error:
+        message: str = 'Unable to retrieve available version number from MMPM repository'
+        utils.error_msg(message)
+        log.logger.info(error)
         return False
 
     version_line: List[str] = re.findall(r"__version__ = \d+\.\d+", contents)
@@ -97,7 +100,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     print(utils.done())
 
     if not version_number:
-        message: str = 'Unable to retrieve available version number from MMPM repository'
+        message: str = 'No version number found on MMPM repository'
         utils.error_msg(message)
         log.logger.info(message)
         return False

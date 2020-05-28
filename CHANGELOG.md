@@ -210,3 +210,8 @@
   from CLI without prompt required
 - Enhancment. Added ability for user to open the MMPM GUI from terminal, and display the URL
 - Enhancement. Added ability for user to view log files from CLI
+
+# Version 1.25
+
+- Enhancement. Reworked installation commands to handle conflicting names
+- Enhancement. Reworked listing commands to display installed modules more accurately

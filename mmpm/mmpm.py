@@ -3,7 +3,7 @@
 import sys
 from mmpm import utils, colors, core, opts
 
-__version__ = 1.15
+__version__ = 1.25
 
 
 def main(argv):
@@ -76,8 +76,13 @@ def main(argv):
             )
 
     elif args.subcommand == opts.INSTALL:
-        core.install_modules(
+        installation_candidates = core.get_installation_candidates(
             modules,
+            [utils.sanitize_name(module) for module in additional_args],
+        )
+
+        core.install_modules(
+            installation_candidates,
             [utils.sanitize_name(module) for module in additional_args],
             assume_yes=args.assume_yes
         )

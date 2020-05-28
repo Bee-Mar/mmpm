@@ -2,6 +2,7 @@
 import sys
 import os
 import subprocess
+from collections import Counter
 import logging
 import logging.handlers
 import time
@@ -260,7 +261,7 @@ def clone(title: str, repo: str, target_dir: str = '') -> Tuple[int, str, str]:
     # by using "repo.split()", it allows the user to bake in additional commands when making custom sources
     # ie. git clone [repo] -b [branch] [target]
     log.logger.info(f'Cloning {repo} into {target_dir if target_dir else os.path.join(os.getcwd(), title)}')
-    plain_print(green_plus() + f" Cloning {title} repository " + colors.RESET)
+    plain_print(green_plus() + f" {colored_text(colors.N_CYAN, f'Cloning {title} repository')} " + colors.RESET)
 
     command = ['git', 'clone'] + repo.split()
 
@@ -551,22 +552,37 @@ def colored_text(color: str, message: str) -> str:
     return (color + message + colors.RESET)
 
 
-def prompt_user(user_prompt: str, valid_yes: List[str], valid_no: List[str]) -> bool:
+def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: List[str] = ['no', 'n']) -> bool:
+    '''
+    Prompts user with the `user_prompt` until a response matches a value in the
+    `valid_ack` or `valid_nack` lists, or a KeyboardInterrupt is caught
+
+    Parameters:
+        user_prompt (str): The text that will be presented to the user
+        valid_ack (List[str]): valid 'yes' responses
+        valid_nack (List[str]): valid 'no' responses
+
+    Returns:
+        response (bool): True if the response is in the `valid_ack` list, False if in `valid_nack` or KeyboardInterrupt
+    '''
     response = None
 
     try:
-        while response not in (valid_yes, valid_no):
-            response = input(f"{user_prompt} [{'/'.join(valid_yes)}] or [{'/'.join(valid_no)}]: ")
+        while response not in (valid_ack, valid_nack):
+            response = input(f"{user_prompt} [{'/'.join(valid_ack)}] or [{'/'.join(valid_nack)}]: ")
 
-            if response in valid_yes:
+            if response in valid_ack:
                 return True
-            elif response in valid_no:
+            elif response in valid_nack:
                 return False
-
             else:
-                warning_msg(f"Respond with [{'/'.join(valid_yes)}] or [{'/'.join(valid_no)}]")
+                warning_msg(f"Respond with [{'/'.join(valid_ack)}] or [{'/'.join(valid_nack)}]")
+
     except KeyboardInterrupt:
         return False
 
     return False
 
+
+def get_duplicate_modules(values: list) -> list:
+    return [item for item, count in Counter(values).items() if count > 1]

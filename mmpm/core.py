@@ -354,7 +354,62 @@ def search_modules(modules: dict, query: str, case_sensitive: bool = False) -> d
     return search_results
 
 
-def install_modules(modules: dict, modules_to_install: List[str], assume_yes: bool = False) -> bool:
+def get_installation_candidates(modules: dict, modules_to_install: List[str]) -> list:
+    installation_candidates: List[dict] = []
+
+    for module_to_install in modules_to_install:
+        for category in modules.values():
+            for module in category:
+                if module[consts.TITLE] == module_to_install:
+                    log.logger.info(f'Matched {module[consts.TITLE]} to installation candidate')
+                    installation_candidates.append(module)
+
+    return installation_candidates
+
+
+def install_module_helper(module: dict, target: str, modules_dir: str, assume_yes: bool = False) -> bool:
+
+    error_code, _, stderr = utils.clone(module[consts.TITLE], module[consts.REPOSITORY], target)
+
+    if error_code:
+        utils.warning_msg("\n" + stderr)
+        return False
+
+    print(utils.done())
+
+    os.chdir(target)
+    error: str = utils.handle_installation_process()
+    os.chdir('..')
+
+    if error:
+        utils.error_msg(error)
+        failed_install_path = os.path.join(modules_dir, module[consts.TITLE])
+
+        message = f"Failed to install {module[consts.TITLE]} at '{failed_install_path}'"
+
+        if assume_yes:
+            utils.error_msg(f'{message}. Removing directory due to --yes flag')
+            log.logger.info(f'{message}. Removing directory due to --yes flag')
+            return False
+
+        log.logger.info(message)
+
+        yes = utils.prompt_user(f"{colored_text(colors.B_RED, 'ERROR:')} Failed to install {module[consts.TITLE]} at '{failed_install_path}'. Remove the directory?")
+
+        if yes:
+            message = f"User chose to remove {module[consts.TITLE]} at '{failed_install_path}'"
+            utils.run_cmd(['rm', '-rf', failed_install_path], progress=False)
+            print(f"\nRemoved '{failed_install_path}'\n")
+        else:
+            message = f"Keeping {module[consts.TITLE]} at '{failed_install_path}'"
+            print(f'\n{message}\n')
+            log.logger.info(message)
+
+        return False
+    return True
+
+
+def install_modules(installation_candidates: dict, modules_to_install: List[str], assume_yes: bool = False) -> bool:
     '''
     Compares list of 'modules_to_install' to modules found within the
     'modules', clones the repository within the ~/MagicMirror/modules
@@ -371,102 +426,124 @@ def install_modules(modules: dict, modules_to_install: List[str], assume_yes: bo
     modules_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
 
     if not os.path.exists(modules_dir):
-        msg = "Failed to find MagicMirror root. Have you installed MagicMirror properly? "
-        msg += "You may also set the env variable 'MMPM_MAGICMIRROR_ROOT' to the MagicMirror root directory."
-        utils.error_msg(msg)
+        utils.error_msg(
+            'MagicMirror directory not found in {const.MAGICMIRROR_ROOT}.',
+            'If the MagicMirror root directory is elswhere, set the MMPM_MAGICMIRROR_ROOT env var to that location.'
+        )
+        return False
+
+    if not installation_candidates:
+        utils.error_msg('Unable to match query to installation candidates')
         return False
 
     log.logger.info(f'User selected modules to install: {modules_to_install}')
-    log.logger.info(f'Changing into MagicMirror modules directory {modules_dir}')
 
+    log.logger.info(f'Changing into MagicMirror modules directory {modules_dir}')
     os.chdir(modules_dir)
 
     successful_installs: List[str] = []
-    existing_modules: List[str] = []
-    failed_installs: List[str] = []
 
-    for module_to_install in modules_to_install:
-        install_next: bool = False
+    if not assume_yes:
+        for index, candidate in enumerate(installation_candidates):
+            prompt = f'The following package was matched as an installation candidate:'
+            prompt += f' \n{colored_text(colors.N_GREEN, candidate[consts.TITLE])} ({candidate[consts.REPOSITORY]})\nInstall?'
 
-        for category in modules.values():
-            for module in category:
-                if module[consts.TITLE] == module_to_install:
-                    log.logger.info(f'Matched {module[consts.TITLE]} to installation candidate')
-                    title = module[consts.TITLE]
-                    target = os.path.join(os.getcwd(), title)
-                    repo = module[consts.REPOSITORY]
+            if not utils.prompt_user(prompt):
+                installation_candidates[index] = {}
+            print('')
 
-                    try:
-                        os.mkdir(target)
-                    except OSError:
-                        log.logger.info(f'Found {title} already in {os.getcwd()}. Skipping.')
-                        utils.warning_msg(f"The module {title} is already installed. To remove the module, run 'mmpm -r {title}'")
-                        existing_modules.append(title)
-                        install_next = True
-                        continue
+    for module in installation_candidates:
+        if not module:
+            continue
 
-                    os.chdir(target)
+        title = module[consts.TITLE]
+        target = os.path.join(os.getcwd(), title)
+        repo = module[consts.REPOSITORY]
 
-                    message = f"Installing {title} @ {target}"
-                    utils.separator(message)
+        if os.path.exists(target):
+            os.chdir(target)
 
-                    print(
-                        colored_text(colors.RESET, "Installing"),
-                        colored_text(colors.B_CYAN, f"{title}"),
-                        colored_text(colors.B_YELLOW, "@"),
-                        colored_text(colors.RESET, f"{target}")
-                    )
-
-                    utils.separator(message)
-                    error_code, _, stderr = utils.clone(title, repo, target)
-
-                    if error_code:
-                        utils.warning_msg("\n" + stderr)
-                        failed_installs.append(title)
-                        install_next = True
-                        continue
-
-                    print(utils.done())
-                    error: str = utils.handle_installation_process()
-
-                    if error:
-                        utils.error_msg(error)
-                        failed_install_path = os.path.join(modules_dir, title)
-                        message = f"Failed to install {title}, removing the directory: '{failed_install_path}'"
-                        utils.error_msg(message)
-                        log.logger.info(message)
-                        failed_installs.append(title)
-                        utils.run_cmd(['rm', '-rf', failed_install_path], progress=False)
-
-                    else:
-                        successful_installs.append(title)
-
-                    os.chdir(modules_dir)
-                    install_next = True
-                    break
-
-            if install_next:
-                break
-
-    for module in modules_to_install:
-        if module not in successful_installs and module not in existing_modules and module not in failed_installs:
-            utils.warning_msg(f"Unable to match '{module}' with installation candidate. Is the casing correct?")
-
-    if successful_installs:
-        print(
-            colored_text(
-                colors.B_WHITE,
-                f"\nThe installed modules may need additional configuring within '{consts.MAGICMIRROR_CONFIG_FILE}'"
+            return_code, remote_origin_url, stderr = utils.run_cmd(
+                ['git', 'config', '--get', 'remote.origin.url'],
+                progress=False
             )
-        )
-        return True
 
-    return False
+            os.chdir('..')
+
+            if return_code:
+                utils.error_msg(stderr)
+                continue
+
+            if remote_origin_url.strip() == repo.strip():
+                log.logger.info(f'Found a package named {title} already at {target}, with the same git remote origin url')
+
+                if assume_yes:
+                    utils.warning_msg(f'{title} appears to be installed already. Skipping alt installation option due to --yes flag')
+                    log.logger.info(f'User used --yes. Skipping alt installation option for {title}')
+                    continue
+
+                yes = utils.prompt_user(
+                    f'\n{title} appears to be installed already. Would you like to install {title} into a different target directory?'
+                )
+
+                if not yes:
+                    utils.warning_msg(f'Skipping installation of {title}')
+                    continue
+
+                try:
+                    print(f'\nOriginal target directory name: {title}')
+                    new_target = input('New target directory name: ')
+                    install_module_helper(module, new_target, modules_dir)
+                except KeyboardInterrupt:
+                    print('\n')
+                    utils.warning_msg(f'Cancelling installation of {title}')
+                    continue
+
+            else:
+                log.logger.info(f'Found a package named {title} already at {target}, with a different git remote origin url')
+
+                if assume_yes:
+                    utils.warning_msg(f'A package named {title} is installed already. Skipping alt installation option due to --yes flag')
+                    log.logger.info(f'User used --yes. Skipping alt installation option for {title}')
+                    continue
+
+                yes = utils.prompt_user(
+                    f'\nA package named {title} is installed already.\nWould you like to provide a different installation path for the new package named {title}?'
+                )
+
+                if not yes:
+                    utils.warning_msg(f'Skipping installation of {title}')
+                    continue
+
+                try:
+                    print(f'\nOriginal target directory name: {title}')
+                    new_target = input('New target directory name: ')
+                    install_module_helper(module, new_target, modules_dir)
+                except KeyboardInterrupt:
+                    print('\n')
+                    utils.warning_msg(f'Cancelling installation of {title}')
+                    continue
+
+            continue
+
+        if install_module_helper(module, target, modules_dir):
+            successful_installs.append(module)
+            print('')
+
+    if not successful_installs:
+        return False
+
+    print(f"\nThe installed modules may need additional configuring within '{consts.MAGICMIRROR_CONFIG_FILE}'")
+
+    return True
 
 
 def check_for_magicmirror_updates() -> bool:
     if not os.path.exists(consts.MAGICMIRROR_ROOT):
-        utils.error_msg('MagicMirror directory not found in {const.MAGICMIRROR_ROOT}. If the MagicMirror root directory is elswhere, set the MMPM_MAGICMIRROR_ROOT env var to that location.')
+        utils.error_msg(
+            'MagicMirror directory not found in {const.MAGICMIRROR_ROOT}.',
+            'If the MagicMirror root directory is elswhere, set the MMPM_MAGICMIRROR_ROOT env var to that location.'
+        )
         return False
 
     os.chdir(consts.MAGICMIRROR_ROOT)
@@ -868,12 +945,43 @@ def get_installed_modules(modules: dict) -> dict:
     os.chdir(modules_dir)
 
     module_dirs: List[str] = os.listdir(os.getcwd())
+
     installed_modules: dict = {}
+    modules_found: dict = {'Modules': []}
+
+    for module_dir in module_dirs:
+        if not os.path.isdir(module_dir):
+            continue
+
+        try:
+            os.chdir(os.path.join(modules_dir, module_dir))
+
+            return_code, remote_origin_url, stderr = utils.run_cmd(
+                ['git', 'config', '--get', 'remote.origin.url'],
+                progress=False
+            )
+
+            return_code, project_name, stderr = utils.run_cmd(
+                ['basename', remote_origin_url.strip(), '.git'],
+                progress=False
+            )
+
+            modules_found['Modules'].append({
+                consts.TITLE: project_name.strip(),
+                consts.REPOSITORY: remote_origin_url.strip()
+            })
+
+        except Exception:
+            utils.error_msg(stderr)
+
+        finally:
+            os.chdir('..')
 
     for category, module_names in modules.items():
         for module in module_names:
-            if module[consts.TITLE] in module_dirs:
-                installed_modules.setdefault(category, []).append(module)
+            for module_found in modules_found['Modules']:
+                if module[consts.TITLE] == module_found[consts.TITLE] and module[consts.REPOSITORY] == module_found[consts.REPOSITORY]:
+                    installed_modules.setdefault(category, []).append(module)
 
     os.chdir(original_dir)
     return installed_modules

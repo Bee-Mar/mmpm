@@ -66,7 +66,7 @@ def get_user_args() -> object:
         '--case-sensitive',
         action='store_true',
         help='search for modules using a case-sensitive term',
-        dest='search_case_sensitive'
+        dest='case_sensitive'
     )
 
     # INSTALL PARSER
@@ -111,19 +111,22 @@ def get_user_args() -> object:
     update_parser.add_argument(
         '--mmpm',
         action='store_true',
-        help='only check for updates to MMPM'
+        help='only check for updates to MMPM',
+        dest='mmpm'
     )
 
     update_parser.add_argument(
         '--magicmirror',
         action='store_true',
-        help='only check for updates to MagicMirror'
+        help='only check for updates to MagicMirror',
+        dest='magicmirror'
     )
 
     update_parser.add_argument(
         '--full',
         action='store_true',
-        help='check for updates to all installed modules, MMPM, and MagicMirror'
+        help='check for updates to all installed modules, MMPM, and MagicMirror',
+        dest='full'
     )
 
     upgrade_parser = subparsers.add_parser(
@@ -146,7 +149,7 @@ def get_user_args() -> object:
         action='store_true',
         default=False,
         help='upgrade all modules, MMPM, and MagicMirror',
-        dest='upgrade_all'
+        dest='all'
     )
 
     # DATABASE SUBCOMMANDS
@@ -160,7 +163,8 @@ def get_user_args() -> object:
         '-r',
         '--refresh',
         action='store_true',
-        help='forces a refresh of the modules database', dest='refresh'
+        help='forces a refresh of the modules database',
+        dest='refresh'
     )
 
     database_parser.add_argument(
@@ -182,7 +186,8 @@ def get_user_args() -> object:
         '-i',
         '--installed',
         action='store_true',
-        help='list all currently installed modules', dest='installed'
+        help='list all currently installed modules',
+        dest='installed'
     )
 
     list_parser.add_argument(
@@ -241,7 +246,7 @@ def get_user_args() -> object:
     # ADD EXTERNAL MODULE SUBCOMMANDS
     add_ext_module_parser = subparsers.add_parser(
         ADD_EXT_MODULE,
-        usage='\n  mmpm add-ext-module [--title=<title>] [--author=<author>] [--repo=<repo>] [--description=<description>]\n  mmpm add-ext-module --remove <module>',
+        usage='\n  mmpm add-ext-module [--title=<title>] [--author=<author>] [--repo=<repo>] [--desc=<description>]\n  mmpm add-ext-module --remove <module>',
         help='manually add a module to the database not found in the 3rd Party Wiki'
     )
 
@@ -271,10 +276,10 @@ def get_user_args() -> object:
 
     add_ext_module_parser.add_argument(
         '-d',
-        '--description',
+        '--desc',
         type=str,
-        help='description external module (will be prompted if not provided)',
-        dest='description'
+        help='description of external module (will be prompted if not provided)',
+        dest='desc'
     )
 
     add_ext_module_parser.add_argument(
@@ -287,31 +292,32 @@ def get_user_args() -> object:
     # LOGS SUBCOMMANDS
     logs_parser = subparsers.add_parser(
         LOGS,
-        usage='\n  mmpm logs [--mmpm] [--gunicorn] [--tail]',
+        usage='\n  mmpm logs [--cli] [--web] [--tail]',
         help='display the MMPM and/or Gunicorn log files (displays all logs if no args are given)'
     )
 
     logs_parser.add_argument(
-        '-m',
-        '--mmpm',
+        '-c',
+        '--cli',
         action='store_true',
-        help='cat the MMPM log files',
-        dest='mmpm_logs'
+        help='cat the MMPM CLI log files',
+        dest='cli'
     )
 
     logs_parser.add_argument(
         '-g',
-        '--gunicorn',
+        '--gui',
         action='store_true',
-        help='cat the Gunicorn log files',
-        dest='gunicorn_logs'
+        help='cat the MMPM GUI (Gunicorn) log files',
+        dest='gui'
     )
 
     logs_parser.add_argument(
         '-t',
         '--tail',
         action='store_true',
-        help='tail the log file(s) in real time (used in conjuction with -m and/or -g)', dest='tail'
+        help='tail the log file(s) in real time (used in conjuction with -c and/or -g)',
+        dest='tail'
     )
 
     # MM_CTL SUBCOMMANDS
@@ -410,4 +416,4 @@ def get_user_args() -> object:
         arg_parser.print_help()
         sys.exit(0)
 
-    return arg_parser.parse_known_args()
+    return arg_parser

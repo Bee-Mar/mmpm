@@ -46,23 +46,23 @@ def snapshot_details(modules: dict) -> None:
         num_modules += len(value)
 
     print(
-        colored_text(colors.B_YELLOW, "Most recent snapshot of MagicMirror Modules taken:"),
-        colored_text(colors.B_WHITE, f'{curr_snap_date}')
+        colored_text(colors.N_YELLOW, 'Most recent snapshot of MagicMirror Modules taken:'),
+        f'{curr_snap_date}'
     )
 
     print(
-        colored_text(colors.B_YELLOW, "The next snapshot will be taken on or after:"),
-        colored_text(colors.B_WHITE, f"{next_snap_date}\n")
+        colored_text(colors.N_YELLOW, 'The next snapshot will be taken on or after:'),
+        f'{next_snap_date}\n'
     )
 
     print(
-        colored_text(colors.B_GREEN, "Module Categories:"),
-        colored_text(colors.B_WHITE, f"{num_categories}")
+        colored_text(colors.N_GREEN, 'Module Categories:'),
+        f'{num_categories}'
     )
 
     print(
-        colored_text(colors.B_GREEN, "Modules Available:"),
-        colored_text(colors.B_WHITE, f"{num_modules}\n")
+        colored_text(colors.N_GREEN, 'Modules Available:'),
+        f'{num_modules}\n'
     )
 
 
@@ -720,7 +720,7 @@ def load_modules(force_refresh: bool = False) -> dict:
 
     # if the snapshot has expired, or doesn't exist, get a new one
     if force_refresh:
-        utils.plain_print(utils.green_plus() + " Refreshing MagicMirror module snapshot ... ")
+        utils.plain_print(utils.green_plus() + " Refreshing MagicMirror modules snapshot ... ")
         modules = retrieve_modules()
 
         # save the new snapshot
@@ -1293,16 +1293,16 @@ def restart_magicmirror() -> None:
         start_magicmirror()
 
 
-def display_log_files(mmpm_logs: bool = False, gunicorn_logs: bool = False, tail: bool = False) -> None:
+def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool = False) -> None:
     logs: List[str] = []
 
-    if mmpm_logs:
+    if cli_logs:
         if os.path.exists(consts.MMPM_LOG_FILE):
             logs.append(consts.MMPM_LOG_FILE)
         else:
             utils.error_msg('MMPM log file not found')
 
-    if gunicorn_logs:
+    if gui_logs:
         if os.path.exists(consts.GUNICORN_LOG_ACCESS_LOG_FILE):
             logs.append(consts.GUNICORN_LOG_ACCESS_LOG_FILE)
         else:

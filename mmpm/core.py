@@ -96,7 +96,13 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
 
     print(utils.done())
 
-    if not version_number or mmpm.__version__ >= version_number:
+    if not version_number:
+        message: str = 'Unable to retrieve available version number from MMPM repository'
+        utils.error_msg(message)
+        log.logger.info(message)
+        return False
+
+    if mmpm.__version__ >= version_number:
         print('\nYou have the latest version of MMPM')
         log.logger.info('No newer version of MMPM found > {version_number} available. The current version is the latest')
         return True

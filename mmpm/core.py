@@ -110,9 +110,11 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
                 print(f'Available version: {version_number}\n')
 
                 response = "yes" if assume_yes else input(
-                    colored_text(colors.B_GREEN, "A newer version of MMPM is available\n\n"),
-                    colored_text(colors.RESET, "Would you like to upgrade now?"),
-                    colored_text(colors.B_WHITE, " [yes/y | no/n]: ")
+                    (
+                        colored_text(colors.B_GREEN, "A newer version of MMPM is available\n\n"),
+                        colored_text(colors.RESET, "Would you like to upgrade now?"),
+                        colored_text(colors.B_WHITE, " [yes/y | no/n]: ")
+                    )
                 )
 
                 if response in ("yes", "y"):
@@ -294,7 +296,7 @@ def check_for_module_updates(modules: dict):
         read_mode = bool(os.stat(consts.MMPM_AVAILABLE_UPDATES_FILE).st_size)
 
         if not os.path.exists(consts.MMPM_AVAILABLE_UPDATES_FILE):
-            return_code, stdout, stderr = utils.run_cmd(['touch', consts.MMPM_MODULE_UPDATES_FILE])
+            return_code, stdout, stderr = utils.run_cmd(['touch', consts.MMPM_AVAILABLE_UPDATES_FILE])
 
             if return_code:
                 utils.error_msg(stderr)
@@ -356,18 +358,30 @@ def search_modules(modules: dict, query: str, case_sensitive: bool = False, by_t
     return search_results
 
 
-def show_module_details(modules: List[dict]) -> None:
+def show_module_details(modules: List[defaultdict]) -> None:
+    '''
+    Used to display more detailed information that presented in normal search results
 
-    MAX_LENGTH: int = 90
+    Parameters:
+        modules (dict): Dictionary of MagicMirror modules
+        query (str): Search query
 
-    for category, _modules in modules.items():
-        for index, module in enumerate(_modules):
-            print(colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'))
-            print(f'  Category: {category}')
-            print(f'  Repository: {module[consts.REPOSITORY]}')
-            print(f'  Author: {module[consts.AUTHOR]}')
-            print(indent(fill(f'Description: {module[consts.DESCRIPTION]}\n', width=70), prefix='  '), '\n')
+    Returns:
+        dict
+    '''
+    MAX_LENGTH: int = 70
 
+    # look to retrieve last commit date using:
+    # curl https://api.github.com/repos/Bee-Mar/mmpm/commits/master | jq .commit.author.date
+
+    for _, group in enumerate(modules):
+        for category, _modules  in group.items():
+            for module in _modules:
+                print(colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'))
+                print(f'  Category: {category}')
+                print(f'  Repository: {module[consts.REPOSITORY]}')
+                print(f'  Author: {module[consts.AUTHOR]}')
+                print(indent(fill(f'Description: {module[consts.DESCRIPTION]}\n', width=MAX_LENGTH), prefix='  '), '\n')
 
 def get_installation_candidates(modules: dict, modules_to_install: List[str]) -> list:
     installation_candidates: List[dict] = []
@@ -442,7 +456,7 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
 
     if not os.path.exists(modules_dir):
         utils.error_msg(
-            'MagicMirror directory not found in {const.MAGICMIRROR_ROOT}.',
+            'MagicMirror directory not found in {const.MAGICMIRROR_ROOT}. ' +
             'If the MagicMirror root directory is elswhere, set the MMPM_MAGICMIRROR_ROOT env var to that location.'
         )
         return False
@@ -559,7 +573,7 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
 def check_for_magicmirror_updates() -> bool:
     if not os.path.exists(consts.MAGICMIRROR_ROOT):
         utils.error_msg(
-            'MagicMirror directory not found in {const.MAGICMIRROR_ROOT}.',
+            'MagicMirror directory not found in {const.MAGICMIRROR_ROOT}.' +
             'If the MagicMirror root directory is elswhere, set the MMPM_MAGICMIRROR_ROOT env var to that location.'
         )
         return False
@@ -879,13 +893,16 @@ def display_modules(modules: dict, list_categories: bool = False, table_formatte
         None
     '''
 
+    MAX_LENGTH: int = 80
     global_row: int = 1
+    columns: int = 3
+    rows: int = 1  # to include the header row
 
     if list_categories:
 
         if table_formatted:
-            rows: int = len(modules.keys()) + 1
-            columns: int = 2
+            rows = len(modules.keys()) + 1
+            columns = 2
 
             table = utils.allocate_table_memory(rows, columns)
 
@@ -905,11 +922,6 @@ def display_modules(modules: dict, list_categories: bool = False, table_formatte
         return
 
     if table_formatted:
-        MAX_LENGTH: int = 80
-
-        columns: int = 3
-        rows: int = 1 # to include the header row
-
         for row in modules.values():
             rows += len(row)
 
@@ -934,7 +946,7 @@ def display_modules(modules: dict, list_categories: bool = False, table_formatte
         utils.display_table(table, rows, columns)
 
     else:
-        MAX_LENGTH: int = 90
+        MAX_LENGTH = 90
 
         for category, _modules in modules.items():
             for index, module in enumerate(_modules):

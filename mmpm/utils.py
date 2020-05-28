@@ -7,7 +7,7 @@ import logging
 import logging.handlers
 import time
 from os.path import join
-from typing import List, Optional, Tuple, IO
+from typing import List, Optional, Tuple, IO, Any
 from re import sub
 from mmpm import colors, consts
 from shutil import which
@@ -490,7 +490,7 @@ def kill_magicmirror_processes() -> None:
         kill_pids_of_process(process)
 
 
-def display_table(table: POINTER(POINTER(c_char_p)), rows: int, columns: int) -> None:
+def display_table(table, rows: int, columns: int) -> None:
     '''
     Calls the shared mmpm library to print the contents of a provided matrix
 
@@ -509,7 +509,7 @@ def display_table(table: POINTER(POINTER(c_char_p)), rows: int, columns: int) ->
     __display_table__(table, rows, columns)
 
 
-def allocate_table_memory(rows: int, columns: int) -> POINTER(POINTER(c_char_p)):
+def allocate_table_memory(rows: int, columns: int):
     libmmpm = cdll.LoadLibrary(consts.LIBMMPM_SHARED_OBJECT)
 
     allocate_table_memory = libmmpm.allocate_table_memory
@@ -520,7 +520,7 @@ def allocate_table_memory(rows: int, columns: int) -> POINTER(POINTER(c_char_p))
     return table
 
 
-def fill_table_row(table: any, row: int, column: int, value: any) -> None:
+def fill_table_row(table: Any, row: int, column: int, value: Any) -> None:
     table[row][column] = value
 
 

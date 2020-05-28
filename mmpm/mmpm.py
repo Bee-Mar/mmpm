@@ -52,7 +52,7 @@ def main(argv):
         if not results[0]:
             utils.error_msg('Unable to match query to module name(s). This search is case-sensitive')
         else:
-            core.show_module_details(results[0])
+            core.show_module_details(results)
 
     elif args.subcommand == opts.OPEN:
         if args.config:

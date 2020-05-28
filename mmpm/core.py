@@ -82,82 +82,70 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
 
     try:
         log.logger.info(f'Checking for newer version of MMPM. Current version: {mmpm.__version__}')
+        utils.plain_print(f'Checking for newer version of MMPM ... ')
 
         MMPM_FILE = urlopen(consts.MMPM_FILE_URL)
         contents: str = str(MMPM_FILE.read())
 
-        version_line: List[str] = re.findall(r"__version__ = \d+\.\d+", contents)
-        version_list: List[str] = re.findall(r"\d+\.\d+", version_line[0])
-        version_number: float = float(version_list[0])
-
-        if version_number and mmpm.__version__ < version_number:
-            log.logger.info(f'Found newer version of MMPM: {version_number}')
-            valid_response = False
-
-            if gui:
-                print(f'Currently installed version: {mmpm.__version__}')
-                print(f'Available version: {version_number}\n')
-                message = f"A newer version of MMPM is available ({version_number}). Please upgrade via terminal using 'mmpm -U'"
-                utils.separator(message)
-                print(message)
-                utils.separator(message)
-                return True
-
-            print(utils.done())
-
-            while not valid_response:
-                print(f'\nCurrently installed version: {mmpm.__version__}')
-                print(f'Available version: {version_number}\n')
-
-                response = "yes" if assume_yes else input(
-                    (
-                        colored_text(colors.B_GREEN, "A newer version of MMPM is available\n\n"),
-                        colored_text(colors.RESET, "Would you like to upgrade now?"),
-                        colored_text(colors.B_WHITE, " [yes/y | no/n]: ")
-                    )
-                )
-
-                if response in ("yes", "y"):
-                    valid_response = True
-                    original_dir = os.getcwd()
-
-                    message = "Upgrading MMPM"
-
-                    utils.separator(message)
-                    print(colored_text(colors.B_CYAN, message))
-                    utils.separator(message)
-
-                    log.logger.info(f'User chose to update MMPM with {original_dir} as the starting directory')
-
-                    os.chdir(os.path.join('/', 'tmp'))
-                    os.system('rm -rf /tmp/mmpm')
-
-                    return_code, _, stderr = utils.clone('mmpm', consts.MMPM_REPO_URL)
-
-                    if return_code:
-                        utils.error_msg(stderr)
-                        sys.exit(1)
-
-                    os.chdir('/tmp/mmpm')
-
-                    # if the user needs to be prompted for their password, this can't be a subprocess
-                    os.system('make reinstall')
-
-                    os.chdir(original_dir)
-                    log.logger.info(f'Changing back to original working directory: {original_dir}')
-
-                elif response in ("no", "n"):
-                    valid_response = True
-                else:
-                    utils.warning_msg("Respond with yes/no or y/n.")
-        else:
-            print(utils.done())
-            print("\nNo upgrade available for MMPM. You have the latest version.")
-            log.logger.info('No newer version of MMPM found > {version_number} available. The current version is the latest')
-            return False
-        return True
     except HTTPError:
         return False
+
+    version_line: List[str] = re.findall(r"__version__ = \d+\.\d+", contents)
+    version_list: List[str] = re.findall(r"\d+\.\d+", version_line[0])
+    version_number: float = float(version_list[0])
+
+    print(utils.done())
+
+    if not version_number or mmpm.__version__ >= version_number:
+        print('\nYou have the latest version of MMPM')
+        log.logger.info('No newer version of MMPM found > {version_number} available. The current version is the latest')
+        return True
+
+    log.logger.info(f'Found newer version of MMPM: {version_number}')
+
+    print(f'\nInstalled version: {mmpm.__version__}')
+    print(f'Available version: {version_number}\n')
+
+    if gui:
+        message = f"A newer version of MMPM is available ({version_number}). Please upgrade via terminal using 'mmpm uprade --mmpm"
+        utils.separator(message)
+        print(message)
+        utils.separator(message)
+        return True
+
+    yes = utils.prompt_user('A newer version of MMPM is available. Would you like to upgrade now?')
+
+    if not yes:
+        return True
+
+    original_dir = os.getcwd()
+
+    message = "Upgrading MMPM"
+
+    utils.separator(message)
+    print(colored_text(colors.B_CYAN, message))
+    utils.separator(message)
+
+    log.logger.info(f'User chose to update MMPM with {original_dir} as the starting directory')
+
+    os.chdir(os.path.join('/', 'tmp'))
+    os.system('rm -rf /tmp/mmpm')
+
+    return_code, _, stderr = utils.clone('mmpm', consts.MMPM_REPO_URL)
+
+    if return_code:
+        utils.error_msg(stderr)
+        sys.exit(1)
+
+    os.chdir('/tmp/mmpm')
+
+    # if the user needs to be prompted for their password, this can't be a subprocess
+    os.system('make reinstall')
+
+    os.chdir(original_dir)
+    log.logger.info(f'Changing back to original working directory: {original_dir}')
+
+    return True
 
 
 def upgrade_modules(modules: dict, modules_to_upgrade: List[str], assume_yes: bool = False):

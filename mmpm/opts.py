@@ -3,7 +3,6 @@
 import argparse
 import sys
 from mmpm.consts import MMPM_WIKI_URL
-import argcomplete
 
 # subcommand names (these could go in consts.py, but for the sake of mnemonics for mmpm.py, they'll stay)
 INSTALL = 'install'

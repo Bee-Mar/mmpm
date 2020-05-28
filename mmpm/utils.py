@@ -520,10 +520,6 @@ def allocate_table_memory(rows: int, columns: int):
     return table
 
 
-def fill_table_row(table: Any, row: int, column: int, value: Any) -> None:
-    table[row][column] = value
-
-
 def to_bytes(string: str) -> bytes:
     '''
     Wrapper method to convert a string to UTF-8 encoded bytes
@@ -583,6 +579,3 @@ def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nac
 
     return False
 
-
-def get_duplicate_modules(values: list) -> list:
-    return [item for item, count in Counter(values).items() if count > 1]

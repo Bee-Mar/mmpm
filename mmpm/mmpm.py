@@ -72,6 +72,7 @@ def main(argv):
         if args.full:
             pass
         elif args.mmpm:
+            core.check_for_mmpm_enhancements()
             pass
         elif args.magicmirror:
             core.check_for_magicmirror_updates()

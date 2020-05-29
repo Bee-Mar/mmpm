@@ -106,7 +106,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
         return False
 
     if mmpm.__version__ >= version_number:
-        print('\nYou have the latest version of MMPM')
+        print('You have the latest version of MMPM')
         log.logger.info('No newer version of MMPM found > {version_number} available. The current version is the latest')
         return True
 
@@ -211,7 +211,7 @@ def upgrade_modules(modules: dict, modules_to_upgrade: List[str], assume_yes: bo
                     print(stdout)
                     continue
 
-                error_msg: str = utils.handle_installation_process()
+                error_msg: str = utils.install_dependencies()
 
                 if error_msg:
                     utils.error_msg(error_msg)
@@ -265,11 +265,11 @@ def check_for_module_updates(modules: dict):
                 os.chdir(curr_module_dir)
 
                 utils.plain_print(f"Checking {title} for updates")
-                error_code, stdout, stderr = utils.run_cmd(["git", "fetch", "--dry-run"])
+                return_code, _, stdout = utils.run_cmd(["git", "fetch", "--dry-run"])
 
-                if error_code:
-                    utils.error_msg(stderr)
-                    return False
+                if return_code:
+                    utils.error_msg('Unable to communicate with git server')
+                    continue
 
                 if stdout:
                     updates_list.append(title)
@@ -281,7 +281,7 @@ def check_for_module_updates(modules: dict):
     os.chdir(original_dir)
 
     if not updates_list:
-        utils.plain_print(colored_text(colors.RESET, "\nNo updates available.\n"))
+        print(colored_text(colors.RESET, "No updates available"))
     else:
         utils.plain_print(colored_text(colors.B_MAGENTA, "Updates are available for the following modules:\n"))
 
@@ -360,16 +360,11 @@ def show_module_details(modules: List[defaultdict]) -> None:
     Used to display more detailed information that presented in normal search results
 
     Parameters:
-        modules (dict): Dictionary of MagicMirror modules
-        query (str): Search query
+        modules (List[defaultdict]): List of Categorized MagicMirror modules
 
     Returns:
-        dict
+        None
     '''
-    MAX_LENGTH: int = 70
-
-    # look to retrieve last commit date using:
-    # curl https://api.github.com/repos/Bee-Mar/mmpm/commits/master | jq .commit.author.date
 
     for _, group in enumerate(modules):
         for category, _modules  in group.items():
@@ -378,9 +373,22 @@ def show_module_details(modules: List[defaultdict]) -> None:
                 print(f'  Category: {category}')
                 print(f'  Repository: {module[consts.REPOSITORY]}')
                 print(f'  Author: {module[consts.AUTHOR]}')
-                print(indent(fill(f'Description: {module[consts.DESCRIPTION]}\n', width=MAX_LENGTH), prefix='  '), '\n')
+                print(f'  Last Commit: ')
+                print(indent(fill(f'Description: {module[consts.DESCRIPTION]}\n', width=70), prefix='  '), '\n')
+
 
 def get_installation_candidates(modules: dict, modules_to_install: List[str]) -> list:
+    '''
+    Used to display more detailed information that presented in normal search results
+
+    Parameters:
+        modules (dict): MagicMirror modules database snapshot
+        modules_to_install (List[str]): list of modules provided by user through command line arguments
+
+    Returns:
+        installation_candidates (List[dict]): list of modules whose module names match those of the modules_to_install
+    '''
+
     installation_candidates: List[dict] = []
 
     for module_to_install in modules_to_install:
@@ -393,7 +401,17 @@ def get_installation_candidates(modules: dict, modules_to_install: List[str]) ->
     return installation_candidates
 
 
-def install_module_helper(module: dict, target: str, modules_dir: str, assume_yes: bool = False) -> bool:
+def __install_module__(module: dict, target: str, modules_dir: str, assume_yes: bool = False) -> bool:
+    '''
+    Used to display more detailed information that presented in normal search results
+
+    Parameters:
+        modules (dict): MagicMirror modules database snapshot
+        modules_to_install (List[str]): list of modules provided by user through command line arguments
+
+    Returns:
+        installation_candidates (List[dict]): list of modules whose module names match those of the modules_to_install
+    '''
 
     error_code, _, stderr = utils.clone(module[consts.TITLE], module[consts.REPOSITORY], target)
 
@@ -404,18 +422,19 @@ def install_module_helper(module: dict, target: str, modules_dir: str, assume_ye
     print(utils.done())
 
     os.chdir(target)
-    error: str = utils.handle_installation_process()
+    error: str = utils.install_dependencies()
     os.chdir('..')
 
     if error:
         utils.error_msg(error)
         failed_install_path = os.path.join(modules_dir, module[consts.TITLE])
 
-        message = f"Failed to install {module[consts.TITLE]} at '{failed_install_path}'"
+        message: str = f"Failed to install {module[consts.TITLE]} at '{failed_install_path}'"
 
         if assume_yes:
-            utils.error_msg(f'{message}. Removing directory due to --yes flag')
-            log.logger.info(f'{message}. Removing directory due to --yes flag')
+            message = f'{message}. Removing directory due to --yes flag'
+            utils.error_msg(message)
+            log.logger.info(message)
             return False
 
         log.logger.info(message)
@@ -466,7 +485,8 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
     log.logger.info(f'Changing into MagicMirror modules directory {modules_dir}')
     os.chdir(modules_dir)
 
-    successful_installs: List[str] = []
+    # a flag to check if any of the modules have installed. Used for displaying a message later
+    successful_install: bool = False
 
     if not assume_yes:
         for index, candidate in enumerate(installation_candidates):
@@ -522,7 +542,7 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
                 try:
                     print(f'\nOriginal target directory name: {title}')
                     new_target = input('New target directory name: ')
-                    install_module_helper(module, new_target, modules_dir)
+                    __install_module__(module, new_target, modules_dir)
                 except KeyboardInterrupt:
                     print('\n')
                     utils.warning_msg(f'Cancelling installation of {title}')
@@ -547,7 +567,7 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
                 try:
                     print(f'\nOriginal target directory name: {title}')
                     new_target = input('New target directory name: ')
-                    install_module_helper(module, new_target, modules_dir)
+                    __install_module__(module, new_target, modules_dir)
                 except KeyboardInterrupt:
                     print('\n')
                     utils.warning_msg(f'Cancelling installation of {title}')
@@ -555,11 +575,11 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
 
             continue
 
-        if install_module_helper(module, target, modules_dir):
-            successful_installs.append(module)
+        if __install_module__(module, target, modules_dir) and not successful_install:
+            successful_install = True
             print('')
 
-    if not successful_installs:
+    if not successful_install:
         return False
 
     print(f"\nThe installed modules may need additional configuring within '{consts.MAGICMIRROR_CONFIG_FILE}'")
@@ -568,6 +588,16 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
 
 
 def check_for_magicmirror_updates() -> bool:
+    '''
+    Checks for updates available to the MagicMirror repository. Alerts user if an upgrade is available.
+
+    Parameters:
+        modules (dict): Dictionary of MagicMirror modules
+        modules_to_install (List[str]): List of modules to install
+
+    Returns:
+        bool: True upon success, False upon failure
+    '''
     if not os.path.exists(consts.MAGICMIRROR_ROOT):
         utils.error_msg(
             'MagicMirror directory not found in {const.MAGICMIRROR_ROOT}.' +
@@ -577,13 +607,16 @@ def check_for_magicmirror_updates() -> bool:
 
     os.chdir(consts.MAGICMIRROR_ROOT)
     utils.plain_print('Checking for MagicMirror updates')
-    return_code, stdout, stderr = utils.run_cmd(['git', 'fetch', '--dry-run'])
 
-    if return_code:
-        utils.error_msg(stderr)
-        return False
+    # stdout and stderr are flipped for git commands...because that makes sense
+    # except now stdout doesn't even contain error messages
+    return_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
 
     print(utils.done())
+
+    if return_code:
+        utils.error_msg('Unable to communicate with git server')
+        return False
 
     if stdout:
         print(
@@ -594,6 +627,7 @@ def check_for_magicmirror_updates() -> bool:
     else:
         print('No updates found for MagicMirror')
 
+    return True
 
 
 def install_magicmirror(gui=False) -> bool:
@@ -638,10 +672,10 @@ def install_magicmirror(gui=False) -> bool:
                     os.chdir(consts.MAGICMIRROR_ROOT)
 
                     print(colored_text(colors.B_CYAN, "Checking for updates..."))
-                    return_code, stdout, stderr = utils.run_cmd(['git', 'fetch', '--dry-run'])
+                    return_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
 
                     if return_code:
-                        utils.error_msg(stderr)
+                        utils.error_msg('Unable to communicate with git server')
                         break
 
                     if not stdout:

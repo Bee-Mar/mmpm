@@ -365,7 +365,7 @@ def basic_fail_log(error_code: int, error_message: str) -> None:
     log.logger.info(f'Failed with return code {error_code}, and error message {error_message}')
 
 
-def handle_installation_process() -> str:
+def install_dependencies() -> str:
     '''
     Utility method to handle installation/upgrade process of modules. If the
     install is successful, an empty string is returned. The installation

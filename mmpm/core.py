@@ -183,7 +183,7 @@ def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, 
 
                 if update:
                     utils.plain_print(f"Checking {title} for updates")
-                    error_code, stdout, stderr = utils.run_cmd(["git", "fetch", "--dry-run"])
+                    error_code, _, stdout = utils.run_cmd(["git", "fetch", "--dry-run"])
 
                     if error_code:
                         utils.error_msg(stderr)
@@ -405,7 +405,7 @@ def install_magicmirror(gui=False) -> bool:
                     os.chdir(utils.MAGICMIRROR_ROOT)
 
                     print(colors.B_CYAN + "Checking for updates..." + colors.RESET)
-                    return_code, stdout, stderr = utils.run_cmd(['git', 'fetch', '--dry-run'])
+                    return_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
 
                     if return_code:
                         utils.error_msg(stderr)

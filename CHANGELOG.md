@@ -198,3 +198,8 @@
 
 - Bug fix (#29). Corrected `log.info` to `log.logger.info` in utils.py within the
   `kill_magicmirror_processes` function
+
+# Version 1.14
+
+- Bug fix (#no number). Fixed issue with update command, where git commands place stdout in stderr
+  position

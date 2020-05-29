@@ -201,6 +201,11 @@
 - Bug fix (#29). Corrected log.info to log.logger.info in utils.py within the
   kill_magicmirror_processes function
 
+# Version 1.14
+
+- Bug fix (#no number). Fixed issue with update command, where git commands place stdout in stderr
+  position
+
 # Version 1.15
 
 - Code cleanup. Split up files more appropriately
@@ -215,3 +220,5 @@
 
 - Enhancement. Reworked installation commands to handle conflicting names
 - Enhancement. Reworked listing commands to display installed modules more accurately
+- Bug fix (#29). Corrected `log.info` to `log.logger.info` in utils.py within the
+  `kill_magicmirror_processes` function

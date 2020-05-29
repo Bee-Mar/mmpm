@@ -183,10 +183,10 @@ def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, 
 
                 if update:
                     utils.plain_print(f"Checking {title} for updates")
-                    error_code, _, stdout = utils.run_cmd(["git", "fetch", "--dry-run"])
+                    return_code, _, stdout = utils.run_cmd(["git", "fetch", "--dry-run"])
 
-                    if error_code:
-                        utils.error_msg(stderr)
+                    if return_code:
+                        utils.error_msg('Unable to communicate with git server')
                         return False
 
                     if stdout:
@@ -196,10 +196,10 @@ def enhance_modules(modules: dict, update: bool = False, upgrade: bool = False, 
 
                 elif upgrade:
                     utils.plain_print(f"Requesting upgrade for {title}")
-                    error_code, stdout, stderr = utils.run_cmd(["git", "pull"])
+                    return_code, _, stdout = utils.run_cmd(["git", "pull"])
 
-                    if error_code:
-                        utils.error_msg(stderr)
+                    if return_code:
+                        utils.error_msg('Unable to communicate with git server')
                         return False
 
                     print(utils.done())
@@ -408,7 +408,7 @@ def install_magicmirror(gui=False) -> bool:
                     return_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
 
                     if return_code:
-                        utils.error_msg(stderr)
+                        utils.error_msg('Unable to communicate with git server')
                         break
 
                     if not stdout:
@@ -416,10 +416,10 @@ def install_magicmirror(gui=False) -> bool:
                         break
 
                     print(colors.B_CYAN + "Updates found for MagicMirror. " + colors.RESET + "Requesting upgrades...")
-                    error_code, _, stderr = utils.run_cmd(['git', 'pull'])
+                    return_code, _, stdout = utils.run_cmd(['git', 'pull'])
 
-                    if error_code:
-                        utils.error_msg(stderr)
+                    if return_code:
+                        utils.error_msg('Unable to communicate with git server')
                         return False
 
                     print(utils.done())

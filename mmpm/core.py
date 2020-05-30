@@ -572,64 +572,18 @@ def install_magicmirror(gui=False) -> bool:
         bool: True upon succcess, False upon failure
     '''
 
-    original_dir: str = os.getcwd()
+    if os.path.exists(consts.MAGICMIRROR_ROOT):
+        utils.fatal_msg('MagicMirror is installed already')
 
-    try:
-        if not os.path.exists(consts.MAGICMIRROR_ROOT):
-            print(
-                colored_text(colors.B_CYAN, "MagicMirror directory not found."),
-                "Installing MagicMirror..."
-            )
-            os.system('bash -c "$(curl -sL https://raw.githubusercontent.com/sdetweil/MagicMirror_scripts/master/raspberry.sh)"')
+    if utils.prompt_user(f"Use '{consts.HOME_DIR}' as the parent directory of the MagicMirror installation?"):
+        parent = consts.HOME_DIR
+    else:
+        parent = os.path.abspath(input('Absolute path to MagicMirror parent directory: '))
+        print(f'Please set the MMPM_MAGICMIRROR_ROOT env variable in your bashrc to {parent}/MagicMirror')
 
-        else:
-            if not gui:
-                message = colored_text(colors.B_CYAN, "MagicMirror directory found.") + " Would you like to check for updates? [yes/no | y/n]: "
-
-            valid_response = False
-
-            while not valid_response:
-                response: str = 'yes' if gui else input(message)
-
-                if response in ("no", "n"):
-                    print(colored_text(colors.B_MAGENTA, "Aborting MagicMirror update"))
-                    break
-
-                if response in ("yes", "y"):
-                    os.chdir(consts.MAGICMIRROR_ROOT)
-
-                    print(colored_text(colors.B_CYAN, "Checking for updates..."))
-                    return_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
-
-                    if return_code:
-                        utils.error_msg('Unable to communicate with git server')
-                        break
-
-                    if not stdout:
-                        print("No updates available for MagicMirror.")
-                        break
-
-                    print(colored_text(colors.B_CYAN, "Updates found for MagicMirror."), "Requesting upgrades...")
-                    error_code, _, stderr = utils.run_cmd(['git', 'pull'])
-
-                    if error_code:
-                        utils.error_msg(stderr)
-                        return False
-
-                    print(utils.done())
-                    error_code, _, stderr = utils.npm_install()
-
-                    if error_code:
-                        utils.error_msg(stderr)
-                        valid_response = True
-
-                    print(utils.done())
-                else:
-                    utils.warning_msg("Respond with yes/no or y/n.")
-    except Exception:
-        return False
-
-    os.chdir(original_dir)
+    os.chdir(parent)
+    print(colored_text(colors.N_CYAN, f'Installing MagicMirror in {parent}/MagicMirror ...'))
+    os.system('bash -c "$(curl -sL https://raw.githubusercontent.com/sdetweil/MagicMirror_scripts/master/raspberry.sh)"')
     return True
 
 

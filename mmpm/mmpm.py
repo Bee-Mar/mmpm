@@ -81,12 +81,15 @@ def main(argv):
             core.check_for_module_updates(modules, args.assume_yes)
 
     elif args.subcommand == opts.INSTALL:
-        installation_candidates = core.get_installation_candidates(
-            modules,
-            [utils.sanitize_name(module) for module in additional_args],
-        )
+        if args.magicmirror:
+            core.install_magicmirror(args.GUI)
+        else:
+            installation_candidates = core.get_installation_candidates(
+                modules,
+                [utils.sanitize_name(module) for module in additional_args],
+            )
 
-        core.install_modules(installation_candidates, assume_yes=args.assume_yes)
+            core.install_modules(installation_candidates, assume_yes=args.assume_yes)
 
     elif args.subcommand == opts.REMOVE:
         if not additional_args:
@@ -113,13 +116,7 @@ def main(argv):
             )
 
     elif args.subcommand == opts.MM_CTL:
-        if args.install:
-            core.install_magicmirror(args.GUI)
-        elif args.update:
-            pass
-        elif args.upgrade:
-            pass
-        elif args.status:
+        if args.status:
             core.get_active_modules(table_formatted=args.table_formatted)
         elif args.start:
             core.start_magicmirror()

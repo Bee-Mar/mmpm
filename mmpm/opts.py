@@ -85,6 +85,14 @@ def get_user_args() -> object:
         dest='assume_yes'
     )
 
+    install_parser.add_argument(
+        '--magicmirror',
+        action='store_true',
+        default=False,
+        help='install MagicMirror, if not already installed',
+        dest='magicmirror'
+    )
+
     # REMOVE PARSER
     remove_parser = subparsers.add_parser(
         REMOVE,
@@ -361,14 +369,6 @@ def get_user_args() -> object:
     #        help='rotate MagicMirror screen',
     #        dest='rotate'
     # )
-
-    mm_ctl_parser.add_argument(
-        '-i',
-        '--install',
-        action='store_true',
-        help='install the most recent version of MagicMirror if not already installed',
-        dest='install'
-    )
 
     # ENV SUBCOMMANDS
     env_parser = subparsers.add_parser(

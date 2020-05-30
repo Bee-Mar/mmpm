@@ -396,21 +396,25 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
     log.logger.info(f'Changing into MagicMirror modules directory {modules_dir}')
     os.chdir(modules_dir)
 
-    # a flag to check if any of the modules have installed. Used for displaying a message later
+    # a flag to check if any of the modules have been installed. Used for displaying a message later
     successful_install: bool = False
+
+    match_count: int = len(installation_candidates)
+
+    print(colored_text(
+            colors.N_CYAN,
+            f"Matched query to {match_count} {'package' if match_count == 1 else 'packages'} \n"
+        )
+    )
 
     if not assume_yes:
         for index, candidate in enumerate(installation_candidates):
-            prompt = f'The following package was matched as an installation candidate:'
-            prompt += f' \n{colored_text(colors.N_GREEN, candidate[consts.TITLE])} ({candidate[consts.REPOSITORY]})\nInstall?'
-
-            if not utils.prompt_user(prompt):
+            if not utils.prompt_user(f'{colored_text(colors.N_GREEN, candidate[consts.TITLE])} ({candidate[consts.REPOSITORY]})\nInstall?'):
                 log.logger.info(f'User not chose to install {candidate[consts.TITLE]}')
                 installation_candidates[index] = {}
             else:
-                log.logger.info(f'User chose to install {candidate[consts.TITLE]}')
-
-            print('')
+                log.logger.info(f'User chose to install {candidate[consts.TITLE]} ({candidate[consts.REPOSITORY]})')
+            print()
 
     for module in installation_candidates:
         if not module:
@@ -428,71 +432,69 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
                 progress=False
             )
 
+            remote_origin_url = remote_origin_url.strip()
+
             os.chdir('..')
 
             if return_code:
                 utils.error_msg(stderr)
                 continue
 
-            if remote_origin_url.strip() == repo.strip():
+            if remote_origin_url == repo:
                 log.logger.info(f'Found a package named {title} already at {target}, with the same git remote origin url')
 
                 if assume_yes:
-                    utils.warning_msg(f'{title} appears to be installed already. Skipping alt installation option due to --yes flag')
-                    log.logger.info(f'User used --yes. Skipping alt installation option for {title}')
+                    utils.warning_msg(f'{title} ({repo}) appears to be installed already in {target}. Skipping alt installation option due to --yes flag')
+                    log.logger.info(f'User used --yes. Skipping alt installation option for {title} ({repo})')
                     continue
 
                 yes = utils.prompt_user(
-                    f'\n{title} appears to be installed already at {target}. Would you like to install {title} into a different target directory?'
+                    f'{title} ({repo}) appears to be installed already in {target}\nWould you like to provide an alternative directory name to install {title}?'
                 )
 
                 if not yes:
+                    utils.warning_msg(f'Skipping installation of {title} ({repo})\n')
                     continue
 
                 try:
-                    print(f'\nOriginal target directory name: {title}')
-                    new_target = input('New target directory name: ')
-                    utils.install_module(module, new_target, modules_dir)
+                    target = input(f'New directory name: ')
                 except KeyboardInterrupt:
-                    print('\n')
-                    utils.warning_msg(f'Cancelling installation of {title}')
+                    utils.warning_msg(f'Cancelling installation of {title} ({repo})\n')
                     continue
+                finally:
+                    print()
 
             else:
                 log.logger.info(f'Found a package named {title} already at {target}, with a different git remote origin url')
 
                 if assume_yes:
-                    utils.warning_msg(f'A package named {title} is installed already. Skipping alt installation option due to --yes flag')
+                    utils.warning_msg(f'A package named {title} is already installed in {target}. Skipping alt installation option due to --yes flag')
                     log.logger.info(f'User used --yes. Skipping alt installation option for {title}')
                     continue
 
                 yes = utils.prompt_user(
-                    f'\nA package named {title} is installed already.\nWould you like to provide a different installation path for the new package named {title}?'
+                    f'A package named {title} is installed already in {target}\nWould you like to provide an alternative directory name to install {title}?'
                 )
 
                 if not yes:
-                    utils.warning_msg(f'Skipping installation of {title}')
+                    utils.warning_msg(f'Skipping installation of {title} ({candidate[consts.REPOSITORY]})')
                     continue
 
                 try:
-                    print(f'\nOriginal target directory name: {title}')
-                    new_target = input('New target directory name: ')
-                    utils.install_module(module, new_target, modules_dir)
+                    target = input(f'New directory name: ')
                 except KeyboardInterrupt:
                     print('\n')
                     utils.warning_msg(f'Cancelling installation of {title}')
                     continue
 
-            continue
-
         if utils.install_module(module, target, modules_dir) and not successful_install:
             successful_install = True
-            print('')
+            print()
 
     if not successful_install:
         return False
 
-    print(f"\nThe installed modules may need additional configuring within '{consts.MAGICMIRROR_CONFIG_FILE}'")
+    print(f'Execute `mmpm open --config` to edit the configuration for newly installed modules')
 
     return True
 
@@ -1300,6 +1302,7 @@ def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool
 
     if logs:
         os.system(f"{'tail -F' if tail else 'cat'} {' '.join(logs)}")
+
 
 def display_mmpm_env_vars() -> None:
     for key, value in consts.MMPM_ENV_VARS.items():

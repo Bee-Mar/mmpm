@@ -2,6 +2,7 @@
 import sys
 import os
 import subprocess
+from multiprocessing import cpu_count
 from collections import Counter, defaultdict
 import logging
 import logging.handlers
@@ -330,9 +331,9 @@ def make() -> Tuple[int, str, str]:
     Returns:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
-    log.logger.info(f"Running 'make' in {os.getcwd()}")
-    plain_print(green_plus() + " Found Makefile. Attempting to run 'make'")
-    return run_cmd(['make'])
+    log.logger.info(f"Running 'make -j {cpu_count()}' in {os.getcwd()}")
+    plain_print(green_plus() + f" Found Makefile. Attempting to run 'make -j {cpu_count()}'")
+    return run_cmd(['make', '-j', f'{cpu_count()}'])
 
 
 def npm_install() -> Tuple[int, str, str]:

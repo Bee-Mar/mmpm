@@ -7,7 +7,6 @@ import shutil
 import sys
 from socket import gethostname, gethostbyname
 from textwrap import fill, indent
-from tabulate import tabulate
 from urllib.error import HTTPError
 from urllib.request import urlopen
 from collections import defaultdict
@@ -143,8 +142,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     return_code, _, stderr = utils.clone('mmpm', consts.MMPM_REPO_URL)
 
     if return_code:
-        utils.error_msg(stderr)
-        sys.exit(1)
+        utils.fatal_msg(stderr)
 
     os.chdir('/tmp/mmpm')
 
@@ -367,59 +365,6 @@ def get_installation_candidates(modules: dict, modules_to_install: List[str]) ->
     return installation_candidates
 
 
-def __install_module__(module: dict, target: str, modules_dir: str, assume_yes: bool = False) -> bool:
-    '''
-    Used to display more detailed information that presented in normal search results
-
-    Parameters:
-        modules (dict): MagicMirror modules database snapshot
-        modules_to_install (List[str]): list of modules provided by user through command line arguments
-
-    Returns:
-        installation_candidates (List[dict]): list of modules whose module names match those of the modules_to_install
-    '''
-
-    error_code, _, stderr = utils.clone(module[consts.TITLE], module[consts.REPOSITORY], target)
-
-    if error_code:
-        utils.warning_msg("\n" + stderr)
-        return False
-
-    print(utils.done())
-
-    os.chdir(target)
-    error: str = utils.install_dependencies()
-    os.chdir('..')
-
-    if error:
-        utils.error_msg(error)
-        failed_install_path = os.path.join(modules_dir, module[consts.TITLE])
-
-        message: str = f"Failed to install {module[consts.TITLE]} at '{failed_install_path}'"
-
-        if assume_yes:
-            message = f'{message}. Removing directory due to --yes flag'
-            utils.error_msg(message)
-            log.logger.info(message)
-            return False
-
-        log.logger.info(message)
-
-        yes = utils.prompt_user(f"{colored_text(colors.B_RED, 'ERROR:')} Failed to install {module[consts.TITLE]} at '{failed_install_path}'. Remove the directory?")
-
-        if yes:
-            message = f"User chose to remove {module[consts.TITLE]} at '{failed_install_path}'"
-            utils.run_cmd(['rm', '-rf', failed_install_path], progress=False)
-            print(f"\nRemoved '{failed_install_path}'\n")
-        else:
-            message = f"Keeping {module[consts.TITLE]} at '{failed_install_path}'"
-            print(f'\n{message}\n')
-            log.logger.info(message)
-
-        return False
-    return True
-
-
 def install_modules(installation_candidates: dict, assume_yes: bool = False) -> bool:
     '''
     Compares list of 'modules_to_install' to modules found within the
@@ -498,17 +443,16 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
                     continue
 
                 yes = utils.prompt_user(
-                    f'\n{title} appears to be installed already. Would you like to install {title} into a different target directory?'
+                    f'\n{title} appears to be installed already at {target}. Would you like to install {title} into a different target directory?'
                 )
 
                 if not yes:
-                    utils.warning_msg(f'Skipping installation of {title}')
                     continue
 
                 try:
                     print(f'\nOriginal target directory name: {title}')
                     new_target = input('New target directory name: ')
-                    __install_module__(module, new_target, modules_dir)
+                    utils.install_module(module, new_target, modules_dir)
                 except KeyboardInterrupt:
                     print('\n')
                     utils.warning_msg(f'Cancelling installation of {title}')
@@ -533,7 +477,7 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
                 try:
                     print(f'\nOriginal target directory name: {title}')
                     new_target = input('New target directory name: ')
-                    __install_module__(module, new_target, modules_dir)
+                    utils.install_module(module, new_target, modules_dir)
                 except KeyboardInterrupt:
                     print('\n')
                     utils.warning_msg(f'Cancelling installation of {title}')
@@ -541,7 +485,7 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
 
             continue
 
-        if __install_module__(module, target, modules_dir) and not successful_install:
+        if utils.install_module(module, target, modules_dir) and not successful_install:
             successful_install = True
             print('')
 
@@ -692,7 +636,7 @@ def get_removal_candidates() -> list:
     return []
 
 
-def remove_modules(modules: dict, modules_to_remove: List[str], assume_yes: bool = False) -> bool:
+def remove_modules(installed_modules: List[defaultdict], assume_yes: bool = False) -> bool:
     '''
     Gathers list of modules currently installed in the ~/MagicMirror/modules
     directory, and removes each of the modules from the folder, if modules are
@@ -706,25 +650,11 @@ def remove_modules(modules: dict, modules_to_remove: List[str], assume_yes: bool
     Returns:
         bool: True upon success, False upon failure
     '''
-
-    installed_modules: dict = get_installed_modules(modules)
-
-    if not installed_modules:
-        utils.error_msg("No modules are currently installed.")
-        return False
-
-    modules_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
-    original_dir: str = os.getcwd()
-
-    if not os.path.exists(modules_dir):
-        msg = "Failed to find MagicMirror root. Have you installed MagicMirror properly? "
-        msg += "You may also set the env variable 'MMPM_MAGICMIRROR_ROOT' to the MagicMirror root directory."
-        utils.error_msg(msg)
-        return False
+    print(installed_modules)
+    sys.exit(0)
 
     removal_candidates = get_removal_candidates()
 
-    os.chdir(modules_dir)
     successful_removals: List[str] = []
     curr_dir: str = os.getcwd()
 
@@ -746,7 +676,6 @@ def remove_modules(modules: dict, modules_to_remove: List[str], assume_yes: bool
         utils.error_msg("Unable to remove modules.")
         return False
 
-    os.chdir(original_dir)
     return True
 
 def load_modules(force_refresh: bool = False) -> dict:
@@ -766,8 +695,7 @@ def load_modules(force_refresh: bool = False) -> dict:
     modules: dict = {}
 
     if not utils.assert_snapshot_directory():
-        utils.error_msg('Failed to create directory for MagicMirror snapshot')
-        sys.exit(1)
+        utils.fatal_msg('Failed to create directory for MagicMirror snapshot')
 
     # if the snapshot has expired, or doesn't exist, get a new one
     if force_refresh:
@@ -883,10 +811,10 @@ def retrieve_modules() -> dict:
                                 desc += contents.string
 
                 modules[categories[index]].append({
-                    consts.TITLE: utils.sanitize_name(title),
-                    consts.REPOSITORY: repo,
-                    consts.AUTHOR: author,
-                    consts.DESCRIPTION: desc
+                    consts.TITLE: utils.sanitize_name(title).strip(),
+                    consts.REPOSITORY: repo.strip(),
+                    consts.AUTHOR: author.strip(),
+                    consts.DESCRIPTION: desc.strip()
                 })
 
     return modules
@@ -1030,7 +958,7 @@ def get_installed_modules(modules: dict) -> dict:
         for module in module_names:
             for module_found in modules_found['Modules']:
                 if module[consts.TITLE] == module_found[consts.TITLE] and module[consts.REPOSITORY] == module_found[consts.REPOSITORY]:
-                    module['Path'] = module_found['Path']
+                    module[consts.PATH] = module_found[consts.PATH]
                     installed_modules.setdefault(category, []).append(module)
 
     os.chdir(original_dir)
@@ -1078,7 +1006,7 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
             print(f'Description: {desc}')
 
     except KeyboardInterrupt:
-        print('\n')
+        print()
         sys.exit(1)
 
     new_source = {
@@ -1189,8 +1117,7 @@ def get_active_modules(table_formatted: bool = False) -> None:
     '''
 
     if not os.path.exists(consts.MAGICMIRROR_CONFIG_FILE):
-        utils.error_msg('MagicMirror config file not found. If this is a mistake, try setting the MMPM_MAGICMIRROR_ROOT env variable')
-        sys.exit(1)
+        utils.fatal_msg('MagicMirror config file not found. If this is a mistake, try setting the MMPM_MAGICMIRROR_ROOT env variable')
 
     temp_config: str = f'{consts.MAGICMIRROR_ROOT}/config/temp_config.js'
     shutil.copyfile(consts.MAGICMIRROR_CONFIG_FILE, temp_config)
@@ -1207,32 +1134,31 @@ def get_active_modules(table_formatted: bool = False) -> None:
     if 'modules' not in config or not config['modules']:
         utils.error_msg(f'No modules found in {consts.MAGICMIRROR_CONFIG_FILE}')
 
-    if table_formatted:
-        headers = [
-            colored_text(colors.B_CYAN, 'Module'),
-            colored_text(colors.B_CYAN, 'Status')
-        ]
-
-        ENABLED = colored_text(colors.B_GREEN, 'enabled')
-        DISABLED = colored_text(colors.B_RED, 'disabled')
-
-        rows: list = []
-
-        for module_config in config['modules']:
-            rows.append([
-                module_config['module'],
-                DISABLED if 'disabled' in module_config and module_config['disabled'] else ENABLED
-            ])
-
-        print(tabulate(rows, headers=headers, tablefmt='fancy_grid'))
-
-    else:
+    if not table_formatted:
         for module_config in config['modules']:
             print(
                 colored_text(colors.N_GREEN, module_config['module']),
                 f"\n  Status: {'disabled' if 'disabled' in module_config and module_config['disabled'] else 'enabled'}\n"
             )
+        return
 
+    global_row: int = 1
+    columns: int = 2
+    rows: int = 1  # to include the header row
+
+    rows = len(config['modules']) + 1
+
+    table = utils.allocate_table_memory(rows, columns)
+
+    table[0][0] = to_bytes('Module')
+    table[0][1] = to_bytes('Status')
+
+    for module_config in config['modules']:
+        table[global_row][0] = to_bytes(module_config['module'])
+        table[global_row][1] = to_bytes('disabled') if 'disabled' in module_config and module_config['disabled'] else to_bytes('enabled')
+        global_row += 1
+
+    utils.display_table(table, rows, columns)
 
 
 def get_web_interface_url() -> str:
@@ -1251,8 +1177,7 @@ def get_web_interface_url() -> str:
     mmpm_conf_path = '/etc/nginx/sites-enabled/mmpm.conf'
 
     if not os.path.exists(mmpm_conf_path):
-        utils.error_msg('The MMPM nginx configuration file does not appear to exist. Is the GUI installed?')
-        sys.exit(1)
+        utils.fatal_msg('The MMPM nginx configuration file does not appear to exist. Is the GUI installed?')
 
     # this value needs to be retrieved dynamically in case the user modifies the nginx conf
     with open(mmpm_conf_path, 'r') as conf:
@@ -1261,8 +1186,7 @@ def get_web_interface_url() -> str:
     try:
         port: str = re.findall(r"listen\s?\d+", mmpm_conf)[0].split()[1]
     except IndexError:
-        utils.error_msg('Unable to retrieve the port number of the MMPM web interface')
-        sys.exit(1)
+        utils.fatal_msg('Unable to retrieve the port number of the MMPM web interface')
 
     return f'http://{gethostbyname(gethostname())}:{port}'
 

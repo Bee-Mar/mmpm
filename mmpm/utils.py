@@ -2,7 +2,7 @@
 import sys
 import os
 import subprocess
-from collections import Counter
+from collections import Counter, defaultdict
 import logging
 import logging.handlers
 import time
@@ -58,7 +58,7 @@ def plain_print(msg: str) -> None:
 
 def error_msg(msg: str) -> None:
     '''
-    Displays error message to user, and exits program.
+    Displays error message to user, and continues program execution.
 
     Parameters:
         msg (str): The error message to be printed to stdout
@@ -77,6 +77,20 @@ def warning_msg(msg: str) -> None:
         None
     '''
     print(colored_text(colors.B_YELLOW, "WARNING:"), msg)
+
+
+def fatal_msg(msg: str) -> None:
+    '''
+    Displays fatal error message to user and halts program execution
+
+    Parameters:
+        msg (str): The fatal error message to be printed to stdout
+
+    Returns:
+        None
+    '''
+    print(colored_text(colors.B_RED, "FATAL:"), msg)
+    sys.exit(127)
 
 
 def separator(message) -> None:
@@ -209,7 +223,7 @@ def open_default_editor(file_path: str) -> Optional[None]:
     log.logger.info(f'Attempting to open {file_path} in users default editor')
 
     if not file_path:
-        error_msg(f'MagicMirror config file not found. Please ensure {consts.MMPM_ENV_VARS[consts.MMPM_MAGICMIRROR_ROOT]} is set properly.')
+        fatal_msg(f'MagicMirror config file not found. Please ensure {consts.MMPM_ENV_VARS[consts.MMPM_MAGICMIRROR_ROOT]} is set properly.')
         sys.exit(1)
 
     editor = os.getenv('EDITOR') if os.getenv('EDITOR') else 'nano'
@@ -363,6 +377,62 @@ def basic_fail_log(error_code: int, error_message: str) -> None:
         None
     '''
     log.logger.info(f'Failed with return code {error_code}, and error message {error_message}')
+
+
+def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool = False) -> bool:
+    '''
+    Used to display more detailed information that presented in normal search results
+
+    Parameters:
+        modules (dict): MagicMirror modules database snapshot
+        modules_to_install (List[str]): list of modules provided by user through command line arguments
+
+    Returns:
+        installation_candidates (List[dict]): list of modules whose module names match those of the modules_to_install
+    '''
+
+    error_code, _, stderr = clone(module[consts.TITLE], module[consts.REPOSITORY], target)
+
+    if error_code:
+        warning_msg("\n" + stderr)
+        return False
+
+    print(done())
+
+    os.chdir(target)
+    error: str = install_dependencies()
+    os.chdir('..')
+
+    if error:
+        error_msg(error)
+        failed_install_path = os.path.join(modules_dir, module[consts.TITLE])
+
+        message: str = f"Failed to install {module[consts.TITLE]} at '{failed_install_path}'"
+
+        if assume_yes:
+            message = f'{message}. Removing directory due to --yes flag'
+            error_msg(message)
+            log.logger.info(message)
+            return False
+
+        log.logger.info(message)
+
+        yes = prompt_user(
+            f"{colored_text(colors.B_RED, 'ERROR:')} Failed to install {module[consts.TITLE]} at '{failed_install_path}'. Remove the directory?"
+        )
+
+        if yes:
+            message = f"User chose to remove {module[consts.TITLE]} at '{failed_install_path}'"
+            run_cmd(['rm', '-rf', failed_install_path], progress=False)
+            print(f"\nRemoved '{failed_install_path}'\n")
+        else:
+            message = f"Keeping {module[consts.TITLE]} at '{failed_install_path}'"
+            print(f'\n{message}\n')
+            log.logger.info(message)
+
+        return False
+    return True
+
 
 
 def install_dependencies() -> str:

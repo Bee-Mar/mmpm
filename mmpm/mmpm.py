@@ -22,16 +22,14 @@ def main(argv):
     modules = core.load_modules(force_refresh=should_refresh)
 
     if not modules:
-        utils.error_msg('Fatal. Unable to retrieve modules.')
-        sys.exit(1)
+        utils.fatal_msg('Unable to retrieve modules.')
 
     if args.subcommand == opts.LIST:
         if args.installed:
             installed_modules = core.get_installed_modules(modules)
 
             if not installed_modules:
-                utils.error_msg("No modules are currently installed")
-                sys.exit(1)
+                utils.fatal_msg('No modules are currently installed')
 
             core.display_modules(installed_modules, table_formatted=args.table_formatted)
 
@@ -44,15 +42,15 @@ def main(argv):
 
     elif args.subcommand == opts.SHOW:
         if not additional_args:
-            utils.error_msg('No module(s) provided')
-            sys.exit(1)
+            utils.fatal_msg('No module(s) provided')
 
         for query in additional_args:
             result = core.search_modules(modules, query, show=True)
+
             if not result:
-                utils.error_msg(f'Unable to match {query} to a module title')
-            else:
-                core.show_module_details(result)
+                utils.fatal_msg(f'Unable to match {query} to a module title')
+
+            core.show_module_details(result)
 
         #results = [core.search_modules(modules, search, case_sensitive=True, by_title_only=True) for search in additional_args]
 
@@ -62,7 +60,7 @@ def main(argv):
         elif args.gui:
             core.open_mmpm_gui()
         else:
-            utils.error_msg('No options provided. See `mmpm open --help`')
+            utils.fatal_msg('No options provided. See `mmpm open --help`')
 
     elif args.subcommand == opts.ADD_EXT_MODULE:
         if args.remove:
@@ -72,8 +70,7 @@ def main(argv):
 
     elif args.subcommand == opts.UPDATE:
         if additional_args:
-            utils.error_msg(f'Unkown argument provided for `mmpm {args.subcommand}`')
-            sys.exit(1)
+            utils.fatal_msg(f'Unkown argument provided for `mmpm {args.subcommand}`')
         if args.full:
             pass
         elif args.mmpm:
@@ -93,17 +90,22 @@ def main(argv):
 
     elif args.subcommand == opts.REMOVE:
         if not additional_args:
-            utils.error_msg('No module names provided')
-        else:
-            core.remove_modules(
-                modules,
-                [utils.sanitize_name(module) for module in additional_args],
-                assume_yes=args.assume_yes
-            )
+            utils.fatal_msg('No module names provided')
+
+        installed_modules = core.get_installed_modules(modules)
+
+        if not installed_modules:
+            utils.fatal_msg("No modules are currently installed")
+
+        core.remove_modules(
+            installed_modules,
+            [utils.sanitize_name(module) for module in additional_args],
+            assume_yes=args.assume_yes
+        )
 
     elif args.subcommand == opts.SEARCH:
         if len(additional_args) > 1:
-            utils.error_msg(f'`mmpm {args.subcommand}` only accepts one argument')
+            utils.fatal_msg(f'`mmpm {args.subcommand}` only accepts one argument')
         else:
             core.display_modules(
                 core.search_modules(modules, additional_args[0], case_sensitive=args.case_sensitive),
@@ -132,7 +134,7 @@ def main(argv):
         elif args.refresh:
             pass
         else:
-            utils.error_msg(f'Unknown argument for `mmpm {args.subcommand}`')
+            utils.fatal_msg(f'Unknown argument for `mmpm {args.subcommand}`')
 
     elif args.subcommand == opts.LOGS:
         if not args.cli and not args.gui:
@@ -159,8 +161,7 @@ def main(argv):
 
     elif args.subcommand == opts.ENV:
         if additional_args:
-            utils.error_msg(f'`mmpm {args.subcommand}` does not accept any additional arguments')
-            sys.exit(1)
+            utils.fatal_msg(f'`mmpm {args.subcommand}` does not accept any additional arguments')
         else:
             core.display_mmpm_env_vars()
 

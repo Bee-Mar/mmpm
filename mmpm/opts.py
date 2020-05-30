@@ -363,26 +363,10 @@ def get_user_args() -> object:
     # )
 
     mm_ctl_parser.add_argument(
-        '-U',
-        '--upgrade',
-        action='store_true',
-        help='upgrade MMPM, if available',
-        dest='upgrade'
-    )
-
-    mm_ctl_parser.add_argument(
-        '-u',
-        '--update',
-        action='store_true',
-        help='checks if upgrades are available for MMPM',
-        dest='update'
-    )
-
-    mm_ctl_parser.add_argument(
         '-i',
         '--install',
         action='store_true',
-        help='install the most recent version of MagicMirror',
+        help='install the most recent version of MagicMirror if not already installed',
         dest='install'
     )
 

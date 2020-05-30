@@ -489,7 +489,6 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
 
         if utils.install_module(module, target, modules_dir) and not successful_install:
             successful_install = True
-            print()
 
     if not successful_install:
         return False
@@ -1224,7 +1223,7 @@ def stop_magicmirror() -> None:
     '''
     if which('pm2'):
         log.logger.info("Using 'pm2' to stop MagicMirror")
-        return_code, stdout, stderr = utils.run_cmd(['pm2', 'stop', 'MagicMirror'])
+        return_code, stdout, stderr = utils.run_cmd(['pm2', 'stop', 'MagicMirror'], progress=False)
         log.logger.info(f'pm2 stdout: {stdout}')
         log.logger.info(f'pm2 stderr: {stderr}')
     else:
@@ -1250,7 +1249,7 @@ def start_magicmirror() -> None:
 
     if which('pm2'):
         log.logger.info("Using 'pm2' to start MagicMirror")
-        return_code, stdout, stderr = utils.run_cmd(['pm2', 'start', 'MagicMirror'])
+        return_code, stdout, stderr = utils.run_cmd(['pm2', 'start', 'MagicMirror'], progress=False)
         log.logger.info(f'pm2 stdout: {stdout}')
         log.logger.info(f'pm2 stderr: {stderr}')
     else:
@@ -1273,7 +1272,7 @@ def restart_magicmirror() -> None:
     '''
     if which('pm2'):
         log.logger.info("Using 'pm2' to restart MagicMirror")
-        return_code, stdout, stderr = utils.run_cmd(['pm2', 'restart', 'MagicMirror'])
+        return_code, stdout, stderr = utils.run_cmd(['pm2', 'restart', 'MagicMirror'], progress=False)
         log.logger.info(f'pm2 stdout: {stdout}')
         log.logger.info(f'pm2 stderr: {stderr}')
     else:

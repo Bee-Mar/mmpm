@@ -47,12 +47,14 @@ def main(argv):
             utils.error_msg('No module(s) provided')
             sys.exit(1)
 
-        results = [core.search_modules(modules, search, case_sensitive=True, by_title_only=True) for search in additional_args]
+        for query in additional_args:
+            result = core.search_modules(modules, query, show=True)
+            if not result:
+                utils.error_msg(f'Unable to match {query} to a module title')
+            else:
+                core.show_module_details(result)
 
-        if not results[0]:
-            utils.error_msg('Unable to match query to module name(s). This search is case-sensitive')
-        else:
-            core.show_module_details(results)
+        #results = [core.search_modules(modules, search, case_sensitive=True, by_title_only=True) for search in additional_args]
 
     elif args.subcommand == opts.OPEN:
         if args.config:
@@ -70,7 +72,7 @@ def main(argv):
 
     elif args.subcommand == opts.UPDATE:
         if additional_args:
-            utils.error_msg(f'`mmpm {args.subcommand}` does not accept any additional arguments')
+            utils.error_msg(f'Unkown argument provided for `mmpm {args.subcommand}`')
             sys.exit(1)
         if args.full:
             pass
@@ -80,16 +82,6 @@ def main(argv):
             core.check_for_magicmirror_updates(args.assume_yes)
         else:
             core.check_for_module_updates(modules, args.assume_yes)
-
-    #elif args.subcommand == opts.UPGRADE:
-    #    if args.all:
-    #        pass
-    #    else:
-    #        core.upgrade_modules(
-    #            modules,
-    #            modules_to_upgrade=additional_args[0] if additional_args else [],
-    #            assume_yes=args.assume_yes
-    #        )
 
     elif args.subcommand == opts.INSTALL:
         installation_candidates = core.get_installation_candidates(
@@ -110,16 +102,13 @@ def main(argv):
             )
 
     elif args.subcommand == opts.SEARCH:
-        core.display_modules(
-            core.search_modules(modules, additional_args[0], case_sensitive=args.case_sensitive),
-            table_formatted=args.table_formatted
-        )
-
-    elif args.subcommand == opts.UPGRADE:
-        if args.upgrade_full:
-            pass
-        if args.upgrade_modules:
-            pass
+        if len(additional_args) > 1:
+            utils.error_msg(f'`mmpm {args.subcommand}` only accepts one argument')
+        else:
+            core.display_modules(
+                core.search_modules(modules, additional_args[0], case_sensitive=args.case_sensitive),
+                table_formatted=args.table_formatted
+            )
 
     elif args.subcommand == opts.MM_CTL:
         if args.install:
@@ -142,6 +131,8 @@ def main(argv):
             core.snapshot_details(modules)
         elif args.refresh:
             pass
+        else:
+            utils.error_msg(f'Unknown argument for `mmpm {args.subcommand}`')
 
     elif args.subcommand == opts.LOGS:
         if not args.cli and not args.gui:
@@ -150,19 +141,21 @@ def main(argv):
         else:
             core.display_log_files(args.cli, args.gui, args.tail)
 
-    elif args.subcommand == opts.UPDATE:
-        if should_refresh:
-            message = " Automated check for MMPM updates as part of snapshot refresh ... "
+    #elif args.subcommand == opts.UPDATE:
+    #    if should_refresh:
+    #        message = " Automated check for MMPM updates as part of snapshot refresh ... "
+    #    if args.mmpm:
+    #        message = " Checking for MMPM updates ... "
+    #    elif args.magicmirror:
+    #        message = " Checking for MagicMirror updates ... "
+    #    elif args.full:
+    #        pass
+    #    else:
+    #        utils.error_msg(f'Unknown argument for `mmpm {args.subcommand}`')
+    #        sys.exit(1)
 
-        if args.mmpm:
-            message = " Checking for MMPM updates ... "
-        elif args.magicmirror:
-            message = " Checking for MagicMirror updates ... "
-        elif args.full:
-            pass
-
-        utils.plain_print(utils.green_plus() + message)
-        core.check_for_mmpm_enhancements(assume_yes=args.assume_yes, gui=args.GUI)
+    #    utils.plain_print(utils.green_plus() + message)
+    #    core.check_for_mmpm_enhancements(assume_yes=args.assume_yes, gui=args.GUI)
 
     elif args.subcommand == opts.ENV:
         if additional_args:

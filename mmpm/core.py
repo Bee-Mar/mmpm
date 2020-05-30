@@ -277,7 +277,7 @@ def check_for_module_updates(modules: dict, assume_yes: bool = False):
     return True
 
 
-def search_modules(modules: dict, query: str, case_sensitive: bool = False, by_title_only: bool = False) -> dict:
+def search_modules(modules: dict, query: str, case_sensitive: bool = False, show: bool = False) -> dict:
     '''
     Used to search the 'modules' for either a category, or keyword/phrase
     appearing within module descriptions. If the argument supplied is a
@@ -300,10 +300,10 @@ def search_modules(modules: dict, query: str, case_sensitive: bool = False, by_t
 
     search_results = defaultdict(list)
 
-    if case_sensitive:
+    if show:
+        not_a_match = lambda query, description, title, author : query != title
+    elif case_sensitive:
         not_a_match = lambda query, description, title, author : query not in description and query not in title and query not in author
-    elif case_sensitive and by_title_only:
-        not_a_match = lambda query, description, title, author : query not in title
     else:
         query = query.lower()
         not_a_match = lambda query, description, title, author : query not in description.lower() and query not in title.lower() and query not in author.lower()
@@ -334,14 +334,13 @@ def show_module_details(modules: List[defaultdict]) -> None:
         None
     '''
 
-    for _, group in enumerate(modules):
-        for category, _modules  in group.items():
-            for module in _modules:
-                print(colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'))
-                print(f'  Category: {category}')
-                print(f'  Repository: {module[consts.REPOSITORY]}')
-                print(f'  Author: {module[consts.AUTHOR]}')
-                print(indent(fill(f'Description: {module[consts.DESCRIPTION]}\n', width=80), prefix='  '), '\n')
+    for category, _modules  in modules.items():
+        for module in _modules:
+            print(colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'))
+            print(f'  Category: {category}')
+            print(f'  Repository: {module[consts.REPOSITORY]}')
+            print(f'  Author: {module[consts.AUTHOR]}')
+            print(indent(fill(f'Description: {module[consts.DESCRIPTION]}\n', width=80), prefix='  '), '\n')
 
 
 def get_installation_candidates(modules: dict, modules_to_install: List[str]) -> list:

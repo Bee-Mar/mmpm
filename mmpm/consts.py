@@ -8,6 +8,7 @@ REPOSITORY: str = 'Repository'
 DESCRIPTION: str = 'Description'
 AUTHOR: str = 'Author'
 CATEGORY: str = 'Category'
+PATH: str = 'Path'
 
 MAKEFILE: str = 'Makefile'
 CMAKELISTS: str = 'CMakeLists.txt'
@@ -27,7 +28,6 @@ MMPM_WIKI_URL: str = 'https://github.com/Bee-Mar/mmpm/wiki'
 MMPM_CONFIG_DIR: str = join(HOME_DIR, '.config', 'mmpm')
 MMPM_LOG_FILE: str = join(MMPM_CONFIG_DIR, 'log', 'mmpm-cli-interface.log')
 MMPM_EXTERNAL_SOURCES_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
-MMPM_AVAILABLE_UPDATES_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-module-updates.json')
 
 LIBMMPM_SHARED_OBJECT: str = join('/', 'usr', 'local', 'lib', 'mmpm', 'libmmpm.so')
 SNAPSHOT_FILE: str = join(MMPM_CONFIG_DIR, 'MagicMirror-modules-snapshot.json')

@@ -82,7 +82,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
 
     try:
         log.logger.info(f'Checking for newer version of MMPM. Current version: {mmpm.__version__}')
-        utils.plain_print(f'Checking for newer version of MMPM ... ')
+        utils.plain_print(f'Checking MMPM updates ... ')
 
         MMPM_FILE = urlopen(consts.MMPM_FILE_URL)
         contents: str = str(MMPM_FILE.read())
@@ -106,7 +106,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
         return False
 
     if mmpm.__version__ >= version_number:
-        print('You have the latest version of MMPM')
+        print('No updates found for MMPM')
         log.logger.info('No newer version of MMPM found > {version_number} available. The current version is the latest')
         return True
 
@@ -157,7 +157,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     return True
 
 
-def upgrade_modules(modules: dict, modules_to_upgrade: List[str], assume_yes: bool = False):
+def upgrade_module(module: dict):
     '''
     Depending on flags passed in as arguments:
 
@@ -169,64 +169,40 @@ def upgrade_modules(modules: dict, modules_to_upgrade: List[str], assume_yes: bo
     supplying their case-sensitive name(s) as an addtional argument.
 
     Parameters:
-        modules (dict): Dictionary of MagicMirror modules
-        update (bool): Flag to update modules
-        upgrade (bool): Flag to upgrade modules
-        modules_to_upgrade (List[str]): List of modules to update/upgrade
+        module (dict): the MagicMirror module being upgraded
 
     Returns:
-        None
+        bool: True on success, False on failure
     '''
 
     original_dir: str = os.getcwd()
     modules_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
     os.chdir(modules_dir)
 
-    installed_modules: dict = get_installed_modules(modules)
-
     updates_list: List[str] = []
 
     dirs: List[str] = os.listdir(modules_dir)
 
-    if modules_to_upgrade:
-        dirs = modules_to_upgrade
+    os.chdir(module[consts.PATH])
+    utils.plain_print(f'{utils.green_plus()} Retrieving upgrade for {module[consts.TITLE]}')
+    error_code, stdout, stderr = utils.run_cmd(["git", "pull"])
 
-    for _, value in installed_modules.items():
-        for index, _ in enumerate(value):
-            if value[index][consts.TITLE] in dirs:
-                title: str = value[index][consts.TITLE]
-                curr_module_dir: str = os.path.join(modules_dir, title)
-                os.chdir(curr_module_dir)
+    if error_code:
+        utils.error_msg(stderr)
+        return False
 
-                utils.plain_print(f"Requesting upgrade for {title}")
-                error_code, stdout, stderr = utils.run_cmd(["git", "pull"])
+    print(utils.done())
 
-                if error_code:
-                    utils.error_msg(stderr)
-                    return False
+    error_msg: str = utils.install_dependencies()
 
-                print(utils.done())
-
-                if "Already up to date." in stdout:
-                    print(stdout)
-                    continue
-
-                error_msg: str = utils.install_dependencies()
-
-                if error_msg:
-                    utils.error_msg(error_msg)
-                    return False
-
-            os.chdir(modules_dir)
-
-    os.chdir(original_dir)
-
-    #yes = utils.prompt_user('Are you sure you want to upgrade?', ['yes', 'y'], ['no', 'n'])
+    if error_msg:
+        utils.error_msg(error_msg)
+        return False
 
     return True
 
 
-def check_for_module_updates(modules: dict):
+def check_for_module_updates(modules: dict, assume_yes: bool = False):
     '''
     Depending on flags passed in as arguments:
 
@@ -253,58 +229,50 @@ def check_for_module_updates(modules: dict):
 
     installed_modules: dict = get_installed_modules(modules)
 
-    updates_list: List[str] = []
+    updateable: List[str] = []
+    upgraded: bool = True
 
     dirs: List[str] = os.listdir(modules_dir)
 
-    for _, value in installed_modules.items():
-        for index, _ in enumerate(value):
-            if value[index][consts.TITLE] in dirs:
-                title: str = value[index][consts.TITLE]
-                curr_module_dir: str = os.path.join(modules_dir, title)
-                os.chdir(curr_module_dir)
+    for _, modules in installed_modules.items():
+        for module in modules:
+            os.chdir(module[consts.PATH])
 
-                utils.plain_print(f"Checking {title} for updates")
-                return_code, _, stdout = utils.run_cmd(["git", "fetch", "--dry-run"])
-
-                if return_code:
-                    utils.error_msg('Unable to communicate with git server')
-                    continue
-
-                if stdout:
-                    updates_list.append(title)
-
-                print(utils.done())
-
-                os.chdir(modules_dir)
-
-    os.chdir(original_dir)
-
-    if not updates_list:
-        print(colored_text(colors.RESET, "No updates available"))
-    else:
-        utils.plain_print(colored_text(colors.B_MAGENTA, "Updates are available for the following modules:\n"))
-
-        modules_with_updates = {'Modules': updates_list}
-
-        for module in updates_list:
-            print(f"{module}")
-
-        read_mode = bool(os.stat(consts.MMPM_AVAILABLE_UPDATES_FILE).st_size)
-
-        if not os.path.exists(consts.MMPM_AVAILABLE_UPDATES_FILE):
-            return_code, stdout, stderr = utils.run_cmd(['touch', consts.MMPM_AVAILABLE_UPDATES_FILE])
+            utils.plain_print(f'Checking {module[consts.TITLE]} for updates')
+            return_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
 
             if return_code:
-                utils.error_msg(stderr)
-                sys.exit(1)
+                utils.error_msg('Unable to communicate with git server')
+                continue
 
-        # naming schem is not great here, but just leaving for the moment
-        with open(consts.MMPM_AVAILABLE_UPDATES_FILE, 'r' if read_mode else 'w') as updates:
-            if read_mode:
-                data = json.load(updates)
-            else:
-                json.dump(updates_list, updates)
+            if stdout:
+                updateable.append(module)
+
+            #updateable.append(module)
+            print(utils.done())
+
+
+    if not updateable:
+        print(colored_text(colors.RESET, 'No updates found for modules'))
+        return False
+
+    print(f'\n{len(updateable)} updates are available\n')
+
+    for module in updateable:
+        yes = True if assume_yes else utils.prompt_user(f'An upgrade is available for {module[consts.TITLE]}. Would you like to upgrade now?')
+
+        if not yes:
+            upgraded = False
+            continue
+
+        if not upgrade_module(module):
+            utils.error_msg('Unable to communicate with git server')
+
+    if not upgraded:
+        return False
+
+    if assume_yes or utils.prompt_user('Would you like to restart MagicMirror now?'):
+        restart_magicmirror()
 
     return True
 
@@ -373,8 +341,7 @@ def show_module_details(modules: List[defaultdict]) -> None:
                 print(f'  Category: {category}')
                 print(f'  Repository: {module[consts.REPOSITORY]}')
                 print(f'  Author: {module[consts.AUTHOR]}')
-                print(f'  Last Commit: ')
-                print(indent(fill(f'Description: {module[consts.DESCRIPTION]}\n', width=70), prefix='  '), '\n')
+                print(indent(fill(f'Description: {module[consts.DESCRIPTION]}\n', width=80), prefix='  '), '\n')
 
 
 def get_installation_candidates(modules: dict, modules_to_install: List[str]) -> list:
@@ -587,7 +554,7 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
     return True
 
 
-def check_for_magicmirror_updates() -> bool:
+def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
     '''
     Checks for updates available to the MagicMirror repository. Alerts user if an upgrade is available.
 
@@ -608,8 +575,8 @@ def check_for_magicmirror_updates() -> bool:
     os.chdir(consts.MAGICMIRROR_ROOT)
     utils.plain_print('Checking for MagicMirror updates')
 
-    # stdout and stderr are flipped for git commands...because that makes sense
-    # except now stdout doesn't even contain error messages
+    # stdout and stderr are flipped for git commands...because that totally makes sense
+    # except now stdout doesn't even contain error messages...thanks git
     return_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
 
     print(utils.done())
@@ -619,10 +586,26 @@ def check_for_magicmirror_updates() -> bool:
         return False
 
     if stdout:
-        print(
-            colored_text(colors.B_CYAN, 'An update is available for MagicMirror'),
-            'Execute `mmpm upgrade --magicmirror` to perform the upgrade'
-        )
+        yes = True if assume_yes else utils.prompt_user('An upgrade is available for MagicMirror. Would you like to upgrade now?')
+
+        if not yes:
+            return False
+
+        utils.plain_print('\nUpgrading MagicMirror')
+        return_code, _, stdout = utils.run_cmd(['git', 'pull'])
+
+        if return_code:
+            utils.error_msg('Failed to communicate with git server')
+            return False
+
+        print(utils.done(), '\n\nUpgrade complete!\n')
+
+        yes = True if assume_yes else utils.prompt_user('Would you like to restart MagicMirror now?')
+
+        if not yes:
+            return False
+
+        restart_magicmirror()
 
     else:
         print('No updates found for MagicMirror')
@@ -924,16 +907,15 @@ def display_modules(modules: dict, list_categories: bool = False, table_formatte
         None
     '''
 
-    MAX_LENGTH: int = 80
+    MAX_LENGTH: int = 120
     global_row: int = 1
-    columns: int = 3
+    columns: int = 2
     rows: int = 1  # to include the header row
 
     if list_categories:
 
         if table_formatted:
             rows = len(modules.keys()) + 1
-            columns = 2
 
             table = utils.allocate_table_memory(rows, columns)
 
@@ -958,32 +940,32 @@ def display_modules(modules: dict, list_categories: bool = False, table_formatte
 
         table = utils.allocate_table_memory(rows, columns)
 
-        table[0][0] = to_bytes(consts.CATEGORY)
-        table[0][1] = to_bytes(consts.TITLE)
+        #table[0][0] = to_bytes(consts.CATEGORY)
+        table[0][0] = to_bytes(consts.TITLE)
         #table[0][2] = to_bytes(consts.REPOSITORY)
         #table[0][3] = to_bytes(consts.AUTHOR)
-        table[0][2] = to_bytes(consts.DESCRIPTION)
+        table[0][1] = to_bytes(consts.DESCRIPTION)
 
         for category, _modules in modules.items():
             for index, module in enumerate(_modules):
                 description = module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION]
-                table[global_row][0] = to_bytes(category)
-                table[global_row][1] = to_bytes(module[consts.TITLE])
+                #table[global_row][0] = to_bytes(category)
+                table[global_row][0] = to_bytes(module[consts.TITLE])
                 #table[global_row][2] = to_bytes(module[consts.REPOSITORY])
                 #table[global_row][3] = to_bytes(module[consts.AUTHOR])
-                table[global_row][2] = to_bytes(description)
+                table[global_row][1] = to_bytes(description)
                 global_row += 1
 
         utils.display_table(table, rows, columns)
 
     else:
-        MAX_LENGTH = 90
+        MAX_LENGTH = 120
 
         for category, _modules in modules.items():
             for index, module in enumerate(_modules):
                 print(colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'))
-                print(f"  {module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION]}")
-                print(f'  Category: {category}\n')
+                print(f"  {module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION]}\n")
+                #print(f'  Category: {category}\n')
 
 
 def get_installed_modules(modules: dict) -> dict:
@@ -1035,7 +1017,8 @@ def get_installed_modules(modules: dict) -> dict:
 
             modules_found['Modules'].append({
                 consts.TITLE: project_name.strip(),
-                consts.REPOSITORY: remote_origin_url.strip()
+                consts.REPOSITORY: remote_origin_url.strip(),
+                consts.PATH: os.getcwd()
             })
 
         except Exception:
@@ -1048,6 +1031,7 @@ def get_installed_modules(modules: dict) -> dict:
         for module in module_names:
             for module_found in modules_found['Modules']:
                 if module[consts.TITLE] == module_found[consts.TITLE] and module[consts.REPOSITORY] == module_found[consts.REPOSITORY]:
+                    module['Path'] = module_found['Path']
                     installed_modules.setdefault(category, []).append(module)
 
     os.chdir(original_dir)

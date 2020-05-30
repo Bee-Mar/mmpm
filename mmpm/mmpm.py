@@ -69,24 +69,27 @@ def main(argv):
             core.add_external_module(args.title, args.author, args.repo, args.desc)
 
     elif args.subcommand == opts.UPDATE:
+        if additional_args:
+            utils.error_msg(f'`mmpm {args.subcommand}` does not accept any additional arguments')
+            sys.exit(1)
         if args.full:
             pass
         elif args.mmpm:
-            core.check_for_mmpm_enhancements()
+            core.check_for_mmpm_enhancements(args.assume_yes)
         elif args.magicmirror:
-            core.check_for_magicmirror_updates()
+            core.check_for_magicmirror_updates(args.assume_yes)
         else:
-            core.check_for_module_updates(modules)
+            core.check_for_module_updates(modules, args.assume_yes)
 
-    elif args.subcommand == opts.UPGRADE:
-        if args.all:
-            pass
-        else:
-            core.upgrade_modules(
-                modules,
-                modules_to_upgrade=additional_args[0] if additional_args else [],
-                assume_yes=args.assume_yes
-            )
+    #elif args.subcommand == opts.UPGRADE:
+    #    if args.all:
+    #        pass
+    #    else:
+    #        core.upgrade_modules(
+    #            modules,
+    #            modules_to_upgrade=additional_args[0] if additional_args else [],
+    #            assume_yes=args.assume_yes
+    #        )
 
     elif args.subcommand == opts.INSTALL:
         installation_candidates = core.get_installation_candidates(
@@ -163,7 +166,8 @@ def main(argv):
 
     elif args.subcommand == opts.ENV:
         if additional_args:
-            utils.error_msg('`mmpm env` does not accept any additional arguments')
+            utils.error_msg(f'`mmpm {args.subcommand}` does not accept any additional arguments')
+            sys.exit(1)
         else:
             core.display_mmpm_env_vars()
 

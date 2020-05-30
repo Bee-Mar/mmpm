@@ -129,27 +129,13 @@ def get_user_args() -> object:
         dest='full'
     )
 
-    upgrade_parser = subparsers.add_parser(
-        UPGRADE,
-        usage='\n  mmpm upgrade <module(s)> [--yes]\n  mmpm upgrade --all [--yes]',
-        help='upgrade modules and/or MMPM'
-    )
-
-    upgrade_parser.add_argument(
+    update_parser.add_argument(
         '-y',
         '--yes',
         action='store_true',
         default=False,
         help='assume yes for user response and do not show prompt',
         dest='assume_yes'
-    )
-
-    upgrade_parser.add_argument(
-        '--all',
-        action='store_true',
-        default=False,
-        help='upgrade all modules, MMPM, and MagicMirror',
-        dest='all'
     )
 
     # DATABASE SUBCOMMANDS

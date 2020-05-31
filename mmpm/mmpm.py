@@ -34,7 +34,7 @@ def main(argv):
             core.display_modules(installed_modules, table_formatted=args.table_formatted)
 
         elif args.categories:
-            core.display_modules(modules, list_categories=True, table_formatted=args.table_formatted)
+            core.display_categories(core.get_module_categories(modules), table_formatted=args.table_formatted)
         elif args.all:
             core.display_modules(modules, table_formatted=args.table_formatted)
         elif args.gui_url:

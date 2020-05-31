@@ -401,14 +401,17 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
 
     match_count: int = len(installation_candidates)
 
-    print(colored_text(
+    print(
+        colored_text(
             colors.N_CYAN,
             f"Matched query to {match_count} {'package' if match_count == 1 else 'packages'} \n"
         )
     )
 
-    if not assume_yes:
-        for index, candidate in enumerate(installation_candidates):
+    for index, candidate in enumerate(installation_candidates):
+        if assume_yes:
+            print(f'Installing {colored_text(colors.N_GREEN, candidate[consts.TITLE])} ({candidate[consts.REPOSITORY]})\n')
+        else:
             if not utils.prompt_user(f'{colored_text(colors.N_GREEN, candidate[consts.TITLE])} ({candidate[consts.REPOSITORY]})\nInstall?'):
                 log.logger.info(f'User not chose to install {candidate[consts.TITLE]}')
                 installation_candidates[index] = {}
@@ -519,7 +522,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
     os.chdir(consts.MAGICMIRROR_ROOT)
     utils.plain_print('Checking for MagicMirror updates')
 
-    # stdout and stderr are flipped for git commands...because that totally makes sense
+    # stdout and stderr are flipped for git command output, because that totally makes sense
     # except now stdout doesn't even contain error messages...thanks git
     return_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
 
@@ -587,11 +590,7 @@ def install_magicmirror(gui=False) -> bool:
     return True
 
 
-def get_removal_candidates() -> list:
-    return []
-
-
-def remove_modules(installed_modules: List[defaultdict], assume_yes: bool = False) -> bool:
+def remove_modules(installed_modules: List[defaultdict], modules_to_remove: List[str], assume_yes: bool = False) -> bool:
     '''
     Gathers list of modules currently installed in the ~/MagicMirror/modules
     directory, and removes each of the modules from the folder, if modules are
@@ -599,38 +598,34 @@ def remove_modules(installed_modules: List[defaultdict], assume_yes: bool = Fals
     them no modules are currently installed.
 
     Parameters:
-        modules (dict): Dictionary of MagicMirror modules
+        installed_modules (List[defaultdict]): List of dictionary of MagicMirror modules
         modules_to_remove (list): List of modules to remove
+        assume_yes (bool): if True, all prompts are assumed to have a response of yes from the user
 
     Returns:
         bool: True upon success, False upon failure
     '''
-    print(installed_modules)
-    sys.exit(0)
-
-    removal_candidates = get_removal_candidates()
-
     successful_removals: List[str] = []
     curr_dir: str = os.getcwd()
 
-    for module in modules_to_remove:
-        dir_to_rm: str = os.path.join(curr_dir, module)
+    modules_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
+    module_dirs: List[str] = os.listdir(modules_dir)
 
-        try:
-            shutil.rmtree(dir_to_rm)
-            successful_removals.append(module)
-        except OSError:
-            utils.warning_msg(f"The directory for '{module}' does not exist.")
+    for category, modules in installed_modules.items():
+        for module in modules:
+            dir_name = os.path.basename(module[consts.PATH])
+            if dir_name in module_dirs and dir_name in modules_to_remove:
+                if assume_yes or utils.prompt_user(f'Would you like to remove {colored_text(colors.N_GREEN, module[consts.TITLE])} ({dir_name})'):
+                    shutil.rmtree(module[consts.PATH])
+                    successful_removals.append(dir_name)
 
-    if successful_removals:
-        print(colored_text(colors.B_GREEN, "The following modules were successfully deleted:"))
+    diff = set(modules_to_remove).difference(set(successful_removals))
 
-        for removal in successful_removals:
-            print(colored_text(colors.RESET, f"{removal}"))
+    if diff:
+        for name in diff:
+            utils.error_msg(f'Unable to match {name} to the path of an installed module')
     else:
-        utils.error_msg("Unable to remove modules.")
-        return False
-
+        print(f'Execute `mmpm open --config` to delete associated configurations of any removed modules')
     return True
 
 def load_modules(force_refresh: bool = False) -> dict:
@@ -654,22 +649,22 @@ def load_modules(force_refresh: bool = False) -> dict:
 
     # if the snapshot has expired, or doesn't exist, get a new one
     if force_refresh:
-        utils.plain_print(utils.green_plus() + " Refreshing MagicMirror modules snapshot ... ")
+        utils.plain_print(utils.green_plus() + ' Refreshing MagicMirror modules snapshot ... ')
         modules = retrieve_modules()
 
         # save the new snapshot
-        with open(consts.SNAPSHOT_FILE, "w") as snapshot:
+        with open(consts.SNAPSHOT_FILE, 'w') as snapshot:
             json.dump(modules, snapshot)
 
         print(utils.done())
 
     else:
-        with open(consts.SNAPSHOT_FILE, "r") as snapshot_file:
+        with open(consts.SNAPSHOT_FILE, 'r') as snapshot_file:
             modules = json.load(snapshot_file)
 
     if os.path.exists(consts.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(consts.MMPM_EXTERNAL_SOURCES_FILE).st_size:
         try:
-            with open(consts.MMPM_EXTERNAL_SOURCES_FILE, "r") as f:
+            with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as f:
                 modules[consts.EXTERNAL_MODULE_SOURCES] = json.load(f)[consts.EXTERNAL_MODULE_SOURCES]
         except Exception:
             utils.warning_msg(f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}.')
@@ -696,14 +691,14 @@ def retrieve_modules() -> dict:
         url = urlopen(consts.MAGICMIRROR_MODULES_URL)
         web_page = url.read()
     except HTTPError:
-        utils.error_msg("Unable to retrieve MagicMirror modules. Is your internet connection down?")
+        utils.error_msg('Unable to retrieve MagicMirror modules. Is your internet connection down?')
         return {}
 
-    soup = BeautifulSoup(web_page, "html.parser")
-    table_soup: list = soup.find_all("table")
+    soup = BeautifulSoup(web_page, 'html.parser')
+    table_soup: list = soup.find_all('table')
 
-    category_soup: list = soup.find_all(attrs={"class": "markdown-body"})
-    categories_soup: list = category_soup[0].find_all("h3")
+    category_soup: list = soup.find_all(attrs={'class': 'markdown-body'})
+    categories_soup: list = category_soup[0].find_all('h3')
 
     categories: list = []
 
@@ -711,7 +706,7 @@ def retrieve_modules() -> dict:
         last_element: object = len(categories_soup[index].contents) - 1
         new_category: object = categories_soup[index].contents[last_element]
 
-        if new_category != "General Advice":
+        if new_category != 'General Advice':
             #categories.append(re.sub(' // ', '/', new_category))
             categories.append(new_category)
 
@@ -775,7 +770,37 @@ def retrieve_modules() -> dict:
     return modules
 
 
-def display_modules(modules: dict, list_categories: bool = False, table_formatted: bool = False) -> None:
+def get_module_categories(modules: List[defaultdict]) -> List[dict]:
+    return [{consts.CATEGORY: key, 'Modules': len(key)} for key in modules.keys()]
+
+
+def display_categories(categories: List[dict], table_formatted: bool = False) -> None:
+    MAX_LENGTH: int = 120
+
+    if not table_formatted:
+        for category in categories:
+            print(colored_text(colors.N_GREEN, category[consts.CATEGORY]), f'\n  Modules: {category[consts.MODULES]}\n')
+        return
+
+    global_row: int = 1
+    columns: int = 2
+    rows = len(categories) + 1  # to include the header row
+
+    table = utils.allocate_table_memory(rows, columns)
+
+    table[0][0] = to_bytes(consts.CATEGORY)
+    table[0][1] = to_bytes(consts.MODULES)
+
+    for category in categories:
+        table[global_row][0] = to_bytes(category[consts.CATEGORY])
+        table[global_row][1] = to_bytes(str(category[consts.MODULES]))
+
+        global_row += 1
+
+    utils.display_table(table, rows, columns)
+
+
+def display_modules(modules: dict, table_formatted: bool = False, fields: List[str] = []) -> None:
     '''
     Depending on the user flags passed in from the command line, either all
     existing modules may be displayed, or the names of all categories of
@@ -793,28 +818,6 @@ def display_modules(modules: dict, list_categories: bool = False, table_formatte
     global_row: int = 1
     columns: int = 2
     rows: int = 1  # to include the header row
-
-    if list_categories:
-
-        if table_formatted:
-            rows = len(modules.keys()) + 1
-
-            table = utils.allocate_table_memory(rows, columns)
-
-            table[0][0] = to_bytes(consts.CATEGORY)
-            table[0][1] = to_bytes('Modules')
-
-            for key in modules.keys():
-                table[global_row][0] = to_bytes(key)
-                table[global_row][1] = to_bytes(str(len(modules[key])))
-
-                global_row += 1
-
-            utils.display_table(table, rows, columns)
-        else:
-            for key in modules.keys():
-                print(colored_text(colors.N_GREEN, key), f'\n  Modules: {len(modules[key])}\n')
-        return
 
     if table_formatted:
         for row in modules.values():
@@ -842,12 +845,13 @@ def display_modules(modules: dict, list_categories: bool = False, table_formatte
 
     else:
         MAX_LENGTH = 120
-
         for category, _modules in modules.items():
             for index, module in enumerate(_modules):
-                print(colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'))
-                print(f"  {module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION]}\n")
-                #print(f'  Category: {category}\n')
+                print(
+                colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'),
+                f'({os.path.basename(module[consts.PATH])})',
+                (f"\n  {module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION]}\n")
+            )
 
 
 def get_installed_modules(modules: dict) -> dict:
@@ -910,13 +914,18 @@ def get_installed_modules(modules: dict) -> dict:
             os.chdir('..')
 
     for category, module_names in modules.items():
+        installed_modules.setdefault(category, [])
         for module in module_names:
             for module_found in modules_found['Modules']:
-                if module[consts.TITLE] == module_found[consts.TITLE] and module[consts.REPOSITORY] == module_found[consts.REPOSITORY]:
-                    module[consts.PATH] = module_found[consts.PATH]
-                    installed_modules.setdefault(category, []).append(module)
+                if module[consts.REPOSITORY] == module_found[consts.REPOSITORY]:
+                    installed_modules[category].append({
+                        consts.TITLE: module[consts.TITLE],
+                        consts.REPOSITORY: module[consts.REPOSITORY],
+                        consts.AUTHOR: module[consts.AUTHOR],
+                        consts.DESCRIPTION: module[consts.DESCRIPTION],
+                        consts.PATH: module_found[consts.PATH]
+                    })
 
-    os.chdir(original_dir)
     return installed_modules
 
 

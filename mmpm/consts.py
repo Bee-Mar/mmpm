@@ -8,6 +8,7 @@ REPOSITORY: str = 'Repository'
 DESCRIPTION: str = 'Description'
 AUTHOR: str = 'Author'
 CATEGORY: str = 'Category'
+MODULES: str = 'Modules'
 PATH: str = 'Path'
 
 MAKEFILE: str = 'Makefile'

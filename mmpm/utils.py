@@ -419,7 +419,8 @@ def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool
         log.logger.info(message)
 
         yes = prompt_user(
-            f"{colored_text(colors.B_RED, 'ERROR:')} Failed to install {module[consts.TITLE]} at '{failed_install_path}'. Remove the directory?"
+            f"{colored_text(colors.B_RED, 'ERROR:')} Failed to install {module[consts.TITLE]} at '{failed_install_path}'. Remove the directory?",
+            assume_yes=assume_yes
         )
 
         if yes:
@@ -432,8 +433,8 @@ def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool
             log.logger.info(message)
 
         return False
-    return True
 
+    return True
 
 
 def install_dependencies() -> str:
@@ -619,7 +620,7 @@ def colored_text(color: str, message: str) -> str:
     return (color + message + colors.RESET)
 
 
-def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: List[str] = ['no', 'n']) -> bool:
+def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: List[str] = ['no', 'n'], assume_yes: bool = False) -> bool:
     '''
     Prompts user with the `user_prompt` until a response matches a value in the
     `valid_ack` or `valid_nack` lists, or a KeyboardInterrupt is caught
@@ -632,6 +633,10 @@ def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nac
     Returns:
         response (bool): True if the response is in the `valid_ack` list, False if in `valid_nack` or KeyboardInterrupt
     '''
+    if assume_yes:
+        print(f"{user_prompt} [{'/'.join(valid_ack)}] or [{'/'.join(valid_nack)}]: yes")
+        return True
+
     response = None
 
     try:

@@ -121,9 +121,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
         utils.separator(message)
         return True
 
-    yes = utils.prompt_user('A newer version of MMPM is available. Would you like to upgrade now?')
-
-    if not yes:
+    if not utils.prompt_user('A newer version of MMPM is available. Would you like to upgrade now?', assume_yes=assume_yes):
         return True
 
     original_dir = os.getcwd()
@@ -257,9 +255,7 @@ def check_for_module_updates(modules: dict, assume_yes: bool = False):
     print(f'\n{len(updateable)} updates are available\n')
 
     for module in updateable:
-        yes = True if assume_yes else utils.prompt_user(f'An upgrade is available for {module[consts.TITLE]}. Would you like to upgrade now?')
-
-        if not yes:
+        if not utils.prompt_user(f'An upgrade is available for {module[consts.TITLE]}. Would you like to upgrade now?', assume_yes=assume_yes):
             upgraded = False
             continue
 
@@ -269,7 +265,7 @@ def check_for_module_updates(modules: dict, assume_yes: bool = False):
     if not upgraded:
         return False
 
-    if assume_yes or utils.prompt_user('Would you like to restart MagicMirror now?'):
+    if utils.prompt_user('Would you like to restart MagicMirror now?', assume_yes=assume_yes):
         restart_magicmirror()
 
     return True
@@ -409,15 +405,11 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
     )
 
     for index, candidate in enumerate(installation_candidates):
-        if assume_yes:
-            print(f'Installing {colored_text(colors.N_GREEN, candidate[consts.TITLE])} ({candidate[consts.REPOSITORY]})\n')
+        if not utils.prompt_user(f'Install {colored_text(colors.N_GREEN, candidate[consts.TITLE])} ({candidate[consts.REPOSITORY]})?', assume_yes=assume_yes):
+            log.logger.info(f'User not chose to install {candidate[consts.TITLE]}')
+            installation_candidates[index] = {}
         else:
-            if not utils.prompt_user(f'{colored_text(colors.N_GREEN, candidate[consts.TITLE])} ({candidate[consts.REPOSITORY]})\nInstall?'):
-                log.logger.info(f'User not chose to install {candidate[consts.TITLE]}')
-                installation_candidates[index] = {}
-            else:
-                log.logger.info(f'User chose to install {candidate[consts.TITLE]} ({candidate[consts.REPOSITORY]})')
-            print()
+            log.logger.info(f'User chose to install {candidate[consts.TITLE]} ({candidate[consts.REPOSITORY]})')
 
     for module in installation_candidates:
         if not module:
@@ -533,9 +525,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
         return False
 
     if stdout:
-        yes = True if assume_yes else utils.prompt_user('An upgrade is available for MagicMirror. Would you like to upgrade now?')
-
-        if not yes:
+        if not utils.prompt_user('An upgrade is available for MagicMirror. Would you like to upgrade now?', assume_yes=assume_yes):
             return False
 
         utils.plain_print('\nUpgrading MagicMirror')
@@ -547,9 +537,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
 
         print(utils.done(), '\n\nUpgrade complete!\n')
 
-        yes = True if assume_yes else utils.prompt_user('Would you like to restart MagicMirror now?')
-
-        if not yes:
+        if not utils.prompt_user('Would you like to restart MagicMirror now?', assume_yes=assume_yes):
             return False
 
         restart_magicmirror()
@@ -605,28 +593,41 @@ def remove_modules(installed_modules: List[defaultdict], modules_to_remove: List
     Returns:
         bool: True upon success, False upon failure
     '''
+    cancelled_removals: List[str] = []
     successful_removals: List[str] = []
     curr_dir: str = os.getcwd()
 
     modules_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
     module_dirs: List[str] = os.listdir(modules_dir)
 
-    for category, modules in installed_modules.items():
-        for module in modules:
-            dir_name = os.path.basename(module[consts.PATH])
-            if dir_name in module_dirs and dir_name in modules_to_remove:
-                if assume_yes or utils.prompt_user(f'Would you like to remove {colored_text(colors.N_GREEN, module[consts.TITLE])} ({dir_name})'):
-                    shutil.rmtree(module[consts.PATH])
-                    successful_removals.append(dir_name)
+    try:
+        for category, modules in installed_modules.items():
+            for module in modules:
+                dir_name = os.path.basename(module[consts.PATH])
+                if dir_name in module_dirs and dir_name in modules_to_remove:
+                    if utils.prompt_user(f'Would you like to remove {colored_text(colors.N_GREEN, module[consts.TITLE])} ({dir_name})', assume_yes=assume_yes):
+                        shutil.rmtree(module[consts.PATH])
+                        print(f'{utils.green_plus()} Removed {dir_name}')
+                        successful_removals.append(dir_name)
+                        log.logger.info(f'User removed {dir_name}')
+                    else:
+                        cancelled_removals.append(dir_name)
+                        log.logger.info(f'User chose not to remove {dir_name}')
+    except KeyboardInterrupt:
+        log.logger.info('Caught keyboard interrupt during attempt to remove modules')
+        print()
+        return True
 
-    diff = set(modules_to_remove).difference(set(successful_removals))
+    for name in modules_to_remove:
+        if name not in successful_removals:
+            utils.error_msg(f"No module named '{name}' found in {modules_dir}")
+            log.logger.info(f"User attemped to remove {name}, but no module named '{name}' was found in {modules_dir}")
 
-    if diff:
-        for name in diff:
-            utils.error_msg(f'Unable to match {name} to the path of an installed module')
-    else:
+    if successful_removals:
         print(f'Execute `mmpm open --config` to delete associated configurations of any removed modules')
+
     return True
+
 
 def load_modules(force_refresh: bool = False) -> dict:
     '''
@@ -787,20 +788,17 @@ def display_categories(categories: List[dict], table_formatted: bool = False) ->
     rows = len(categories) + 1  # to include the header row
 
     table = utils.allocate_table_memory(rows, columns)
-
-    table[0][0] = to_bytes(consts.CATEGORY)
-    table[0][1] = to_bytes(consts.MODULES)
+    table[0][0], table[0][1] = to_bytes(consts.CATEGORY), to_bytes(consts.MODULES)
 
     for category in categories:
         table[global_row][0] = to_bytes(category[consts.CATEGORY])
         table[global_row][1] = to_bytes(str(category[consts.MODULES]))
-
         global_row += 1
 
     utils.display_table(table, rows, columns)
 
 
-def display_modules(modules: dict, table_formatted: bool = False, fields: List[str] = []) -> None:
+def display_modules(modules: dict, table_formatted: bool = False, include_path: bool = False) -> None:
     '''
     Depending on the user flags passed in from the command line, either all
     existing modules may be displayed, or the names of all categories of
@@ -813,45 +811,62 @@ def display_modules(modules: dict, table_formatted: bool = False, fields: List[s
     Returns:
         None
     '''
-
+    format_description = lambda desc : desc[:MAX_LENGTH] + '...' if len(desc) > MAX_LENGTH else desc
     MAX_LENGTH: int = 120
-    global_row: int = 1
-    columns: int = 2
-    rows: int = 1  # to include the header row
 
     if table_formatted:
+        columns: int = 2
+        global_row: int = 1
+        rows: int = 1  # to include the header row
+
         for row in modules.values():
             rows += len(row)
 
+        if include_path:
+            columns += 1
+            MAX_LENGTH = 80
+
         table = utils.allocate_table_memory(rows, columns)
 
-        #table[0][0] = to_bytes(consts.CATEGORY)
         table[0][0] = to_bytes(consts.TITLE)
-        #table[0][2] = to_bytes(consts.REPOSITORY)
-        #table[0][3] = to_bytes(consts.AUTHOR)
         table[0][1] = to_bytes(consts.DESCRIPTION)
+
+        if include_path:
+            table[0][2] =  to_bytes(consts.PATH)
+
+            def __fill_row__(table, row, module):
+                table[row][0] = to_bytes(module[consts.TITLE])
+                table[row][1] = to_bytes(format_description(module[consts.DESCRIPTION]))
+                table[row][2] =  to_bytes(module[consts.PATH])
+        else:
+            def __fill_row__(table, row, module):
+                table[row][0] = to_bytes(module[consts.TITLE])
+                table[row][1] = to_bytes(format_description(module[consts.DESCRIPTION]))
 
         for category, _modules in modules.items():
             for index, module in enumerate(_modules):
-                description = module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION]
-                #table[global_row][0] = to_bytes(category)
-                table[global_row][0] = to_bytes(module[consts.TITLE])
-                #table[global_row][2] = to_bytes(module[consts.REPOSITORY])
-                #table[global_row][3] = to_bytes(module[consts.AUTHOR])
-                table[global_row][1] = to_bytes(description)
+                __fill_row__(table, global_row, module)
                 global_row += 1
 
         utils.display_table(table, rows, columns)
 
     else:
-        MAX_LENGTH = 120
-        for category, _modules in modules.items():
-            for index, module in enumerate(_modules):
-                print(
+        if include_path:
+            _print_ = lambda module : print(
                 colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'),
                 f'({os.path.basename(module[consts.PATH])})',
-                (f"\n  {module[consts.DESCRIPTION][:MAX_LENGTH] + '...' if len(module[consts.DESCRIPTION]) > MAX_LENGTH else module[consts.DESCRIPTION]}\n")
+                (f"\n  {format_description(module[consts.DESCRIPTION])}\n")
             )
+
+        else:
+            _print_ = lambda module : print(
+                colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'),
+                (f"\n  {format_description(module[consts.DESCRIPTION])}\n")
+            )
+
+        for category, _modules in modules.items():
+            for index, module in enumerate(_modules):
+                _print_(module)
 
 
 def get_installed_modules(modules: dict) -> dict:

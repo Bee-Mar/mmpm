@@ -8,3 +8,4 @@ WEBSSH_LOCALHOST_PORT=7893
 # AKA, the 'listen' ports in the NGINX config (mmpm.conf)
 MMPM_PROXY_PORT=7890
 WEBSSH_PROXY_PORT=7892
+MMPM_HOST_IP=$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')

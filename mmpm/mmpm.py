@@ -31,7 +31,7 @@ def main(argv):
             if not installed_modules:
                 utils.fatal_msg('No modules are currently installed')
 
-            core.display_modules(installed_modules, table_formatted=args.table_formatted)
+            core.display_modules(installed_modules, table_formatted=args.table_formatted, include_path=True)
 
         elif args.categories:
             core.display_categories(core.get_module_categories(modules), table_formatted=args.table_formatted)
@@ -72,7 +72,9 @@ def main(argv):
         if additional_args:
             utils.fatal_msg(f'Unkown argument provided for `mmpm {args.subcommand}`')
         if args.full:
-            pass
+            core.check_for_module_updates(modules, args.assume_yes)
+            core.check_for_magicmirror_updates(args.assume_yes)
+            core.check_for_mmpm_enhancements(args.assume_yes)
         elif args.mmpm:
             core.check_for_mmpm_enhancements(args.assume_yes)
         elif args.magicmirror:

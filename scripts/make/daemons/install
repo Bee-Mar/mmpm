@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. scripts/make/daemons/ports
+. scripts/make/daemons/constants
 
 printf -- "----------------------------"
 printf "\n| \e[92mInstalling MMPM Daemons \e[0m |"
@@ -72,5 +72,6 @@ sudo systemctl restart nginx.service --no-pager
 
 printf "\n\033[1;36mMMPM GUI Installed \e[0m\n"
 printf "\nThe MMPM GUI is being served the IP address of your default interface at port $MMPM_PROXY_PORT"
-printf "\nBest guess: http://$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'):$MMPM_PROXY_PORT\n\n"
+printf "\nBest guess: http://$MMPM_HOST_IP:$MMPM_PROXY_PORT\n\n"
+printf "\nYou may also place an entry for the MMPM Host IP address in your /etc/hosts file, ie. '$MMPM_HOST_IP   mmpm'"
 

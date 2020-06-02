@@ -58,7 +58,7 @@ def main(argv):
         elif args.gui:
             core.open_mmpm_gui()
         else:
-            utils.fatal_msg(utils.unknown_additional_arguments(args.subcommand))
+            utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
 
     elif args.subcommand == opts.ADD_EXT_MODULE:
         if args.remove:
@@ -68,7 +68,7 @@ def main(argv):
 
     elif args.subcommand == opts.UPDATE:
         if additional_args:
-            utils.fatal_msg(utils.unknown_additional_arguments(args.subcommand))
+            utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
         if args.full:
             core.check_for_module_updates(modules, args.assume_yes)
             core.check_for_magicmirror_updates(args.assume_yes)
@@ -116,7 +116,9 @@ def main(argv):
             )
 
     elif args.subcommand == opts.MM_CTL:
-        if args.status:
+        if additional_args:
+            utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
+        elif args.status:
             core.get_active_modules(table_formatted=args.table_formatted)
         elif args.start:
             core.start_magicmirror()
@@ -124,20 +126,22 @@ def main(argv):
             core.stop_magicmirror()
         elif args.restart:
             core.restart_magicmirror()
+        else:
+            utils.fatal_msg(utils.invalid_option(args.subcommand))
 
     elif args.subcommand == opts.DATABASE:
         if additional_args:
-            utils.fatal_msg(utils.unknown_additional_arguments(args.subcommand))
+            utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
         elif args.details:
             core.snapshot_details(modules)
         elif args.refresh:
             pass
         else:
-            utils.fatal_msg(utils.unknown_additional_arguments(args.subcommand))
+            utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
 
     elif args.subcommand == opts.LOGS:
         if additional_args:
-            utils.fatal_msg(utils.unknown_additional_arguments(args.subcommand))
+            utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
         elif not args.cli and not args.gui:
             # if the user doesn't provide arguments, just display everything, but consider the --tail arg
             core.display_log_files(True, True, args.tail)
@@ -146,7 +150,7 @@ def main(argv):
 
     elif args.subcommand == opts.ENV:
         if additional_args:
-            utils.fatal_msg(utils.unknown_additional_arguments(args.subcommand))
+            utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
         else:
             core.display_mmpm_env_vars()
 

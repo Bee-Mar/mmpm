@@ -359,7 +359,7 @@ def get_user_args() -> object:
         '--restart',
         action='store_true',
         help='restart the MagicMirror (works with pm2)',
-        dest='start'
+        dest='restart'
     )
 
     # magicmirror_parser.add_argument(

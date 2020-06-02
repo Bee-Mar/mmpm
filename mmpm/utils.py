@@ -669,7 +669,7 @@ def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nac
     return False
 
 
-def unknown_additional_arguments(subcommand: str) -> str:
+def invalid_additional_arguments(subcommand: str) -> str:
     '''
     Helper method to return a standardized error message when the user provides too many arguments
 
@@ -681,3 +681,18 @@ def unknown_additional_arguments(subcommand: str) -> str:
 
     '''
     return f'`mmpm {subcommand}` does not accept additional arguments. See `mmpm {subcommand} --help`'
+
+
+def invalid_option(subcommand: str) -> str:
+    '''
+    Helper method to return a standardized error message when the user provides an invalid option
+
+
+    Parameters:
+        subcommand (str): the name of the mmpm subcommand
+
+    Returns:
+        message (str): the standardized error message
+
+    '''
+    return f'Invalid option supplied to `mmpm {subcommand}`. See `mmpm {subcommand} --help`'

@@ -582,6 +582,16 @@ def display_table(table, rows: int, columns: int) -> None:
 
 
 def allocate_table_memory(rows: int, columns: int):
+    '''
+    Calls the shared mmpm library to allocate memory for a matrix `rows` times
+    `columns` times `sizeof(char*)`, and returns a pointer to the memory
+
+    Parameters:
+        data: List[bytes]
+
+    Returns:
+        table (POINTER(POINTER(c_char_p))): the allocated memory
+    '''
     libmmpm = cdll.LoadLibrary(consts.LIBMMPM_SHARED_OBJECT)
 
     allocate_table_memory = libmmpm.allocate_table_memory
@@ -623,12 +633,15 @@ def colored_text(color: str, message: str) -> str:
 def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: List[str] = ['no', 'n'], assume_yes: bool = False) -> bool:
     '''
     Prompts user with the `user_prompt` until a response matches a value in the
-    `valid_ack` or `valid_nack` lists, or a KeyboardInterrupt is caught
+    `valid_ack` or `valid_nack` lists, or a KeyboardInterrupt is caught. If
+    `assume_yes` is true, the `user_prompt` is printed followed by a 'yes', and
+    function returns True
 
     Parameters:
         user_prompt (str): The text that will be presented to the user
         valid_ack (List[str]): valid 'yes' responses
         valid_nack (List[str]): valid 'no' responses
+        assume_yes (bool): if True, the `user_prompt` is printed followed by 'yes'
 
     Returns:
         response (bool): True if the response is in the `valid_ack` list, False if in `valid_nack` or KeyboardInterrupt

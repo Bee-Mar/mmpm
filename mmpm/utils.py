@@ -668,3 +668,16 @@ def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nac
 
     return False
 
+
+def unknown_additional_arguments(subcommand: str) -> str:
+    '''
+    Helper method to return a standardized error message when the user provides too many arguments
+
+    Parameters:
+        subcommand (str): the name of the mmpm subcommand
+
+    Returns:
+        message (str): the standardized error message
+
+    '''
+    return f'`mmpm {subcommand}` does not accept additional arguments. See `mmpm {subcommand} --help`'

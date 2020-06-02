@@ -58,7 +58,7 @@ def main(argv):
         elif args.gui:
             core.open_mmpm_gui()
         else:
-            utils.fatal_msg('No options provided. See `mmpm open --help`')
+            utils.fatal_msg(utils.unknown_additional_arguments(args.subcommand))
 
     elif args.subcommand == opts.ADD_EXT_MODULE:
         if args.remove:
@@ -68,7 +68,7 @@ def main(argv):
 
     elif args.subcommand == opts.UPDATE:
         if additional_args:
-            utils.fatal_msg(f'Unkown argument provided for `mmpm {args.subcommand}`')
+            utils.fatal_msg(utils.unknown_additional_arguments(args.subcommand))
         if args.full:
             core.check_for_module_updates(modules, args.assume_yes)
             core.check_for_magicmirror_updates(args.assume_yes)
@@ -108,7 +108,7 @@ def main(argv):
 
     elif args.subcommand == opts.SEARCH:
         if len(additional_args) > 1:
-            utils.fatal_msg(f'`mmpm {args.subcommand}` only accepts one argument')
+            utils.fatal_msg(f'Too many arguments. `mmpm {args.subcommand}` only accepts one search argument')
         else:
             core.display_modules(
                 core.search_modules(modules, additional_args[0], case_sensitive=args.case_sensitive),
@@ -126,15 +126,19 @@ def main(argv):
             core.restart_magicmirror()
 
     elif args.subcommand == opts.DATABASE:
-        if args.details:
+        if additional_args:
+            utils.fatal_msg(utils.unknown_additional_arguments(args.subcommand))
+        elif args.details:
             core.snapshot_details(modules)
         elif args.refresh:
             pass
         else:
-            utils.fatal_msg(f'Unknown argument for `mmpm {args.subcommand}`')
+            utils.fatal_msg(utils.unknown_additional_arguments(args.subcommand))
 
     elif args.subcommand == opts.LOGS:
-        if not args.cli and not args.gui:
+        if additional_args:
+            utils.fatal_msg(utils.unknown_additional_arguments(args.subcommand))
+        elif not args.cli and not args.gui:
             # if the user doesn't provide arguments, just display everything, but consider the --tail arg
             core.display_log_files(True, True, args.tail)
         else:
@@ -142,7 +146,7 @@ def main(argv):
 
     elif args.subcommand == opts.ENV:
         if additional_args:
-            utils.fatal_msg(f'`mmpm {args.subcommand}` does not accept any additional arguments')
+            utils.fatal_msg(utils.unknown_additional_arguments(args.subcommand))
         else:
             core.display_mmpm_env_vars()
 

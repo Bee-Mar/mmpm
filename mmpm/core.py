@@ -81,7 +81,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
 
     try:
         log.logger.info(f'Checking for newer version of MMPM. Current version: {mmpm.__version__}')
-        utils.plain_print(f'Checking MMPM updates ... ')
+        utils.plain_print(f'Checking for MMPM updates ... ')
 
         MMPM_FILE = urlopen(consts.MMPM_FILE_URL)
         contents: str = str(MMPM_FILE.read())
@@ -179,7 +179,7 @@ def upgrade_module(module: dict):
 
     dirs: List[str] = os.listdir(modules_dir)
 
-    os.chdir(module[consts.PATH])
+    os.chdir(module[consts.DIRECTORY])
     utils.plain_print(f'{utils.green_plus()} Retrieving upgrade for {module[consts.TITLE]}')
     error_code, stdout, stderr = utils.run_cmd(["git", "pull"])
 
@@ -232,7 +232,7 @@ def check_for_module_updates(modules: dict, assume_yes: bool = False):
 
     for _, modules in installed_modules.items():
         for module in modules:
-            os.chdir(module[consts.PATH])
+            os.chdir(module[consts.DIRECTORY])
 
             utils.plain_print(f'Checking {module[consts.TITLE]} for updates')
             return_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
@@ -602,10 +602,10 @@ def remove_modules(installed_modules: List[defaultdict], modules_to_remove: List
     try:
         for category, modules in installed_modules.items():
             for module in modules:
-                dir_name = os.path.basename(module[consts.PATH])
+                dir_name = os.path.basename(module[consts.DIRECTORY])
                 if dir_name in module_dirs and dir_name in modules_to_remove:
                     if utils.prompt_user(f'Would you like to remove {colored_text(colors.N_GREEN, module[consts.TITLE])} ({dir_name})', assume_yes=assume_yes):
-                        shutil.rmtree(module[consts.PATH])
+                        shutil.rmtree(module[consts.DIRECTORY])
                         print(f'{utils.green_plus()} Removed {dir_name}')
                         successful_removals.append(dir_name)
                         log.logger.info(f'User removed {dir_name}')
@@ -618,7 +618,7 @@ def remove_modules(installed_modules: List[defaultdict], modules_to_remove: List
         return True
 
     for name in modules_to_remove:
-        if name not in successful_removals:
+        if name not in successful_removals and name not in cancelled_removals:
             utils.error_msg(f"No module named '{name}' found in {modules_dir}")
             log.logger.info(f"User attemped to remove {name}, but no module named '{name}' was found in {modules_dir}")
 
@@ -854,12 +854,12 @@ def display_modules(modules: dict, table_formatted: bool = False, include_path: 
         table[0][1] = to_bytes(consts.DESCRIPTION)
 
         if include_path:
-            table[0][2] =  to_bytes(consts.PATH)
+            table[0][2] =  to_bytes(consts.DIRECTORY)
 
             def __fill_row__(table, row, module):
                 table[row][0] = to_bytes(module[consts.TITLE])
                 table[row][1] = to_bytes(format_description(module[consts.DESCRIPTION]))
-                table[row][2] =  to_bytes(module[consts.PATH])
+                table[row][2] =  to_bytes(os.path.basename(module[consts.DIRECTORY]))
         else:
             def __fill_row__(table, row, module):
                 table[row][0] = to_bytes(module[consts.TITLE])
@@ -876,7 +876,7 @@ def display_modules(modules: dict, table_formatted: bool = False, include_path: 
         if include_path:
             _print_ = lambda module : print(
                 colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'),
-                f'({os.path.basename(module[consts.PATH])})',
+                (f'\n  Directory: {os.path.basename(module[consts.DIRECTORY])}'),
                 (f"\n  {format_description(module[consts.DESCRIPTION])}\n")
             )
 
@@ -941,7 +941,7 @@ def get_installed_modules(modules: dict) -> dict:
             modules_found['Modules'].append({
                 consts.TITLE: project_name.strip(),
                 consts.REPOSITORY: remote_origin_url.strip(),
-                consts.PATH: os.getcwd()
+                consts.DIRECTORY: os.getcwd()
             })
 
         except Exception:
@@ -960,7 +960,7 @@ def get_installed_modules(modules: dict) -> dict:
                         consts.REPOSITORY: module[consts.REPOSITORY],
                         consts.AUTHOR: module[consts.AUTHOR],
                         consts.DESCRIPTION: module[consts.DESCRIPTION],
-                        consts.PATH: module_found[consts.PATH]
+                        consts.DIRECTORY: module_found[consts.DIRECTORY]
                     })
 
     return installed_modules

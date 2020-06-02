@@ -9,7 +9,7 @@ DESCRIPTION: str = 'Description'
 AUTHOR: str = 'Author'
 CATEGORY: str = 'Category'
 MODULES: str = 'Modules'
-PATH: str = 'Path'
+DIRECTORY: str = 'Directory'
 
 MAKEFILE: str = 'Makefile'
 CMAKELISTS: str = 'CMakeLists.txt'

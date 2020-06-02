@@ -13,7 +13,7 @@ from collections import defaultdict
 from bs4 import BeautifulSoup
 from mmpm import colors, utils, mmpm, consts
 from mmpm.utils import colored_text
-from typing import List
+from typing import List, DefaultDict
 from mmpm.utils import log, to_bytes
 from shutil import which
 import subprocess
@@ -292,7 +292,7 @@ def search_modules(modules: dict, query: str, case_sensitive: bool = False, show
     if query in modules:
         return {query: modules[query]}
 
-    search_results = defaultdict(list)
+    search_results: DefaultDict[List] = defaultdict(list)
 
     if show:
         not_a_match = lambda query, description, title, author : query != title
@@ -387,7 +387,6 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
     if not installation_candidates:
         utils.error_msg('Unable to match query to installation candidates')
         return False
-
 
     log.logger.info(f'Changing into MagicMirror modules directory {modules_dir}')
     os.chdir(modules_dir)
@@ -667,8 +666,9 @@ def load_modules(force_refresh: bool = False) -> dict:
         try:
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as f:
                 modules[consts.EXTERNAL_MODULE_SOURCES] = json.load(f)[consts.EXTERNAL_MODULE_SOURCES]
-        except Exception:
+        except Exception as error:
             utils.warning_msg(f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}.')
+            log.logger.info(f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}: {error}')
 
     return modules
 
@@ -772,10 +772,32 @@ def retrieve_modules() -> dict:
 
 
 def get_module_categories(modules: List[defaultdict]) -> List[dict]:
-    return [{consts.CATEGORY: key, 'Modules': len(key)} for key in modules.keys()]
+    '''
+    Wrapper method to build dictionary of module categories and the number of
+    modules per category
+
+    Parameters:
+        modules (List[defaultdict]): the full modules database
+
+    Returns:
+        modules (List[dict]): list of dictionaries containing the category names and module count per category
+    '''
+    return [{consts.CATEGORY: key, 'Modules': len(modules[key])} for key in modules.keys()]
 
 
 def display_categories(categories: List[dict], table_formatted: bool = False) -> None:
+    '''
+    Prints module category names and the total number of modules in one of two
+    formats. The default is similar to the Debian apt package manager, and the
+    prettified table alternative
+
+    Parameters:
+        modules (List[dict]): list of dictionaries containing category names and module count
+        table_formatted (bool): if True, the output is printed as a prettified table
+
+    Returns:
+        None
+    '''
     MAX_LENGTH: int = 120
 
     if not table_formatted:

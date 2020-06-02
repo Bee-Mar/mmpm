@@ -52,8 +52,6 @@ def main(argv):
 
             core.show_module_details(result)
 
-        #results = [core.search_modules(modules, search, case_sensitive=True, by_title_only=True) for search in additional_args]
-
     elif args.subcommand == opts.OPEN:
         if args.config:
             core.open_magicmirror_config()
@@ -142,22 +140,6 @@ def main(argv):
         else:
             core.display_log_files(args.cli, args.gui, args.tail)
 
-    #elif args.subcommand == opts.UPDATE:
-    #    if should_refresh:
-    #        message = " Automated check for MMPM updates as part of snapshot refresh ... "
-    #    if args.mmpm:
-    #        message = " Checking for MMPM updates ... "
-    #    elif args.magicmirror:
-    #        message = " Checking for MagicMirror updates ... "
-    #    elif args.full:
-    #        pass
-    #    else:
-    #        utils.error_msg(f'Unknown argument for `mmpm {args.subcommand}`')
-    #        sys.exit(1)
-
-    #    utils.plain_print(utils.green_plus() + message)
-    #    core.check_for_mmpm_enhancements(assume_yes=args.assume_yes, gui=args.GUI)
-
     elif args.subcommand == opts.ENV:
         if additional_args:
             utils.fatal_msg(f'`mmpm {args.subcommand}` does not accept any additional arguments')
@@ -167,6 +149,7 @@ def main(argv):
     else:
         utils.error_msg('Unknown argument\n')
         parser.print_help()
+
 
 if __name__ == "__main__":
     try:

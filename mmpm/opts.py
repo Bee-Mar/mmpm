@@ -284,9 +284,18 @@ def get_user_args() -> object:
 
     add_ext_module_parser.add_argument(
         '--remove',
-        type=str,
+        nargs='+',
         help='remove external module (similar pattern of add-apt-repository --remove)',
         dest='remove'
+    )
+
+    add_ext_module_parser.add_argument(
+        '-y',
+        '--yes',
+        action='store_true',
+        default=False,
+        help='assume yes for user response and do not show prompt',
+        dest='assume_yes'
     )
 
     # LOGS SUBCOMMANDS

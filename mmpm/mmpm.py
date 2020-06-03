@@ -62,14 +62,14 @@ def main(argv):
 
     elif args.subcommand == opts.ADD_EXT_MODULE:
         if args.remove:
-            core.remove_external_module_source([utils.sanitize_name(module) for module in args.remove])
+            core.remove_external_module_source([utils.sanitize_name(module) for module in args.remove], assume_yes=args.assume_yes)
         else:
             core.add_external_module(args.title, args.author, args.repo, args.desc)
 
     elif args.subcommand == opts.UPDATE:
         if additional_args:
             utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
-        if args.full:
+        elif args.full:
             core.check_for_module_updates(modules, args.assume_yes)
             core.check_for_magicmirror_updates(args.assume_yes)
             core.check_for_mmpm_enhancements(args.assume_yes)

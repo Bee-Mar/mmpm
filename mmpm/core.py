@@ -15,7 +15,6 @@ from mmpm import colors, utils, mmpm, consts
 from mmpm.utils import colored_text
 from typing import List, DefaultDict
 from mmpm.utils import log, to_bytes
-from shutil import which
 import subprocess
 import select
 
@@ -1043,7 +1042,7 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
     return True
 
 
-def remove_external_module_source(titles: str = None) -> bool:
+def remove_external_module_source(titles: str = None, assume_yes: bool = False) -> bool:
     '''
     Allows user to remove an external source from the sources saved in
     ~/.config/mmpm/mmpm-external-sources.json
@@ -1065,9 +1064,10 @@ def remove_external_module_source(titles: str = None) -> bool:
 
             for title in titles:
                 for module in config[consts.EXTERNAL_MODULE_SOURCES]:
-                    if module[consts.TITLE] == title:
-                        config[consts.EXTERNAL_MODULE_SOURCES].remove(module)
-                        successful_removals.append(module[consts.TITLE])
+                    if module[consts.TITLE] == title and utils.prompt_user(f'Would you like to remove {colored_text(colors.N_GREEN, title)}', assume_yes=assume_yes):
+                            config[consts.EXTERNAL_MODULE_SOURCES].remove(module)
+                            successful_removals.append(module[consts.TITLE])
+                            print(f'{utils.green_plus()} Removed {title}')
 
             if not successful_removals:
                 utils.error_msg('No external sources found matching provided query')
@@ -1077,7 +1077,6 @@ def remove_external_module_source(titles: str = None) -> bool:
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 json.dump(config, mmpm_ext_srcs)
 
-            print(colored_text(colors.B_GREEN, f"Successfully removed {', '.join(successful_removals)} from '{consts.EXTERNAL_MODULE_SOURCES}'"))
     except IOError:
         utils.error_msg('Failed to remove external module')
         return False
@@ -1221,7 +1220,7 @@ def stop_magicmirror() -> None:
     Returns:
         None
     '''
-    if which('pm2'):
+    if shutil.which('pm2'):
         log.logger.info("Using 'pm2' to stop MagicMirror")
         return_code, stdout, stderr = utils.run_cmd(['pm2', 'stop', 'MagicMirror'], progress=False)
         log.logger.info(f'pm2 stdout: {stdout}')
@@ -1247,7 +1246,7 @@ def start_magicmirror() -> None:
 
     log.logger.info("Running 'npm start' in the background")
 
-    if which('pm2'):
+    if shutil.which('pm2'):
         log.logger.info("Using 'pm2' to start MagicMirror")
         return_code, stdout, stderr = utils.run_cmd(['pm2', 'start', 'MagicMirror'], progress=False)
         log.logger.info(f'pm2 stdout: {stdout}')
@@ -1270,7 +1269,7 @@ def restart_magicmirror() -> None:
     Returns:
         None
     '''
-    if which('pm2'):
+    if shutil.which('pm2'):
         log.logger.info("Using 'pm2' to restart MagicMirror")
         return_code, stdout, stderr = utils.run_cmd(['pm2', 'restart', 'MagicMirror'], progress=False)
         log.logger.info(f'pm2 stdout: {stdout}')

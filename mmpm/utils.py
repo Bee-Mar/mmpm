@@ -456,7 +456,7 @@ def install_dependencies() -> str:
 
         if error_code:
             basic_fail_log(error_code, stderr)
-            print('\n')
+            print()
             return str(stderr)
         else:
             print(done())
@@ -466,7 +466,7 @@ def install_dependencies() -> str:
 
         if error_code:
             basic_fail_log(error_code, stderr)
-            print('\n')
+            print()
             return str(stderr)
         else:
             print(done())
@@ -476,7 +476,7 @@ def install_dependencies() -> str:
 
         if error_code:
             basic_fail_log(error_code, stderr)
-            print('\n')
+            print()
             return str(stderr)
         else:
             print(done())
@@ -487,7 +487,7 @@ def install_dependencies() -> str:
 
         if error_code:
             basic_fail_log(error_code, stderr)
-            print('\n')
+            print()
             return str(stderr)
         else:
             print(done())
@@ -497,7 +497,7 @@ def install_dependencies() -> str:
 
             if error_code:
                 basic_fail_log(error_code, stderr)
-                print('\n')
+                print()
                 return str(stderr)
             else:
                 print(done())

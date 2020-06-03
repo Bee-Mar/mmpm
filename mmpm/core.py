@@ -1079,9 +1079,7 @@ def remove_external_module_source(titles: str = None, assume_yes: bool = False) 
 
     except IOError:
         utils.error_msg('Failed to remove external module')
-        return False
-    return True
-
+        return False return True
 
 def open_magicmirror_config() -> bool:
     '''

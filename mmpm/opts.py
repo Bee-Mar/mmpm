@@ -121,7 +121,7 @@ def get_user_args() -> object:
     update_parser = subparsers.add_parser(
         UPDATE,
         usage='\n  mmpm update <module(s)>\n  mmpm update [--mmpm] [--magicmirror] [--full]',
-        help='check for updates to installed modules or MMPM'
+        help='check for updates to installed modules, MMPM, and/or MagicMirror'
     )
 
     update_parser.add_argument(

@@ -105,7 +105,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
 
     if mmpm.__version__ >= version_number:
         print('No updates available for MMPM')
-        log.logger.info('No newer version of MMPM found > {version_number} available. The current version is the latest')
+        log.logger.info(f'No newer version of MMPM found > {version_number} available. The current version is the latest')
         return True
 
     log.logger.info(f'Found newer version of MMPM: {version_number}')
@@ -1322,7 +1322,7 @@ def install_autocompletion() -> None:
     '''
     log.logger.info('user attempting to install MMPM autocompletion')
     shell: str = os.environ['SHELL']
-    log.logger.info(f'detected {shell}')
+    log.logger.info(f'detected user shell to be {shell}')
     autocomplete_url: str = 'https://github.com/kislyuk/argcomplete#activating-global-completion'
     error_message: str = f'Please see {autocomplete_url} for help installing autocompletion'
     complete_message = lambda config : f'Autocompletion installed. Please source {config} for the changes to take effect'

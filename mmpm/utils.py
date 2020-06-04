@@ -2,11 +2,12 @@
 import sys
 import os
 import subprocess
-from multiprocessing import cpu_count
-from collections import Counter, defaultdict
+import time
 import logging
 import logging.handlers
-import time
+from multiprocessing import cpu_count
+from collections import Counter, defaultdict
+from logging import Logger
 from os.path import join
 from typing import List, Optional, Tuple, IO, Any
 from re import sub
@@ -40,7 +41,7 @@ class MMPMLogger():
         self.logger = logger
 
 
-log: MMPMLogger = MMPMLogger()
+log: Logger = MMPMLogger().logger
 
 
 def plain_print(msg: str) -> None:
@@ -64,7 +65,7 @@ def error_msg(msg: str) -> None:
     Parameters:
         msg (str): The error message to be printed to stdout
     '''
-    log.logger.error(msg)
+    log.error(msg)
     print(colored_text(colors.B_RED, "ERROR:"), msg)
 
 
@@ -78,7 +79,7 @@ def warning_msg(msg: str) -> None:
     Returns:
         None
     '''
-    log.logger.warning(msg)
+    log.warning(msg)
     print(colored_text(colors.B_YELLOW, "WARNING:"), msg)
 
 
@@ -92,7 +93,7 @@ def fatal_msg(msg: str) -> None:
     Returns:
         None
     '''
-    log.logger.fatal(msg)
+    log.fatal(msg)
     print(colored_text(colors.B_RED, "FATAL:"), msg)
     sys.exit(127)
 
@@ -166,22 +167,26 @@ def run_cmd(command: List[str], progress=True) -> Tuple[int, str, str]:
         Tuple[returncode (int), stdout (str), stderr (str)]
     '''
 
-    log.logger.info(f'Executing process `{" ".join(command)}`')
+    log.info(f'Executing process `{" ".join(command)}`')
 
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    if progress:
-        sys.stdout.write(' [')
+    def __spinner__():
+        while True:
+            for cursor in '|/-\\':
+                yield cursor
 
+    spinner = __spinner__()
+
+    if progress:
+        sys.stdout.write(' ')
         while process.poll() is None:
-            sys.stdout.write('#')
-            time.sleep(.25)
+            sys.stdout.write(next(spinner))
             sys.stdout.flush()
+            time.sleep(0.1)
+            sys.stdout.write('\b')
 
     stdout, stderr = process.communicate()
-
-    if progress:
-        sys.stdout.write('] ')
 
     return process.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
 
@@ -224,7 +229,7 @@ def open_default_editor(file_path: str) -> Optional[None]:
     Returns:
         None
     '''
-    log.logger.info(f'Attempting to open {file_path} in users default editor')
+    log.info(f'Attempting to open {file_path} in users default editor')
 
     if not file_path:
         fatal_msg(f'MagicMirror config file not found. Please ensure {consts.MMPM_ENV_VARS[consts.MMPM_MAGICMIRROR_ROOT]} is set properly.')
@@ -248,7 +253,7 @@ def done() -> str:
         message (str): The string 'done' in bright green
 
     '''
-    return colored_text(colors.N_GREEN, "done")
+    return colored_text(colors.N_GREEN, u'\u2713')
 
 
 def green_plus() -> str:
@@ -278,7 +283,7 @@ def clone(title: str, repo: str, target_dir: str = '') -> Tuple[int, str, str]:
     '''
     # by using "repo.split()", it allows the user to bake in additional commands when making custom sources
     # ie. git clone [repo] -b [branch] [target]
-    log.logger.info(f'Cloning {repo} into {target_dir if target_dir else os.path.join(os.getcwd(), title)}')
+    log.info(f'Cloning {repo} into {target_dir if target_dir else os.path.join(os.getcwd(), title)}')
     plain_print(green_plus() + f" {colored_text(colors.N_CYAN, f'Cloning {title} repository')} " + colors.RESET)
 
     command = ['git', 'clone'] + repo.split()
@@ -315,7 +320,7 @@ def cmake() -> Tuple[int, str, str]:
         Tuple[error_code (int), stdout (str), error_message (str)]
 
     '''
-    log.logger.info(f"Running 'cmake ..' in {os.getcwd()}")
+    log.info(f"Running 'cmake ..' in {os.getcwd()}")
     plain_print(green_plus() + " Found CMakeLists.txt. Attempting build with 'cmake'")
 
     run_cmd(['mkdir', '-p', 'build'], progress=False)
@@ -334,7 +339,7 @@ def make() -> Tuple[int, str, str]:
     Returns:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
-    log.logger.info(f"Running 'make -j {cpu_count()}' in {os.getcwd()}")
+    log.info(f"Running 'make -j {cpu_count()}' in {os.getcwd()}")
     plain_print(green_plus() + f" Found Makefile. Attempting to run 'make -j {cpu_count()}'")
     return run_cmd(['make', '-j', f'{cpu_count()}'])
 
@@ -349,7 +354,7 @@ def npm_install() -> Tuple[int, str, str]:
     Returns:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
-    log.logger.info(f"Running 'npm install' in {os.getcwd()}")
+    log.info(f"Running 'npm install' in {os.getcwd()}")
     plain_print(green_plus() + " Found package.json. Running 'npm install'")
     return run_cmd(['npm', 'install'])
 
@@ -364,7 +369,7 @@ def bundle_install() -> Tuple[int, str, str]:
     Returns:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
-    log.logger.info(f"Running 'bundle install' in {os.getcwd()}")
+    log.info(f"Running 'bundle install' in {os.getcwd()}")
     plain_print(green_plus() + "Found Gemfile. Running 'bundle install'")
     return run_cmd(['bundle', 'install'])
 
@@ -380,7 +385,7 @@ def basic_fail_log(error_code: int, error_message: str) -> None:
     Returns:
         None
     '''
-    log.logger.info(f'Failed with return code {error_code}, and error message {error_message}')
+    log.info(f'Failed with return code {error_code}, and error message {error_message}')
 
 
 def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool = False) -> bool:
@@ -416,10 +421,10 @@ def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool
         if assume_yes:
             message = f'{message}. Removing directory due to --yes flag'
             error_msg(message)
-            log.logger.info(message)
+            log.info(message)
             return False
 
-        log.logger.info(message)
+        log.info(message)
 
         yes = prompt_user(
             f"{colored_text(colors.B_RED, 'ERROR:')} Failed to install {module[consts.TITLE]} at '{failed_install_path}'. Remove the directory?",
@@ -433,7 +438,7 @@ def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool
         else:
             message = f"Keeping {module[consts.TITLE]} at '{failed_install_path}'"
             print(f'\n{message}\n')
-            log.logger.info(message)
+            log.info(message)
 
         return False
 
@@ -506,7 +511,7 @@ def install_dependencies() -> str:
                 print(done())
 
     print(green_plus() + f' Installation ' + done())
-    log.logger.info(f'Exiting installation handler from {os.getcwd()}')
+    log.info(f'Exiting installation handler from {os.getcwd()}')
     return ''
 
 
@@ -521,13 +526,13 @@ def get_pids(process_name: str) -> List[str]:
         processes (List[str]): list of the processes IDs found
     '''
 
-    log.logger.info(f'Getting process IDs for {process_name} proceses')
+    log.info(f'Getting process IDs for {process_name} proceses')
 
     pids = subprocess.Popen(['pgrep', process_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, _ = pids.communicate()
     processes = stdout.decode('utf-8')
 
-    log.logger.info(f'Found processes: {processes}')
+    log.info(f'Found processes: {processes}')
 
     return [proc_id for proc_id in processes.split('\n') if proc_id]
 
@@ -542,7 +547,7 @@ def kill_pids_of_process(process: str):
     Returns:
         processes (str): the processes IDs found
     '''
-    log.logger.info(f'Killing all processes of type {process}')
+    log.info(f'Killing all processes of type {process}')
     os.system(f'for process in $(pgrep {process}); do kill -9 $process; done')
 
 
@@ -559,7 +564,7 @@ def kill_magicmirror_processes() -> None:
 
     processes = ['node', 'npm', 'electron']
 
-    log.logger.info('Killing processes associated with MagicMirror: {processes}')
+    log.info('Killing processes associated with MagicMirror: {processes}')
 
     for process in processes:
         kill_pids_of_process(process)
@@ -683,7 +688,7 @@ def invalid_additional_arguments(subcommand: str) -> str:
         message (str): the standardized error message
 
     '''
-    log.logger.error(f'invalid addtional options supplied to `mmpm {subcommand}`')
+    log.error(f'invalid addtional options supplied to `mmpm {subcommand}`')
     return f'`mmpm {subcommand}` does not accept additional arguments. See `mmpm {subcommand} --help`'
 
 
@@ -699,5 +704,5 @@ def invalid_option(subcommand: str) -> str:
         message (str): the standardized error message
 
     '''
-    log.logger.error(f'invalid option supplied to `mmpm {subcommand}`')
+    log.error(f'invalid option supplied to `mmpm {subcommand}`')
     return f'Invalid option supplied to `mmpm {subcommand}`. See `mmpm {subcommand} --help`'

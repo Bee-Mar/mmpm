@@ -78,15 +78,15 @@ def __stream_cmd_output__(process: Group, cmd: list):
         None
     '''
     command: list = MMPM_EXECUTABLE + cmd
-    log.logger.info(f"Executing {command}")
+    log.info(f"Executing {command}")
     process.run(command)
 
     try:
         while process.is_pending():
-            log.logger.info('Process pending')
+            log.info('Process pending')
             for _, line in process.readlines():
                 socketio.emit('live-terminal-stream', {'data': str(line.decode('utf-8'))})
-        log.logger.info(f'Process complete: {command}')
+        log.info(f'Process complete: {command}')
     except Exception:
         pass
 
@@ -103,26 +103,26 @@ def error_handler(error) -> Tuple[str, int]:
         tuple (str, int): error message and code
     '''
     message: str = f'An internal error occurred within flask_socketio: {error}'
-    log.logger.critical(message)
+    log.critical(message)
     return message, 500
 
 
 @socketio.on('connect')
 def on_connect() -> None:
     message: str = 'Server connected'
-    log.logger.info(message)
+    log.info(message)
     socketio.emit('connected', {'data': message})
 
 
 @socketio.on('disconnect')
 def on_disconnect() -> None:
     message: str = 'Server disconnected'
-    log.logger.info(message)
+    log.info(message)
     socketio.emit(message, {'data': message})
 
 @app.after_request
 def after_request(response: Response) -> Response:
-    log.logger.info('Headers being added after the request')
+    log.info('Headers being added after the request')
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
@@ -154,14 +154,14 @@ def get_magicmirror_modules() -> dict:
 @app.route(__api__('install-modules'), methods=[POST])
 def install_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
-    log.logger.info(f'Request to install {selected_modules}')
+    log.info(f'Request to install {selected_modules}')
     process: Group = Group()
     Response(
         __stream_cmd_output__(process, ['-i'] + [selected_module['title'] for selected_module in selected_modules]),
         mimetype='text/plain'
     )
 
-    log.logger.info('Finished installing')
+    log.info('Finished installing')
     return json.dumps(True)
 
 
@@ -192,7 +192,7 @@ def remove_magicmirror_modules() -> Response:
 @app.route(__api__('upgrade-modules'), methods=[POST])
 def upgrade_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
-    log.logger.info(f'Request to upgrade {selected_modules}')
+    log.info(f'Request to upgrade {selected_modules}')
     process: Group = Group()
 
     Response(
@@ -200,7 +200,7 @@ def upgrade_magicmirror_modules() -> str:
         mimetype='text/plain'
     )
 
-    log.logger.info('Finished update')
+    log.info('Finished update')
     return json.dumps(True)
 
 
@@ -238,7 +238,7 @@ def add_external_module() -> str:
 @app.route(__api__('remove-external-module-source'), methods=[DELETE])
 def remove_external_module_source() -> str:
     selected_sources: list = request.get_json(force=True)['external-sources']
-    log.logger.info(f'Request to remove external sources')
+    log.info(f'Request to remove external sources')
 
     process: Group = Group()
     Response(
@@ -251,10 +251,10 @@ def remove_external_module_source() -> str:
 
 @app.route(__api__('refresh-modules'), methods=[GET])
 def force_refresh_magicmirror_modules() -> str:
-    log.logger.info(f'Recieved request to refresh modules')
+    log.info(f'Recieved request to refresh modules')
     process: Group = Group()
     Response(__stream_cmd_output__(process, ['-f', '--GUI']), mimetype='text/plain')
-    log.logger.info('Finished refresh')
+    log.info('Finished refresh')
     return json.dumps(True)
 
 
@@ -262,14 +262,14 @@ def force_refresh_magicmirror_modules() -> str:
 def get_magicmirror_config():
     path: str = consts.MAGICMIRROR_CONFIG_FILE
     result: str = send_file(path, attachment_filename='config.js') if path else ''
-    log.logger.info('Retrieving MagicMirror config')
+    log.info('Retrieving MagicMirror config')
     return result
 
 
 @app.route(__api__('update-magicmirror-config'), methods=[POST])
 def update_magicmirror_config() -> str:
     data: dict = request.get_json(force=True)
-    log.logger.info('Saving MagicMirror config file')
+    log.info('Saving MagicMirror config file')
 
     try:
         with open(consts.MAGICMIRROR_CONFIG_FILE, 'w') as config:
@@ -296,10 +296,10 @@ def start_magicmirror() -> str:
 
     # if these processes are all running, we assume MagicMirror is running currently
     if utils.get_pids('chromium') and utils.get_pids('node') and utils.get_pids('npm'):
-        log.logger.info('MagicMirror appears to be running already. Returning False.')
+        log.info('MagicMirror appears to be running already. Returning False.')
         return json.dumps(False)
 
-    log.logger.info('MagicMirror does not appear to be running currently. Returning True.')
+    log.info('MagicMirror does not appear to be running currently. Returning True.')
     core.start_magicmirror()
     return json.dumps(True)
 
@@ -349,7 +349,7 @@ def restart_raspberrypi() -> str:
         success (bool): If the command fails, False is returned. If success, the return will never reach the interface
     '''
 
-    log.logger.info('Restarting RaspberryPi')
+    log.info('Restarting RaspberryPi')
     core.stop_magicmirror()
     return_code, _, _ = utils.run_cmd(['sudo', 'reboot'])
     # if success, it'll never get the response, but we'll know if it fails
@@ -368,7 +368,7 @@ def turn_off_raspberrypi() -> str:
         success (bool): If the command fails, False is returned. If success, the return will never reach the interface
     '''
 
-    log.logger.info('Shutting down RaspberryPi')
+    log.info('Shutting down RaspberryPi')
     # if success, we'll never get the response, but we'll know if it fails
     core.stop_magicmirror()
     return_code, _, _ = utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
@@ -377,10 +377,10 @@ def turn_off_raspberrypi() -> str:
 
 @app.route(__api__('upgrade-magicmirror'), methods=[GET])
 def upgrade_magicmirror() -> str:
-    log.logger.info(f'Request to upgrade MagicMirror')
+    log.info(f'Request to upgrade MagicMirror')
     process: Group = Group()
     Response(__stream_cmd_output__(process, ['-M', '--GUI']), mimetype='text/plain')
-    log.logger.info('Finished installing')
+    log.info('Finished installing')
 
     if utils.get_pids('node') and utils.get_pids('npm') and utils.get_pids('electron'):
         core.restart_magicmirror()
@@ -391,5 +391,5 @@ def upgrade_magicmirror() -> str:
 #def download_log_files():
 #    path: str = consts.MAGICMIRROR_CONFIG_FILE
 #    result: str = send_file(path, attachment_filename='config.js') if path else ''
-#    log.logger.info('Retrieving MMPM log files')
+#    log.info('Retrieving MMPM log files')
 #    return result

@@ -79,7 +79,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     '''
 
     try:
-        log.logger.info(f'Checking for newer version of MMPM. Current version: {mmpm.__version__}')
+        log.info(f'Checking for newer version of MMPM. Current version: {mmpm.__version__}')
         utils.plain_print(f'Checking for MMPM updates ... ')
 
         MMPM_FILE = urlopen(consts.MMPM_FILE_URL)
@@ -88,7 +88,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     except HTTPError as error:
         message: str = 'Unable to retrieve available version number from MMPM repository'
         utils.error_msg(message)
-        log.logger.info(error)
+        log.info(error)
         return False
 
     version_line: List[str] = re.findall(r"__version__ = \d+\.\d+", contents)
@@ -100,15 +100,15 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     if not version_number:
         message: str = 'No version number found on MMPM repository'
         utils.error_msg(message)
-        log.logger.info(message)
+        log.info(message)
         return False
 
     if mmpm.__version__ >= version_number:
         print('No updates available for MMPM')
-        log.logger.info(f'No newer version of MMPM found > {version_number} available. The current version is the latest')
+        log.info(f'No newer version of MMPM found > {version_number} available. The current version is the latest')
         return True
 
-    log.logger.info(f'Found newer version of MMPM: {version_number}')
+    log.info(f'Found newer version of MMPM: {version_number}')
 
     print(f'\nInstalled version: {mmpm.__version__}')
     print(f'Available version: {version_number}\n')
@@ -131,7 +131,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     print(colored_text(colors.B_CYAN, message))
     utils.separator(message)
 
-    log.logger.info(f'User chose to update MMPM with {original_dir} as the starting directory')
+    log.info(f'User chose to update MMPM with {original_dir} as the starting directory')
 
     os.chdir(os.path.join('/', 'tmp'))
     os.system('rm -rf /tmp/mmpm')
@@ -147,7 +147,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     os.system('make reinstall')
 
     os.chdir(original_dir)
-    log.logger.info(f'Changing back to original working directory: {original_dir}')
+    log.info(f'Changing back to original working directory: {original_dir}')
 
     return True
 
@@ -354,7 +354,7 @@ def get_installation_candidates(modules: dict, modules_to_install: List[str]) ->
         for category in modules.values():
             for module in category:
                 if module[consts.TITLE] == module_to_install:
-                    log.logger.info(f'Matched {module[consts.TITLE]} to installation candidate')
+                    log.info(f'Matched {module[consts.TITLE]} to installation candidate')
                     installation_candidates.append(module)
 
     return installation_candidates
@@ -387,7 +387,7 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
         utils.error_msg('Unable to match query to installation candidates')
         return False
 
-    log.logger.info(f'Changing into MagicMirror modules directory {modules_dir}')
+    log.info(f'Changing into MagicMirror modules directory {modules_dir}')
     os.chdir(modules_dir)
 
     # a flag to check if any of the modules have been installed. Used for displaying a message later
@@ -404,10 +404,10 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
 
     for index, candidate in enumerate(installation_candidates):
         if not utils.prompt_user(f'Install {colored_text(colors.N_GREEN, candidate[consts.TITLE])} ({candidate[consts.REPOSITORY]})?', assume_yes=assume_yes):
-            log.logger.info(f'User not chose to install {candidate[consts.TITLE]}')
+            log.info(f'User not chose to install {candidate[consts.TITLE]}')
             installation_candidates[index] = {}
         else:
-            log.logger.info(f'User chose to install {candidate[consts.TITLE]} ({candidate[consts.REPOSITORY]})')
+            log.info(f'User chose to install {candidate[consts.TITLE]} ({candidate[consts.REPOSITORY]})')
 
     for module in installation_candidates:
         if not module:
@@ -434,11 +434,11 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
                 continue
 
             if remote_origin_url == repo:
-                log.logger.info(f'Found a package named {title} already at {target}, with the same git remote origin url')
+                log.info(f'Found a package named {title} already at {target}, with the same git remote origin url')
 
                 if assume_yes:
                     utils.warning_msg(f'{title} ({repo}) appears to be installed already in {target}. Skipping alt installation option due to --yes flag')
-                    log.logger.info(f'User used --yes. Skipping alt installation option for {title} ({repo})')
+                    log.info(f'User used --yes. Skipping alt installation option for {title} ({repo})')
                     continue
 
                 yes = utils.prompt_user(
@@ -458,11 +458,11 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
                     print()
 
             else:
-                log.logger.info(f'Found a package named {title} already at {target}, with a different git remote origin url')
+                log.info(f'Found a package named {title} already at {target}, with a different git remote origin url')
 
                 if assume_yes:
                     utils.warning_msg(f'A package named {title} is already installed in {target}. Skipping alt installation option due to --yes flag')
-                    log.logger.info(f'User used --yes. Skipping alt installation option for {title}')
+                    log.info(f'User used --yes. Skipping alt installation option for {title}')
                     continue
 
                 yes = utils.prompt_user(
@@ -607,19 +607,19 @@ def remove_modules(installed_modules: List[defaultdict], modules_to_remove: List
                         shutil.rmtree(module[consts.DIRECTORY])
                         print(f'{utils.green_plus()} Removed {dir_name}')
                         successful_removals.append(dir_name)
-                        log.logger.info(f'User removed {dir_name}')
+                        log.info(f'User removed {dir_name}')
                     else:
                         cancelled_removals.append(dir_name)
-                        log.logger.info(f'User chose not to remove {dir_name}')
+                        log.info(f'User chose not to remove {dir_name}')
     except KeyboardInterrupt:
-        log.logger.info('Caught keyboard interrupt during attempt to remove modules')
+        log.info('Caught keyboard interrupt during attempt to remove modules')
         print()
         return True
 
     for name in modules_to_remove:
         if name not in successful_removals and name not in cancelled_removals:
             utils.error_msg(f"No module named '{name}' found in {modules_dir}")
-            log.logger.info(f"User attemped to remove {name}, but no module named '{name}' was found in {modules_dir}")
+            log.info(f"User attemped to remove {name}, but no module named '{name}' was found in {modules_dir}")
 
     if successful_removals:
         print(f'Execute `mmpm open --config` to delete associated configurations of any removed modules')
@@ -667,7 +667,7 @@ def load_modules(force_refresh: bool = False) -> dict:
                 modules[consts.EXTERNAL_MODULE_SOURCES] = json.load(f)[consts.EXTERNAL_MODULE_SOURCES]
         except Exception as error:
             utils.warning_msg(f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}.')
-            log.logger.info(f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}: {error}')
+            log.info(f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}: {error}')
 
     return modules
 
@@ -1064,7 +1064,7 @@ def remove_external_module_source(titles: str = None, assume_yes: bool = False) 
 
             for title in titles:
                 for module in config[consts.EXTERNAL_MODULE_SOURCES]:
-                    if module[consts.TITLE] == title and utils.prompt_user(f'Would you like to remove {colored_text(colors.N_GREEN, title)}', assume_yes=assume_yes):
+                    if module[consts.TITLE] == title and utils.prompt_user(f'Would you like to remove {colored_text(colors.N_GREEN, title)} from the MMPM/MagicMirror database?', assume_yes=assume_yes):
                             config[consts.EXTERNAL_MODULE_SOURCES].remove(module)
                             successful_removals.append(module[consts.TITLE])
                             print(f'{utils.green_plus()} Removed {title}')
@@ -1222,10 +1222,10 @@ def stop_magicmirror() -> None:
         None
     '''
     if shutil.which('pm2'):
-        log.logger.info("Using 'pm2' to stop MagicMirror")
+        log.info("Using 'pm2' to stop MagicMirror")
         return_code, stdout, stderr = utils.run_cmd(['pm2', 'stop', 'MagicMirror'], progress=False)
-        log.logger.info(f'pm2 stdout: {stdout}')
-        log.logger.info(f'pm2 stderr: {stderr}')
+        log.info(f'pm2 stdout: {stdout}')
+        log.info(f'pm2 stderr: {stderr}')
     else:
         utils.kill_magicmirror_processes()
 
@@ -1241,19 +1241,19 @@ def start_magicmirror() -> None:
     Returns:
         None
     '''
-    log.logger.info('Starting MagicMirror')
+    log.info('Starting MagicMirror')
     original_dir = os.getcwd()
     os.chdir(consts.MAGICMIRROR_ROOT)
 
-    log.logger.info("Running 'npm start' in the background")
+    log.info("Running 'npm start' in the background")
 
     if shutil.which('pm2'):
-        log.logger.info("Using 'pm2' to start MagicMirror")
+        log.info("Using 'pm2' to start MagicMirror")
         return_code, stdout, stderr = utils.run_cmd(['pm2', 'start', 'MagicMirror'], progress=False)
-        log.logger.info(f'pm2 stdout: {stdout}')
-        log.logger.info(f'pm2 stderr: {stderr}')
+        log.info(f'pm2 stdout: {stdout}')
+        log.info(f'pm2 stderr: {stderr}')
     else:
-        log.logger.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
+        log.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
         os.system('npm start &')
 
     os.chdir(original_dir)
@@ -1271,10 +1271,10 @@ def restart_magicmirror() -> None:
         None
     '''
     if shutil.which('pm2'):
-        log.logger.info("Using 'pm2' to restart MagicMirror")
+        log.info("Using 'pm2' to restart MagicMirror")
         return_code, stdout, stderr = utils.run_cmd(['pm2', 'restart', 'MagicMirror'], progress=False)
-        log.logger.info(f'pm2 stdout: {stdout}')
-        log.logger.info(f'pm2 stderr: {stderr}')
+        log.info(f'pm2 stdout: {stdout}')
+        log.info(f'pm2 stderr: {stderr}')
     else:
         stop_magicmirror()
         start_magicmirror()
@@ -1320,25 +1320,25 @@ def install_autocompletion() -> None:
     Returns:
         None
     '''
-    log.logger.info('user attempting to install MMPM autocompletion')
+    log.info('user attempting to install MMPM autocompletion')
     shell: str = os.environ['SHELL']
-    log.logger.info(f'detected user shell to be {shell}')
+    log.info(f'detected user shell to be {shell}')
     autocomplete_url: str = 'https://github.com/kislyuk/argcomplete#activating-global-completion'
     error_message: str = f'Please see {autocomplete_url} for help installing autocompletion'
     complete_message = lambda config : f'Autocompletion installed. Please source {config} for the changes to take effect'
     failed_match_message = lambda shell, configs : f'Unable to locate {shell} configuration file (looked for {configs}). {error_message}'
 
     def __match_shell_config__(configs: List[str]) -> str:
-        log.logger.info(f'searching for one of the following shell configuration files {configs}')
+        log.info(f'searching for one of the following shell configuration files {configs}')
         for config in configs:
             config = os.path.join(consts.HOME_DIR, config)
             if os.path.exists(config):
-                log.logger.info(f'found {config} shell configuration file for {shell}')
+                log.info(f'found {config} shell configuration file for {shell}')
                 return config
         return ''
 
     def __echo_and_eval__(command: str) -> None:
-        log.logger.info(f'executing {command} to install autocompletion')
+        log.info(f'executing {command} to install autocompletion')
         print(f'{utils.green_plus()} {colored_text(colors.N_GREEN, command)}')
         os.system(command)
 

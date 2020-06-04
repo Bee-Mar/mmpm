@@ -1064,10 +1064,7 @@ def remove_external_module_source(titles: str = None, assume_yes: bool = False) 
 
             for title in titles:
                 for module in config[consts.EXTERNAL_MODULE_SOURCES]:
-                    if module[consts.TITLE] == title and utils.prompt_user(
-                            f'Would you like to remove {colored_text(colors.N_GREEN, title)} ({module[consts.REPOSITORY]})',
-                            assume_yes=assume_yes
-                    ):
+                    if module[consts.TITLE] == title and utils.prompt_user(f'Would you like to remove {colored_text(colors.N_GREEN, title)}', assume_yes=assume_yes):
                             config[consts.EXTERNAL_MODULE_SOURCES].remove(module)
                             successful_removals.append(module[consts.TITLE])
                             print(f'{utils.green_plus()} Removed {title}')
@@ -1080,11 +1077,12 @@ def remove_external_module_source(titles: str = None, assume_yes: bool = False) 
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 json.dump(config, mmpm_ext_srcs)
 
-    except IOError:
-        utils.error_msg('Failed to remove external module')
+    except IOError as error:
+        utils.error_msg(f'Failed to remove external module. {error}')
         return False
 
     return True
+
 
 def open_magicmirror_config() -> bool:
     '''

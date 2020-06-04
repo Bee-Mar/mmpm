@@ -2,7 +2,9 @@
 import eventlet
 eventlet.monkey_patch()
 
+import os
 import json
+import shutil
 from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
 from mmpm import core, utils, consts
@@ -10,7 +12,6 @@ from mmpm.utils import log
 from shelljob.proc import Group
 from flask_socketio import SocketIO
 from typing import Tuple
-import os
 
 
 MMPM_EXECUTABLE: list = [os.path.join(os.path.expanduser('~'), '.local', 'bin', 'mmpm')]
@@ -167,6 +168,19 @@ def install_magicmirror_modules() -> str:
 @app.route(__api__('uninstall-modules'), methods=[POST])
 def remove_magicmirror_modules() -> Response:
     selected_modules: list = request.get_json(force=True)['selected-modules']
+
+    #result = {'successes': [], 'fails': []}
+    #successes: List[dict] = []
+    #fails: List[dict] = []
+
+    #for module in modules_to_remove:
+    #    try:
+    #        shutil.rmtree(module[consts.PATH])
+    #        result['successes'].append(module)
+    #    except FileNotFoundError as error:
+    #        result['fails'].append(module)
+    #return result
+
     process: Group = Group()
 
     return Response(
@@ -372,3 +386,10 @@ def upgrade_magicmirror() -> str:
         core.restart_magicmirror()
 
     return json.dumps(True)
+
+#@app.route(__api__('download-log-files'), methods=[GET])
+#def download_log_files():
+#    path: str = consts.MAGICMIRROR_CONFIG_FILE
+#    result: str = send_file(path, attachment_filename='config.js') if path else ''
+#    log.logger.info('Retrieving MMPM log files')
+#    return result

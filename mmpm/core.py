@@ -15,7 +15,6 @@ from mmpm import colors, utils, mmpm, consts
 from mmpm.utils import colored_text
 from typing import List, DefaultDict
 from mmpm.utils import log, to_bytes
-from shutil import which
 import subprocess
 import select
 
@@ -81,7 +80,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
 
     try:
         log.logger.info(f'Checking for newer version of MMPM. Current version: {mmpm.__version__}')
-        utils.plain_print(f'Checking MMPM updates ... ')
+        utils.plain_print(f'Checking for MMPM updates ... ')
 
         MMPM_FILE = urlopen(consts.MMPM_FILE_URL)
         contents: str = str(MMPM_FILE.read())
@@ -105,7 +104,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
         return False
 
     if mmpm.__version__ >= version_number:
-        print('No updates found for MMPM')
+        print('No updates available for MMPM')
         log.logger.info('No newer version of MMPM found > {version_number} available. The current version is the latest')
         return True
 
@@ -179,7 +178,7 @@ def upgrade_module(module: dict):
 
     dirs: List[str] = os.listdir(modules_dir)
 
-    os.chdir(module[consts.PATH])
+    os.chdir(module[consts.DIRECTORY])
     utils.plain_print(f'{utils.green_plus()} Retrieving upgrade for {module[consts.TITLE]}')
     error_code, stdout, stderr = utils.run_cmd(["git", "pull"])
 
@@ -232,7 +231,7 @@ def check_for_module_updates(modules: dict, assume_yes: bool = False):
 
     for _, modules in installed_modules.items():
         for module in modules:
-            os.chdir(module[consts.PATH])
+            os.chdir(module[consts.DIRECTORY])
 
             utils.plain_print(f'Checking {module[consts.TITLE]} for updates')
             return_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
@@ -249,7 +248,7 @@ def check_for_module_updates(modules: dict, assume_yes: bool = False):
 
 
     if not updateable:
-        print(colored_text(colors.RESET, 'No updates found for modules'))
+        print(colored_text(colors.RESET, 'No updates available for modules'))
         return False
 
     print(f'\n{len(updateable)} updates are available\n')
@@ -542,7 +541,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
         restart_magicmirror()
 
     else:
-        print('No updates found for MagicMirror')
+        print('No updates available for MagicMirror')
 
     return True
 
@@ -602,10 +601,10 @@ def remove_modules(installed_modules: List[defaultdict], modules_to_remove: List
     try:
         for category, modules in installed_modules.items():
             for module in modules:
-                dir_name = os.path.basename(module[consts.PATH])
+                dir_name = os.path.basename(module[consts.DIRECTORY])
                 if dir_name in module_dirs and dir_name in modules_to_remove:
                     if utils.prompt_user(f'Would you like to remove {colored_text(colors.N_GREEN, module[consts.TITLE])} ({dir_name})', assume_yes=assume_yes):
-                        shutil.rmtree(module[consts.PATH])
+                        shutil.rmtree(module[consts.DIRECTORY])
                         print(f'{utils.green_plus()} Removed {dir_name}')
                         successful_removals.append(dir_name)
                         log.logger.info(f'User removed {dir_name}')
@@ -618,7 +617,7 @@ def remove_modules(installed_modules: List[defaultdict], modules_to_remove: List
         return True
 
     for name in modules_to_remove:
-        if name not in successful_removals:
+        if name not in successful_removals and name not in cancelled_removals:
             utils.error_msg(f"No module named '{name}' found in {modules_dir}")
             log.logger.info(f"User attemped to remove {name}, but no module named '{name}' was found in {modules_dir}")
 
@@ -854,12 +853,12 @@ def display_modules(modules: dict, table_formatted: bool = False, include_path: 
         table[0][1] = to_bytes(consts.DESCRIPTION)
 
         if include_path:
-            table[0][2] =  to_bytes(consts.PATH)
+            table[0][2] =  to_bytes(consts.DIRECTORY)
 
             def __fill_row__(table, row, module):
                 table[row][0] = to_bytes(module[consts.TITLE])
                 table[row][1] = to_bytes(format_description(module[consts.DESCRIPTION]))
-                table[row][2] =  to_bytes(module[consts.PATH])
+                table[row][2] =  to_bytes(os.path.basename(module[consts.DIRECTORY]))
         else:
             def __fill_row__(table, row, module):
                 table[row][0] = to_bytes(module[consts.TITLE])
@@ -876,7 +875,7 @@ def display_modules(modules: dict, table_formatted: bool = False, include_path: 
         if include_path:
             _print_ = lambda module : print(
                 colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'),
-                f'({os.path.basename(module[consts.PATH])})',
+                (f'\n  Directory: {os.path.basename(module[consts.DIRECTORY])}'),
                 (f"\n  {format_description(module[consts.DESCRIPTION])}\n")
             )
 
@@ -941,7 +940,7 @@ def get_installed_modules(modules: dict) -> dict:
             modules_found['Modules'].append({
                 consts.TITLE: project_name.strip(),
                 consts.REPOSITORY: remote_origin_url.strip(),
-                consts.PATH: os.getcwd()
+                consts.DIRECTORY: os.getcwd()
             })
 
         except Exception:
@@ -960,7 +959,7 @@ def get_installed_modules(modules: dict) -> dict:
                         consts.REPOSITORY: module[consts.REPOSITORY],
                         consts.AUTHOR: module[consts.AUTHOR],
                         consts.DESCRIPTION: module[consts.DESCRIPTION],
-                        consts.PATH: module_found[consts.PATH]
+                        consts.DIRECTORY: module_found[consts.DIRECTORY]
                     })
 
     return installed_modules
@@ -1043,7 +1042,7 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
     return True
 
 
-def remove_external_module_source(titles: str = None) -> bool:
+def remove_external_module_source(titles: str = None, assume_yes: bool = False) -> bool:
     '''
     Allows user to remove an external source from the sources saved in
     ~/.config/mmpm/mmpm-external-sources.json
@@ -1065,9 +1064,13 @@ def remove_external_module_source(titles: str = None) -> bool:
 
             for title in titles:
                 for module in config[consts.EXTERNAL_MODULE_SOURCES]:
-                    if module[consts.TITLE] == title:
-                        config[consts.EXTERNAL_MODULE_SOURCES].remove(module)
-                        successful_removals.append(module[consts.TITLE])
+                    if module[consts.TITLE] == title and utils.prompt_user(
+                            f'Would you like to remove {colored_text(colors.N_GREEN, title)} ({module[consts.REPOSITORY]})',
+                            assume_yes=assume_yes
+                    ):
+                            config[consts.EXTERNAL_MODULE_SOURCES].remove(module)
+                            successful_removals.append(module[consts.TITLE])
+                            print(f'{utils.green_plus()} Removed {title}')
 
             if not successful_removals:
                 utils.error_msg('No external sources found matching provided query')
@@ -1077,12 +1080,11 @@ def remove_external_module_source(titles: str = None) -> bool:
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 json.dump(config, mmpm_ext_srcs)
 
-            print(colored_text(colors.B_GREEN, f"Successfully removed {', '.join(successful_removals)} from '{consts.EXTERNAL_MODULE_SOURCES}'"))
     except IOError:
         utils.error_msg('Failed to remove external module')
         return False
-    return True
 
+    return True
 
 def open_magicmirror_config() -> bool:
     '''
@@ -1096,11 +1098,11 @@ def open_magicmirror_config() -> bool:
     '''
     try:
         utils.open_default_editor(utils.get_file_path(consts.MAGICMIRROR_CONFIG_FILE))
-        return True
     except Exception:
         utils.error_msg(f'{consts.MAGICMIRROR_CONFIG_FILE} not found. Is the MAGICMIRROR_ROOT env variable set?')
         return False
 
+    return True
 
 def get_active_modules(table_formatted: bool = False) -> None:
 
@@ -1221,7 +1223,7 @@ def stop_magicmirror() -> None:
     Returns:
         None
     '''
-    if which('pm2'):
+    if shutil.which('pm2'):
         log.logger.info("Using 'pm2' to stop MagicMirror")
         return_code, stdout, stderr = utils.run_cmd(['pm2', 'stop', 'MagicMirror'], progress=False)
         log.logger.info(f'pm2 stdout: {stdout}')
@@ -1247,7 +1249,7 @@ def start_magicmirror() -> None:
 
     log.logger.info("Running 'npm start' in the background")
 
-    if which('pm2'):
+    if shutil.which('pm2'):
         log.logger.info("Using 'pm2' to start MagicMirror")
         return_code, stdout, stderr = utils.run_cmd(['pm2', 'start', 'MagicMirror'], progress=False)
         log.logger.info(f'pm2 stdout: {stdout}')
@@ -1270,7 +1272,7 @@ def restart_magicmirror() -> None:
     Returns:
         None
     '''
-    if which('pm2'):
+    if shutil.which('pm2'):
         log.logger.info("Using 'pm2' to restart MagicMirror")
         return_code, stdout, stderr = utils.run_cmd(['pm2', 'restart', 'MagicMirror'], progress=False)
         log.logger.info(f'pm2 stdout: {stdout}')
@@ -1306,3 +1308,84 @@ def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool
 def display_mmpm_env_vars() -> None:
     for key, value in consts.MMPM_ENV_VARS.items():
         print(f'{key}={value}')
+
+
+def install_autocompletion() -> None:
+    '''
+    Adds appropriate autocompletion configuration to a user's shell
+    configuration file. Detects configuration files for bash, zsh, fish,
+    and tcsh
+
+    Parameters:
+       None
+
+    Returns:
+        None
+    '''
+    log.logger.info('user attempting to install MMPM autocompletion')
+    shell: str = os.environ['SHELL']
+    log.logger.info(f'detected {shell}')
+    autocomplete_url: str = 'https://github.com/kislyuk/argcomplete#activating-global-completion'
+    error_message: str = f'Please see {autocomplete_url} for help installing autocompletion'
+    complete_message = lambda config : f'Autocompletion installed. Please source {config} for the changes to take effect'
+    failed_match_message = lambda shell, configs : f'Unable to locate {shell} configuration file (looked for {configs}). {error_message}'
+
+    def __match_shell_config__(configs: List[str]) -> str:
+        log.logger.info(f'searching for one of the following shell configuration files {configs}')
+        for config in configs:
+            config = os.path.join(consts.HOME_DIR, config)
+            if os.path.exists(config):
+                log.logger.info(f'found {config} shell configuration file for {shell}')
+                return config
+        return ''
+
+    def __echo_and_eval__(command: str) -> None:
+        log.logger.info(f'executing {command} to install autocompletion')
+        print(f'{utils.green_plus()} {colored_text(colors.N_GREEN, command)}')
+        os.system(command)
+
+    if 'bash' in shell:
+        files = ['.bashrc', '.bash_profile', '.bash_login', '.profile']
+        config =  __match_shell_config__(files)
+
+        if not config:
+            utils.fatal_msg(failed_match_message('bash', files))
+
+        __echo_and_eval__(f'echo \'eval "$(register-python-argcomplete mmpm)"\' >> {config}')
+        print(complete_message(config))
+
+    elif 'zsh' in shell:
+        files = ['.zshrc', '.zprofile', '.zshenv', '.zlogin', '.profile']
+        config = __match_shell_config__(files)
+
+        if not config:
+            utils.fatal_msg(failed_match_message('zsh', files))
+
+        __echo_and_eval__(f"echo 'autoload -U bashcompinit' >> {config}")
+        __echo_and_eval__(f"echo 'bashcompinit' >> {config}")
+        __echo_and_eval__(f'echo \'eval "$(register-python-argcomplete mmpm)"\' >> {config}')
+        print(complete_message(config))
+
+    elif 'tcsh' in shell:
+        files = ['.tcshrc', '.cshrc', '.login']
+        config = __match_shell_config__(files)
+
+        if not config:
+            utils.fatal_msg(failed_match_message('tcsh', files))
+
+        __echo_and_eval__(f"echo 'eval `register-python-argcomplete --shell tcsh mmpm`' >> {config}")
+        print(complete_message(config))
+
+    elif 'fish' in shell:
+        files = ['.config/fish/config.fish']
+        config = __match_shell_config__(files)
+
+        if not config:
+            utils.fatal_msg(failed_match_message('fish', files))
+
+        __echo_and_eval__(f"register-python-argcomplete --shell fish mmpm >> {config}")
+        print(complete_message(config))
+
+    else:
+        utils.fatal_msg(f'Unable install autocompletion for SHELL ({shell}). Please see {autocomplete_url} for help installing autocomplete')
+

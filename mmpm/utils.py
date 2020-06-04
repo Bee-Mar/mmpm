@@ -64,6 +64,7 @@ def error_msg(msg: str) -> None:
     Parameters:
         msg (str): The error message to be printed to stdout
     '''
+    log.logger.error(msg)
     print(colored_text(colors.B_RED, "ERROR:"), msg)
 
 
@@ -77,6 +78,7 @@ def warning_msg(msg: str) -> None:
     Returns:
         None
     '''
+    log.logger.warning(msg)
     print(colored_text(colors.B_YELLOW, "WARNING:"), msg)
 
 
@@ -90,6 +92,7 @@ def fatal_msg(msg: str) -> None:
     Returns:
         None
     '''
+    log.logger.fatal(msg)
     print(colored_text(colors.B_RED, "FATAL:"), msg)
     sys.exit(127)
 
@@ -245,7 +248,7 @@ def done() -> str:
         message (str): The string 'done' in bright green
 
     '''
-    return colored_text(colors.B_GREEN, "done")
+    return colored_text(colors.N_GREEN, "done")
 
 
 def green_plus() -> str:
@@ -456,7 +459,7 @@ def install_dependencies() -> str:
 
         if error_code:
             basic_fail_log(error_code, stderr)
-            print('\n')
+            print()
             return str(stderr)
         else:
             print(done())
@@ -466,7 +469,7 @@ def install_dependencies() -> str:
 
         if error_code:
             basic_fail_log(error_code, stderr)
-            print('\n')
+            print()
             return str(stderr)
         else:
             print(done())
@@ -476,7 +479,7 @@ def install_dependencies() -> str:
 
         if error_code:
             basic_fail_log(error_code, stderr)
-            print('\n')
+            print()
             return str(stderr)
         else:
             print(done())
@@ -487,7 +490,7 @@ def install_dependencies() -> str:
 
         if error_code:
             basic_fail_log(error_code, stderr)
-            print('\n')
+            print()
             return str(stderr)
         else:
             print(done())
@@ -497,7 +500,7 @@ def install_dependencies() -> str:
 
             if error_code:
                 basic_fail_log(error_code, stderr)
-                print('\n')
+                print()
                 return str(stderr)
             else:
                 print(done())
@@ -668,3 +671,33 @@ def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nac
 
     return False
 
+
+def invalid_additional_arguments(subcommand: str) -> str:
+    '''
+    Helper method to return a standardized error message when the user provides too many arguments
+
+    Parameters:
+        subcommand (str): the name of the mmpm subcommand
+
+    Returns:
+        message (str): the standardized error message
+
+    '''
+    log.logger.error(f'invalid addtional options supplied to `mmpm {subcommand}`')
+    return f'`mmpm {subcommand}` does not accept additional arguments. See `mmpm {subcommand} --help`'
+
+
+def invalid_option(subcommand: str) -> str:
+    '''
+    Helper method to return a standardized error message when the user provides an invalid option
+
+
+    Parameters:
+        subcommand (str): the name of the mmpm subcommand
+
+    Returns:
+        message (str): the standardized error message
+
+    '''
+    log.logger.error(f'invalid option supplied to `mmpm {subcommand}`')
+    return f'Invalid option supplied to `mmpm {subcommand}`. See `mmpm {subcommand} --help`'

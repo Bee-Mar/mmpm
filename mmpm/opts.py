@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # pylint: disable=unused-argument
-import argparse
 import sys
+import argparse
+import argcomplete
 from mmpm.consts import MMPM_WIKI_URL
 
 # subcommand names (these could go in consts.py, but for the sake of mnemonics for mmpm.py, they'll stay)
@@ -91,6 +92,13 @@ def get_user_args() -> object:
         default=False,
         help='install MagicMirror, if not already installed',
         dest='magicmirror'
+    )
+
+    install_parser.add_argument(
+        '--autocomplete',
+        action='store_true',
+        help='install autocompletion for the MMPM CLI',
+        dest='autocomplete'
     )
 
     # REMOVE PARSER
@@ -284,9 +292,18 @@ def get_user_args() -> object:
 
     add_ext_module_parser.add_argument(
         '--remove',
-        type=str,
+        nargs='+',
         help='remove external module (similar pattern of add-apt-repository --remove)',
         dest='remove'
+    )
+
+    add_ext_module_parser.add_argument(
+        '-y',
+        '--yes',
+        action='store_true',
+        default=False,
+        help='assume yes for user response and do not show prompt',
+        dest='assume_yes'
     )
 
     # LOGS SUBCOMMANDS
@@ -359,7 +376,7 @@ def get_user_args() -> object:
         '--restart',
         action='store_true',
         help='restart the MagicMirror (works with pm2)',
-        dest='start'
+        dest='restart'
     )
 
     # magicmirror_parser.add_argument(
@@ -394,6 +411,8 @@ def get_user_args() -> object:
         help=argparse.SUPPRESS,
         dest='GUI'
     )
+
+    argcomplete.autocomplete(arg_parser)
 
     if len(sys.argv) < 2:
         arg_parser.print_help()

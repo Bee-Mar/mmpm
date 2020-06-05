@@ -80,10 +80,13 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
 
     try:
         log.info(f'Checking for newer version of MMPM. Current version: {mmpm.__version__}')
-        utils.plain_print(f'Checking for MMPM updates ... ')
+        utils.plain_print(f"Checking {colored_text(color.N_GREEN, 'MMPM')} for updates")
 
-        MMPM_FILE = urlopen(consts.MMPM_FILE_URL)
-        contents: str = str(MMPM_FILE.read())
+        # just to keep the console output the same as all other update commands
+        return_code, contents, _ = utils.run_cmd(['curl', consts.MMPM_FILE_URL])
+
+        if return_code:
+            utils.fatal_msg('Failed to retrieve MMPM version number')
 
     except HTTPError as error:
         message: str = 'Unable to retrieve available version number from MMPM repository'
@@ -98,10 +101,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     print(utils.done())
 
     if not version_number:
-        message = 'No version number found on MMPM repository'
-        utils.error_msg(message)
-        log.info(message)
-        return False
+        utils.fatal_msg('No version number found on MMPM repository')
 
     if mmpm.__version__ >= version_number:
         print('No updates available for MMPM')
@@ -233,7 +233,7 @@ def check_for_module_updates(modules: dict, assume_yes: bool = False):
         for module in modules:
             os.chdir(module[consts.DIRECTORY])
 
-            utils.plain_print(f'Checking {module[consts.TITLE]} for updates')
+            utils.plain_print(f'Checking {colored_text(color.N_GREEN, module[consts.TITLE])} for updates')
             return_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
 
             if return_code:
@@ -511,7 +511,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
         return False
 
     os.chdir(consts.MAGICMIRROR_ROOT)
-    utils.plain_print('Checking for MagicMirror updates')
+    utils.plain_print(f"Checking {colored_text(color.N_GREEN, 'MagicMirror')} for updates")
 
     # stdout and stderr are flipped for git command output, because that totally makes sense
     # except now stdout doesn't even contain error messages...thanks git
@@ -651,7 +651,9 @@ def load_modules(force_refresh: bool = False) -> dict:
     modules: dict = {}
 
     if not utils.assert_snapshot_directory():
-        utils.fatal_msg('Failed to create directory for MagicMirror snapshot')
+        message: str = 'Failed to create directory for MagicMirror snapshot'
+        log.error(message)
+        utils.fatal_msg(message)
 
     # if the snapshot has expired, or doesn't exist, get a new one
     if force_refresh:

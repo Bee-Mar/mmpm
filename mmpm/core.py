@@ -987,24 +987,33 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
     Returns:
         (bool): Upon success, a True result is returned
     '''
+
+    def __assert_input__(prompt) -> str:
+        while True:
+            value = input(prompt)
+            if not value:
+                utils.warning_msg('You must provide a non-zero length response')
+                continue
+            return value
+
     try:
         if not title:
-            title = input('Title: ')
+            title = __assert_input__('Title: ')
         else:
             print(f'Title: {title}')
 
         if not author:
-            author = input('Author: ')
+            author = __assert_input__('Author: ')
         else:
             print(f'Author: {author}')
 
         if not repo:
-            repo = input('Repository: ')
+            repo = __assert_input__('Repository: ')
         else:
             print(f'Repository: {repo}')
 
         if not desc:
-            desc = input('Description: ')
+            desc = __assert_input__('Description: ')
         else:
             print(f'Description: {desc}')
 

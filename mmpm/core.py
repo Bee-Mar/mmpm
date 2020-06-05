@@ -11,7 +11,7 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 from collections import defaultdict
 from bs4 import BeautifulSoup
-from mmpm import colors, utils, mmpm, consts
+from mmpm import color, utils, mmpm, consts
 from mmpm.utils import colored_text
 from typing import List, DefaultDict
 from mmpm.utils import log, to_bytes
@@ -44,22 +44,22 @@ def snapshot_details(modules: dict) -> None:
         num_modules += len(value)
 
     print(
-        colored_text(colors.N_YELLOW, 'Most recent snapshot of MagicMirror Modules taken:'),
+        colored_text(color.N_YELLOW, 'Most recent snapshot of MagicMirror Modules taken:'),
         f'{curr_snap_date}'
     )
 
     print(
-        colored_text(colors.N_YELLOW, 'The next snapshot will be taken on or after:'),
+        colored_text(color.N_YELLOW, 'The next snapshot will be taken on or after:'),
         f'{next_snap_date}\n'
     )
 
     print(
-        colored_text(colors.N_GREEN, 'Module Categories:'),
+        colored_text(color.N_GREEN, 'Module Categories:'),
         f'{num_categories}'
     )
 
     print(
-        colored_text(colors.N_GREEN, 'Modules Available:'),
+        colored_text(color.N_GREEN, 'Modules Available:'),
         f'{num_modules}\n'
     )
 
@@ -88,7 +88,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     except HTTPError as error:
         message: str = 'Unable to retrieve available version number from MMPM repository'
         utils.error_msg(message)
-        log.info(error)
+        log.error(error)
         return False
 
     version_line: List[str] = re.findall(r"__version__ = \d+\.\d+", contents)
@@ -128,7 +128,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     message = "Upgrading MMPM"
 
     utils.separator(message)
-    print(colored_text(colors.B_CYAN, message))
+    print(colored_text(color.B_CYAN, message))
     utils.separator(message)
 
     log.info(f'User chose to update MMPM with {original_dir} as the starting directory')
@@ -247,7 +247,7 @@ def check_for_module_updates(modules: dict, assume_yes: bool = False):
 
 
     if not updateable:
-        print(colored_text(colors.RESET, 'No updates available for modules'))
+        print(colored_text(color.RESET, 'No updates available for modules'))
         return False
 
     print(f'\n{len(updateable)} updates are available\n')
@@ -326,7 +326,7 @@ def show_module_details(modules: dict) -> None:
 
     for category, _modules  in modules.items():
         for module in _modules:
-            print(colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'))
+            print(colored_text(color.N_GREEN, f'{module[consts.TITLE]}'))
             print(f'  Category: {category}')
             print(f'  Repository: {module[consts.REPOSITORY]}')
             print(f'  Author: {module[consts.AUTHOR]}')
@@ -389,18 +389,19 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
 
     # a flag to check if any of the modules have been installed. Used for displaying a message later
     successful_install: bool = False
+    marked_for_installation: list = []
 
     match_count: int = len(installation_candidates)
 
     print(
         colored_text(
-            colors.N_CYAN,
+            color.N_CYAN,
             f"Matched query to {match_count} {'package' if match_count == 1 else 'packages'} \n"
         )
     )
 
     for index, candidate in enumerate(installation_candidates):
-        if not utils.prompt_user(f'Install {colored_text(colors.N_GREEN, candidate[consts.TITLE])} ({candidate[consts.REPOSITORY]})?', assume_yes=assume_yes):
+        if not utils.prompt_user(f'Install {colored_text(color.N_GREEN, candidate[consts.TITLE])} ({candidate[consts.REPOSITORY]})?', assume_yes=assume_yes):
             log.info(f'User not chose to install {candidate[consts.TITLE]}')
             installation_candidates[index] = {}
         else:
@@ -447,7 +448,7 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
                     continue
 
                 try:
-                    target = input(f'New directory name: ')
+                    target = utils.assert_valid_input(f'New directory name: ')
                 except KeyboardInterrupt as error:
                     message = f'Cancelling installation of {title} ({repo})'
                     log.error(message)
@@ -473,7 +474,7 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
                     continue
 
                 try:
-                    target = input(f'New directory name: ')
+                    target = utils.assert_valid_input(f'New directory name: ')
                 except KeyboardInterrupt:
                     print()
                     message = f'Cancelling installation of {title}'
@@ -488,7 +489,6 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
         return False
 
     print(f'Execute `mmpm open --config` to edit the configuration for newly installed modules')
-
     return True
 
 
@@ -572,7 +572,7 @@ def install_magicmirror(gui=False) -> bool:
         print(f'Please set the MMPM_MAGICMIRROR_ROOT env variable in your bashrc to {parent}/MagicMirror')
 
     os.chdir(parent)
-    print(colored_text(colors.N_CYAN, f'Installing MagicMirror in {parent}/MagicMirror ...'))
+    print(colored_text(color.N_CYAN, f'Installing MagicMirror in {parent}/MagicMirror ...'))
     os.system('bash -c "$(curl -sL https://raw.githubusercontent.com/sdetweil/MagicMirror_scripts/master/raspberry.sh)"')
     return True
 
@@ -592,8 +592,8 @@ def remove_modules(installed_modules: dict, modules_to_remove: List[str], assume
     Returns:
         bool: True upon success, False upon failure
     '''
-    cancelled_removals: List[str] = []
-    successful_removals: List[str] = []
+    cancelled_removal: List[str] = []
+    marked_for_removal: List[str] = []
     curr_dir: str = os.getcwd()
 
     modules_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
@@ -605,15 +605,13 @@ def remove_modules(installed_modules: dict, modules_to_remove: List[str], assume
                 dir_name = os.path.basename(module[consts.DIRECTORY])
                 if dir_name in module_dirs and dir_name in modules_to_remove:
                     if utils.prompt_user(
-                        f'Would you like to remove {colored_text(colors.N_GREEN, module[consts.TITLE])} ({dir_name})',
+                        f'Would you like to remove {colored_text(color.N_GREEN, module[consts.TITLE])} ({dir_name})?',
                         assume_yes=assume_yes
                     ):
-                        shutil.rmtree(module[consts.DIRECTORY])
-                        print(f'{utils.green_plus()} Removed {dir_name}')
-                        successful_removals.append(dir_name)
-                        log.info(f'User removed {dir_name}')
+                        marked_for_removal.append(dir_name)
+                        log.info(f'User marked {dir_name} for removal')
                     else:
-                        cancelled_removals.append(dir_name)
+                        cancelled_removal.append(dir_name)
                         log.info(f'User chose not to remove {dir_name}')
     except KeyboardInterrupt:
         print()
@@ -621,11 +619,16 @@ def remove_modules(installed_modules: dict, modules_to_remove: List[str], assume
         return True
 
     for name in modules_to_remove:
-        if name not in successful_removals and name not in cancelled_removals:
+        if name not in marked_for_removal and name not in cancelled_removal:
             utils.error_msg(f"No module named '{name}' found in {modules_dir}")
             log.info(f"User attemped to remove {name}, but no module named '{name}' was found in {modules_dir}")
 
-    if successful_removals:
+    for dir_name in marked_for_removal:
+        shutil.rmtree(dir_name)
+        print(f'{utils.green_plus()} Removed {dir_name}')
+        log.info(f'Removed {dir_name}')
+
+    if marked_for_removal:
         print(f'Execute `mmpm open --config` to delete associated configurations of any removed modules')
 
     return True
@@ -808,7 +811,7 @@ def display_categories(categories: List[dict], table_formatted: bool = False) ->
     if not table_formatted:
         for category in categories:
             print(
-                colored_text(colors.N_GREEN, category[consts.CATEGORY]),
+                colored_text(color.N_GREEN, category[consts.CATEGORY]),
                 f'\n  Modules: {category[consts.MODULES]}\n'
             )
         return
@@ -883,14 +886,14 @@ def display_modules(modules: dict, table_formatted: bool = False, include_path: 
     else:
         if include_path:
             _print_ = lambda module : print(
-                colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'),
+                colored_text(color.N_GREEN, f'{module[consts.TITLE]}'),
                 (f'\n  Directory: {os.path.basename(module[consts.DIRECTORY])}'),
                 (f"\n  {format_description(module[consts.DESCRIPTION])}\n")
             )
 
         else:
             _print_ = lambda module : print(
-                colored_text(colors.N_GREEN, f'{module[consts.TITLE]}'),
+                colored_text(color.N_GREEN, f'{module[consts.TITLE]}'),
                 (f"\n  {format_description(module[consts.DESCRIPTION])}\n")
             )
 
@@ -991,33 +994,24 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
     Returns:
         (bool): Upon success, a True result is returned
     '''
-
-    def __assert_input__(prompt) -> str:
-        while True:
-            value = input(prompt)
-            if not value:
-                utils.warning_msg('You must provide a non-zero length response')
-                continue
-            return value
-
     try:
         if not title:
-            title = __assert_input__('Title: ')
+            title = utils.assert_valid_input('Title: ')
         else:
             print(f'Title: {title}')
 
         if not author:
-            author = __assert_input__('Author: ')
+            author = utils.assert_valid_input('Author: ')
         else:
             print(f'Author: {author}')
 
         if not repo:
-            repo = __assert_input__('Repository: ')
+            repo = utils.assert_valid_input('Repository: ')
         else:
             print(f'Repository: {repo}')
 
         if not desc:
-            desc = __assert_input__('Description: ')
+            desc = utils.assert_valid_input('Description: ')
         else:
             print(f'Description: {desc}')
 
@@ -1047,7 +1041,7 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 json.dump({consts.EXTERNAL_MODULE_SOURCES: [new_source]}, mmpm_ext_srcs)
 
-        print(colored_text(colors.N_GREEN, f"\nSuccessfully added {title} to '{consts.EXTERNAL_MODULE_SOURCES}'\n"))
+        print(colored_text(color.N_GREEN, f"\nSuccessfully added {title} to '{consts.EXTERNAL_MODULE_SOURCES}'\n"))
 
     except IOError as error:
         utils.error_msg('Failed to save external module')
@@ -1069,32 +1063,44 @@ def remove_external_module_source(titles: str = None, assume_yes: bool = False) 
         (bool): Upon success, a True result is returned
     '''
 
-    try:
-        if os.path.exists(consts.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(consts.MMPM_EXTERNAL_SOURCES_FILE).st_size:
-            config: dict = {}
-            successful_removals: list = []
+    if not os.path.exists(consts.MMPM_EXTERNAL_SOURCES_FILE):
+        utils.fatal_msg(f'{consts.MMPM_EXTERNAL_SOURCES_FILE} does not appear to exist')
 
-            with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
-                config[consts.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES]
+    elif not os.stat(consts.MMPM_EXTERNAL_SOURCES_FILE).st_size:
+        utils.fatal_msg(f'{consts.MMPM_EXTERNAL_SOURCES_FILE} is empty')
 
-            for title in titles:
-                for module in config[consts.EXTERNAL_MODULE_SOURCES]:
-                    if module[consts.TITLE] == title and utils.prompt_user(f'Would you like to remove {colored_text(colors.N_GREEN, title)} from the MMPM/MagicMirror database?', assume_yes=assume_yes):
-                            config[consts.EXTERNAL_MODULE_SOURCES].remove(module)
-                            successful_removals.append(module[consts.TITLE])
-                            print(f'{utils.green_plus()} Removed {title}')
+    modules: dict = {}
+    marked_for_removal: list = []
+    cancelled_removal: list = []
 
-            if not successful_removals:
-                utils.error_msg('No external sources found matching provided query')
-                return False
+    with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
+        modules[consts.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES]
 
-            # if the error_msg was triggered, there's no need to even bother writing back to the file
-            with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
-                json.dump(config, mmpm_ext_srcs)
+    if not modules[consts.EXTERNAL_MODULE_SOURCES]:
+        utils.fatal_msg('No external modules found in database')
 
-    except IOError as error:
-        utils.error_msg(f'Failed to remove external module. {error}')
+    for title in titles:
+        for module in modules[consts.EXTERNAL_MODULE_SOURCES]:
+            if module[consts.TITLE] == title:
+                if utils.prompt_user(
+                    f'Would you like to remove {colored_text(color.N_GREEN, title)} ({module[consts.REPOSITORY]}) from the MMPM/MagicMirror local database?',
+                    assume_yes=assume_yes
+                ):
+                    marked_for_removal.append(module)
+                else:
+                    cancelled_removal.append(module)
+
+    if not marked_for_removal and not cancelled_removal:
+        utils.error_msg('No external sources found matching provided query')
         return False
+
+    for module in marked_for_removal:
+        modules[consts.EXTERNAL_MODULE_SOURCES].remove(module)
+        print(f'{utils.green_plus()} Removed {module[consts.TITLE]} ({module[consts.REPOSITORY]})')
+
+    # if the error_msg was triggered, there's no need to even bother writing back to the file
+    with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
+        json.dump(modules, mmpm_ext_srcs)
 
     return True
 
@@ -1153,7 +1159,7 @@ def get_active_modules(table_formatted: bool = False) -> None:
     if not table_formatted:
         for module_config in config['modules']:
             print(
-                colored_text(colors.N_GREEN, module_config['module']),
+                colored_text(color.N_GREEN, module_config['module']),
                 f"\n  Status: {'disabled' if 'disabled' in module_config and module_config['disabled'] else 'enabled'}\n"
             )
         return
@@ -1376,7 +1382,7 @@ def install_autocompletion() -> None:
 
     def __echo_and_eval__(command: str) -> None:
         log.info(f'executing {command} to install autocompletion')
-        print(f'{utils.green_plus()} {colored_text(colors.N_GREEN, command)}')
+        print(f'{utils.green_plus()} {colored_text(color.N_GREEN, command)}')
         os.system(command)
 
     if 'bash' in shell:

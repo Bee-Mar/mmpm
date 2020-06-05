@@ -11,7 +11,7 @@ from logging import Logger
 from os.path import join
 from typing import List, Optional, Tuple, IO, Any
 from re import sub
-from mmpm import colors, consts
+from mmpm import color, consts
 from shutil import which
 from ctypes import cdll, c_char_p, c_int, POINTER, c_bool
 
@@ -72,7 +72,7 @@ def error_msg(msg: str) -> None:
         msg (str): The error message to be printed to stdout
     '''
     log.error(msg)
-    print(colored_text(colors.B_RED, "ERROR:"), msg)
+    print(colored_text(color.B_RED, "ERROR:"), msg)
 
 
 def warning_msg(msg: str) -> None:
@@ -86,7 +86,7 @@ def warning_msg(msg: str) -> None:
         None
     '''
     log.warning(msg)
-    print(colored_text(colors.B_YELLOW, "WARNING:"), msg)
+    print(colored_text(color.B_YELLOW, "WARNING:"), msg)
 
 
 def fatal_msg(msg: str) -> None:
@@ -100,7 +100,7 @@ def fatal_msg(msg: str) -> None:
         None
     '''
     log.critical(msg)
-    print(colored_text(colors.B_RED, "FATAL:"), msg)
+    print(colored_text(color.B_RED, "FATAL:"), msg)
     sys.exit(127)
 
 
@@ -114,7 +114,7 @@ def separator(message) -> None:
     Returns:
         None
     '''
-    print(colored_text(colors.RESET, "-" * len(message)), flush=True)
+    print(colored_text(color.RESET, '-' * len(message)), flush=True)
 
 
 def assert_snapshot_directory() -> bool:
@@ -262,7 +262,7 @@ def done() -> str:
         message (str): The string 'done' in bright green
 
     '''
-    return colored_text(colors.N_GREEN, u'\u2713')
+    return colored_text(color.N_GREEN, u'\u2713')
 
 
 def green_plus() -> str:
@@ -275,7 +275,7 @@ def green_plus() -> str:
     Returns:
         message (str): The string '[+]', with the plus symbol being green
     '''
-    return colors.RESET + "[" + colors.B_GREEN + "+" + colors.RESET + "]"
+    return color.RESET + "[" + color.B_GREEN + "+" + color.RESET + "]"
 
 
 def clone(title: str, repo: str, target_dir: str = '') -> Tuple[int, str, str]:
@@ -293,7 +293,7 @@ def clone(title: str, repo: str, target_dir: str = '') -> Tuple[int, str, str]:
     # by using "repo.split()", it allows the user to bake in additional commands when making custom sources
     # ie. git clone [repo] -b [branch] [target]
     log.info(f'Cloning {repo} into {target_dir if target_dir else os.path.join(os.getcwd(), title)}')
-    plain_print(green_plus() + f" {colored_text(colors.N_CYAN, f'Cloning {title} repository')} " + colors.RESET)
+    plain_print(green_plus() + f" {colored_text(color.N_CYAN, f'Cloning {title} repository')} " + color.RESET)
 
     command = ['git', 'clone'] + repo.split()
 
@@ -430,7 +430,7 @@ def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool
         log.info(message)
 
         yes = prompt_user(
-            f"{colored_text(colors.B_RED, 'ERROR:')} Failed to install {module[consts.TITLE]} at '{failed_install_path}'. Remove the directory?",
+            f"{colored_text(color.B_RED, 'ERROR:')} Failed to install {module[consts.TITLE]} at '{failed_install_path}'. Remove the directory?",
             assume_yes=assume_yes
         )
 
@@ -627,7 +627,7 @@ def to_bytes(string: str) -> bytes:
     return bytes(string, 'utf-8')
 
 
-def colored_text(color: str, message: str) -> str:
+def colored_text(text_color: str, message: str) -> str:
     '''
     Returns the `color` concatenated with the `message` string
 
@@ -638,7 +638,7 @@ def colored_text(color: str, message: str) -> str:
     Returns:
         message (str): The original text concatenated with the colorama color
     '''
-    return (color + message + colors.RESET)
+    return (text_color + message + color.RESET)
 
 
 def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: List[str] = ['no', 'n'], assume_yes: bool = False) -> bool:
@@ -709,3 +709,12 @@ def invalid_option(subcommand: str) -> str:
     '''
     log.error(f'invalid option supplied to `mmpm {subcommand}`')
     return f'Invalid option supplied to `mmpm {subcommand}`. See `mmpm {subcommand} --help`'
+
+
+def assert_valid_input(prompt) -> str:
+    while True:
+        value = input(prompt)
+        if not value:
+            warning_msg('A non-empty response must be given')
+            continue
+        return value

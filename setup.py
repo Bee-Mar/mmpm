@@ -2,8 +2,7 @@
 from typing import List
 from setuptools import setup, find_packages
 from mmpm.mmpm import __version__
-from mmpm import consts
-from setuptools.command.install import install as _install
+from setuptools.command.install import install
 import os
 
 VERSION = __version__
@@ -35,5 +34,5 @@ setup(
     keywords="MagicMirror magicmirror",
     packages=find_packages(),
     entry_points={"console_scripts": ["mmpm=mmpm.__main__:main"]},
-    install_requires=load_requirements()
+    install_requires=load_requirements(),
 )

@@ -1225,7 +1225,7 @@ def open_mmpm_gui() -> bool:
     Returns:
         bool: True upon sucess, False upon failure
     '''
-    return_code, _, stderr = utils.run_cmd(['xdg-open', get_web_interface_url()], progress=False)
+    return_code, _, stderr = utils.run_cmd(['xdg-open', get_web_interface_url()], background=True)
 
     if return_code:
         utils.error_msg(stderr)

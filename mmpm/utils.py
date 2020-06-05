@@ -162,7 +162,7 @@ def should_refresh_modules(current_snapshot: float, next_snapshot: float) -> boo
     return not os.path.exists(consts.SNAPSHOT_FILE) or next_snapshot - time.time() <= 0.0
 
 
-def run_cmd(command: List[str], progress=True) -> Tuple[int, str, str]:
+def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, str, str]:
     '''
     Executes shell command and captures errors
 
@@ -173,7 +173,12 @@ def run_cmd(command: List[str], progress=True) -> Tuple[int, str, str]:
         Tuple[returncode (int), stdout (str), stderr (str)]
     '''
 
-    log.info(f'Executing process `{" ".join(command)}`')
+    log.info(f'Executing process `{" ".join(command)}` in foreground')
+
+    if background:
+        log.info(f'Executing process `{" ".join(command)}` in background')
+        subprocess.Popen(command, stderr=subprocess.PIPE)
+        return 0, str(), str()
 
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 

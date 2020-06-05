@@ -99,7 +99,7 @@ def fatal_msg(msg: str) -> None:
     Returns:
         None
     '''
-    log.fatal(msg)
+    log.critical(msg)
     print(colored_text(colors.B_RED, "FATAL:"), msg)
     sys.exit(127)
 
@@ -605,11 +605,11 @@ def allocate_table_memory(rows: int, columns: int):
     '''
     libmmpm = cdll.LoadLibrary(consts.LIBMMPM_SHARED_OBJECT)
 
-    allocate_table_memory = libmmpm.allocate_table_memory
-    allocate_table_memory.argtypes = [c_int, c_int]
-    allocate_table_memory.restype = POINTER(POINTER(c_char_p))
+    _allocate_table_memory = libmmpm.allocate_table_memory
+    _allocate_table_memory.argtypes = [c_int, c_int]
+    _allocate_table_memory.restype = POINTER(POINTER(c_char_p))
 
-    table = allocate_table_memory(rows, columns)
+    table = _allocate_table_memory(rows, columns)
     return table
 
 

@@ -98,7 +98,7 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     print(utils.done())
 
     if not version_number:
-        message: str = 'No version number found on MMPM repository'
+        message = 'No version number found on MMPM repository'
         utils.error_msg(message)
         log.info(message)
         return False
@@ -243,7 +243,6 @@ def check_for_module_updates(modules: dict, assume_yes: bool = False):
             if stdout:
                 updateable.append(module)
 
-            #updateable.append(module)
             print(utils.done())
 
 
@@ -286,20 +285,18 @@ def search_modules(modules: dict, query: str, case_sensitive: bool = False, show
         dict
     '''
 
-    search_results: dict = {}
-
     if query in modules:
         return {query: modules[query]}
 
-    search_results: DefaultDict[List] = defaultdict(list)
+    search_results = defaultdict(list)
 
     if show:
-        not_a_match = lambda query, description, title, author : query != title
+        not_a_match = lambda query, description, title, author: query != title
     elif case_sensitive:
-        not_a_match = lambda query, description, title, author : query not in description and query not in title and query not in author
+        not_a_match = lambda query, description, title, author: query not in description and query not in title and query not in author
     else:
         query = query.lower()
-        not_a_match = lambda query, description, title, author : query not in description.lower() and query not in title.lower() and query not in author.lower()
+        not_a_match = lambda query, description, title, author: query not in description.lower() and query not in title.lower() and query not in author.lower()
 
     for category, _modules in modules.items():
         for module in _modules:
@@ -316,7 +313,7 @@ def search_modules(modules: dict, query: str, case_sensitive: bool = False, show
     return search_results
 
 
-def show_module_details(modules: List[defaultdict]) -> None:
+def show_module_details(modules: dict) -> None:
     '''
     Used to display more detailed information that presented in normal search results
 
@@ -580,7 +577,7 @@ def install_magicmirror(gui=False) -> bool:
     return True
 
 
-def remove_modules(installed_modules: List[defaultdict], modules_to_remove: List[str], assume_yes: bool = False) -> bool:
+def remove_modules(installed_modules: dict, modules_to_remove: List[str], assume_yes: bool = False) -> bool:
     '''
     Gathers list of modules currently installed in the ~/MagicMirror/modules
     directory, and removes each of the modules from the folder, if modules are
@@ -607,7 +604,10 @@ def remove_modules(installed_modules: List[defaultdict], modules_to_remove: List
             for module in modules:
                 dir_name = os.path.basename(module[consts.DIRECTORY])
                 if dir_name in module_dirs and dir_name in modules_to_remove:
-                    if utils.prompt_user(f'Would you like to remove {colored_text(colors.N_GREEN, module[consts.TITLE])} ({dir_name})', assume_yes=assume_yes):
+                    if utils.prompt_user(
+                        f'Would you like to remove {colored_text(colors.N_GREEN, module[consts.TITLE])} ({dir_name})',
+                        assume_yes=assume_yes
+                    ):
                         shutil.rmtree(module[consts.DIRECTORY])
                         print(f'{utils.green_plus()} Removed {dir_name}')
                         successful_removals.append(dir_name)
@@ -672,7 +672,7 @@ def load_modules(force_refresh: bool = False) -> dict:
         except Exception as error:
             message = f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}.'
             utils.warning_msg(message)
-            log.erorr(message)
+            log.error(message)
 
     return modules
 
@@ -726,7 +726,7 @@ def retrieve_modules() -> dict:
         for column_number, _ in enumerate(row):
             # ignore cells that literally say "Title", "Author", "Description"
             if column_number > 0:
-                td_soup: list = tr_soup[index][column_number].find_all("td")
+                td_soup: list = tr_soup[index][column_number].find_all('td')
 
                 title: str = consts.NOT_AVAILABLE
                 repo: str = consts.NOT_AVAILABLE
@@ -738,16 +738,16 @@ def retrieve_modules() -> dict:
                         for td in td_soup[idx]:
                             title = td.contents[0]
 
-                        for a in td_soup[idx].find_all("a"):
-                            if a.has_attr("href"):
-                                repo = a["href"]
+                        for a in td_soup[idx].find_all('a'):
+                            if a.has_attr('href'):
+                                repo = a['href']
 
                         repo = str(repo)
                         title = str(title)
 
                     elif idx == 1:
                         for contents in td_soup[idx].contents:
-                            if type(contents).__name__ == "Tag":
+                            if type(contents).__name__ == 'Tag':
                                 for tag in contents:
                                     author = tag.strip()
                             else:
@@ -757,9 +757,9 @@ def retrieve_modules() -> dict:
 
                     else:
                         if contents:
-                            desc = ""
+                            desc = str()
                         for contents in td_soup[idx].contents:
-                            if type(contents).__name__ == "Tag":
+                            if type(contents).__name__ == 'Tag':
                                 for content in contents:
                                     desc += content.string
                             else:
@@ -775,17 +775,18 @@ def retrieve_modules() -> dict:
     return modules
 
 
-def get_module_categories(modules: List[defaultdict]) -> List[dict]:
+def get_module_categories(modules: dict) -> List[dict]:
     '''
     Wrapper method to build dictionary of module categories and the number of
     modules per category
 
     Parameters:
-        modules (List[defaultdict]): the full modules database
+        modules (dict): the full modules database
 
     Returns:
         modules (List[dict]): list of dictionaries containing the category names and module count per category
     '''
+    print(type(modules))
     return [{consts.CATEGORY: key, 'Modules': len(modules[key])} for key in modules.keys()]
 
 
@@ -806,7 +807,10 @@ def display_categories(categories: List[dict], table_formatted: bool = False) ->
 
     if not table_formatted:
         for category in categories:
-            print(colored_text(colors.N_GREEN, category[consts.CATEGORY]), f'\n  Modules: {category[consts.MODULES]}\n')
+            print(
+                colored_text(colors.N_GREEN, category[consts.CATEGORY]),
+                f'\n  Modules: {category[consts.MODULES]}\n'
+            )
         return
 
     global_row: int = 1
@@ -1377,7 +1381,7 @@ def install_autocompletion() -> None:
 
     if 'bash' in shell:
         files = ['.bashrc', '.bash_profile', '.bash_login', '.profile']
-        config =  __match_shell_config__(files)
+        config = __match_shell_config__(files)
 
         if not config:
             utils.fatal_msg(failed_match_message('bash', files))
@@ -1419,4 +1423,3 @@ def install_autocompletion() -> None:
 
     else:
         utils.fatal_msg(f'Unable install autocompletion for SHELL ({shell}). Please see {autocomplete_url} for help installing autocomplete')
-

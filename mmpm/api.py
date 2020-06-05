@@ -4,7 +4,7 @@ eventlet.monkey_patch()
 
 import os
 import json
-import shutil
+#import shutil
 from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
 from mmpm import core, utils, consts

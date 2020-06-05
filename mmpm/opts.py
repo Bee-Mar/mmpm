@@ -245,7 +245,8 @@ def get_user_args() -> object:
         dest='gui'
     )
 
-    show_parser = subparsers.add_parser(
+    #show_parser
+    subparsers.add_parser(
         SHOW,
         usage='\n  mmpm show <module(s)>',
         help='show details about one or more modules listed in the MagicMirror 3rd party database'
@@ -388,7 +389,7 @@ def get_user_args() -> object:
     # )
 
     # ENV SUBCOMMANDS
-    env_parser = subparsers.add_parser(
+    subparsers.add_parser(
         ENV,
         usage='\n  mmpm env',
         help='display the MMPM environment variables and their value(s)'

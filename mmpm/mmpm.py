@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=unused-argument
 import sys
-from mmpm import utils, colors, core, opts
+from mmpm import utils, core, opts
 
 __version__ = 1.25
 

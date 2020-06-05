@@ -2,7 +2,9 @@
 from typing import List
 from setuptools import setup, find_packages
 from mmpm.mmpm import __version__
-
+from mmpm import consts
+from setuptools.command.install import install as _install
+import os
 
 VERSION = __version__
 
@@ -21,6 +23,19 @@ def load_requirements() -> List[str]:
     requirements = requirements_file.read().splitlines()
     return requirements
 
+def create_file(path):
+    with open(path, 'a'):
+        os.utime(path, None)
+
+def pre_install():
+    create_file(consts.MMPM_LOG_FILE)
+    create_file(consts.GUNICORN_LOG_ACCESS_LOG_FILE)
+    create_file(consts.GUNICORN_LOG_ERROR_LOG_FILE)
+
+def install(_install) -> None:
+    def run(self):
+        self.execute(pre_install, (self.install_lib,))
+        _install.run(self)
 
 setup(
     name="mmpm",
@@ -30,6 +45,7 @@ setup(
     author="Brandon Marlowe",
     author_email="bpmarlowe-software@protonmail.com",
     license="MIT",
+    cmdclass={'install': install},
     include_package_data=True,
     keywords="MagicMirror magicmirror",
     packages=find_packages(),

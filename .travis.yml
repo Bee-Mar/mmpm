@@ -52,6 +52,7 @@ matrix:
     before_install:
       - cd lib
       - make clean
+    script:
       - make
   - language: nodejs
     node_js:

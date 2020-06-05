@@ -451,8 +451,10 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
 
                 try:
                     target = input(f'New directory name: ')
-                except KeyboardInterrupt:
-                    utils.warning_msg(f'Cancelling installation of {title} ({repo})\n')
+                except KeyboardInterrupt as error:
+                    message = f'Cancelling installation of {title} ({repo})'
+                    log.error(message)
+                    utils.warning_msg(message + '\n')
                     continue
                 finally:
                     print()
@@ -476,11 +478,13 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
                 try:
                     target = input(f'New directory name: ')
                 except KeyboardInterrupt:
-                    print('\n')
-                    utils.warning_msg(f'Cancelling installation of {title}')
+                    print()
+                    message = f'Cancelling installation of {title}'
+                    log.info(message)
+                    utils.warning_msg(message)
                     continue
 
-        if utils.install_module(module, target, modules_dir) and not successful_install:
+        if utils.install_module(module, target, modules_dir, assume_yes=assume_yes) and not successful_install:
             successful_install = True
 
     if not successful_install:
@@ -612,8 +616,8 @@ def remove_modules(installed_modules: List[defaultdict], modules_to_remove: List
                         cancelled_removals.append(dir_name)
                         log.info(f'User chose not to remove {dir_name}')
     except KeyboardInterrupt:
-        log.info('Caught keyboard interrupt during attempt to remove modules')
         print()
+        log.info('Caught keyboard interrupt during attempt to remove modules')
         return True
 
     for name in modules_to_remove:
@@ -666,8 +670,9 @@ def load_modules(force_refresh: bool = False) -> dict:
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as f:
                 modules[consts.EXTERNAL_MODULE_SOURCES] = json.load(f)[consts.EXTERNAL_MODULE_SOURCES]
         except Exception as error:
-            utils.warning_msg(f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}.')
-            log.info(f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}: {error}')
+            message = f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}.'
+            utils.warning_msg(message)
+            log.erorr(message)
 
     return modules
 
@@ -690,7 +695,8 @@ def retrieve_modules() -> dict:
     try:
         url = urlopen(consts.MAGICMIRROR_MODULES_URL)
         web_page = url.read()
-    except HTTPError:
+    except HTTPError as error:
+        log.error(error)
         utils.error_msg('Unable to retrieve MagicMirror modules. Is your internet connection down?')
         return {}
 
@@ -707,7 +713,6 @@ def retrieve_modules() -> dict:
         new_category: object = categories_soup[index].contents[last_element]
 
         if new_category != 'General Advice':
-            #categories.append(re.sub(' // ', '/', new_category))
             categories.append(new_category)
 
     tr_soup: list = []
@@ -943,7 +948,8 @@ def get_installed_modules(modules: dict) -> dict:
                 consts.DIRECTORY: os.getcwd()
             })
 
-        except Exception:
+        except Exception as error:
+            log.error(error)
             utils.error_msg(stderr)
 
         finally:
@@ -981,9 +987,6 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
     Returns:
         (bool): Upon success, a True result is returned
     '''
-
-    print(colored_text(colors.B_GREEN, "Add new external module\n"))
-
     try:
         if not title:
             title = input('Title: ')
@@ -1005,8 +1008,9 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
         else:
             print(f'Description: {desc}')
 
-    except KeyboardInterrupt:
+    except KeyboardInterrupt as error:
         print()
+        log.error(error)
         sys.exit(1)
 
     new_source = {
@@ -1023,11 +1027,6 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
                 config[consts.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES]
 
-            for module in config[consts.EXTERNAL_MODULE_SOURCES]:
-                if module[consts.TITLE] == title:
-                    utils.error_msg(f"A module named '{title}' already exists. Please supply a unique name")
-                    return False
-
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 config[consts.EXTERNAL_MODULE_SOURCES].append(new_source)
                 json.dump(config, mmpm_ext_srcs)
@@ -1035,10 +1034,13 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 json.dump({consts.EXTERNAL_MODULE_SOURCES: [new_source]}, mmpm_ext_srcs)
 
-        print(colored_text(colors.B_WHITE, f"\nSuccessfully added {title} to '{consts.EXTERNAL_MODULE_SOURCES}'\n"))
-    except IOError:
+        print(colored_text(colors.N_GREEN, f"\nSuccessfully added {title} to '{consts.EXTERNAL_MODULE_SOURCES}'\n"))
+
+    except IOError as error:
         utils.error_msg('Failed to save external module')
+        log.error(error)
         return False
+
     return True
 
 
@@ -1223,9 +1225,16 @@ def stop_magicmirror() -> None:
     '''
     if shutil.which('pm2'):
         log.info("Using 'pm2' to stop MagicMirror")
-        return_code, stdout, stderr = utils.run_cmd(['pm2', 'stop', 'MagicMirror'], progress=False)
-        log.info(f'pm2 stdout: {stdout}')
-        log.info(f'pm2 stderr: {stderr}')
+        return_code, stdout, stderr = utils.run_cmd([
+            'pm2', 'stop', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]],
+            progress=False
+        )
+
+        if stderr:
+            log.error(stderr)
+            utils.error_msg(f'{stderr.strip()}. Is the MAGICMIRROR_PM2_PROC env variable set correctly?')
+        else:
+            log.info('stopped MagicMirror using PM2')
     else:
         utils.kill_magicmirror_processes()
 
@@ -1249,9 +1258,16 @@ def start_magicmirror() -> None:
 
     if shutil.which('pm2'):
         log.info("Using 'pm2' to start MagicMirror")
-        return_code, stdout, stderr = utils.run_cmd(['pm2', 'start', 'MagicMirror'], progress=False)
-        log.info(f'pm2 stdout: {stdout}')
-        log.info(f'pm2 stderr: {stderr}')
+        return_code, stdout, stderr = utils.run_cmd(
+            ['pm2', 'start', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]],
+            progress=False
+        )
+
+        if stderr:
+            log.error(stderr)
+            utils.error_msg(f'{stderr.strip()}. Is the MAGICMIRROR_PM2_PROC env variable set correctly?')
+        else:
+            log.info('started MagicMirror using PM2')
     else:
         log.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
         os.system('npm start &')
@@ -1272,9 +1288,17 @@ def restart_magicmirror() -> None:
     '''
     if shutil.which('pm2'):
         log.info("Using 'pm2' to restart MagicMirror")
-        return_code, stdout, stderr = utils.run_cmd(['pm2', 'restart', 'MagicMirror'], progress=False)
-        log.info(f'pm2 stdout: {stdout}')
-        log.info(f'pm2 stderr: {stderr}')
+        return_code, stdout, stderr = utils.run_cmd(
+            ['pm2', 'restart', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]],
+            progress=False
+        )
+
+        if stderr:
+            log.error(stderr)
+            utils.error_msg(f'{stderr.strip()}. Is the MAGICMIRROR_PM2_PROC env variable set correctly?')
+        else:
+            log.info('restarted MagicMirror using PM2')
+
     else:
         stop_magicmirror()
         start_magicmirror()

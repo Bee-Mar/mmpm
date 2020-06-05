@@ -23,6 +23,12 @@ class MMPMLogger():
     '''
     def __init__(self):
         self.log_file: str = consts.MMPM_LOG_FILE
+
+        if not os.path.exists(consts.MMPM_LOG_FILE):
+            os.system(f'mkdir -p {os.path.split(consts.MMPM_LOG_FILE)[0]}')
+            with open(consts.MMPM_LOG_FILE, 'a'):
+                os.utime(consts.MMPM_LOG_FILE, None)
+
         self.log_format: str = '%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s'
         logging.basicConfig(filename=self.log_file, format=self.log_format)
         logger: logging.Logger = logging.getLogger()
@@ -171,10 +177,13 @@ def run_cmd(command: List[str], progress=True) -> Tuple[int, str, str]:
 
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+    #symbols = [u'\u2803', u'\u2809', u'\u2819', u'\u281A']
+    symbols = [u'\u25DC', u'\u25DD', u'\u25DE', u'\u25DF']
+
     def __spinner__():
         while True:
-            for cursor in '|/-\\':
-                yield cursor
+            for symbol in symbols:
+                yield symbol
 
     spinner = __spinner__()
 
@@ -417,12 +426,6 @@ def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool
         failed_install_path = os.path.join(modules_dir, module[consts.TITLE])
 
         message: str = f"Failed to install {module[consts.TITLE]} at '{failed_install_path}'"
-
-        if assume_yes:
-            message = f'{message}. Removing directory due to --yes flag'
-            error_msg(message)
-            log.info(message)
-            return False
 
         log.info(message)
 

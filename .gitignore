@@ -11,3 +11,4 @@ mmpm-gui.tar*.gz
 lib/*.o
 lib/libmmpm.so
 TODO.txt
+NOTES.txt

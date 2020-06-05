@@ -18,9 +18,11 @@ GEMFILE: str = 'Gemfile'
 NOT_AVAILABLE = 'N/A'
 
 MMPM_MAGICMIRROR_ROOT: str = 'MMPM_MAGICMIRROR_ROOT'
+MAGICMIRROR_PM2_PROC: str = 'MAGICMIRROR_PM2_PROC'
 
 MMPM_ENV_VARS: dict = {
-        MMPM_MAGICMIRROR_ROOT: environ[MMPM_MAGICMIRROR_ROOT] if MMPM_MAGICMIRROR_ROOT in environ else join(HOME_DIR, 'MagicMirror')
+        MMPM_MAGICMIRROR_ROOT: environ[MMPM_MAGICMIRROR_ROOT] if MMPM_MAGICMIRROR_ROOT in environ else join(HOME_DIR, 'MagicMirror'),
+        MAGICMIRROR_PM2_PROC: environ[MAGICMIRROR_PM2_PROC] if MAGICMIRROR_PM2_PROC in environ else 'MagicMirror'
 }
 
 MMPM_REPO_URL: str = "https://github.com/Bee-Mar/mmpm.git"

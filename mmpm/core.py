@@ -1157,7 +1157,7 @@ def get_active_modules(table_formatted: bool = False) -> None:
     '''
 
     if not os.path.exists(consts.MAGICMIRROR_CONFIG_FILE):
-        utils.fatal_msg('MagicMirror config file not found. If this is a mistake, try setting the MMPM_MAGICMIRROR_ROOT env variable')
+        utils.fatal_msg('MagicMirror config file not found. Is the MMPM_MAGICMIRROR_ROOT env variable set properly?')
 
     temp_config: str = f'{consts.MAGICMIRROR_ROOT}/config/temp_config.js'
     shutil.copyfile(consts.MAGICMIRROR_CONFIG_FILE, temp_config)

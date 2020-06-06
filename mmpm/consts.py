@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from os.path import join, expanduser
 from os import environ
+from mmpm import color
 
 HOME_DIR: str = expanduser("~")
 TITLE: str = 'Title'
@@ -16,6 +17,10 @@ CMAKELISTS: str = 'CMakeLists.txt'
 PACKAGE_JSON: str = 'package.json'
 GEMFILE: str = 'Gemfile'
 NOT_AVAILABLE = 'N/A'
+
+GREEN_CHECK_MARK: str = color.N_GREEN + u'\u2713' + color.RESET
+YELLOW_X: str = color.N_YELLOW + u'\u2718' + color.RESET
+GREEN_PLUS_SIGN: str = color.RESET + '[' + color.B_GREEN + '+' + color.RESET + ']' # creates [+] symbol
 
 MMPM_MAGICMIRROR_ROOT: str = 'MMPM_MAGICMIRROR_ROOT'
 MAGICMIRROR_PM2_PROC: str = 'MAGICMIRROR_PM2_PROC'

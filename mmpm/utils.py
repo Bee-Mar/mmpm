@@ -204,19 +204,6 @@ def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, s
     return process.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
 
 
-def get_file_path(path: str) -> str:
-    '''
-    Wrapper method around os.path.exists with ternary operator
-
-    Parameters:
-        path (str): File path
-
-    Returns:
-        path (str): Either original path, if it exists, or empty string
-    '''
-    return path if os.path.exists(path) else ''
-
-
 def sanitize_name(orig_name: str) -> str:
     '''
     Sanitizes a file- or foldername in that it removes bad characters.
@@ -249,49 +236,10 @@ def open_default_editor(file_path: str) -> Optional[None]:
         sys.exit(1)
 
     editor = os.getenv('EDITOR') if os.getenv('EDITOR') else 'nano'
-    error_code, _, _ = run_cmd(['which', editor], progress=False)
+    error_number, _, _ = run_cmd(['which', editor], progress=False)
 
     # fall back to the 'edit' command if you don't even have nano for some reason
-    os.system(f'{editor} {file_path}') if not error_code else os.system(f'edit {file_path}')
-
-
-def green_check_mark() -> str:
-    '''
-    Wrapper method to print a green check mark unicode symbol
-
-    Parameters:
-        None
-
-    Returns:
-        message (str): The string 'green_check_mark' in bright green
-    '''
-    return colored_text(color.N_GREEN, u'\u2713')
-
-
-def yellow_x() -> str:
-    '''
-    Wrapper method to print a yellow 'x' unicode symbol
-
-    Parameters:
-        None
-
-    Returns:
-        message (str): The string 'green_check_mark' in bright green
-    '''
-    return colored_text(color.N_YELLOW, u'\u2718')
-
-
-def green_plus() -> str:
-    '''
-    Wrapper method to generate '[+]'
-
-    Parameters:
-        None
-
-    Returns:
-        message (str): The string '[+]', with the plus symbol being green
-    '''
-    return color.RESET + "[" + color.B_GREEN + "+" + color.RESET + "]"
+    os.system(f'{editor} {file_path}') if not error_number else os.system(f'edit {file_path}')
 
 
 def clone(title: str, repo: str, target_dir: str = '') -> Tuple[int, str, str]:
@@ -309,7 +257,7 @@ def clone(title: str, repo: str, target_dir: str = '') -> Tuple[int, str, str]:
     # by using "repo.split()", it allows the user to bake in additional commands when making custom sources
     # ie. git clone [repo] -b [branch] [target]
     log.info(f'Cloning {repo} into {target_dir if target_dir else os.path.join(os.getcwd(), title)}')
-    plain_print(green_plus() + f" {colored_text(color.N_CYAN, f'Cloning {title} repository')} " + color.RESET)
+    plain_print(consts.GREEN_PLUS_SIGN + f" {colored_text(color.N_CYAN, f'Cloning {title} repository')} " + color.RESET)
 
     command = ['git', 'clone'] + repo.split()
 
@@ -342,11 +290,11 @@ def cmake() -> Tuple[int, str, str]:
         None
 
     Returns:
-        Tuple[error_code (int), stdout (str), error_message (str)]
+        Tuple[error_number (int), stdout (str), error_message (str)]
 
     '''
     log.info(f"Running 'cmake ..' in {os.getcwd()}")
-    plain_print(green_plus() + " Found CMakeLists.txt. Attempting build with 'cmake'")
+    plain_print(consts.GREEN_PLUS_SIGN + " Found CMakeLists.txt. Attempting build with 'cmake'")
 
     run_cmd(['mkdir', '-p', 'build'], progress=False)
     os.chdir('build')
@@ -362,10 +310,10 @@ def make() -> Tuple[int, str, str]:
         None
 
     Returns:
-        Tuple[error_code (int), stdout (str), error_message (str)]
+        Tuple[error_number (int), stdout (str), error_message (str)]
     '''
     log.info(f"Running 'make -j {cpu_count()}' in {os.getcwd()}")
-    plain_print(green_plus() + f" Found Makefile. Attempting to run 'make -j {cpu_count()}'")
+    plain_print(consts.GREEN_PLUS_SIGN + f" Found Makefile. Attempting to run 'make -j {cpu_count()}'")
     return run_cmd(['make', '-j', f'{cpu_count()}'])
 
 
@@ -377,10 +325,10 @@ def npm_install() -> Tuple[int, str, str]:
         None
 
     Returns:
-        Tuple[error_code (int), stdout (str), error_message (str)]
+        Tuple[error_number (int), stdout (str), error_message (str)]
     '''
     log.info(f"Running 'npm install' in {os.getcwd()}")
-    plain_print(green_plus() + " Found package.json. Running 'npm install'")
+    plain_print(consts.GREEN_PLUS_SIGN + " Found package.json. Running 'npm install'")
     return run_cmd(['npm', 'install'])
 
 
@@ -392,25 +340,25 @@ def bundle_install() -> Tuple[int, str, str]:
         None
 
     Returns:
-        Tuple[error_code (int), stdout (str), error_message (str)]
+        Tuple[error_number (int), stdout (str), error_message (str)]
     '''
     log.info(f"Running 'bundle install' in {os.getcwd()}")
-    plain_print(green_plus() + "Found Gemfile. Running 'bundle install'")
+    plain_print(consts.GREEN_PLUS_SIGN + "Found Gemfile. Running 'bundle install'")
     return run_cmd(['bundle', 'install'])
 
 
-def basic_fail_log(error_code: int, error_message: str) -> None:
+def basic_fail_log(error_number: int, error_message: str) -> None:
     '''
     Wrapper method for simple failure logging
 
     Parameters:
-        error_code (int): The return code
+        error_number (int): The return code
         error_message (str): The error message itself
 
     Returns:
         None
     '''
-    log.info(f'Failed with return code {error_code}, and error message {error_message}')
+    log.info(f'Failed with return code {error_number}, and error message {error_message}')
 
 
 def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool = False) -> bool:
@@ -425,13 +373,13 @@ def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool
         installation_candidates (List[dict]): list of modules whose module names match those of the modules_to_install
     '''
 
-    error_code, _, stderr = clone(module[consts.TITLE], module[consts.REPOSITORY], target)
+    error_number, _, stderr = clone(module[consts.TITLE], module[consts.REPOSITORY], target)
 
-    if error_code:
+    if error_number:
         warning_msg("\n" + stderr)
         return False
 
-    print(green_check_mark())
+    print(consts.GREEN_CHECK_MARK)
 
     os.chdir(target)
     error: str = install_dependencies()
@@ -461,7 +409,7 @@ def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool
 
         return False, error
 
-    return True
+    return True, str()
 
 
 def install_dependencies() -> str:
@@ -479,57 +427,57 @@ def install_dependencies() -> str:
     '''
 
     if package_requirements_file_exists(consts.PACKAGE_JSON):
-        error_code, _, stderr = npm_install()
+        error_number, _, stderr = npm_install()
 
-        if error_code:
-            basic_fail_log(error_code, stderr)
+        if error_number:
+            basic_fail_log(error_number, stderr)
             print()
             return str(stderr)
         else:
-            print(green_check_mark())
+            print(consts.GREEN_CHECK_MARK)
 
     if package_requirements_file_exists(consts.GEMFILE):
-        error_code, _, stderr = bundle_install()
+        error_number, _, stderr = bundle_install()
 
-        if error_code:
-            basic_fail_log(error_code, stderr)
+        if error_number:
+            basic_fail_log(error_number, stderr)
             print()
             return str(stderr)
         else:
-            print(green_check_mark())
+            print(consts.GREEN_CHECK_MARK)
 
     if package_requirements_file_exists(consts.MAKEFILE):
-        error_code, _, stderr = make()
+        error_number, _, stderr = make()
 
-        if error_code:
-            basic_fail_log(error_code, stderr)
+        if error_number:
+            basic_fail_log(error_number, stderr)
             print()
             return str(stderr)
         else:
-            print(green_check_mark())
+            print(consts.GREEN_CHECK_MARK)
 
 
     if package_requirements_file_exists(consts.CMAKELISTS):
-        error_code, _, stderr = cmake()
+        error_number, _, stderr = cmake()
 
-        if error_code:
-            basic_fail_log(error_code, stderr)
+        if error_number:
+            basic_fail_log(error_number, stderr)
             print()
             return str(stderr)
         else:
-            print(green_check_mark())
+            print(consts.GREEN_CHECK_MARK)
 
         if package_requirements_file_exists(consts.MAKEFILE):
-            error_code, _, stderr = make()
+            error_number, _, stderr = make()
 
-            if error_code:
-                basic_fail_log(error_code, stderr)
+            if error_number:
+                basic_fail_log(error_number, stderr)
                 print()
                 return str(stderr)
             else:
-                print(green_check_mark())
+                print(consts.GREEN_CHECK_MARK)
 
-    print(green_plus() + f' Installation ' + green_check_mark())
+    print(consts.GREEN_PLUS_SIGN + f' Installation ' + consts.GREEN_CHECK_MARK)
     log.info(f'Exiting installation handler from {os.getcwd()}')
     return ''
 
@@ -567,7 +515,7 @@ def kill_pids_of_process(process: str):
         processes (str): the processes IDs found
     '''
     log.info(f'Killing all processes of type {process}')
-    os.system(f'for process in $(pgrep {process}); do kill -9 $process; green_check_mark')
+    os.system(f'for process in $(pgrep {process}); do kill -9 $process; done')
 
 
 def kill_magicmirror_processes() -> None:

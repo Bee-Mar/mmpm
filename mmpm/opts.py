@@ -120,7 +120,7 @@ def get_user_args() -> object:
     # UPDATE PARSER
     update_parser = subparsers.add_parser(
         UPDATE,
-        usage='\n  mmpm update <module(s)>\n  mmpm update [--mmpm] [--magicmirror] [--full]',
+        usage='\n  mmpm update [--mmpm] [--magicmirror] [--full] [--yes]',
         help='check for updates to installed modules, MMPM, and/or MagicMirror'
     )
 
@@ -341,7 +341,7 @@ def get_user_args() -> object:
     # MM_CTL SUBCOMMANDS
     mm_ctl_parser = subparsers.add_parser(
         MM_CTL,
-        usage='\n  mmpm mm-ctl [--status] [--restart] [--start] [--stop] [--update] [--upgrade] [--install]',
+        usage='\n  mmpm mm-ctl [--status] [--restart] [--start] [--stop]\n  mmpm mm-ctl [--status] [--table]',
         help='subcommands to control MagicMirror'
     )
 

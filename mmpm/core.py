@@ -82,10 +82,14 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
         log.info(f'Checking for newer version of MMPM. Current version: {mmpm.__version__}')
         utils.plain_print(f"Checking {colored_text(color.N_GREEN, 'MMPM')} for updates")
 
-        # just to keep the console output the same as all other update commands
-        return_code, contents, _ = utils.run_cmd(['curl', consts.MMPM_FILE_URL])
+        try:
+            # just to keep the console output the same as all other update commands
+            error_number, contents, _ = utils.run_cmd(['curl', consts.MMPM_FILE_URL])
+        except KeyboardInterrupt:
+            print()
+            utils.fatal_msg('Caught keyboard interrupt. Exiting.')
 
-        if return_code:
+        if error_number:
             utils.fatal_msg('Failed to retrieve MMPM version number')
 
     except HTTPError as error:
@@ -98,13 +102,13 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     version_list: List[str] = re.findall(r"\d+\.\d+", version_line[0])
     version_number: float = float(version_list[0])
 
-    print(utils.green_check_mark())
+    print(consts.GREEN_CHECK_MARK)
 
     if not version_number:
         utils.fatal_msg('No version number found on MMPM repository')
 
     if mmpm.__version__ >= version_number:
-        print(f'No updates available for MMPM {colored_text(color.N_YELLOW, utils.yellow_x())}')
+        print(f'No updates available for MMPM {consts.YELLOW_X}')
         log.info(f'No newer version of MMPM found > {version_number} available. The current version is the latest')
         return True
 
@@ -134,9 +138,9 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     os.chdir(os.path.join('/', 'tmp'))
     os.system('rm -rf /tmp/mmpm')
 
-    return_code, _, stderr = utils.clone('mmpm', consts.MMPM_REPO_URL)
+    error_number, _, stderr = utils.clone('mmpm', consts.MMPM_REPO_URL)
 
-    if return_code:
+    if error_number:
         utils.fatal_msg(stderr)
 
     os.chdir('/tmp/mmpm')
@@ -173,14 +177,14 @@ def upgrade_module(module: dict):
     dirs: List[str] = os.listdir(modules_dir)
 
     os.chdir(module[consts.DIRECTORY])
-    utils.plain_print(f'{utils.green_plus()} Retrieving upgrade for {module[consts.TITLE]}')
-    error_code, stdout, stderr = utils.run_cmd(["git", "pull"])
+    utils.plain_print(f'{consts.GREEN_PLUS_SIGN} Retrieving upgrade for {module[consts.TITLE]}')
+    error_number, stdout, stderr = utils.run_cmd(["git", "pull"])
 
-    if error_code:
+    if error_number:
         utils.error_msg(stderr)
         return False
 
-    print(utils.green_check_mark())
+    print(consts.GREEN_CHECK_MARK)
 
     error_msg: str = utils.install_dependencies()
 
@@ -228,20 +232,25 @@ def check_for_module_updates(modules: dict, assume_yes: bool = False):
             os.chdir(module[consts.DIRECTORY])
 
             utils.plain_print(f'Checking {colored_text(color.N_GREEN, module[consts.TITLE])} for updates')
-            return_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
 
-            if return_code:
+            try:
+                error_number, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
+            except KeyboardInterrupt:
+                print()
+                utils.fatal_msg('Caught keyboard interrupt. Exiting.')
+
+            if error_number:
                 utils.error_msg('Unable to communicate with git server')
                 continue
 
             if stdout:
                 updateable.append(module)
 
-            print(utils.green_check_mark())
+            print(consts.GREEN_CHECK_MARK)
 
 
     if not updateable:
-        print(f'No updates available for modules {colored_text(color.N_YELLOW, utils.yellow_x())}')
+        print(f'No updates available for modules {consts.YELLOW_X}')
         return False
 
     print(f'\n{len(updateable)} updates are available\n')
@@ -370,7 +379,7 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
     if not os.path.exists(modules_dir):
         utils.error_msg(
             'MagicMirror directory not found in {const.MAGICMIRROR_ROOT}. ' +
-            'If the MagicMirror root directory is elswhere, set the MMPM_MAGICMIRROR_ROOT env var to that location.'
+            'Is the MMPM_MAGICMIRROR_ROOT env variable set properly?'
         )
         return False
 
@@ -401,6 +410,8 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
         else:
             log.info(f'User chose to install {candidate[consts.TITLE]} ({candidate[consts.REPOSITORY]})')
 
+    errors: List[dict] = []
+
     for module in installation_candidates:
         if not module:
             continue
@@ -412,7 +423,7 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
         if os.path.exists(target):
             os.chdir(target)
 
-            return_code, remote_origin_url, stderr = utils.run_cmd(
+            error_number, remote_origin_url, stderr = utils.run_cmd(
                 ['git', 'config', '--get', 'remote.origin.url'],
                 progress=False
             )
@@ -421,7 +432,7 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
 
             os.chdir('..')
 
-            if return_code:
+            if error_number:
                 utils.error_msg(stderr)
                 continue
 
@@ -476,14 +487,19 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
                     utils.warning_msg(message)
                     continue
 
-        if utils.install_module(module, target, modules_dir, assume_yes=assume_yes) and not successful_install:
+        success, error = utils.install_module(module, target, modules_dir, assume_yes=assume_yes)
+
+        if not success:
+            errors.append({'Module': module, 'Error': error})
+
+        if success and not successful_install:
             successful_install = True
 
     if not successful_install:
-        return False
+        return False, errors
 
     print(f'Execute `mmpm open --config` to edit the configuration for newly installed modules')
-    return True
+    return True, errors
 
 
 def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
@@ -509,11 +525,15 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
 
     # stdout and stderr are flipped for git command output, because that totally makes sense
     # except now stdout doesn't even contain error messages...thanks git
-    return_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
+    try:
+        error_number, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
+    except KeyboardInterrupt:
+        print()
+        utils.fatal_msg('Caught keyboard interrupt. Exiting.')
 
-    print(utils.green_check_mark())
+    print(consts.GREEN_CHECK_MARK)
 
-    if return_code:
+    if error_number:
         utils.error_msg('Unable to communicate with git server')
         return False
 
@@ -522,13 +542,13 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
             return False
 
         utils.plain_print('\nUpgrading MagicMirror')
-        return_code, _, stdout = utils.run_cmd(['git', 'pull'])
+        error_number, _, stdout = utils.run_cmd(['git', 'pull'])
 
-        if return_code:
+        if error_number:
             utils.error_msg('Failed to communicate with git server')
             return False
 
-        print(utils.green_check_mark(), '\n\nUpgrade complete!\n')
+        print(consts.GREEN_CHECK_MARK, '\n\nUpgrade complete!\n')
 
         if not utils.prompt_user('Would you like to restart MagicMirror now?', assume_yes=assume_yes):
             return False
@@ -536,7 +556,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
         restart_magicmirror()
 
     else:
-        print(f'No updates available for MagicMirror {colored_text(color.N_YELLOW, utils.yellow_x())}')
+        print(f'No updates available for MagicMirror {consts.YELLOW_X}')
 
     return True
 
@@ -619,7 +639,7 @@ def remove_modules(installed_modules: dict, modules_to_remove: List[str], assume
 
     for dir_name in marked_for_removal:
         shutil.rmtree(dir_name)
-        print(f'{utils.green_plus()} Removed {dir_name}')
+        print(f'{consts.GREEN_PLUS_SIGN} Removed {dir_name}')
         log.info(f'Removed {dir_name}')
 
     if marked_for_removal:
@@ -651,14 +671,14 @@ def load_modules(force_refresh: bool = False) -> dict:
 
     # if the snapshot has expired, or doesn't exist, get a new one
     if force_refresh:
-        utils.plain_print(utils.green_plus() + ' Refreshing MagicMirror modules snapshot ... ')
+        utils.plain_print(consts.GREEN_PLUS_SIGN + ' Refreshing MagicMirror modules snapshot ... ')
         modules = retrieve_modules()
 
         # save the new snapshot
         with open(consts.SNAPSHOT_FILE, 'w') as snapshot:
             json.dump(modules, snapshot)
 
-        print(utils.green_check_mark())
+        print(consts.GREEN_CHECK_MARK)
 
     else:
         with open(consts.SNAPSHOT_FILE, 'r') as snapshot_file:
@@ -935,12 +955,12 @@ def get_installed_modules(modules: dict) -> dict:
         try:
             os.chdir(os.path.join(modules_dir, module_dir))
 
-            return_code, remote_origin_url, stderr = utils.run_cmd(
+            error_number, remote_origin_url, stderr = utils.run_cmd(
                 ['git', 'config', '--get', 'remote.origin.url'],
                 progress=False
             )
 
-            return_code, project_name, stderr = utils.run_cmd(
+            error_number, project_name, stderr = utils.run_cmd(
                 ['basename', remote_origin_url.strip(), '.git'],
                 progress=False
             )
@@ -1092,7 +1112,7 @@ def remove_external_module_source(titles: str = None, assume_yes: bool = False) 
 
     for module in marked_for_removal:
         modules[consts.EXTERNAL_MODULE_SOURCES].remove(module)
-        print(f'{utils.green_plus()} Removed {module[consts.TITLE]} ({module[consts.REPOSITORY]})')
+        print(f'{consts.GREEN_PLUS_SIGN} Removed {module[consts.TITLE]} ({module[consts.REPOSITORY]})')
 
     # if the error_msg was triggered, there's no need to even bother writing back to the file
     with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
@@ -1111,10 +1131,12 @@ def open_magicmirror_config() -> bool:
     Returns:
         bool: True upon success, False upon failure
     '''
+    if not os.path.exists(consts.MAGICMIRROR_CONFIG_FILE):
+        utils.error_msg(f'{consts.MAGICMIRROR_CONFIG_FILE} not found. Is the MMPM_MAGICMIRROR_ROOT env variable set properly?')
+        return False
     try:
-        utils.open_default_editor(utils.get_file_path(consts.MAGICMIRROR_CONFIG_FILE))
+        utils.open_default_editor(consts.MAGICMIRROR_CONFIG_FILE)
     except Exception:
-        utils.error_msg(f'{consts.MAGICMIRROR_CONFIG_FILE} not found. Is the MAGICMIRROR_ROOT env variable set?')
         return False
 
     return True
@@ -1143,7 +1165,7 @@ def get_active_modules(table_formatted: bool = False) -> None:
     with open(temp_config, 'a') as temp:
         temp.write('console.log(JSON.stringify(config))')
 
-    return_code, stdout, stderr = utils.run_cmd(['node', temp_config], progress=False)
+    error_number, stdout, stderr = utils.run_cmd(['node', temp_config], progress=False)
     config: dict = json.loads(stdout.split('\n')[0])
 
     # using -f so any errors can be ignored
@@ -1219,9 +1241,9 @@ def open_mmpm_gui() -> bool:
     Returns:
         bool: True upon sucess, False upon failure
     '''
-    return_code, _, stderr = utils.run_cmd(['xdg-open', get_web_interface_url()], background=True)
+    error_number, _, stderr = utils.run_cmd(['xdg-open', get_web_interface_url()], background=True)
 
-    if return_code:
+    if error_number:
         utils.error_msg(stderr)
         return False
     return True
@@ -1240,7 +1262,7 @@ def stop_magicmirror() -> None:
     '''
     if shutil.which('pm2'):
         log.info("Using 'pm2' to stop MagicMirror")
-        return_code, stdout, stderr = utils.run_cmd([
+        error_number, stdout, stderr = utils.run_cmd([
             'pm2', 'stop', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]],
             progress=False
         )
@@ -1273,7 +1295,7 @@ def start_magicmirror() -> None:
 
     if shutil.which('pm2'):
         log.info("Using 'pm2' to start MagicMirror")
-        return_code, stdout, stderr = utils.run_cmd(
+        error_number, stdout, stderr = utils.run_cmd(
             ['pm2', 'start', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]],
             progress=False
         )
@@ -1303,7 +1325,7 @@ def restart_magicmirror() -> None:
     '''
     if shutil.which('pm2'):
         log.info("Using 'pm2' to restart MagicMirror")
-        return_code, stdout, stderr = utils.run_cmd(
+        error_number, stdout, stderr = utils.run_cmd(
             ['pm2', 'restart', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]],
             progress=False
         )
@@ -1378,7 +1400,7 @@ def install_autocompletion() -> None:
 
     def __echo_and_eval__(command: str) -> None:
         log.info(f'executing {command} to install autocompletion')
-        print(f'{utils.green_plus()} {colored_text(color.N_GREEN, command)}')
+        print(f'{consts.GREEN_PLUS_SIGN} {colored_text(color.N_GREEN, command)}')
         os.system(command)
 
     if 'bash' in shell:

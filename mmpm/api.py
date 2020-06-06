@@ -346,9 +346,9 @@ def restart_raspberrypi() -> str:
 
     log.info('Restarting RaspberryPi')
     core.stop_magicmirror()
-    return_code, _, _ = utils.run_cmd(['sudo', 'reboot'])
+    error_number, _, _ = utils.run_cmd(['sudo', 'reboot'])
     # if success, it'll never get the response, but we'll know if it fails
-    return json.dumps(bool(not return_code))
+    return json.dumps(bool(not error_number))
 
 
 @app.route(api('shutdown-raspberrypi'), methods=[GET])
@@ -366,8 +366,8 @@ def turn_off_raspberrypi() -> str:
     log.info('Shutting down RaspberryPi')
     # if success, we'll never get the response, but we'll know if it fails
     core.stop_magicmirror()
-    return_code, _, _ = utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
-    return json.dumps(bool(not return_code))
+    error_number, _, _ = utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
+    return json.dumps(bool(not error_number))
 
 
 @app.route(api('upgrade-magicmirror'), methods=[GET])

@@ -98,13 +98,13 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     version_list: List[str] = re.findall(r"\d+\.\d+", version_line[0])
     version_number: float = float(version_list[0])
 
-    print(utils.done())
+    print(utils.green_check_mark())
 
     if not version_number:
         utils.fatal_msg('No version number found on MMPM repository')
 
     if mmpm.__version__ >= version_number:
-        print('No updates available for MMPM')
+        print(f'No updates available for MMPM {colored_text(color.N_YELLOW, utils.yellow_x())}')
         log.info(f'No newer version of MMPM found > {version_number} available. The current version is the latest')
         return True
 
@@ -123,15 +123,13 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     if not utils.prompt_user('A newer version of MMPM is available. Would you like to upgrade now?', assume_yes=assume_yes):
         return True
 
-    original_dir = os.getcwd()
-
     message = "Upgrading MMPM"
 
     utils.separator(message)
     print(colored_text(color.B_CYAN, message))
     utils.separator(message)
 
-    log.info(f'User chose to update MMPM with {original_dir} as the starting directory')
+    log.info(f'User chose to update MMPM')
 
     os.chdir(os.path.join('/', 'tmp'))
     os.system('rm -rf /tmp/mmpm')
@@ -145,10 +143,6 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
 
     # if the user needs to be prompted for their password, this can't be a subprocess
     os.system('make reinstall')
-
-    os.chdir(original_dir)
-    log.info(f'Changing back to original working directory: {original_dir}')
-
     return True
 
 
@@ -186,7 +180,7 @@ def upgrade_module(module: dict):
         utils.error_msg(stderr)
         return False
 
-    print(utils.done())
+    print(utils.green_check_mark())
 
     error_msg: str = utils.install_dependencies()
 
@@ -243,11 +237,11 @@ def check_for_module_updates(modules: dict, assume_yes: bool = False):
             if stdout:
                 updateable.append(module)
 
-            print(utils.done())
+            print(utils.green_check_mark())
 
 
     if not updateable:
-        print(colored_text(color.RESET, 'No updates available for modules'))
+        print(f'No updates available for modules {colored_text(color.N_YELLOW, utils.yellow_x())}')
         return False
 
     print(f'\n{len(updateable)} updates are available\n')
@@ -517,7 +511,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
     # except now stdout doesn't even contain error messages...thanks git
     return_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
 
-    print(utils.done())
+    print(utils.green_check_mark())
 
     if return_code:
         utils.error_msg('Unable to communicate with git server')
@@ -534,7 +528,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
             utils.error_msg('Failed to communicate with git server')
             return False
 
-        print(utils.done(), '\n\nUpgrade complete!\n')
+        print(utils.green_check_mark(), '\n\nUpgrade complete!\n')
 
         if not utils.prompt_user('Would you like to restart MagicMirror now?', assume_yes=assume_yes):
             return False
@@ -542,7 +536,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
         restart_magicmirror()
 
     else:
-        print('No updates available for MagicMirror')
+        print(f'No updates available for MagicMirror {colored_text(color.N_YELLOW, utils.yellow_x())}')
 
     return True
 
@@ -664,7 +658,7 @@ def load_modules(force_refresh: bool = False) -> dict:
         with open(consts.SNAPSHOT_FILE, 'w') as snapshot:
             json.dump(modules, snapshot)
 
-        print(utils.done())
+        print(utils.green_check_mark())
 
     else:
         with open(consts.SNAPSHOT_FILE, 'r') as snapshot_file:

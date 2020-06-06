@@ -82,7 +82,7 @@ export class MagicMirrorModulesTableComponent {
               description: pkg["Description"],
               author: pkg["Author"],
               repository: pkg["Repository"],
-              path: pkg["Directory"] ?? ""
+              path: pkg["Path"]?
             });
           }
         }
@@ -164,8 +164,7 @@ export class MagicMirrorModulesTableComponent {
       author: "",
       repository: "",
       category: "External Module Sources",
-      description: "",
-      path: ""
+      description: ""
     };
 
     const dialogRef = this.dialog.open(

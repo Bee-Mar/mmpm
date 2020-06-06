@@ -182,7 +182,6 @@ def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, s
 
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    #symbols = [u'\u2803', u'\u2809', u'\u2819', u'\u281A']
     symbols = [u'\u25DC', u'\u25DD', u'\u25DE', u'\u25DF']
 
     def __spinner__():
@@ -256,18 +255,30 @@ def open_default_editor(file_path: str) -> Optional[None]:
     os.system(f'{editor} {file_path}') if not error_code else os.system(f'edit {file_path}')
 
 
-def done() -> str:
+def green_check_mark() -> str:
     '''
-    Wrapper method to print green 'done' message
+    Wrapper method to print a green check mark unicode symbol
 
     Parameters:
         None
 
     Returns:
-        message (str): The string 'done' in bright green
-
+        message (str): The string 'green_check_mark' in bright green
     '''
     return colored_text(color.N_GREEN, u'\u2713')
+
+
+def yellow_x() -> str:
+    '''
+    Wrapper method to print a yellow 'x' unicode symbol
+
+    Parameters:
+        None
+
+    Returns:
+        message (str): The string 'green_check_mark' in bright green
+    '''
+    return colored_text(color.N_YELLOW, u'\u2718')
 
 
 def green_plus() -> str:
@@ -420,7 +431,7 @@ def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool
         warning_msg("\n" + stderr)
         return False
 
-    print(done())
+    print(green_check_mark())
 
     os.chdir(target)
     error: str = install_dependencies()
@@ -448,7 +459,7 @@ def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool
             print(f'\n{message}\n')
             log.info(message)
 
-        return False
+        return False, error
 
     return True
 
@@ -475,7 +486,7 @@ def install_dependencies() -> str:
             print()
             return str(stderr)
         else:
-            print(done())
+            print(green_check_mark())
 
     if package_requirements_file_exists(consts.GEMFILE):
         error_code, _, stderr = bundle_install()
@@ -485,7 +496,7 @@ def install_dependencies() -> str:
             print()
             return str(stderr)
         else:
-            print(done())
+            print(green_check_mark())
 
     if package_requirements_file_exists(consts.MAKEFILE):
         error_code, _, stderr = make()
@@ -495,7 +506,7 @@ def install_dependencies() -> str:
             print()
             return str(stderr)
         else:
-            print(done())
+            print(green_check_mark())
 
 
     if package_requirements_file_exists(consts.CMAKELISTS):
@@ -506,7 +517,7 @@ def install_dependencies() -> str:
             print()
             return str(stderr)
         else:
-            print(done())
+            print(green_check_mark())
 
         if package_requirements_file_exists(consts.MAKEFILE):
             error_code, _, stderr = make()
@@ -516,9 +527,9 @@ def install_dependencies() -> str:
                 print()
                 return str(stderr)
             else:
-                print(done())
+                print(green_check_mark())
 
-    print(green_plus() + f' Installation ' + done())
+    print(green_plus() + f' Installation ' + green_check_mark())
     log.info(f'Exiting installation handler from {os.getcwd()}')
     return ''
 
@@ -556,7 +567,7 @@ def kill_pids_of_process(process: str):
         processes (str): the processes IDs found
     '''
     log.info(f'Killing all processes of type {process}')
-    os.system(f'for process in $(pgrep {process}); do kill -9 $process; done')
+    os.system(f'for process in $(pgrep {process}); do kill -9 $process; green_check_mark')
 
 
 def kill_magicmirror_processes() -> None:

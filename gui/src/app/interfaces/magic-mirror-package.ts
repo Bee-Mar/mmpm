@@ -4,4 +4,5 @@ export interface MagicMirrorPackage {
   repository: string;
   author: string;
   description: string;
+  path: string;
 }

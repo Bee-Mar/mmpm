@@ -11,7 +11,7 @@ from mmpm import core, utils, consts
 from mmpm.utils import log
 from shelljob.proc import Group
 from flask_socketio import SocketIO
-from typing import Tuple
+from typing import Tuple, List
 
 
 MMPM_EXECUTABLE: list = [os.path.join(os.path.expanduser('~'), '.local', 'bin', 'mmpm')]
@@ -146,42 +146,30 @@ def install_magicmirror_modules() -> str:
 
     modules_dir = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
 
+    result: List[dict] = []
+
     for module in selected_modules:
-        utils.install_module(module, module[consts.TITLE], modules_dir, assume_yes=True)
+        success, error = utils.install_module(module, module[consts.TITLE], modules_dir, assume_yes=True)
+        if not success:
+            log.error(f'Failed to install {module[consts.TITLE]} with error of: {error}')
+            result.append({'module': module, 'error': error})
 
-    process: Group = Group()
-
-    Response(
-        __stream_cmd_output__(process, ['-i'] + [selected_module['title'] for selected_module in selected_modules]),
-        mimetype='text/plain'
-    )
-
-    log.info('Finished installing')
-    return json.dumps(True)
+    return json.dumps(result)
 
 
 @app.route(api('uninstall-modules'), methods=[POST])
 def remove_magicmirror_modules() -> Response:
     selected_modules: list = request.get_json(force=True)['selected-modules']
 
-    result = {'successes': [], 'fails': []}
-    successes: List[dict] = []
-    fails: List[dict] = []
+    result: List[dict] = []
 
     for module in selected_modules:
         try:
             shutil.rmtree(module[consts.PATH])
-            result['successes'].append(module)
         except FileNotFoundError as error:
-            result['fails'].append(module)
-    return result
+            result.append({'module': module, 'error': error})
 
-    process: Group = Group()
-
-    return Response(
-        __stream_cmd_output__(process, ['-r'] + [selected_module['title'] for selected_module in selected_modules]),
-        mimetype='text/plain'
-    )
+    return json.dumps(result)
 
 
 @app.route(api('upgrade-modules'), methods=[POST])

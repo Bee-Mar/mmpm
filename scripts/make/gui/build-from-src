@@ -1,9 +1,8 @@
 #!/bin/bash
+source ./scripts/make/constants
 
-printf -- "---------------------"
-printf "\n| \e[92mBuilding MMPM GUI\e[0m |"
-printf "\n---------------------\n"
+printf "\n\e[92mBuilding MMPM GUI\e[0m\n"
+printf "\nBuilding MMPM GUI\n\n" >> $MMPM_INSTALLATION_LOG
 
-npm install --prefix gui
-
-cd gui && node_modules/@angular/cli/bin/ng build --prod --deploy-url static/
+log_and_eval "npm install --prefix gui"
+log_and_eval "cd gui && node_modules/@angular/cli/bin/ng build --prod --deploy-url static/"

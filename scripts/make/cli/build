@@ -1,1 +1,6 @@
 #!/bin/bash
+source ./scripts/make/constants
+
+printf "[+] \e[92mBuilding MMPM CLI Shared Object \e[0m\n"
+log_action "Building MMPM CLI Shared Object"
+log_and_eval "cd lib && make && cd -"

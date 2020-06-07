@@ -1,11 +1,10 @@
 #!/bin/bash
+source ./scripts/make/constants
 
-printf -- "-------------------------------"
-printf "\n| \e[92mGathering GUI Static Files\e[0m |"
-printf "\n-------------------------------\n"
+printf "[+] \e[92mGathering MMPM GUI Static Files\e[0m\n"
+log_action "Gathering MMPM GUI Static Files"
 
-VERSION=$(git describe --tags --abbrev=0)
+log_and_eval "wget --verbose https://github.com/Bee-Mar/mmpm/releases/download/$MMPM_LATEST_VERSION/mmpm-gui-$MMPM_LATEST_VERSION.tar.gz"
 
-wget https://github.com/Bee-Mar/mmpm/releases/download/$VERSION/mmpm-gui-$VERSION.tar.gz
-
-printf "\n\033[1;36mMMPM GUI Static Files Retrieved \e[0m\n"
+log_action "MMPM GUI Static Files Retrieved"
+printf "[+] \e[92mMMPM GUI Static Files Retrieved\e[0m\n"

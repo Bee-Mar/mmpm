@@ -1,13 +1,22 @@
 #!/bin/bash
+source ./scripts/make/constants
+source /etc/os-release
 
-printf -- "------------------------------"
-printf "\n| \e[92mGathering CLI dependencies\e[0m |"
-printf "\n------------------------------\n"
+printf "[+] \e[92mInstalling MMPM CLI Dependencies\e[0m\n"
 
-. /etc/os-release
+log_action "Installing MMPM CLI Dependencies"
+log_action "Attempting to install python3 dependencies"
 
-[[ $NAME == *Raspbian* || $NAME == *Ubuntu* ]] && sudo apt install python3-pip -y
-[[ $NAME == *Arch* ]] && sudo pacman -Sy python-pip --noconfirm
+if [[ $NAME == *Arch* ]]; then
+  log_action "User appears to be running Arch Linux"
+  log_and_eval "sudo pacman -Sy python-pip make gcc --noconfirm"
+else
+  log_action "Installing python3-pip under the assumption the user is running a Debian based OS"
+  log_and_eval "sudo apt install python3-pip make gcc -y 2>/dev/null"
+fi
 
-pip3 install --user --upgrade setuptools wheel
-pip3 install --user -r requirements.txt
+log_and_eval "pip3 install --user --upgrade setuptools wheel"
+log_and_eval "pip3 install --user -r requirements.txt"
+
+log_action "MMPM CLI Dependencies Installed"
+printf "[+] \e[92mInstalled MMPM CLI Dependencies\e[0m\n"

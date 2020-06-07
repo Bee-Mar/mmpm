@@ -1,10 +1,12 @@
 #!/bin/bash
+source ./scripts/make/constants
 
-printf -- "----------------------"
-printf "\n| \e[92mRemoving MMPM GUI \e[0m |"
-printf "\n----------------------\n"
+printf "[+] \e[92mRemoving MMPM GUI \e[0m\n"
 
-rm -vf ~/.config/mmpm/configs/gunicorn.conf.py
-sudo rm -rvf /var/www/mmpm
+log_action "Removing MMPM GUI"
 
-printf "\n\033[1;36mMMPM GUI Removed\e[0m\n"
+log_and_eval "rm -vf ~/.config/mmpm/configs/gunicorn.conf.py"
+log_and_eval "sudo rm -rvf /var/www/mmpm"
+
+printf "[+] \033[1;36mMMPM GUI Removed\e[0m\n"
+log_action "MMPM GUI Removed"

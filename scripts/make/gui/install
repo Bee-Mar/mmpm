@@ -1,18 +1,15 @@
 #!/bin/bash
+source ./scripts/make/constants
 
-printf -- "-------------------------------"
-printf "\n| \e[92mInstalling GUI Static Files\e[0m |"
-printf "\n-------------------------------\n"
+printf "[+] \e[92mInstalling GUI Static Files\e[0m\n"
 
-VERSION=$(git describe --tags --abbrev=0)
+log_action "Installing MMPM GUI Static Files"
 
-sudo rm -rf /var/www/mmpm/static
-sudo mkdir -p /var/www/mmpm/{static,templates}
+log_and_eval "sudo rm -rfv /var/www/mmpm/static"
+log_and_eval "sudo mkdir -vp /var/www/mmpm/{static,templates}"
+log_and_eval "sudo tar xvf mmpm-gui-$MMPM_LATEST_VERSION.tar.gz -C /var/www/mmpm"
+log_and_eval "sudo cp -v /var/www/mmpm/static/index.html /var/www/mmpm/templates/"
+log_and_eval "rm -vf mmpm-gui-$MMPM_LATEST_VERSION.tar.gz"
 
-sudo tar xvf mmpm-gui-$VERSION.tar.gz -C /var/www/mmpm
-
-sudo cp /var/www/mmpm/static/index.html /var/www/mmpm/templates/
-
-rm mmpm-gui-$VERSION.tar.gz
-
-printf "\n\033[1;36mMMPM GUI Static Files Installed \e[0m\n"
+log_action "Installed MMPM GUI Static Files"
+printf "[+] \033[1;36mInstalled MMPM GUI Static Files\e[0m\n"

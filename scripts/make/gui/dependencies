@@ -1,21 +1,23 @@
 #!/bin/bash
+source ./scripts/make/constants
+source /etc/os-release
 
-printf -- "------------------------------"
-printf "\n| \e[92mGathering GUI dependencies\e[0m |"
-printf "\n------------------------------\n"
+printf "[+] \e[92mInstalling MMPM GUI Dependencies\e[0m\n"
+log_action "Installing MMPM GUI Dependencies"
 
-. /etc/os-release
+if [[ $NAME == *Arch* ]]; then
+  log_and_eval "sudo pacman -Sy nginx-mainline curl --noconfirm"
+  log_and_eval "curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -"
+  log_and_eval "sudo pacman -Sy nodejs --noconfirm >> $MMPM_INSTALLATION_LOG"
 
-if [[ $NAME == *Ubuntu* || $NAME == *Raspbian* ]]; then
-    sudo apt install nginx-full curl -y
-    curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-    sudo apt install nodejs -y
-
-elif [[ $NAME == *Arch* ]]; then
-    sudo pacman -Sy nginx-mainline curl --noconfirm
-    curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-    sudo pacman -Sy nodejs --noconfirm
+elif [[ $NAME == *Ubuntu* || $NAME == *Raspbian* ]]; then
+  log_and_eval "sudo apt install nginx-full curl -y"
+  log_and_eval "curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -"
+  log_and_eval "sudo apt install nodejs -y"
 fi
 
-sudo systemctl stop nginx # in case anything is already loaded
-sudo systemctl start nginx
+log_and_eval "sudo systemctl stop nginx"
+log_and_eval "sudo systemctl start nginx"
+
+log_action "MMPM GUI Dependencies Installed"
+printf "[+] \e[92mInstalled MMPM GUI Dependencies\e[0m\n"

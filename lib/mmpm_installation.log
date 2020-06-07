@@ -1,0 +1,128 @@
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+gcc -shared -Wl,-soname,libmmpm.so -o libmmpm.so mmpm.o fort.o
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+make[1]: Entering directory '/home/bpm/Development/github/mmpm/lib'
+sudo mkdir -p /usr/local/lib/mmpm
+sudo install libmmpm.so /usr/local/lib/mmpm
+make[1]: Leaving directory '/home/bpm/Development/github/mmpm/lib'
+/home/bpm/Development/github/mmpm

@@ -1,19 +1,18 @@
 #!/bin/bash
+source ./scripts/make/constants
 
-printf -- "------------------------"
-printf "\n| \e[92mInstalling MMPM CLI \e[0m |"
-printf "\n------------------------\n"
+printf "[+] \e[92mInstalling MMPM CLI \e[0m\n"
 
-mkdir -vp ~/.config/mmpm/log ~/.config/mmpm/configs
+log_action "Installing MMPM CLI"
 
-cd lib && make && make install && cd ~-
+log_and_eval "mkdir -vp ~/.config/mmpm/log ~/.config/mmpm/configs"
+log_and_eval "cd lib; make install; cd -"
+log_and_eval "pip3 install --user ."
+log_and_eval "$HOME/.local/bin/mmpm db --refresh"
 
-pip3 install --user .
+log_action "MMPM CLI Installed"
 
-$HOME/.local/bin/mmpm snapshot --refresh
+printf "[+] \033[1;36mMMPM CLI Installed \e[0m\n"
+printf "[+] \e[92mNOTE: Ensure \"${HOME}/.local/bin\" is in your PATH\e[0m\n"
 
-printf "\n\033[1;36mMMPM CLI Installed \e[0m\n"
 
-printf -- "-------------------------------------------------------"
-printf "\n| \e[92mNOTE: Ensure \"${HOME}/.local/bin\" is in your PATH\e[0m |"
-printf "\n-------------------------------------------------------\n"

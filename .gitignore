@@ -12,3 +12,4 @@ lib/*.o
 lib/libmmpm.so
 TODO.txt
 NOTES.txt
+mmpm*.log

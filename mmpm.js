@@ -1,11 +1,13 @@
-"use strict";
 
-Module.regster("mmpm", {
-  defaults:{},
-  start: () => {
-    this.sendSocketNotification("mmpm", this.config);
+Module.register("mmpm", {
+  defaults: {},
+
+  start() {
+    console.log("Starting module: mmpm");
+    this.sendSocketNotification("Started MMPM", this.config);
   },
-  socketNotificationReceived: function(notification, payload) {
-    this.sendNotification(notification);
-  }
+
+  notificationReceived(notification, payload) {
+    let modules = MM.getModules();
+  },
 });

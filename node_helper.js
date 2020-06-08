@@ -1,6 +1,6 @@
-import { create } from "node_helper";
+var nodeHelper = require("node_helper");
 
-export default create({
+module.exports = nodeHelper.create({
   socketNotificationReceived: (notification, payload) => {
     console.log(`MMPM TEST: ${MM.getModules()}`);
   }

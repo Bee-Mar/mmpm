@@ -13,7 +13,7 @@ from collections import defaultdict
 from bs4 import BeautifulSoup
 from mmpm import color, utils, mmpm, consts
 from mmpm.utils import colored_text
-from typing import List, DefaultDict
+from typing import List, DefaultDict, Any, Tuple, Dict
 from mmpm.utils import log, to_bytes
 import subprocess
 import select
@@ -84,12 +84,12 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
 
         try:
             # just to keep the console output the same as all other update commands
-            error_number, contents, _ = utils.run_cmd(['curl', consts.MMPM_FILE_URL])
+            error_code, contents, _ = utils.run_cmd(['curl', consts.MMPM_FILE_URL])
         except KeyboardInterrupt:
             print()
             utils.fatal_msg('Caught keyboard interrupt. Exiting.')
 
-        if error_number:
+        if error_code:
             utils.fatal_msg('Failed to retrieve MMPM version number')
 
     except HTTPError as error:
@@ -138,9 +138,9 @@ def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
     os.chdir(os.path.join('/', 'tmp'))
     os.system('rm -rf /tmp/mmpm')
 
-    error_number, _, stderr = utils.clone('mmpm', consts.MMPM_REPO_URL)
+    error_code, _, stderr = utils.clone('mmpm', consts.MMPM_REPO_URL)
 
-    if error_number:
+    if error_code:
         utils.fatal_msg(stderr)
 
     os.chdir('/tmp/mmpm')
@@ -178,9 +178,9 @@ def upgrade_module(module: dict):
 
     os.chdir(module[consts.DIRECTORY])
     utils.plain_print(f'{consts.GREEN_PLUS_SIGN} Retrieving upgrade for {module[consts.TITLE]}')
-    error_number, stdout, stderr = utils.run_cmd(["git", "pull"])
+    error_code, stdout, stderr = utils.run_cmd(["git", "pull"])
 
-    if error_number:
+    if error_code:
         utils.error_msg(stderr)
         return False
 
@@ -234,12 +234,12 @@ def check_for_module_updates(modules: dict, assume_yes: bool = False):
             utils.plain_print(f'Checking {colored_text(color.N_GREEN, module[consts.TITLE])} for updates')
 
             try:
-                error_number, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
+                error_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
             except KeyboardInterrupt:
                 print()
                 utils.fatal_msg('Caught keyboard interrupt. Exiting.')
 
-            if error_number:
+            if error_code:
                 utils.error_msg('Unable to communicate with git server')
                 continue
 
@@ -360,7 +360,7 @@ def get_installation_candidates(modules: dict, modules_to_install: List[str]) ->
     return installation_candidates
 
 
-def install_modules(installation_candidates: dict, assume_yes: bool = False) -> bool:
+def install_modules(installation_candidates: dict, assume_yes: bool = False) -> Tuple[bool, List[Dict[Any, Any]]]:
     '''
     Compares list of 'modules_to_install' to modules found within the
     'modules', clones the repository within the ~/MagicMirror/modules
@@ -375,33 +375,24 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
     '''
 
     modules_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
+    errors: List[dict] = []
 
     if not os.path.exists(modules_dir):
-        utils.error_msg(
-            'MagicMirror directory not found in {const.MAGICMIRROR_ROOT}. ' +
-            'Is the MMPM_MAGICMIRROR_ROOT env variable set properly?'
-        )
-        return False
+        utils.error_msg('MagicMirror directory not found in {const.MAGICMIRROR_ROOT}. Is the MMPM_MAGICMIRROR_ROOT env variable set properly?')
+        return False, errors
 
     if not installation_candidates:
         utils.error_msg('Unable to match query to installation candidates')
-        return False
+        return False, errors
 
     log.info(f'Changing into MagicMirror modules directory {modules_dir}')
     os.chdir(modules_dir)
 
     # a flag to check if any of the modules have been installed. Used for displaying a message later
-    successful_install: bool = False
-    marked_for_installation: list = []
-
+    successes: int = 0
     match_count: int = len(installation_candidates)
 
-    print(
-        colored_text(
-            color.N_CYAN,
-            f"Matched query to {match_count} {'package' if match_count == 1 else 'packages'} \n"
-        )
-    )
+    print(colored_text(color.N_CYAN, f'Matched query to {match_count} package(s)\n'))
 
     for index, candidate in enumerate(installation_candidates):
         if not utils.prompt_user(f'Install {colored_text(color.N_GREEN, candidate[consts.TITLE])} ({candidate[consts.REPOSITORY]})?', assume_yes=assume_yes):
@@ -410,92 +401,82 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
         else:
             log.info(f'User chose to install {candidate[consts.TITLE]} ({candidate[consts.REPOSITORY]})')
 
-    errors: List[dict] = []
-
     for module in installation_candidates:
-        if not module:
+        if not module: # the module may be empty due to the above for loop
             continue
 
-        title = module[consts.TITLE]
-        target = os.path.join(os.getcwd(), title)
-        repo = module[consts.REPOSITORY]
+        try:
+            title = module[consts.TITLE]
+            target = os.path.join(os.getcwd(), title)
+            repo = module[consts.REPOSITORY]
 
-        if os.path.exists(target):
-            os.chdir(target)
+            if os.path.exists(target):
+                os.chdir(target)
 
-            error_number, remote_origin_url, stderr = utils.run_cmd(
-                ['git', 'config', '--get', 'remote.origin.url'],
-                progress=False
-            )
-
-            remote_origin_url = remote_origin_url.strip()
-
-            os.chdir('..')
-
-            if error_number:
-                utils.error_msg(stderr)
-                continue
-
-            if remote_origin_url == repo:
-                log.info(f'Found a package named {title} already at {target}, with the same git remote origin url')
-
-                if assume_yes:
-                    utils.warning_msg(f'{title} ({repo}) appears to be installed already in {target}. Skipping alt installation option due to --yes flag')
-                    log.info(f'User used --yes. Skipping alt installation option for {title} ({repo})')
-                    continue
-
-                yes = utils.prompt_user(
-                    f'{title} ({repo}) appears to be installed already in {target}\nWould you like to provide an alternative directory name to install {title}?'
+                error_code, remote_origin_url, stderr = utils.run_cmd(
+                    ['git', 'config', '--get', 'remote.origin.url'],
+                    progress=False
                 )
 
-                if not yes:
-                    utils.warning_msg(f'Skipping installation of {title} ({repo})\n')
+                remote_origin_url = remote_origin_url.strip()
+
+                os.chdir('..')
+
+                if error_code:
+                    utils.error_msg(stderr)
                     continue
 
-                try:
+                if remote_origin_url == repo:
+                    log.info(f'Found a package named {title} already at {target}, with the same git remote origin url')
+
+                    if assume_yes:
+                        utils.warning_msg(f'{title} ({repo}) appears to be installed already in {target}. Skipping alt installation option due to --yes flag')
+                        log.info(f'User used --yes. Skipping alt installation option for {title} ({repo})')
+                        continue
+
+                    yes = utils.prompt_user(
+                        f'{title} ({repo}) appears to be installed already in {target}\nWould you like to provide an alternative directory name to install {title}?'
+                    )
+
+                    if not yes:
+                        utils.warning_msg(f'Skipping installation of {title} ({repo})\n')
+                        continue
+
                     target = utils.assert_valid_input(f'New directory name: ')
-                except KeyboardInterrupt as error:
-                    message = f'Cancelling installation of {title} ({repo})'
-                    log.error(message)
-                    utils.warning_msg(message + '\n')
-                    continue
-                finally:
-                    print()
 
+                else:
+                    log.info(f'Found a package named {title} already at {target}, with a different git remote origin url')
+
+                    if assume_yes:
+                        utils.warning_msg(f'A package named {title} is already installed in {target}. Skipping alt installation option due to --yes flag')
+                        log.info(f'User used --yes. Skipping alt installation option for {title}')
+                        continue
+
+                    yes = utils.prompt_user(
+                        f'A package named {title} is installed already in {target}\nWould you like to provide an alternative directory name to install {title}?'
+                    )
+
+                    if not yes:
+                        utils.warning_msg(f'Skipping installation of {title} ({candidate[consts.REPOSITORY]})')
+                        continue
+
+                    target = utils.assert_valid_input(f'New directory name: ')
+
+            success, error = utils.install_module(module, target, modules_dir, assume_yes=assume_yes)
+
+            if not success:
+                errors.append({'module': module, 'error': error})
             else:
-                log.info(f'Found a package named {title} already at {target}, with a different git remote origin url')
+                successes += 1
 
-                if assume_yes:
-                    utils.warning_msg(f'A package named {title} is already installed in {target}. Skipping alt installation option due to --yes flag')
-                    log.info(f'User used --yes. Skipping alt installation option for {title}')
-                    continue
+        except KeyboardInterrupt:
+            print()
+            message = f'Cancelling installation of {title} {repo}'
+            log.info(message)
+            utils.warning_msg(message)
+            continue
 
-                yes = utils.prompt_user(
-                    f'A package named {title} is installed already in {target}\nWould you like to provide an alternative directory name to install {title}?'
-                )
-
-                if not yes:
-                    utils.warning_msg(f'Skipping installation of {title} ({candidate[consts.REPOSITORY]})')
-                    continue
-
-                try:
-                    target = utils.assert_valid_input(f'New directory name: ')
-                except KeyboardInterrupt:
-                    print()
-                    message = f'Cancelling installation of {title}'
-                    log.info(message)
-                    utils.warning_msg(message)
-                    continue
-
-        success, error = utils.install_module(module, target, modules_dir, assume_yes=assume_yes)
-
-        if not success:
-            errors.append({'Module': module, 'Error': error})
-
-        if success and not successful_install:
-            successful_install = True
-
-    if not successful_install:
+    if not successes:
         return False, errors
 
     print(f'Execute `mmpm open --config` to edit the configuration for newly installed modules')
@@ -526,14 +507,14 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
     # stdout and stderr are flipped for git command output, because that totally makes sense
     # except now stdout doesn't even contain error messages...thanks git
     try:
-        error_number, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
+        error_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
     except KeyboardInterrupt:
         print()
         utils.fatal_msg('Caught keyboard interrupt. Exiting.')
 
     print(consts.GREEN_CHECK_MARK)
 
-    if error_number:
+    if error_code:
         utils.error_msg('Unable to communicate with git server')
         return False
 
@@ -542,9 +523,9 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
             return False
 
         utils.plain_print('\nUpgrading MagicMirror')
-        error_number, _, stdout = utils.run_cmd(['git', 'pull'])
+        error_code, _, stdout = utils.run_cmd(['git', 'pull'])
 
-        if error_number:
+        if error_code:
             utils.error_msg('Failed to communicate with git server')
             return False
 
@@ -955,12 +936,12 @@ def get_installed_modules(modules: dict) -> dict:
         try:
             os.chdir(os.path.join(modules_dir, module_dir))
 
-            error_number, remote_origin_url, stderr = utils.run_cmd(
+            error_code, remote_origin_url, stderr = utils.run_cmd(
                 ['git', 'config', '--get', 'remote.origin.url'],
                 progress=False
             )
 
-            error_number, project_name, stderr = utils.run_cmd(
+            error_code, project_name, stderr = utils.run_cmd(
                 ['basename', remote_origin_url.strip(), '.git'],
                 progress=False
             )
@@ -1165,7 +1146,7 @@ def get_active_modules(table_formatted: bool = False) -> None:
     with open(temp_config, 'a') as temp:
         temp.write('console.log(JSON.stringify(config))')
 
-    error_number, stdout, stderr = utils.run_cmd(['node', temp_config], progress=False)
+    error_code, stdout, stderr = utils.run_cmd(['node', temp_config], progress=False)
     config: dict = json.loads(stdout.split('\n')[0])
 
     # using -f so any errors can be ignored
@@ -1241,9 +1222,9 @@ def open_mmpm_gui() -> bool:
     Returns:
         bool: True upon sucess, False upon failure
     '''
-    error_number, _, stderr = utils.run_cmd(['xdg-open', get_web_interface_url()], background=True)
+    error_code, _, stderr = utils.run_cmd(['xdg-open', get_web_interface_url()], background=True)
 
-    if error_number:
+    if error_code:
         utils.error_msg(stderr)
         return False
     return True
@@ -1262,7 +1243,7 @@ def stop_magicmirror() -> None:
     '''
     if shutil.which('pm2'):
         log.info("Using 'pm2' to stop MagicMirror")
-        error_number, stdout, stderr = utils.run_cmd([
+        error_code, stdout, stderr = utils.run_cmd([
             'pm2', 'stop', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]],
             progress=False
         )
@@ -1295,7 +1276,7 @@ def start_magicmirror() -> None:
 
     if shutil.which('pm2'):
         log.info("Using 'pm2' to start MagicMirror")
-        error_number, stdout, stderr = utils.run_cmd(
+        error_code, stdout, stderr = utils.run_cmd(
             ['pm2', 'start', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]],
             progress=False
         )
@@ -1325,7 +1306,7 @@ def restart_magicmirror() -> None:
     '''
     if shutil.which('pm2'):
         log.info("Using 'pm2' to restart MagicMirror")
-        error_number, stdout, stderr = utils.run_cmd(
+        error_code, stdout, stderr = utils.run_cmd(
             ['pm2', 'restart', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]],
             progress=False
         )

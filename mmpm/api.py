@@ -158,14 +158,14 @@ def install_magicmirror_modules() -> str:
 
 
 @app.route(api('uninstall-modules'), methods=[POST])
-def remove_magicmirror_modules() -> Response:
+def remove_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
 
     result: List[dict] = []
 
     for module in selected_modules:
         try:
-            shutil.rmtree(module[consts.PATH])
+            shutil.rmtree(module[consts.DIRECTORY])
         except FileNotFoundError as error:
             result.append({'module': module, 'error': error})
 
@@ -334,9 +334,9 @@ def restart_raspberrypi() -> str:
 
     log.info('Restarting RaspberryPi')
     core.stop_magicmirror()
-    error_number, _, _ = utils.run_cmd(['sudo', 'reboot'])
+    error_code, _, _ = utils.run_cmd(['sudo', 'reboot'])
     # if success, it'll never get the response, but we'll know if it fails
-    return json.dumps(bool(not error_number))
+    return json.dumps(bool(not error_code))
 
 
 @app.route(api('shutdown-raspberrypi'), methods=[GET])
@@ -354,8 +354,8 @@ def turn_off_raspberrypi() -> str:
     log.info('Shutting down RaspberryPi')
     # if success, we'll never get the response, but we'll know if it fails
     core.stop_magicmirror()
-    error_number, _, _ = utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
-    return json.dumps(bool(not error_number))
+    error_code, _, _ = utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
+    return json.dumps(bool(not error_code))
 
 
 @app.route(api('upgrade-magicmirror'), methods=[GET])

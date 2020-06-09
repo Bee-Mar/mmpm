@@ -212,7 +212,7 @@ export class MagicMirrorModulesTableComponent {
   public onRemoveExternalSource(): void {
     if (this.selection.selected.length) {
 
-      this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings);
+      this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings());
       this.executing();
 
       this.api.removeExternalModuleSource(this.selection.selected).subscribe((unused) => {
@@ -223,7 +223,7 @@ export class MagicMirrorModulesTableComponent {
   }
 
   public onRefreshModules(): void {
-    this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings);
+    this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings());
     this.executing();
 
     this.api.refreshModules().subscribe((unused) => {
@@ -234,7 +234,7 @@ export class MagicMirrorModulesTableComponent {
 
   public onUninstallModules(): void {
     if (this.selection.selected.length) {
-      this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings);
+      this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings());
       this.executing();
 
       this.api.uninstallModules(this.selection.selected).subscribe((result) => {
@@ -247,7 +247,7 @@ export class MagicMirrorModulesTableComponent {
 
   public onUpgradeModules(): void {
     if (this.selection.selected) {
-      this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings);
+      this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings());
       this.executing();
 
       this.api.upgradeModules(this.selection.selected).subscribe((unused) => {

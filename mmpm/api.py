@@ -142,7 +142,7 @@ def get_magicmirror_modules() -> dict:
 @app.route(api('install-modules'), methods=[POST])
 def install_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
-    log.info(f'Request to install {selected_modules}')
+    log.info(f'User selected {selected_modules} to be installed')
 
     modules_dir = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
 
@@ -154,6 +154,8 @@ def install_magicmirror_modules() -> str:
             log.error(f'Failed to install {module[consts.TITLE]} with error of: {error}')
             module['error'] = error
             result.append(module)
+        else:
+            log.info(f'Installed {module[consts.TITLE]}')
 
     return json.dumps(result)
 
@@ -161,13 +163,16 @@ def install_magicmirror_modules() -> str:
 @app.route(api('uninstall-modules'), methods=[POST])
 def remove_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
+    log.info(f'User selected {selected_modules} to be removed')
 
     result: List[dict] = []
 
     for module in selected_modules:
         try:
             shutil.rmtree(module[consts.DIRECTORY])
+            log.info(f'Removed {module[consts.DIRECTORY]}')
         except FileNotFoundError as error:
+            log.error(f'Failed to remove {module[consts.DIRECTORY]}')
             result.append({'module': module, 'error': error})
 
     return json.dumps(result)

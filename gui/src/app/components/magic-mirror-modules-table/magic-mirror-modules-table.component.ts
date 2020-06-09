@@ -84,7 +84,7 @@ export class MagicMirrorModulesTableComponent {
               description: pkg["description"],
               author: pkg["author"],
               repository: pkg["repository"],
-              path: pkg["description"] ?? ""
+              directory: pkg["directory"] ?? ""
             });
           }
         }
@@ -151,20 +151,19 @@ export class MagicMirrorModulesTableComponent {
 
   public onInstallModules(): void {
     if (this.selection.selected.length) {
-
-      //this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings);
-      //this.executing();
+      this.executing();
 
       this.api.installModules(this.selection.selected).subscribe((failedInstallations: string) => {
         failedInstallations = JSON.parse(failedInstallations);
+        const pkg = failedInstallations.length == 1 ? "package" : "packages";
 
         if (failedInstallations.length) {
           this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failedInstallations));
-          this.popUpMessage(`Failed to install ${failedInstallations.length} modules`);
+          this.popUpMessage(`${failedInstallations.length} ${pkg} failed to install`);
           console.log(failedInstallations);
 
         } else {
-          this.popUpMessage("Installed all modules successfully!");
+          this.popUpMessage("Installed successfully!");
         }
         this.notifier.triggerTableUpdate();
       });
@@ -180,7 +179,7 @@ export class MagicMirrorModulesTableComponent {
       repository: "",
       category: "External Module Sources",
       description: "",
-      path: ""
+      directory: ""
     };
 
     const dialogRef = this.dialog.open(
@@ -234,12 +233,20 @@ export class MagicMirrorModulesTableComponent {
 
   public onUninstallModules(): void {
     if (this.selection.selected.length) {
-      this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings());
       this.executing();
 
-      this.api.uninstallModules(this.selection.selected).subscribe((result) => {
-        console.log(result)
-        this.complete();
+      this.api.uninstallModules(this.selection.selected).subscribe((failedRemovals) => {
+        failedRemovals = JSON.parse(failedRemovals);
+
+        if (failedRemovals.length) {
+          const pkg = failedRemovals.length == 1 ? "package" : "packages";
+          this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failedRemovals));
+          this.popUpMessage(`Failed to remove ${failedRemovals.length} ${pkg}`);
+
+        } else {
+          this.popUpMessage("Removed successfully!");
+        }
+
         this.notifier.triggerTableUpdate();
       });
     }

@@ -1,8 +1,15 @@
 <div class="dark-terminal">
-  <code style="color: white; white-space: pre-wrap;">
-    <p *ngFor="let item of data | keyvalue">
-      {{ item.title }}
-      {{ item.error }}
+  <code *ngFor="let item of data | keyvalue" style="white-space: pre-wrap;">
+    <p style="color: red;">
+    Error(s) encountered while installing {{ item.value.title }} ({{ item.value.repository }}):
     </p>
+    <p>
+    {{ item.value.error }}
+    </p>
+    <p style="color: yellow;">
+    Due to unresolvable errors, {{ item.value.title }} ({{ item.value.repository }}) will need to be manually installed
+
+    </p>
+    <div style="height: 1px; background-color: #303030;"></div>
   </code>
 </div>

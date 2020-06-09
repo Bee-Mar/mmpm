@@ -654,7 +654,7 @@ def load_modules(force_refresh: bool = False) -> dict:
 
     # if the snapshot has expired, or doesn't exist, get a new one
     if force_refresh:
-        utils.plain_print(consts.GREEN_PLUS_SIGN + ' Refreshing MagicMirror modules snapshot ')
+        utils.plain_print(consts.GREEN_PLUS_SIGN + ' Refreshing MagicMirror 3rd party modules database ')
         modules = retrieve_modules()
 
         # save the new snapshot

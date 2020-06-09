@@ -35,10 +35,10 @@ def get_user_args() -> object:
     arg_parser = argparse.ArgumentParser(
         prog='mmpm',
         usage='mmpm <subcommand> [option(s)]',
-        epilog=f'More details at {MMPM_WIKI_URL}',
+        epilog=f'Visit {MMPM_WIKI_URL} for more details',
         description='''
             The MagicMirror Package Manager is a CLI designed to simplify the
-            installation, removal, and maintenance of MagicMirror modules.
+            installation, removal, and maintenance of MagicMirror modules
             '''
     )
 
@@ -52,7 +52,7 @@ def get_user_args() -> object:
     search_parser = subparsers.add_parser(
         SEARCH,
         usage='\n  mmpm search <keyword> [--table] [--case-sensitive]',
-        help='search for MagicMirror modules listed in the database'
+        help='search for MagicMirror modules'
     )
 
     search_parser.add_argument(
@@ -74,7 +74,7 @@ def get_user_args() -> object:
     install_parser = subparsers.add_parser(
         INSTALL,
         usage='\n  mmpm install <module> [--yes]',
-        help='install MagicMirror modules found in the database'
+        help='install MagicMirror modules'
     )
 
     install_parser.add_argument(
@@ -105,7 +105,7 @@ def get_user_args() -> object:
     remove_parser = subparsers.add_parser(
         REMOVE,
         usage='\n  mmpm remove <module(s)> [--yes]',
-        help='remove currently install modules'
+        help='remove locally installed modules'
     )
 
     remove_parser.add_argument(
@@ -158,7 +158,7 @@ def get_user_args() -> object:
     database_parser = subparsers.add_parser(
         DATABASE,
         usage='\n  mmpm db [--refresh] [--details]',
-        help='subcommands to refresh or display basic details about the database'
+        help='refresh or display basic details about the database'
     )
 
     database_parser.add_argument(
@@ -181,7 +181,7 @@ def get_user_args() -> object:
     list_parser = subparsers.add_parser(
         LIST,
         usage='\n  mmpm list [--installed] [--categories] [--all] [--gui-url] [--table]',
-        help='subcommands to list items like installed modules, modules available, etc'
+        help='list items like installed modules, modules available, etc'
     )
 
     list_parser.add_argument(
@@ -226,7 +226,7 @@ def get_user_args() -> object:
     open_parser = subparsers.add_parser(
         OPEN,
         usage='\n  mmpm open [--config] [--gui]',
-        help='subcommands to open MagicMirror config or MMPM GUI'
+        help='open MagicMirror config or MMPM GUI'
     )
 
     open_parser.add_argument(
@@ -256,7 +256,7 @@ def get_user_args() -> object:
     add_ext_module_parser = subparsers.add_parser(
         ADD_EXT_MODULE,
         usage='\n  mmpm add-ext-module [--title=<title>] [--author=<author>] [--repo=<repo>] [--desc=<description>]\n  mmpm add-ext-module --remove <module>',
-        help='manually add a module to the database not found in the 3rd Party Wiki'
+        help='manually add modules to the database not found in the 3rd Party Wiki'
     )
 
     add_ext_module_parser.add_argument(
@@ -311,7 +311,7 @@ def get_user_args() -> object:
     logs_parser = subparsers.add_parser(
         LOGS,
         usage='\n  mmpm logs [--cli] [--web] [--tail]',
-        help='display the MMPM and/or Gunicorn log files (displays all logs if no args are given)'
+        help='display MMPM and/or Gunicorn log files'
     )
 
     logs_parser.add_argument(
@@ -342,7 +342,7 @@ def get_user_args() -> object:
     mm_ctl_parser = subparsers.add_parser(
         MM_CTL,
         usage='\n  mmpm mm-ctl [--status] [--restart] [--start] [--stop]\n  mmpm mm-ctl [--status] [--table]',
-        help='subcommands to control MagicMirror'
+        help='commands to control the MagicMirror'
     )
 
     mm_ctl_parser.add_argument(

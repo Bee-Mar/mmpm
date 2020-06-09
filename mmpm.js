@@ -8,6 +8,10 @@ Module.register("mmpm", {
   },
 
   notificationReceived(notification, payload) {
-    let modules = MM.getModules();
+    console.log(notification, payload);
+
+    if (notification == "GET_ACTIVE_MODULES") {
+      this.notificationSend(MM.getModules());
+    }
   },
 });

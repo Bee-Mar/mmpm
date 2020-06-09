@@ -6,7 +6,7 @@ import os
 import json
 import shutil
 from flask_cors import CORS
-from flask import Flask, request, send_file, render_template, send_from_directory, Response
+from flask import Flask, request, send_file, render_template, send_from_directory, Response, jsonify
 from mmpm import core, utils, consts
 from mmpm.utils import log
 from shelljob.proc import Group
@@ -152,9 +152,10 @@ def install_magicmirror_modules() -> str:
         success, error = utils.install_module(module, module[consts.TITLE], modules_dir, assume_yes=True)
         if not success:
             log.error(f'Failed to install {module[consts.TITLE]} with error of: {error}')
-            result.append({'module': module, 'error': error})
+            module['error'] = error
+            result.append(module)
 
-    return json.dumps(result)
+    return jsonify(result)
 
 
 @app.route(api('uninstall-modules'), methods=[POST])

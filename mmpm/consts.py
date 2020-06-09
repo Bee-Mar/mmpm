@@ -4,13 +4,13 @@ from os import environ
 from mmpm import color
 
 HOME_DIR: str = expanduser("~")
-TITLE: str = 'Title'
-REPOSITORY: str = 'Repository'
-DESCRIPTION: str = 'Description'
-AUTHOR: str = 'Author'
-CATEGORY: str = 'Category'
-MODULES: str = 'Modules'
-DIRECTORY: str = 'Directory'
+TITLE: str = 'title'
+REPOSITORY: str = 'repository'
+DESCRIPTION: str = 'description'
+AUTHOR: str = 'author'
+CATEGORY: str = 'category'
+MODULES: str = 'modules'
+DIRECTORY: str = 'directory'
 
 MAKEFILE: str = 'Makefile'
 CMAKELISTS: str = 'CMakeLists.txt'

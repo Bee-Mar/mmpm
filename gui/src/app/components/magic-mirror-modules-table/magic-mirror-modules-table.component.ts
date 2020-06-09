@@ -12,6 +12,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
 import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
 import { Subscription } from "rxjs";
+import { TerminalStyledPopUpWindowComponent } from "src/app/components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
 
 const select = "select";
 const category = "category";
@@ -19,6 +20,7 @@ const title = "title";
 const repository = "repository";
 const author = "author";
 const description = "description";
+const directory = "directory";
 
 @Component({
   selector: "app-magic-mirror-modules-table",
@@ -56,16 +58,16 @@ export class MagicMirrorModulesTableComponent {
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
   tooltipPosition: TooltipPosition[] = ["below"];
 
-  liveTerminalFeedDialogSettings: object = {
-    width: "75vw",
-    height: "75vh"
-  };
 
   snackbarSettings: object = { duration: 5000 };
 
   public ngOnInit(): void {
     this.retrieveModules();
     this.subscription = this.notifier.getNotification().subscribe((unused) => { this.retrieveModules(); });
+  }
+
+  private basicDialogSettings(data?: any): object {
+    return data ? {width: "75vw", height: "75vh", data} : {width: "75vw", height: "75vh"};
   }
 
   private retrieveModules(): void {
@@ -78,11 +80,11 @@ export class MagicMirrorModulesTableComponent {
           for (const pkg of packages[packageCategory]) {
             this.ALL_PACKAGES.push({
               category: packageCategory,
-              title: pkg["Title"],
-              description: pkg["Description"],
-              author: pkg["Author"],
-              repository: pkg["Repository"],
-              path: pkg["Directory"] ?? ""
+              title: pkg["title"],
+              description: pkg["description"],
+              author: pkg["author"],
+              repository: pkg["repository"],
+              path: pkg["description"] ?? ""
             });
           }
         }
@@ -101,6 +103,10 @@ export class MagicMirrorModulesTableComponent {
 
   private executing = () => {
     this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
+  };
+
+  private popUpMessage = (message: string) => {
+    this.snackbar.open(message, "Close", this.snackbarSettings);
   };
 
   public compare(a: number | string, b: number | string, ascending: boolean): number {
@@ -146,11 +152,20 @@ export class MagicMirrorModulesTableComponent {
   public onInstallModules(): void {
     if (this.selection.selected.length) {
 
-      this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
-      this.executing();
+      //this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings);
+      //this.executing();
 
-      this.api.postModules("/install-modules", this.selection.selected).subscribe((ununsed) => {
-        this.complete();
+      this.api.installModules(this.selection.selected).subscribe((failedInstallations: string) => {
+        failedInstallations = JSON.parse(failedInstallations);
+
+        if (failedInstallations.length) {
+          this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failedInstallations));
+          this.popUpMessage(`Failed to install ${failedInstallations.length} modules`);
+          console.log(failedInstallations);
+
+        } else {
+          this.popUpMessage("Installed all modules successfully!");
+        }
         this.notifier.triggerTableUpdate();
       });
     }
@@ -197,7 +212,7 @@ export class MagicMirrorModulesTableComponent {
   public onRemoveExternalSource(): void {
     if (this.selection.selected.length) {
 
-      this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
+      this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings);
       this.executing();
 
       this.api.removeExternalModuleSource(this.selection.selected).subscribe((unused) => {
@@ -208,7 +223,7 @@ export class MagicMirrorModulesTableComponent {
   }
 
   public onRefreshModules(): void {
-    this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
+    this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings);
     this.executing();
 
     this.api.refreshModules().subscribe((unused) => {
@@ -219,10 +234,11 @@ export class MagicMirrorModulesTableComponent {
 
   public onUninstallModules(): void {
     if (this.selection.selected.length) {
-      this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
+      this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings);
       this.executing();
 
-      this.api.postModules("/uninstall-modules", this.selection.selected).subscribe((unused) => {
+      this.api.uninstallModules(this.selection.selected).subscribe((result) => {
+        console.log(result)
         this.complete();
         this.notifier.triggerTableUpdate();
       });
@@ -231,7 +247,7 @@ export class MagicMirrorModulesTableComponent {
 
   public onUpgradeModules(): void {
     if (this.selection.selected) {
-      this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
+      this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings);
       this.executing();
 
       this.api.upgradeModules(this.selection.selected).subscribe((unused) => {

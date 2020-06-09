@@ -22,6 +22,7 @@ def load_requirements() -> List[str]:
     requirements = requirements_file.read().splitlines()
     return requirements
 
+
 setup(
     name="mmpm",
     version=VERSION,
@@ -35,4 +36,7 @@ setup(
     packages=find_packages(),
     entry_points={"console_scripts": ["mmpm=mmpm.__main__:main"]},
     install_requires=load_requirements(),
+    data_files=[
+        ('shared_objects', ['lib/libmmpm.so']),
+    ],
 )

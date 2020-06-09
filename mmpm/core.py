@@ -65,7 +65,7 @@ def snapshot_details(modules: dict) -> None:
 
 
 
-def check_for_mmpm_enhancements(assume_yes=False, gui=False) -> bool:
+def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
     '''
     Scrapes the main file of MMPM off the github repo, and compares the current
     version, versus the one available in the master branch. If there is a newer
@@ -495,10 +495,11 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
         bool: True upon success, False upon failure
     '''
     if not os.path.exists(consts.MAGICMIRROR_ROOT):
-        utils.error_msg(
-            'MagicMirror directory not found in {const.MAGICMIRROR_ROOT}.' +
-            'If the MagicMirror root directory is elswhere, set the MMPM_MAGICMIRROR_ROOT env var to that location.'
-        )
+        utils.error_msg(f'{consts.MAGICMIRROR_ROOT} not found. Is the MMPM_MAGICMIRROR_ROOT env variable set properly?')
+        return False
+
+    if not os.path.exists(os.path.join(consts.MAGICMIRROR_ROOT, '.git')):
+        utils.error_msg('MagicMirror git directory not found. If running MagicMirror as a Docker container, updates cannot be performed via mmpm.')
         return False
 
     os.chdir(consts.MAGICMIRROR_ROOT)
@@ -524,6 +525,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
 
         utils.plain_print('\nUpgrading MagicMirror')
         error_code, _, stdout = utils.run_cmd(['git', 'pull'])
+        utils.install_dependencies()
 
         if error_code:
             utils.error_msg('Failed to communicate with git server')
@@ -652,7 +654,7 @@ def load_modules(force_refresh: bool = False) -> dict:
 
     # if the snapshot has expired, or doesn't exist, get a new one
     if force_refresh:
-        utils.plain_print(consts.GREEN_PLUS_SIGN + ' Refreshing MagicMirror modules snapshot ... ')
+        utils.plain_print(consts.GREEN_PLUS_SIGN + ' Refreshing MagicMirror modules snapshot ')
         modules = retrieve_modules()
 
         # save the new snapshot

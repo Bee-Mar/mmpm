@@ -72,9 +72,9 @@ def main(argv):
         elif args.full:
             core.check_for_module_updates(modules, args.assume_yes)
             core.check_for_magicmirror_updates(args.assume_yes)
-            core.check_for_mmpm_enhancements(args.assume_yes)
+            core.check_for_mmpm_updates(args.assume_yes)
         elif args.mmpm:
-            core.check_for_mmpm_enhancements(args.assume_yes)
+            core.check_for_mmpm_updates(args.assume_yes)
         elif args.magicmirror:
             core.check_for_magicmirror_updates(args.assume_yes)
         else:

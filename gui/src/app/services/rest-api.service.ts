@@ -44,7 +44,7 @@ export class RestApiService {
     });
   }
 
-  public postModules(url: string, selectedModules: MagicMirrorPackage[]): Observable<any> {
+  private genericPost(url: string, selectedModules: MagicMirrorPackage[]): Observable<any> {
     return this.http.post(
         this.BASE_API_URL + url,
         {
@@ -57,6 +57,18 @@ export class RestApiService {
           responseType: "text",
           reportProgress: true
         }).pipe(retry(1), catchError(this.handleError));
+  }
+
+  public installModules(selectedModules: MagicMirrorPackage[]): Observable<any> {
+    return this.genericPost("/install-modules", selectedModules);
+  }
+
+  public upgradeModules(selectedModules: MagicMirrorPackage[]): Observable<any> {
+    return this.genericPost("/upgrade-modules", selectedModules);
+  }
+
+  public uninstallModules(selectedModules: MagicMirrorPackage[]): Observable<any> {
+    return this.genericPost("/uninstall-modules", selectedModules);
   }
 
   public updateMagicMirrorConfig(code: string): Observable<Response> {
@@ -85,18 +97,18 @@ export class RestApiService {
         }).pipe(retry(1), catchError(this.handleError));
   }
 
-  public upgradeModules(selectedModules: MagicMirrorPackage[]): Observable<any> {
-    return this.http.post<any>(
-        this.BASE_API_URL + "/upgrade-modules",
-        {
-          "selected-modules": selectedModules
-        },
-        {
-          headers: httpOptions({
-            "Content-Type": "application/x-www-form-urlencoded"
-          })
-        }).pipe(retry(5), catchError(this.handleError));
-  }
+  //public upgradeModules(selectedModules: MagicMirrorPackage[]): Observable<any> {
+  //  return this.http.post<any>(
+  //      this.BASE_API_URL + "/upgrade-modules",
+  //      {
+  //        "selected-modules": selectedModules
+  //      },
+  //      {
+  //        headers: httpOptions({
+  //          "Content-Type": "application/x-www-form-urlencoded"
+  //        })
+  //      }).pipe(retry(5), catchError(this.handleError));
+  //}
 
   public removeExternalModuleSource(externalSources: MagicMirrorPackage[]): Observable<any> {
     return this.http.request(

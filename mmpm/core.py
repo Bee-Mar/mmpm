@@ -1044,7 +1044,7 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
     except IOError as error:
         utils.error_msg('Failed to save external module')
         log.error(error)
-        return error
+        return str(error)
 
     return ''
 

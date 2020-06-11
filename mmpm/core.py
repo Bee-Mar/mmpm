@@ -150,7 +150,7 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
     return True
 
 
-def upgrade_module(module: dict):
+def upgrade_module(module: dict) -> str:
     '''
     Depending on flags passed in as arguments:
 
@@ -165,7 +165,7 @@ def upgrade_module(module: dict):
         module (dict): the MagicMirror module being upgraded
 
     Returns:
-        bool: True on success, False on failure
+        stderr (str): the resulting error message of the upgrade. If the message is zero length, it was successful
     '''
 
     original_dir: str = os.getcwd()
@@ -182,17 +182,17 @@ def upgrade_module(module: dict):
 
     if error_code:
         utils.error_msg(stderr)
-        return False
+        return stderr
 
     print(consts.GREEN_CHECK_MARK)
 
-    error_msg: str = utils.install_dependencies()
+    stderr = utils.install_dependencies()
 
-    if error_msg:
-        utils.error_msg(error_msg)
-        return False
+    if stderr:
+        utils.error_msg(stderr)
+        return stderr
 
-    return True
+    return ''
 
 
 def check_for_module_updates(modules: dict, assume_yes: bool = False):
@@ -247,7 +247,6 @@ def check_for_module_updates(modules: dict, assume_yes: bool = False):
                 updateable.append(module)
 
             print(consts.GREEN_CHECK_MARK)
-
 
     if not updateable:
         print(f'No updates available for modules {consts.YELLOW_X}')
@@ -977,7 +976,7 @@ def get_installed_modules(modules: dict) -> dict:
     return installed_modules
 
 
-def add_external_module(title: str = None, author: str = None, repo: str = None, desc: str = None) -> bool:
+def add_external_module(title: str = None, author: str = None, repo: str = None, desc: str = None) -> str:
     '''
     Adds an external source for user to install a module from. This may be a
     private git repo, or a specific branch of a public repo. All modules added
@@ -1045,21 +1044,21 @@ def add_external_module(title: str = None, author: str = None, repo: str = None,
     except IOError as error:
         utils.error_msg('Failed to save external module')
         log.error(error)
-        return False
+        return error
 
-    return True
+    return ''
 
 
-def remove_external_module_source(titles: str = None, assume_yes: bool = False) -> bool:
+def remove_external_module_source(titles: List[str] = None, assume_yes: bool = False) -> bool:
     '''
     Allows user to remove an external source from the sources saved in
     ~/.config/mmpm/mmpm-external-sources.json
 
     Parameters:
-        title (str): External source title
+        title (List[str]): External source titles
 
     Returns:
-        (bool): Upon success, a True result is returned
+        (bool): Upon success, a True result is returned, False on error
     '''
 
     if not os.path.exists(consts.MMPM_EXTERNAL_SOURCES_FILE):

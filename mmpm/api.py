@@ -152,7 +152,7 @@ def install_magicmirror_modules() -> str:
         success, error = utils.install_module(module, module[consts.TITLE], modules_dir, assume_yes=True)
         if not success:
             log.error(f'Failed to install {module[consts.TITLE]} with error of: {error}')
-            module['error'] = error
+            module[consts.ERROR] = error
             result.append(module)
         else:
             log.info(f'Installed {module[consts.TITLE]}')
@@ -173,7 +173,8 @@ def remove_magicmirror_modules() -> str:
             log.info(f'Removed {module[consts.DIRECTORY]}')
         except FileNotFoundError as error:
             log.error(f'Failed to remove {module[consts.DIRECTORY]}')
-            result.append({'module': module, 'error': error})
+            module[consts.ERROR] = error
+            result.append(module)
 
     return json.dumps(result)
 
@@ -182,15 +183,18 @@ def remove_magicmirror_modules() -> str:
 def upgrade_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
     log.info(f'Request to upgrade {selected_modules}')
-    process: Group = Group()
 
-    Response(
-        __stream_cmd_output__(process, ['-U'] + [selected_module['title'] for selected_module in selected_modules]),
-        mimetype='text/plain'
-    )
+    result: List[dict] = []
 
-    log.info('Finished update')
-    return json.dumps(True)
+    for module in selected_modules:
+        error = core.upgrade_module(module)
+        if error:
+            log.error(f'Failed to upgrade {module[consts.TITLE]} with error of: {error}')
+            module[consts.ERROR] = error
+            result.append(module)
+
+    log.info('Finished executing upgrades')
+    return json.dumps(result)
 
 
 @app.route(api('all-installed-modules'), methods=[GET])
@@ -204,7 +208,8 @@ def get_external__modules__sources() -> dict:
     try:
         with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
             ext_sources[consts.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES]
-    except IOError:
+    except IOError as error:
+        log.error(error)
         pass
     return ext_sources
 
@@ -212,30 +217,60 @@ def get_external__modules__sources() -> dict:
 @app.route(api('add-external-module-source'), methods=[POST])
 def add_external_module() -> str:
     external_source: dict = request.get_json(force=True)['external-source']
-    try:
-        success: bool = core.add_external_module(
-            title=external_source.get('title'),
-            author=external_source.get('author'),
-            desc=external_source.get('description'),
-            repo=external_source.get('repository')
-        )
-        return json.dumps(bool(success))
-    except Exception:
-        return json.dumps(False)
+
+    result: List[dict] = []
+
+    error: str = core.add_external_module(
+        title=external_source.get('title'),
+        author=external_source.get('author'),
+        desc=external_source.get('description'),
+        repo=external_source.get('repository')
+    )
+
+    return json.dumps({'error': "no_error" if not error else error})
 
 
 @app.route(api('remove-external-module-source'), methods=[DELETE])
 def remove_external_module_source() -> str:
-    selected_sources: list = request.get_json(force=True)['external-sources']
+    selected_modules: list = request.get_json(force=True)['external-sources']
     log.info(f'Request to remove external sources')
 
-    process: Group = Group()
-    Response(
-        __stream_cmd_output__(process, ['-r'] + [external_source['title'] for external_source in selected_sources] + ['--ext-module-src']),
-        mimetype='text/plain'
-    )
+    ext_modules: dict = {}
+    marked_for_removal: list = []
 
-    return json.dumps(True)
+    try:
+        with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
+            ext_modules[consts.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES]
+        log.info(f'Read external modules from {consts.MMPM_EXTERNAL_SOURCES_FILE}')
+    except IOError as error:
+        log.error(error)
+        return json.dumps({'error': error})
+
+    for selected_module in selected_modules:
+        # will clean this ugliness up, but for the moment leaving just because it works
+        del selected_module[consts.DIRECTORY]
+        del selected_module[consts.CATEGORY]
+
+        for module in ext_modules[consts.EXTERNAL_MODULE_SOURCES]:
+            print(module)
+            if module == selected_module:
+                marked_for_removal.append(module)
+                log.info(f'Found matching external module ({module[consts.TITLE]}) and marked for removal')
+
+    for module in marked_for_removal:
+        ext_modules[consts.EXTERNAL_MODULE_SOURCES].remove(module)
+        log.info(f'Removed {module[consts.TITLE]}')
+
+    try:
+        with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
+            json.dump(ext_modules, mmpm_ext_srcs)
+        log.info(f'Wrote updated external modules to {consts.MMPM_EXTERNAL_SOURCES_FILE}')
+    except IOError as error:
+        log.error(error)
+        return json.dumps({'error': error})
+
+    log.info(f'Wrote external modules to {consts.MMPM_EXTERNAL_SOURCES_FILE}')
+    return json.dumps({'error': "no_error"})
 
 
 @app.route(api('refresh-modules'), methods=[GET])

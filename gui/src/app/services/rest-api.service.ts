@@ -97,19 +97,6 @@ export class RestApiService {
         }).pipe(retry(1), catchError(this.handleError));
   }
 
-  //public upgradeModules(selectedModules: MagicMirrorPackage[]): Observable<any> {
-  //  return this.http.post<any>(
-  //      this.BASE_API_URL + "/upgrade-modules",
-  //      {
-  //        "selected-modules": selectedModules
-  //      },
-  //      {
-  //        headers: httpOptions({
-  //          "Content-Type": "application/x-www-form-urlencoded"
-  //        })
-  //      }).pipe(retry(5), catchError(this.handleError));
-  //}
-
   public removeExternalModuleSource(externalSources: MagicMirrorPackage[]): Observable<any> {
     return this.http.request(
       "DELETE",

@@ -58,12 +58,11 @@ export class MagicMirrorModulesTableComponent {
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
   tooltipPosition: TooltipPosition[] = ["below"];
 
-
   snackbarSettings: object = { duration: 5000 };
 
   public ngOnInit(): void {
     this.retrieveModules();
-    this.subscription = this.notifier.getNotification().subscribe((unused) => { this.retrieveModules(); });
+    this.subscription = this.notifier.getNotification().subscribe((_) => { this.retrieveModules(); });
   }
 
   private basicDialogSettings(data?: any): object {
@@ -195,9 +194,9 @@ export class MagicMirrorModulesTableComponent {
     dialogRef.afterClosed().subscribe((result) => {
       // the user may have exited without entering anything
       if (result) {
-        this.api.addExternalModuleSource(result).subscribe((success) => {
-
-          const message = success ?
+        this.api.addExternalModuleSource(result).subscribe((error) => {
+          console.log(error["error"]);
+          const message = error["error"] === "no_error" ?
             `Successfully added '${externalSource.title}' to 'External Module Sources'` :
             "Failed to add new source";
 
@@ -210,10 +209,9 @@ export class MagicMirrorModulesTableComponent {
 
   public onRemoveExternalSource(): void {
     if (this.selection.selected.length) {
-
-      this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings());
       this.executing();
 
+      console.log(this.selection.selected);
       this.api.removeExternalModuleSource(this.selection.selected).subscribe((unused) => {
         this.complete();
         this.notifier.triggerTableUpdate();
@@ -235,13 +233,13 @@ export class MagicMirrorModulesTableComponent {
     if (this.selection.selected.length) {
       this.executing();
 
-      this.api.uninstallModules(this.selection.selected).subscribe((failedRemovals) => {
-        failedRemovals = JSON.parse(failedRemovals);
+      this.api.uninstallModules(this.selection.selected).subscribe((fails) => {
+        fails = JSON.parse(fails);
 
-        if (failedRemovals.length) {
-          const pkg = failedRemovals.length == 1 ? "package" : "packages";
-          this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failedRemovals));
-          this.popUpMessage(`Failed to remove ${failedRemovals.length} ${pkg}`);
+        if (fails.length) {
+          const pkg = fails.length == 1 ? "package" : "packages";
+          this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(fails));
+          this.popUpMessage(`Failed to remove ${fails.length} ${pkg}`);
 
         } else {
           this.popUpMessage("Removed successfully!");
@@ -254,11 +252,18 @@ export class MagicMirrorModulesTableComponent {
 
   public onUpgradeModules(): void {
     if (this.selection.selected) {
-      this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings());
       this.executing();
 
-      this.api.upgradeModules(this.selection.selected).subscribe((unused) => {
-        this.complete();
+      this.api.upgradeModules(this.selection.selected).subscribe((fails) => {
+        fails = JSON.parse(fails);
+
+        if (fails.length) {
+          const pkg = fails.length == 1 ? "package" : "packages";
+          this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(fails));
+          this.popUpMessage(`Failed to upgrade ${fails.length} ${pkg}`);
+        } else {
+          this.popUpMessage("Upgraded selected modules successfully!");
+        }
         this.notifier.triggerTableUpdate();
       });
     }

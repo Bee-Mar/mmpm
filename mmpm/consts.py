@@ -11,6 +11,7 @@ AUTHOR: str = 'author'
 CATEGORY: str = 'category'
 MODULES: str = 'modules'
 DIRECTORY: str = 'directory'
+ERROR: str = 'error'
 
 MAKEFILE: str = 'Makefile'
 CMAKELISTS: str = 'CMakeLists.txt'

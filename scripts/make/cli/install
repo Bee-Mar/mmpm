@@ -7,6 +7,7 @@ log_action "Installing MMPM CLI"
 
 log_and_eval "mkdir -vp ~/.config/mmpm/log ~/.config/mmpm/configs"
 log_and_eval "cd lib; make install; cd -"
+log_and_eval "touch ~/.config/mmpm/log/mmpm-gunicorn-error.log ${HOME}/.config/mmpm/log/mmpm-gunicorn-access.log"
 log_and_eval "pip3 install --user ."
 log_and_eval "$HOME/.local/bin/mmpm db --refresh"
 

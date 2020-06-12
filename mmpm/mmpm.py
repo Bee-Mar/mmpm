@@ -141,7 +141,7 @@ def main(argv):
         else:
             utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
 
-    elif args.subcommand == opts.LOGS:
+    elif args.subcommand == opts.LOG:
         if additional_args:
             utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
         elif not args.cli and not args.gui:

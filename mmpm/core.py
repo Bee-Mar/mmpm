@@ -349,6 +349,10 @@ def get_installation_candidates(modules: dict, modules_to_install: List[str]) ->
 
     installation_candidates: List[dict] = []
 
+    if 'mmpm' in modules_to_install:
+        utils.warning_msg("Removing 'mmpm' as an installation candidate. It's obviously already installed " + u'\U0001F609')
+        modules_to_install.remove('mmpm')
+
     for module_to_install in modules_to_install:
         for category in modules.values():
             for module in category:
@@ -381,7 +385,7 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
         return False, errors
 
     if not installation_candidates:
-        utils.error_msg('Unable to match query to installation candidates')
+        utils.error_msg('Unable to match query any to installation candidates')
         return False, errors
 
     log.info(f'Changing into MagicMirror modules directory {modules_dir}')
@@ -1333,12 +1337,12 @@ def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool
             utils.error_msg('MMPM log file not found')
 
     if gui_logs:
-        if os.path.exists(consts.GUNICORN_LOG_ACCESS_LOG_FILE):
-            logs.append(consts.GUNICORN_LOG_ACCESS_LOG_FILE)
+        if os.path.exists(consts.GUNICORN_ACCESS_LOG_FILE):
+            logs.append(consts.GUNICORN_ACCESS_LOG_FILE)
         else:
             utils.error_msg('Gunicorn access log file not found')
-        if os.path.exists(consts.GUNICORN_LOG_ERROR_LOG_FILE):
-            logs.append(consts.GUNICORN_LOG_ERROR_LOG_FILE)
+        if os.path.exists(consts.GUNICORN_ERROR_LOG_FILE):
+            logs.append(consts.GUNICORN_ERROR_LOG_FILE)
         else:
             utils.error_msg('Gunicorn error log file not found')
 

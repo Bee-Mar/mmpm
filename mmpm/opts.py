@@ -6,19 +6,19 @@ import argcomplete
 from mmpm.consts import MMPM_WIKI_URL
 
 # subcommand names (these could go in consts.py, but for the sake of mnemonics for mmpm.py, they'll stay)
-INSTALL = 'install'
-SEARCH = 'search'
-REMOVE = 'remove'
-DATABASE = 'db'
-LIST = 'list'
-MM_CTL = 'mm-ctl'
-OPEN = 'open'
-ADD_EXT_MODULE = 'add-ext-module'
-LOGS = 'logs'
-UPDATE = 'update'
-UPGRADE = 'upgrade'
-ENV = 'env'
-SHOW = 'show'
+INSTALL: str = 'install'
+SEARCH: str = 'search'
+REMOVE: str = 'remove'
+DATABASE: str = 'db'
+LIST: str = 'list'
+MM_CTL: str = 'mm-ctl'
+OPEN: str = 'open'
+ADD_EXT_MODULE: str = 'add-ext-module'
+LOG: str = 'log'
+UPDATE: str = 'update'
+UPGRADE: str = 'upgrade'
+ENV: str = 'env'
+SHOW: str = 'show'
 
 
 def get_user_args() -> object:
@@ -308,13 +308,13 @@ def get_user_args() -> object:
     )
 
     # LOGS SUBCOMMANDS
-    logs_parser = subparsers.add_parser(
-        LOGS,
-        usage='\n  mmpm logs [--cli] [--web] [--tail]',
+    log_parser = subparsers.add_parser(
+        LOG,
+        usage='\n  mmpm log [--cli] [--web] [--tail]',
         help='display MMPM and/or Gunicorn log files'
     )
 
-    logs_parser.add_argument(
+    log_parser.add_argument(
         '-c',
         '--cli',
         action='store_true',
@@ -322,7 +322,7 @@ def get_user_args() -> object:
         dest='cli'
     )
 
-    logs_parser.add_argument(
+    log_parser.add_argument(
         '-g',
         '--gui',
         action='store_true',
@@ -330,7 +330,7 @@ def get_user_args() -> object:
         dest='gui'
     )
 
-    logs_parser.add_argument(
+    log_parser.add_argument(
         '-t',
         '--tail',
         action='store_true',

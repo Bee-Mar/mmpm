@@ -6,13 +6,13 @@ import { MatSort } from "@angular/material/sort";
 import { MatPaginator } from "@angular/material/paginator";
 import { TooltipPosition } from "@angular/material/tooltip";
 import { ExternalSourceRegistrationDialogComponent } from "src/app/components/external-source-registration-dialog/external-source-registration-dialog.component";
-import { LiveTerminalFeedDialogComponent } from "src/app/components/live-terminal-feed-dialog/live-terminal-feed-dialog.component";
 import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
 import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
 import { Subscription } from "rxjs";
 import { TerminalStyledPopUpWindowComponent } from "src/app/components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
+import { ModuleDetailsModalComponent } from "src/app/components/module-details-modal/module-details-modal.component";
 
 const select = "select";
 const category = "category";
@@ -43,14 +43,14 @@ export class MagicMirrorModulesTableComponent {
   ) {}
 
   ALL_PACKAGES: Array<MagicMirrorPackage>;
-  maxDescriptionLength: number = 70;
+  maxDescriptionLength: number = 75;
 
   displayedColumns: string[] = [
     select,
-    category,
+    //category,
     title,
     repository,
-    author,
+    //author,
     description
   ];
 
@@ -220,7 +220,6 @@ export class MagicMirrorModulesTableComponent {
   }
 
   public onRefreshModules(): void {
-    this.dialog.open(LiveTerminalFeedDialogComponent, this.basicDialogSettings());
     this.executing();
 
     this.api.refreshModules().subscribe((unused) => {
@@ -272,6 +271,14 @@ export class MagicMirrorModulesTableComponent {
   public checkboxLabel(row?: MagicMirrorPackage): string {
     if (!row) return `${this.isAllSelected() ? "select" : "deselect"} all`;
     return `${this.selection.isSelected(row) ? "deselect" : "select"} row ${row.category + 1}`;
+  }
+
+  public showModuleDetails(pkg: MagicMirrorPackage) {
+    this.dialog.open(ModuleDetailsModalComponent, {
+      width: "45vw",
+      height: "40vh",
+      data: pkg
+    });
   }
 
   ngOnDestroy() {

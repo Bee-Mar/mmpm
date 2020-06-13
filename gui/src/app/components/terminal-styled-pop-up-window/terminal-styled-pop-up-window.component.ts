@@ -12,17 +12,8 @@ export class TerminalStyledPopUpWindowComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
 
-  ngOnInit(): void {
-    console.log(this.data);
+  ngOnInit(): void {}
 
-    for (const item of this.data) {
-      console.log(item.title);
-      console.log(item.repository);
-      console.log(item.error);
-    }
-  }
-
-  onNoClick() {
-    this.dialogRef.close();
+  public onNoClick(): void {
   }
 }

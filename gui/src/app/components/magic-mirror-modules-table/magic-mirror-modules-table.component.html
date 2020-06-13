@@ -42,7 +42,7 @@
 
     <ng-container matColumnDef="title">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>Title</th>
-      <td mat-cell *matCellDef="let package">{{package.title}}</td>
+      <td mat-cell *matCellDef="let package">{{package.title}}
     </ng-container>
 
     <ng-container matColumnDef="repository">
@@ -65,11 +65,12 @@
         style="max-width: 275px;"
         mat-cell
         *matCellDef="let package"
-        [matTooltip]="package.description.length > maxDescriptionLength ? package.description : ''"
+        matTooltip="Click for more details"
         matTooltipClass="matTooltipClass"
       >
+      <button mat-button style="font-weight: normal" (click)="showModuleDetails(package)">
         {{ (package.description.length > maxDescriptionLength) ?  package.description.slice(0, maxDescriptionLength - 3) + '...' : package.description }}
-
+      </button>
       </td>
     </ng-container>
 

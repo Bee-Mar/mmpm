@@ -17,6 +17,7 @@ import { TableUpdateNotifierService } from "src/app/services/table-update-notifi
 import { MagicMirrorControlCenterComponent } from "./components/magic-mirror-control-center/magic-mirror-control-center.component";
 import { ConfirmationDialogComponent } from "./components/confirmation-dialog/confirmation-dialog.component";
 import { TerminalStyledPopUpWindowComponent } from "./components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
+import { ModuleDetailsModalComponent } from './components/module-details-modal/module-details-modal.component';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import { TerminalStyledPopUpWindowComponent } from "./components/terminal-styled
     SafePipe,
     MagicMirrorControlCenterComponent,
     ConfirmationDialogComponent,
-    TerminalStyledPopUpWindowComponent
+    TerminalStyledPopUpWindowComponent,
+    ModuleDetailsModalComponent
   ],
   imports: [
     BrowserModule,

@@ -5,3 +5,17 @@
   min-width: 1500px;
   min-height: 735px;
 }
+
+#homepage:link, #homepage:visited {
+  color: white;
+  text-decoration: none;
+}
+
+#homepage:hover {
+  color: #ADADAD;
+}
+
+#homepage:active {
+  color: white;
+  text-decoration: none;
+}

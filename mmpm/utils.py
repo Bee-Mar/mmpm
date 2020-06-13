@@ -568,6 +568,9 @@ def allocate_table_memory(rows: int, columns: int):
     Returns:
         table (POINTER(POINTER(c_char_p))): the allocated memory
     '''
+    if not rows or not columns:
+        fatal_msg('Positive integers must be provided as arguments')
+
     libmmpm = cdll.LoadLibrary(consts.LIBMMPM_SHARED_OBJECT_FILE)
 
     _allocate_table_memory = libmmpm.allocate_table_memory

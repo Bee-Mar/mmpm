@@ -177,8 +177,8 @@ def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, s
 
     if background:
         log.info(f'Executing process `{" ".join(command)}` in background')
-        subprocess.Popen(command, stderr=subprocess.PIPE)
-        return 0, str(), str()
+        process = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        return process.returncode, str(), str()
 
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -535,6 +535,7 @@ def kill_magicmirror_processes() -> None:
 
     for process in processes:
         kill_pids_of_process(process)
+        log.info(f'Killed pids of process {process}')
 
 
 def display_table(table, rows: int, columns: int) -> None:
@@ -548,7 +549,7 @@ def display_table(table, rows: int, columns: int) -> None:
         None
     '''
 
-    libmmpm = cdll.LoadLibrary(consts.LIBMMPM_SHARED_OBJECT)
+    libmmpm = cdll.LoadLibrary(consts.LIBMMPM_SHARED_OBJECT_FILE)
 
     __display_table__ = libmmpm.display_table
     __display_table__.argtypes = [POINTER(POINTER(c_char_p)), c_int, c_int]
@@ -567,7 +568,7 @@ def allocate_table_memory(rows: int, columns: int):
     Returns:
         table (POINTER(POINTER(c_char_p))): the allocated memory
     '''
-    libmmpm = cdll.LoadLibrary(consts.LIBMMPM_SHARED_OBJECT)
+    libmmpm = cdll.LoadLibrary(consts.LIBMMPM_SHARED_OBJECT_FILE)
 
     _allocate_table_memory = libmmpm.allocate_table_memory
     _allocate_table_memory.argtypes = [c_int, c_int]

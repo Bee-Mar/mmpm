@@ -2,6 +2,7 @@
 from os.path import join, expanduser
 from os import environ
 from mmpm import color
+from typing import Dict
 
 
 TITLE: str = 'title'
@@ -28,7 +29,7 @@ HOME_DIR: str = expanduser("~")
 MMPM_MAGICMIRROR_ROOT: str = 'MMPM_MAGICMIRROR_ROOT'
 MAGICMIRROR_PM2_PROC: str = 'MAGICMIRROR_PM2_PROC'
 
-MMPM_ENV_VARS: dict = {
+MMPM_ENV_VARS: Dict[str, str] = {
         MMPM_MAGICMIRROR_ROOT: environ.get(MMPM_MAGICMIRROR_ROOT, join(HOME_DIR, 'MagicMirror')),
         MAGICMIRROR_PM2_PROC: environ.get(MAGICMIRROR_PM2_PROC, 'MagicMirror')
 }
@@ -41,7 +42,7 @@ MMPM_LOG_DIR: str = join(MMPM_CONFIG_DIR, 'log')
 MMPM_LOG_FILE: str = join(MMPM_LOG_DIR, 'log', 'mmpm-cli-interface.log')
 MMPM_EXTERNAL_SOURCES_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
 
-LIBMMPM_SHARED_OBJECT: str = join('/', 'usr', 'local', 'lib', 'mmpm', 'libmmpm.so')
+LIBMMPM_SHARED_OBJECT_FILE: str = join('/', 'usr', 'local', 'lib', 'mmpm', 'libmmpm.so')
 SNAPSHOT_FILE: str = join(MMPM_CONFIG_DIR, 'MagicMirror-modules-snapshot.json')
 EXTERNAL_MODULE_SOURCES: str = 'External Module Sources'
 

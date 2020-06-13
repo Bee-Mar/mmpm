@@ -136,7 +136,7 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
     log.info(f'User chose to update MMPM')
 
     os.chdir(os.path.join('/', 'tmp'))
-    os.system('rm -rf /tmp/mmpm')
+    shutil.rmtree('/tmp/mmpm')
 
     error_code, _, stderr = utils.clone('mmpm', consts.MMPM_REPO_URL)
 
@@ -792,7 +792,7 @@ def get_module_categories(modules: dict) -> List[dict]:
         modules (List[dict]): list of dictionaries containing the category names and module count per category
     '''
     print(type(modules))
-    return [{consts.CATEGORY: key, 'Modules': len(modules[key])} for key in modules.keys()]
+    return [{consts.CATEGORY: key, consts.MODULES: len(modules[key])} for key in modules.keys()]
 
 
 def display_categories(categories: List[dict], table_formatted: bool = False) -> None:
@@ -1235,7 +1235,7 @@ def open_mmpm_gui() -> bool:
     return True
 
 
-def stop_magicmirror() -> None:
+def stop_magicmirror() -> bool:
     '''
     Stops MagicMirror using pm2, if found, otherwise the associated
     processes are killed
@@ -1256,13 +1256,16 @@ def stop_magicmirror() -> None:
         if stderr:
             log.error(stderr)
             utils.error_msg(f'{stderr.strip()}. Is the MAGICMIRROR_PM2_PROC env variable set correctly?')
-        else:
-            log.info('stopped MagicMirror using PM2')
-    else:
-        utils.kill_magicmirror_processes()
+            return False
+
+        log.info('stopped MagicMirror using PM2')
+        return True
+
+    utils.kill_magicmirror_processes()
+    return True
 
 
-def start_magicmirror() -> None:
+def start_magicmirror() -> bool:
     '''
     Launches MagicMirror using pm2, if found, otherwise a 'npm start' is run as
     a background process
@@ -1283,22 +1286,23 @@ def start_magicmirror() -> None:
         log.info("Using 'pm2' to start MagicMirror")
         error_code, stdout, stderr = utils.run_cmd(
             ['pm2', 'start', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]],
-            progress=False
+            background=True
         )
 
-        if stderr:
+        if error_code:
             log.error(stderr)
             utils.error_msg(f'{stderr.strip()}. Is the MAGICMIRROR_PM2_PROC env variable set correctly?')
-        else:
-            log.info('started MagicMirror using PM2')
-    else:
-        log.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
-        os.system('npm start &')
+            return False
 
-    os.chdir(original_dir)
+        log.info('started MagicMirror using PM2')
+        return True
+
+    error_code, _, _ = utils.run_cmd(['npm', 'start'], background=True)
+    log.info(f"Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case. Return code of '{error_code}'")
+    return False if error_code else True
 
 
-def restart_magicmirror() -> None:
+def restart_magicmirror() -> bool:
     '''
     Restarts MagicMirror using pm2, if found, otherwise the associated
     processes are killed and 'npm start' is re-run a background process
@@ -1319,12 +1323,21 @@ def restart_magicmirror() -> None:
         if stderr:
             log.error(stderr)
             utils.error_msg(f'{stderr.strip()}. Is the MAGICMIRROR_PM2_PROC env variable set correctly?')
-        else:
-            log.info('restarted MagicMirror using PM2')
+            return False
 
-    else:
-        stop_magicmirror()
-        start_magicmirror()
+        log.info('restarted MagicMirror using PM2')
+        return True
+
+    if not stop_magicmirror():
+        log.error('Failed to stop MagicMirror using npm commands')
+        return False
+
+    if not start_magicmirror():
+        log.error('Failed to start MagicMirror using npm commands')
+        return False
+
+    log.info('Restarted MagicMirror using npm commands')
+    return True
 
 
 def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool = False) -> None:
@@ -1355,7 +1368,7 @@ def display_mmpm_env_vars() -> None:
         print(f'{key}={value}')
 
 
-def install_autocompletion() -> None:
+def install_autocompletion(assume_yes: bool = False) -> None:
     '''
     Adds appropriate autocompletion configuration to a user's shell
     configuration file. Detects configuration files for bash, zsh, fish,
@@ -1367,6 +1380,11 @@ def install_autocompletion() -> None:
     Returns:
         None
     '''
+
+    if not utils.prompt_user('Are you sure you want to install the autocompletion feature for the MMPM CLI?', assume_yes=assume_yes):
+        log.info('User cancelled installation of autocompletion for MMPM CLI')
+        return
+
     log.info('user attempting to install MMPM autocompletion')
     shell: str = os.environ['SHELL']
     log.info(f'detected user shell to be {shell}')

@@ -84,7 +84,7 @@ def main(argv):
         if args.magicmirror:
             core.install_magicmirror(args.GUI)
         elif args.autocomplete:
-            core.install_autocompletion()
+            core.install_autocompletion(assume_yes=args.assume_yes)
         else:
             installation_candidates = core.get_installation_candidates(
                 modules,

@@ -13,6 +13,7 @@ CATEGORY: str = 'category'
 MODULES: str = 'modules'
 DIRECTORY: str = 'directory'
 ERROR: str = 'error'
+TARGET: str = 'target'
 
 MAKEFILE: str = 'Makefile'
 CMAKELISTS: str = 'CMakeLists.txt'
@@ -51,4 +52,5 @@ GUNICORN_ERROR_LOG_FILE: str = join(MMPM_LOG_DIR, 'mmpm-gunicorn-error.log')
 
 MAGICMIRROR_MODULES_URL: str = "https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules"
 MAGICMIRROR_ROOT: str = MMPM_ENV_VARS[MMPM_MAGICMIRROR_ROOT]
+MAGICMIRROR_MODULES_DIR: str = join(MAGICMIRROR_ROOT, 'modules')
 MAGICMIRROR_CONFIG_FILE: str = join(MAGICMIRROR_ROOT, 'config', 'config.js')

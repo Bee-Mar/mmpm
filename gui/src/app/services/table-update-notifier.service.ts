@@ -1,4 +1,4 @@
-import { Injectable, EventEmitter } from "@angular/core";
+import { Injectable } from "@angular/core";
 import { Observable, Subject } from "rxjs";
 
 @Injectable({
@@ -9,7 +9,7 @@ export class TableUpdateNotifierService {
 
   constructor() {}
 
-  public triggerTableUpdate() {
+  public triggerTableUpdate(): void {
     this.notification.next(true);
   }
 

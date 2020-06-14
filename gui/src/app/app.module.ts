@@ -17,7 +17,8 @@ import { TableUpdateNotifierService } from "src/app/services/table-update-notifi
 import { MagicMirrorControlCenterComponent } from "./components/magic-mirror-control-center/magic-mirror-control-center.component";
 import { ConfirmationDialogComponent } from "./components/confirmation-dialog/confirmation-dialog.component";
 import { TerminalStyledPopUpWindowComponent } from "./components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
-import { ModuleDetailsModalComponent } from './components/module-details-modal/module-details-modal.component';
+import { ModuleDetailsModalComponent } from "./components/module-details-modal/module-details-modal.component";
+import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 
 @NgModule({
   declarations: [
@@ -61,7 +62,7 @@ import { ModuleDetailsModalComponent } from './components/module-details-modal/m
       }
     })
   ],
-  providers: [RestApiService, TableUpdateNotifierService],
+  providers: [RestApiService, TableUpdateNotifierService, ActiveProcessCountService],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

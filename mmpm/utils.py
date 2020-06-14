@@ -24,10 +24,12 @@ class MMPMLogger():
     def __init__(self):
         self.log_file: str = consts.MMPM_LOG_FILE
 
-        if not os.path.exists(consts.MMPM_LOG_FILE):
-            os.system(f'mkdir -p {os.path.split(consts.MMPM_LOG_FILE)[0]}')
-            with open(consts.MMPM_LOG_FILE, 'a'):
-                os.utime(consts.MMPM_LOG_FILE, None)
+        if not os.path.exists(consts.MMPM_LOG_DIR):
+            os.system(f'mkdir -p {consts.MMPM_LOG_DIR}')
+
+        for log_file in [consts.MMPM_LOG_FILE, consts.GUNICORN_ERROR_LOG_FILE, consts.GUNICORN_ACCESS_LOG_FILE]:
+            if not os.path.exists(log_file):
+                os.system(f'touch {log_file}')
 
         self.log_format: str = '%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s'
         logging.basicConfig(filename=self.log_file, format=self.log_format)

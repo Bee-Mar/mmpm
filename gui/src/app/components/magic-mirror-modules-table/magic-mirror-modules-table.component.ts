@@ -13,6 +13,7 @@ import { TableUpdateNotifierService } from "src/app/services/table-update-notifi
 import { Subscription } from "rxjs";
 import { TerminalStyledPopUpWindowComponent } from "src/app/components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
 import { ModuleDetailsModalComponent } from "src/app/components/module-details-modal/module-details-modal.component";
+import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 
 const select = "select";
 const category = "category";
@@ -34,12 +35,14 @@ export class MagicMirrorModulesTableComponent {
   @Input() url: string;
 
   private subscription: Subscription;
+  private activeProcessSubsription: Subscription;
 
   constructor(
     private api: RestApiService,
     public dialog: MatDialog,
     private snackbar: MatSnackBar,
-    private notifier: TableUpdateNotifierService
+    private notifier: TableUpdateNotifierService,
+    private activeProcessCount: ActiveProcessCountService
   ) {}
 
   ALL_PACKAGES: Array<MagicMirrorPackage>;
@@ -47,9 +50,9 @@ export class MagicMirrorModulesTableComponent {
 
   displayedColumns: string[] = [
     select,
-    //category,
+    category,
     title,
-    repository,
+    //repository,
     //author,
     description
   ];
@@ -57,12 +60,14 @@ export class MagicMirrorModulesTableComponent {
   dataSource: MatTableDataSource<MagicMirrorPackage>;
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
   tooltipPosition: TooltipPosition[] = ["below"];
+  currentProcessCount: number = 0;
 
   snackbarSettings: object = { duration: 5000 };
 
   public ngOnInit(): void {
     this.retrieveModules();
     this.subscription = this.notifier.getNotification().subscribe((_) => { this.retrieveModules(); });
+    this.activeProcessSubsription = this.activeProcessCount.getCurrentCount().subscribe((count) => { this.currentProcessCount = count; });
   }
 
   private basicDialogSettings(data?: any): object {
@@ -274,9 +279,13 @@ export class MagicMirrorModulesTableComponent {
   }
 
   public showModuleDetails(pkg: MagicMirrorPackage) {
+    // since clicking on a cell selects the value, this actually sets the value
+    // to state it was in at the time of selection
+    this.selection.toggle(pkg);
+
     this.dialog.open(ModuleDetailsModalComponent, {
       width: "45vw",
-      height: "40vh",
+      height: "50vh",
       data: pkg
     });
   }

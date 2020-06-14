@@ -1,12 +1,16 @@
 <h2 mat-dialog-title style="text-align: center">Package Details</h2>
 <mat-dialog-content class="mat-typography"></mat-dialog-content>
   <p><strong>Title:</strong> {{ data.title }}</p>
+  <br>
   <p><strong>Category:</strong> {{ data.category }}</p>
+  <br>
   <p><strong>Author:</strong> {{ data.author }}</p>
-  <p><strong>Repository:</strong> <a href="{{ data.repository }}" target="_blank">{{ data.repository }}</a></p>
+  <br>
+  <p><strong>Repository:</strong> <a href="{{ data.repository }}" target="_blank"> {{ data.repository }} </a></p>
+  <br>
   <p><strong>Description:</strong> {{ data.description }}</p>
 
 <mat-dialog-actions align="center">
-  <button mat-button mat-dialog-close>Close</button>
+  <button mat-button mat-dialog-close style="background-color: red">Close</button>
 </mat-dialog-actions>
 

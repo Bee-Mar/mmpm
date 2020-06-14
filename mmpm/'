@@ -364,25 +364,71 @@ def get_installation_candidates(modules: dict, modules_to_install: List[str]) ->
 
 
 def check_for_installation_conflict(module: dict) -> bool:
-    '''
-    Helper method to check if a module with the same name as the intended
-    installation target exists. If so, the conflict is logged, and True is
-    returned, else False
+    conflict = False
 
-    Parameters:
-        modules (dict): Module intended to be installed
-
-    Returns:
-        bool: True if conflict occurred, False if no conflict was found
-    '''
+    title = module[consts.TITLE]
+    repo = module[consts.REPOSITORY]
+    target = module[consts.TARGET]
 
     if os.path.exists(module[consts.TARGET]):
-        log.warning(
-            f'Conflict encountered during installation. Found a package named {module[consts.TITLE]} already at {module[consts.TARGET]}'
-        )
-        return True
+        log.info(f'Found a package named {module[consts.TITLE]} already at {module[consts.TARGET]}')
+        conflict = True
 
-    return False
+    return conflict
+
+
+def resolve_installation_conflict(module: dict, conflict: bool = False, assume_yes: bool = False) -> dict:
+    '''
+    Compares list of 'modules_to_install' to modules found within the
+    'modules', clones the repository within the ~/MagicMirror/modules
+    directory, and runs 'npm install' for each newly installed module.
+
+    Parameters:
+        modules (dict): Dictionary of MagicMirror modules
+        origin_conflict (bool): True if there is another module with the same git origin (needs to be check)
+        title_conflict (bool): True if there is another module installed with the same directory name
+
+    Returns:
+        bool: True upon success, False upon failure
+
+    '''
+    title = module[consts.TITLE]
+    target = module[consts.TARGET]
+    repo = module[consts.REPOSITORY]
+
+    if origin_conflict:
+        log.info(f'Found a package named {title} already at {target}, with the same git remote origin url')
+
+        if assume_yes:
+            utils.warning_msg(f'{title} ({repo}) appears to be installed already in {target}. Skipping alt installation option due to --yes flag')
+            log.info(f'User used --yes. Skipping alt installation option for {title} ({repo})')
+
+        yes = utils.prompt_user(
+            f'{title} ({repo}) appears to be installed already in {target}\nWould you like to provide an alternative directory name to install {title}?'
+        )
+
+        if not yes:
+            utils.warning_msg(f'Skipping installation of {title} ({repo})\n')
+
+        module[consts.TARGET] = utils.assert_valid_input(f'New directory name: ')
+
+    elif title_conflict:
+        log.info(f'Found a package named {title} already at {target}, with a different git remote origin url')
+
+        if assume_yes:
+            utils.warning_msg(f'A package named {title} is already installed in {target}. Skipping alt installation option due to --yes flag')
+            log.info(f'User used --yes. Skipping alt installation option for {title}')
+
+        yes = utils.prompt_user(
+            f'A package named {title} is installed already in {target}\nWould you like to provide an alternative directory name to install {title}?'
+        )
+
+        if not yes:
+            utils.warning_msg(f'Skipping installation of {title} ({module[consts.REPOSITORY]})')
+
+        module[consts.TARGET] = utils.assert_valid_input(f'New directory name: ')
+
+    return module
 
 
 def install_modules(installation_candidates: dict, assume_yes: bool = False) -> Tuple[bool, List[Dict[Any, Any]]]:
@@ -430,22 +476,13 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
         if not module: # the module may be empty due to the above for loop
             continue
 
-        title = module[consts.TITLE]
-        repo = module[consts.REPOSITORY]
         module[consts.TARGET] = target = consts.MAGICMIRROR_MODULES_DIR + f'/{module[consts.TITLE]}'
 
         try:
-            if check_for_installation_conflict(module):
-                if assume_yes:
-                    log.warning(f'{title} ({repo}) appears to be installed already in {target}. Skipping alt installation option due to --yes flag')
-                    continue
+            conflict: dict = check_for_installation_conflict(module)
 
-                if utils.prompt_user(f'{title} ({repo}) appears to be installed already in {target}\nWould you like to provide an alternative directory name to install {title}?'):
-                    module[consts.TARGET] = utils.assert_valid_input(f'New directory name: ')
-
-                else:
-                    utils.warning_msg(f'Skipping installation of {title} ({repo})\n')
-                    continue
+            if conflict['title_conflict'] or conflict['origin_conflict']:
+                module = resolve_installation_conflict(module, **conflict, assume_yes=assume_yes)
 
             success, error = utils.install_module(module, module[consts.TARGET], modules_dir, assume_yes=assume_yes)
 

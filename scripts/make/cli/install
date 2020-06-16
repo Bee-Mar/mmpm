@@ -5,11 +5,22 @@ printf "[+] \e[92mInstalling MMPM CLI \e[0m\n"
 
 log_action "Installing MMPM CLI"
 
-log_and_eval "mkdir -vp ~/.config/mmpm/log ~/.config/mmpm/configs"
+printf " -- creating directories and files"
+log_and_eval "mkdir -vp ~/.config/mmpm/log"
+log_and_eval "touch ~/.config/mmpm/log/{mmpm-gunicorn-{error,access}.log,mmpm-cli-interface.log}"
+_done_
+
+printf " -- installing MMPM shared object"
 log_and_eval "cd lib; make install; cd -"
-log_and_eval "touch ~/.config/mmpm/log/mmpm-gunicorn-error.log ${HOME}/.config/mmpm/log/mmpm-gunicorn-access.log"
+_done_
+
+printf " -- installing CLI using 'pip3 install' (this may take a while)"
 log_and_eval "pip3 install --user ."
+_done_
+
+printf " -- initializing MMPM/MagicMirror database"
 log_and_eval "$HOME/.local/bin/mmpm db --refresh"
+_done_
 
 log_action "MMPM CLI Installed"
 

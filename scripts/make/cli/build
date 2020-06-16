@@ -3,4 +3,7 @@ source ./scripts/make/constants
 
 printf "[+] \e[92mBuilding MMPM CLI Shared Object \e[0m\n"
 log_action "Building MMPM CLI Shared Object"
+
+printf " -- running 'make' inside 'lib' directory"
 log_and_eval "cd lib && make && cd -"
+_done_

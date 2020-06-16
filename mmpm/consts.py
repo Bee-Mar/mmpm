@@ -38,15 +38,16 @@ MMPM_ENV_VARS: Dict[str, str] = {
 MMPM_REPO_URL: str = "https://github.com/Bee-Mar/mmpm.git"
 MMPM_FILE_URL: str = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
 MMPM_WIKI_URL: str = 'https://github.com/Bee-Mar/mmpm/wiki'
+
 MMPM_CONFIG_DIR: str = join(HOME_DIR, '.config', 'mmpm')
 MMPM_LOG_DIR: str = join(MMPM_CONFIG_DIR, 'log')
-MMPM_LOG_FILE: str = join(MMPM_LOG_DIR, 'log', 'mmpm-cli-interface.log')
-MMPM_EXTERNAL_SOURCES_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
 
 LIBMMPM_SHARED_OBJECT_FILE: str = join('/', 'usr', 'local', 'lib', 'mmpm', 'libmmpm.so')
 SNAPSHOT_FILE: str = join(MMPM_CONFIG_DIR, 'MagicMirror-modules-snapshot.json')
 EXTERNAL_MODULE_SOURCES: str = 'External Module Sources'
 
+MMPM_EXTERNAL_SOURCES_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
+MMPM_LOG_FILE: str = join(MMPM_LOG_DIR, 'mmpm-cli-interface.log')
 GUNICORN_ACCESS_LOG_FILE: str = join(MMPM_LOG_DIR, 'mmpm-gunicorn-access.log')
 GUNICORN_ERROR_LOG_FILE: str = join(MMPM_LOG_DIR, 'mmpm-gunicorn-error.log')
 

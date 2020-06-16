@@ -4,4 +4,7 @@ source ./scripts/make/constants
 printf "[+] \e[92mRemoving Legacy MMPM Installation Location\e[0m\n"
 
 log_action "Removing Legacy Installation Destination" >> $MMPM_INSTALLATION_LOG
+
+printf " -- removing initial version installation location"
 log_and_eval "sudo rm -vf /usr/local/bin/mmpm"
+_done_

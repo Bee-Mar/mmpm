@@ -4,7 +4,10 @@ source ./scripts/make/constants
 printf "\n\e[92mInstalling MMPM GUI Files\e[0m\n"
 
 printf "\n\nInstalling MMPM GUI Static Files\n\n" >> $MMPM_INSTALLATION_LOG
+
+printf " -- copying files to installation destination"
 log_and_eval "sudo rm -rvf /var/www/mmpm/{static,templates}"
 log_and_eval "sudo mkdir -p /var/www/mmpm/templates"
 log_and_eval "sudo cp -vr gui/build/static /var/www/mmpm"
 log_and_eval "sudo cp /var/www/mmpm/static/index.html /var/www/mmpm/templates"
+_done_

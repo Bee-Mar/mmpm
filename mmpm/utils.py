@@ -18,8 +18,8 @@ from ctypes import cdll, c_char_p, c_int, POINTER, c_bool
 
 class MMPMLogger():
     '''
-    Object used for logging while MMPM is executing. Log files can be found in
-    ~/.config/mmpm/log
+    Object used for logging while MMPM is executing.
+    Log files can be found in ~/.config/mmpm/log
     '''
     def __init__(self):
         self.log_file: str = consts.MMPM_LOG_FILE

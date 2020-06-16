@@ -5,10 +5,17 @@ printf "[+] \e[92mRemoving MMPM CLI \e[0m\n"
 
 log_action "Removing MMPM CLI"
 
+printf " -- removing MMPM python3 package"
 log_and_eval "pip3 uninstall mmpm -v -y"
+_done_
+
+printf " -- removing MMPM hidden config directory"
 log_and_eval "rm -rvf ~/.config/mmpm"
-log_and_eval "sudo rm -rf /usr/local/lib/mmpm"
+_done_
+
+printf " -- removing MMPM shared object"
 log_and_eval "cd lib; make uninstall; cd -"
+_done_
 
 log_action "MMPM CLI Removed"
 

@@ -4,5 +4,10 @@ source ./scripts/make/constants
 printf "\n\e[92mBuilding MMPM GUI\e[0m\n"
 printf "\nBuilding MMPM GUI\n\n" >> $MMPM_INSTALLATION_LOG
 
+printf " -- running 'npm install' within 'gui' directory"
 log_and_eval "npm install --prefix gui"
+_done_
+
+printf " -- running 'ng build' within 'gui' directory"
 log_and_eval "cd gui && node_modules/@angular/cli/bin/ng build --prod --deploy-url static/"
+_done_

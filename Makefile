@@ -33,6 +33,7 @@ dependencies-gui:
 build: build-cli build-gui
 
 build-cli:
+	@$(SHELL) $(CLI)/build
 
 build-gui:
 	@$(SHELL) $(GUI)/build
@@ -40,6 +41,7 @@ build-gui:
 build-from-src: build-cli-from-src build-gui-from-src
 
 build-cli-from-src:
+	@$(SHELL) $(CLI)/build
 
 build-gui-from-src:
 	@$(SHELL) $(GUI)/build-from-src

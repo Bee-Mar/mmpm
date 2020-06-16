@@ -5,8 +5,10 @@ printf "[+] \e[92mRemoving MMPM GUI \e[0m\n"
 
 log_action "Removing MMPM GUI"
 
-log_and_eval "rm -vf ~/.config/mmpm/configs/gunicorn.conf.py"
+printf " -- removing MMPM GUI configs"
+log_and_eval "rm -vf ~/.config/mmpm/configs"
 log_and_eval "sudo rm -rvf /var/www/mmpm"
+_done_
 
 printf "[+] \033[1;36mMMPM GUI Removed\e[0m\n"
 log_action "MMPM GUI Removed"

@@ -23,3 +23,7 @@ function log_and_eval() {
 function log_action() {
   printf "[[ MMPM MAKE ACTION ]] $1\n" >> $MMPM_INSTALLATION_LOG
 }
+
+function _done_() {
+  printf " -> done\n"
+}

@@ -4,17 +4,31 @@ source ./scripts/make/constants
 printf "[+] \e[92mRemoving MMPM Daemons \e[0m\n"
 log_action "Removing MMPM Daemons"
 
+printf " -- stopping and disabling MMPM service"
 log_and_eval "sudo systemctl stop mmpm.service"
 log_and_eval "sudo systemctl disable mmpm.service"
+_done_
+
+printf " -- stopping and disabling MMPM-WebSSH service"
 log_and_eval "sudo systemctl stop mmpm-webssh.service"
 log_and_eval "sudo systemctl disable mmpm-webssh.service"
-log_and_eval "sudo rm -vf /etc/systemd/system/mmpm* /var/log/mmpm*.log"
+_done_
+
+printf " -- reloading systemctl daemons"
 log_and_eval "sudo systemctl daemon-reload"
 log_and_eval "sudo systemctl reset-failed"
+_done_
+
+printf " -- removing MMPM service files"
+log_and_eval "sudo rm -vf /etc/systemd/system/mmpm* /var/log/mmpm*.log"
 log_and_eval "sudo rm -vf /etc/nginx/sites-available/mmpm.conf"
 log_and_eval "sudo rm -vf /etc/nginx/sites-enabled/mmpm.conf"
-log_and_eval "sudo systemctl restart nginx"
 log_and_eval "rm -rvf ~/.config/mmpm"
+_done_
+
+printf " -- restarting NGINX service"
+log_and_eval "sudo systemctl restart nginx"
+_done_
 
 printf "[+] \033[1;36mMMPM Daemons Removed\e[0m\n"
 log_action "MMPM Daemons Removed"

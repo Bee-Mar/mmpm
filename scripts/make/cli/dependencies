@@ -15,8 +15,9 @@ else
   log_and_eval "sudo apt install python3-pip make gcc -y 2>/dev/null"
 fi
 
+printf " -- installing python3 packages (this may take a while)"
 log_and_eval "pip3 install --user --upgrade setuptools wheel"
 log_and_eval "pip3 install --user -r requirements.txt"
+_done_
 
 log_action "MMPM CLI Dependencies Installed"
-printf "[+] \e[92mInstalled MMPM CLI Dependencies\e[0m\n"

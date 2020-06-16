@@ -5,6 +5,8 @@ source /etc/os-release
 printf "[+] \e[92mInstalling MMPM GUI Dependencies\e[0m\n"
 log_action "Installing MMPM GUI Dependencies"
 
+printf " -- installing NGINX, cURL, and nodejs"
+
 if [[ $NAME == *Arch* ]]; then
   log_and_eval "sudo pacman -Sy nginx-mainline curl --noconfirm"
   log_and_eval "curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -"
@@ -16,8 +18,13 @@ elif [[ $NAME == *Ubuntu* || $NAME == *Raspbian* ]]; then
   log_and_eval "sudo apt install nodejs -y"
 fi
 
+_done_
+
+printf " -- starting NGINX service"
 log_and_eval "sudo systemctl stop nginx"
+sleep 1 # make sure it takes effect
 log_and_eval "sudo systemctl start nginx"
+_done_
 
 log_action "MMPM GUI Dependencies Installed"
 printf "[+] \e[92mInstalled MMPM GUI Dependencies\e[0m\n"

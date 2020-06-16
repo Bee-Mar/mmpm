@@ -67,7 +67,7 @@ export class MagicMirrorModulesTableComponent {
   public ngOnInit(): void {
     this.retrieveModules();
     this.subscription = this.notifier.getNotification().subscribe((_) => { this.retrieveModules(); });
-    this.activeProcessSubsription = this.activeProcessCount.getCurrentCount().subscribe((count) => { this.currentProcessCount = count; });
+    this.activeProcessSubsription = this.activeProcessCount.getCurrentProcessCount().subscribe((count) => { this.currentProcessCount = count; });
   }
 
   private basicDialogSettings(data?: any): object {
@@ -156,15 +156,24 @@ export class MagicMirrorModulesTableComponent {
   public onInstallModules(): void {
     if (this.selection.selected.length) {
       this.executing();
+      const selected = this.selection.selected;
+      this.selection.clear();
 
-      this.api.installModules(this.selection.selected).subscribe((failedInstallations: string) => {
-        failedInstallations = JSON.parse(failedInstallations);
-        const pkg = failedInstallations.length == 1 ? "package" : "packages";
+      this.api.checkForInstallationConflicts(selected).subscribe((result: string) => {
+        console.log(result);
+        // TODO: provide prompt for user to provide alternate installation
+        // directory. Might be able to reuse the external module text box
+      });
 
-        if (failedInstallations.length) {
-          this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failedInstallations));
-          this.popUpMessage(`${failedInstallations.length} ${pkg} failed to install`);
-          console.log(failedInstallations);
+      this.api.installModules(selected).subscribe((result: string) => {
+        result = JSON.parse(result);
+        const failures: Array<object> = result["failures"];
+
+        const pkg = failures.length == 1 ? "package" : "packages";
+
+        if (failures.length) {
+          this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failures));
+          this.popUpMessage(`${failures.length} ${pkg} failed to install`);
 
         } else {
           this.popUpMessage("Installed successfully!");
@@ -236,8 +245,11 @@ export class MagicMirrorModulesTableComponent {
   public onUninstallModules(): void {
     if (this.selection.selected.length) {
       this.executing();
+      const selected = this.selection.selected;
+      this.selection.clear();
 
-      this.api.uninstallModules(this.selection.selected).subscribe((fails) => {
+      this.api.uninstallModules(selected).subscribe((fails) => {
+        this.selection.clear();
         fails = JSON.parse(fails);
 
         if (fails.length) {

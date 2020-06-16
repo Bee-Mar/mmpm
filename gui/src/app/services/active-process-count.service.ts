@@ -9,11 +9,11 @@ export class ActiveProcessCountService {
 
   constructor() {}
 
-  public updateCurrentProcessCount(count: number): void {
+  public setCurrentProcessCount(count: number): void {
     this.currentCount.next(count);
   }
 
-  public getCurrentCount(): Observable<number> {
+  public getCurrentProcessCount(): Observable<number> {
     return this.currentCount.asObservable();
   }
 }

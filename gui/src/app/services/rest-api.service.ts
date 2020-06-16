@@ -71,6 +71,10 @@ export class RestApiService {
     return this.genericPost("/uninstall-modules", selectedModules);
   }
 
+  public checkForInstallationConflicts(selectedModules: MagicMirrorPackage[]): Observable<any> {
+    return this.genericPost("/check-for-installation-conflicts", selectedModules);
+  }
+
   public updateMagicMirrorConfig(code: string): Observable<Response> {
     return this.http.post<any>(
         this.BASE_API_URL + "/update-magicmirror-config",

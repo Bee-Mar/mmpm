@@ -363,28 +363,6 @@ def get_installation_candidates(modules: dict, modules_to_install: List[str]) ->
     return installation_candidates
 
 
-def check_for_installation_conflict(module: dict) -> bool:
-    '''
-    Helper method to check if a module with the same name as the intended
-    installation target exists. If so, the conflict is logged, and True is
-    returned, else False
-
-    Parameters:
-        modules (dict): Module intended to be installed
-
-    Returns:
-        bool: True if conflict occurred, False if no conflict was found
-    '''
-
-    if os.path.exists(module[consts.TARGET]):
-        log.warning(
-            f'Conflict encountered during installation. Found a package named {module[consts.TITLE]} already at {module[consts.TARGET]}'
-        )
-        return True
-
-    return False
-
-
 def install_modules(installation_candidates: dict, assume_yes: bool = False) -> Tuple[bool, List[Dict[Any, Any]]]:
     '''
     Compares list of 'modules_to_install' to modules found within the
@@ -426,28 +404,35 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
         else:
             log.info(f'User chose to install {candidate[consts.TITLE]} ({candidate[consts.REPOSITORY]})')
 
+    existing_module_dirs: List[str] = utils.get_existing_module_directories()
+
     for module in installation_candidates:
         if not module: # the module may be empty due to the above for loop
             continue
 
-        title = module[consts.TITLE]
-        repo = module[consts.REPOSITORY]
-        module[consts.TARGET] = target = consts.MAGICMIRROR_MODULES_DIR + f'/{module[consts.TITLE]}'
+        title: str = module[consts.TITLE]
+        repo: str = module[consts.REPOSITORY]
+        target: str = os.path.join(consts.MAGICMIRROR_MODULES_DIR, module[consts.TITLE])
 
         try:
-            if check_for_installation_conflict(module):
+            if title in existing_module_dirs:
+                log.error(f'Conflict encountered. Found a package named {module[consts.TITLE]} already at {target}')
+
                 if assume_yes:
-                    log.warning(f'{title} ({repo}) appears to be installed already in {target}. Skipping alt installation option due to --yes flag')
+                    log.warning(f'A module named {title} is already installed in {target}. Skipping alt installation option due to --yes flag')
                     continue
 
-                if utils.prompt_user(f'{title} ({repo}) appears to be installed already in {target}\nWould you like to provide an alternative directory name to install {title}?'):
-                    module[consts.TARGET] = utils.assert_valid_input(f'New directory name: ')
+                print()
+
+                if utils.prompt_user(f'A module named {title} is installed already in {target}\nWould you like to provide an alternative directory name to install {title}?'):
+                    print()
+                    target = utils.assert_valid_input(f'New directory name: ', forbidden_responses=existing_module_dirs, reason='already exists')
 
                 else:
                     utils.warning_msg(f'Skipping installation of {title} ({repo})\n')
                     continue
 
-            success, error = utils.install_module(module, module[consts.TARGET], modules_dir, assume_yes=assume_yes)
+            success, error = utils.install_module(module, target, modules_dir, assume_yes=assume_yes)
 
             if not success:
                 errors.append({'module': module, 'error': error})
@@ -900,18 +885,16 @@ def get_installed_modules(modules: dict) -> dict:
         installed_modules (dict): Dictionary of installed MagicMirror modules
     '''
 
-    modules_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
-    original_dir: str = os.getcwd()
+    module_dirs: List[str] = utils.get_existing_module_directories()
 
-    if not os.path.exists(modules_dir):
+    if not module_dirs:
         msg = "Failed to find MagicMirror root. Have you installed MagicMirror properly? "
         msg += "You may also set the env variable 'MMPM_MAGICMIRROR_ROOT' to the MagicMirror root directory."
         utils.error_msg(msg)
-        return None
+        return {}
 
-    os.chdir(modules_dir)
-
-    module_dirs: List[str] = os.listdir(os.getcwd())
+    original_dir: str = os.getcwd()
+    os.chdir(consts.MAGICMIRROR_MODULES_DIR)
 
     installed_modules: dict = {}
     modules_found: dict = {'Modules': []}
@@ -921,7 +904,7 @@ def get_installed_modules(modules: dict) -> dict:
             continue
 
         try:
-            os.chdir(os.path.join(modules_dir, module_dir))
+            os.chdir(os.path.join(consts.MAGICMIRROR_MODULES_DIR, module_dir))
 
             error_code, remote_origin_url, stderr = utils.run_cmd(
                 ['git', 'config', '--get', 'remote.origin.url'],

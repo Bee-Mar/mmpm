@@ -11,7 +11,7 @@ from mmpm import core, utils, consts
 from mmpm.utils import log
 from shelljob.proc import Group
 from flask_socketio import SocketIO
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
 
 MMPM_EXECUTABLE: list = [os.path.join(os.path.expanduser('~'), '.local', 'bin', 'mmpm')]
@@ -139,6 +139,22 @@ def get_magicmirror_modules() -> dict:
     return __modules__()
 
 
+@app.route(api('check-for-installation-conflicts'), methods=[POST])
+def check_for_installation_conflicts() -> str:
+    selected_modules: list = request.get_json(force=True)['selected-modules']
+    log.info(f'User selected {selected_modules} to be installed')
+
+    existing_module_dirs: List[str] = utils.get_existing_module_directories()
+    result: Dict[str, list] = {'conflicts': []}
+
+    for module in selected_modules:
+        if module[consts.TITLE] in existing_module_dirs:
+            conflicting_path: str = os.path.join(consts.MAGICMIRROR_MODULES_DIR, module[consts.TITLE])
+            log.error(f'Conflict encountered. Found a package named {module[consts.TITLE]} already at {conflicting_path}')
+            result['conflicts'].append(module)
+
+    return json.dumps(result)
+
 @app.route(api('install-modules'), methods=[POST])
 def install_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
@@ -146,14 +162,15 @@ def install_magicmirror_modules() -> str:
 
     modules_dir = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
 
-    result: List[dict] = []
+    result: Dict[str, list] = {'failures': []}
 
     for module in selected_modules:
         success, error = utils.install_module(module, module[consts.TITLE], modules_dir, assume_yes=True)
+
         if not success:
             log.error(f'Failed to install {module[consts.TITLE]} with error of: {error}')
             module[consts.ERROR] = error
-            result.append(module)
+            result['failures'].append(module)
         else:
             log.info(f'Installed {module[consts.TITLE]}')
 

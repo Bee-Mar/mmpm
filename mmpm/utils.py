@@ -681,10 +681,21 @@ def invalid_option(subcommand: str) -> str:
     return f'Invalid option supplied to `mmpm {subcommand}`. See `mmpm {subcommand} --help`'
 
 
-def assert_valid_input(prompt) -> str:
+def assert_valid_input(prompt: str, forbidden_responses: List[str] = [], reason: str = '') -> str:
     while True:
         value = input(prompt)
         if not value:
             warning_msg('A non-empty response must be given')
             continue
+        elif value in forbidden_responses:
+            warning_msg(f'Invalid response, {value} {reason}')
+            continue
         return value
+
+
+def get_existing_module_directories() -> List[str]:
+    if not os.path.exists(consts.MAGICMIRROR_MODULES_DIR):
+        return []
+
+    dirs: List[str] = os.listdir(consts.MAGICMIRROR_MODULES_DIR)
+    return [d for d in dirs if os.path.isdir(os.path.join(consts.MAGICMIRROR_MODULES_DIR, d))]

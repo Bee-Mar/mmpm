@@ -71,7 +71,16 @@ export class MagicMirrorModulesTableComponent {
   }
 
   private basicDialogSettings(data?: any): object {
-    return data ? {width: "75vw", height: "75vh", data} : {width: "75vw", height: "75vh"};
+    return data ? {
+      width: "75vw",
+      height: "75vh",
+      disableClose: true,
+      data
+    } : {
+      width: "75vw",
+      height: "75vh",
+      disableClose: true
+    };
   }
 
   private retrieveModules(): void {
@@ -201,7 +210,8 @@ export class MagicMirrorModulesTableComponent {
         minWidth: "60vw",
         data: {
           externalSource
-        }
+        },
+        disableClose: true
       }
     );
 
@@ -248,14 +258,15 @@ export class MagicMirrorModulesTableComponent {
       const selected = this.selection.selected;
       this.selection.clear();
 
-      this.api.uninstallModules(selected).subscribe((fails) => {
+      this.api.uninstallModules(selected).subscribe((result: string) => {
         this.selection.clear();
-        fails = JSON.parse(fails);
+        result = JSON.parse(result);
+        const failures: Array<object> = result["failures"];
 
-        if (fails.length) {
-          const pkg = fails.length == 1 ? "package" : "packages";
-          this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(fails));
-          this.popUpMessage(`Failed to remove ${fails.length} ${pkg}`);
+        if (failures.length) {
+          const pkg = failures.length == 1 ? "package" : "packages";
+          this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failures));
+          this.popUpMessage(`Failed to remove ${failures.length} ${pkg}`);
 
         } else {
           this.popUpMessage("Removed successfully!");
@@ -298,6 +309,7 @@ export class MagicMirrorModulesTableComponent {
     this.dialog.open(ModuleDetailsModalComponent, {
       width: "45vw",
       height: "50vh",
+      disableClose: true,
       data: pkg
     });
   }

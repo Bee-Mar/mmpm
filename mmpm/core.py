@@ -469,7 +469,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
         return False
 
     if not os.path.exists(os.path.join(consts.MAGICMIRROR_ROOT, '.git')):
-        utils.error_msg('MagicMirror git directory not found. If running MagicMirror as a Docker container, updates cannot be performed via mmpm.')
+        utils.error_msg('The MagicMirror root does not appear to be a git repo. If running MagicMirror as a Docker container, updates cannot be performed via mmpm.')
         return False
 
     os.chdir(consts.MAGICMIRROR_ROOT)

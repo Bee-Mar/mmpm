@@ -8,12 +8,15 @@
     {{ item.value.error }}
     </p>
     <p style="color: yellow;">
-    Due to unresolvable errors, {{ item.value.title }} ({{ item.value.repository }}) will need to be manually installed
-
+    Due to unresolvable errors, {{ item.value.title }} ({{ item.value.repository }}) will need to be installed via the MMPM CLI or manually
     </p>
     <div style="height: 1px; background-color: #303030;"></div>
   </code>
 </div>
 <mat-dialog-actions align="center">
-  <button mat-button mat-dialog-close>Close</button>
+  <button mat-button mat-dialog-close>
+    <mat-icon>
+      close
+    </mat-icon>
+  </button>
 </mat-dialog-actions>

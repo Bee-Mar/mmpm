@@ -161,7 +161,6 @@ def install_magicmirror_modules() -> str:
     log.info(f'User selected {selected_modules} to be installed')
 
     modules_dir = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
-
     result: Dict[str, list] = {'failures': []}
 
     for module in selected_modules:
@@ -182,7 +181,7 @@ def remove_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
     log.info(f'User selected {selected_modules} to be removed')
 
-    result: List[dict] = []
+    result: Dict[str, list] = {'failures': []}
 
     for module in selected_modules:
         try:
@@ -191,7 +190,7 @@ def remove_magicmirror_modules() -> str:
         except FileNotFoundError as error:
             log.error(f'Failed to remove {module[consts.DIRECTORY]}')
             module[consts.ERROR] = error
-            result.append(module)
+            result['failures'].append(module)
 
     return json.dumps(result)
 

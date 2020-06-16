@@ -55,13 +55,17 @@
   <button
     mat-raised-button
     color="primary"
-    mat-raised-button
     matTooltip="Save external source"
     (click)="onRegisterSource()"
     [disabled]="!externalSource.title || !externalSource.repository || !externalSource.author || !externalSource.description"
     >
     <mat-icon>
       save
+    </mat-icon>
+  </button>
+  <button mat-button mat-dialog-close color="secondary">
+    <mat-icon>
+      close
     </mat-icon>
   </button>
 </div>

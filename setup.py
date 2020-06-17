@@ -5,8 +5,6 @@ from mmpm.mmpm import __version__
 from setuptools.command.install import install
 import os
 
-VERSION = __version__
-
 
 def load_requirements() -> List[str]:
     '''
@@ -25,10 +23,11 @@ def load_requirements() -> List[str]:
 
 setup(
     name="mmpm",
-    version=VERSION,
+    version=__version__,
     description="The MagicMirror Package Manager (MMPM)",
     url="https://github.com/Bee-Mar/mmpm",
     author="Brandon Marlowe",
+    #download_url=f'https://github.com/Bee-Mar/mmpm/archive/{__version__}.tar.gz',
     author_email="bpmarlowe-software@protonmail.com",
     license="MIT",
     include_package_data=True,

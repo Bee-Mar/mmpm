@@ -1,5 +1,5 @@
 <h2 mat-dialog-title style="text-align: center">Package Details</h2>
-<mat-dialog-content class="mat-typography"></mat-dialog-content>
+<mat-dialog-content class="mat-typography">
   <p><strong>Title:</strong> {{ data.title }}</p>
   <br>
   <p><strong>Category:</strong> {{ data.category }}</p>
@@ -9,7 +9,9 @@
   <p><strong>Repository:</strong> <a href="{{ data.repository }}" target="_blank"> {{ data.repository }} </a></p>
   <br>
   <p><strong>Description:</strong> {{ data.description }}</p>
-
+  <br>
+  <p *ngIf="data.directory.length"><strong>Directory:</strong> {{ data.directory }}</p>
+</mat-dialog-content>
 <mat-dialog-actions align="center">
   <button mat-button mat-dialog-close>
     <mat-icon>

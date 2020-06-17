@@ -19,6 +19,7 @@ import { ConfirmationDialogComponent } from "./components/confirmation-dialog/co
 import { TerminalStyledPopUpWindowComponent } from "./components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
 import { ModuleDetailsModalComponent } from "./components/module-details-modal/module-details-modal.component";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
+import { RenameModuleDirectoryDialogComponent } from "src/app/components/rename-module-directory-dialog/rename-module-directory-dialog.component";
 
 @NgModule({
   declarations: [
@@ -31,7 +32,8 @@ import { ActiveProcessCountService } from "src/app/services/active-process-count
     MagicMirrorControlCenterComponent,
     ConfirmationDialogComponent,
     TerminalStyledPopUpWindowComponent,
-    ModuleDetailsModalComponent
+    ModuleDetailsModalComponent,
+    RenameModuleDirectoryDialogComponent
   ],
   imports: [
     BrowserModule,

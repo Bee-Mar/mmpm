@@ -14,7 +14,7 @@ from flask_socketio import SocketIO
 from typing import Tuple, List, Dict
 
 
-MMPM_EXECUTABLE: list = [os.path.join(os.path.expanduser('~'), '.local', 'bin', 'mmpm')]
+MMPM_EXECUTABLE: list = [os.path.join(consts.HOME_DIR, '.local', 'bin', 'mmpm')]
 
 app = Flask(
     __name__,
@@ -30,13 +30,8 @@ resources: dict = {
     r'/socket.io/*': {'origins': '*'},
 }
 
-
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins='*')
-
-GET: str = 'GET'
-POST: str = 'POST'
-DELETE: str = 'DELETE'
 
 api = lambda path: f'/api/{path}'
 
@@ -119,12 +114,12 @@ def after_request(response: Response) -> Response:
     return response
 
 
-@app.route('/<path:path>', methods=[GET])
+@app.route('/<path:path>', methods=[consts.GET])
 def static_proxy(path):
     return send_from_directory('./', path)
 
 
-@app.route('/', methods=[GET, POST, DELETE])
+@app.route('/', methods=[consts.GET, consts.POST, consts.DELETE])
 def root() -> str:
     return render_template('index.html')
 
@@ -134,18 +129,18 @@ def server_error(error) -> Tuple[str, int]:
     return f'An internal error occurred [{__name__}.py]: {error}', 500
 
 
-@app.route(api('all-modules'), methods=[GET])
+@app.route(api('all-modules'), methods=[consts.GET])
 def get_magicmirror_modules() -> dict:
     return __modules__()
 
 
-@app.route(api('check-for-installation-conflicts'), methods=[POST])
+@app.route(api('check-for-installation-conflicts'), methods=[consts.POST])
 def check_for_installation_conflicts() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
     log.info(f'User selected {selected_modules} to be installed')
 
     existing_module_dirs: List[str] = utils.get_existing_module_directories()
-    result: Dict[str, list] = {'conflicts': []}
+    result: Dict[str, list] = {'conflicts': [], 'existing': existing_module_dirs}
 
     for module in selected_modules:
         if module[consts.TITLE] in existing_module_dirs:
@@ -155,7 +150,7 @@ def check_for_installation_conflicts() -> str:
 
     return json.dumps(result)
 
-@app.route(api('install-modules'), methods=[POST])
+@app.route(api('install-modules'), methods=[consts.POST])
 def install_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
     log.info(f'User selected {selected_modules} to be installed')
@@ -164,7 +159,12 @@ def install_magicmirror_modules() -> str:
     result: Dict[str, list] = {'failures': []}
 
     for module in selected_modules:
-        success, error = utils.install_module(module, module[consts.TITLE], modules_dir, assume_yes=True)
+        success, error = utils.install_module(
+            module,
+            module[consts.DIRECTORY] if module[consts.DIRECTORY] else module[consts.TITLE],
+            modules_dir,
+            assume_yes=True
+        )
 
         if not success:
             log.error(f'Failed to install {module[consts.TITLE]} with error of: {error}')
@@ -176,7 +176,7 @@ def install_magicmirror_modules() -> str:
     return json.dumps(result)
 
 
-@app.route(api('uninstall-modules'), methods=[POST])
+@app.route(api('uninstall-modules'), methods=[consts.POST])
 def remove_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
     log.info(f'User selected {selected_modules} to be removed')
@@ -195,7 +195,7 @@ def remove_magicmirror_modules() -> str:
     return json.dumps(result)
 
 
-@app.route(api('upgrade-modules'), methods=[POST])
+@app.route(api('upgrade-modules'), methods=[consts.POST])
 def upgrade_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
     log.info(f'Request to upgrade {selected_modules}')
@@ -213,12 +213,12 @@ def upgrade_magicmirror_modules() -> str:
     return json.dumps(result)
 
 
-@app.route(api('all-installed-modules'), methods=[GET])
+@app.route(api('all-installed-modules'), methods=[consts.GET])
 def get_installed_magicmirror_modules() -> dict:
     return core.get_installed_modules(__modules__())
 
 
-@app.route(api('all-external-module-sources'), methods=[GET])
+@app.route(api('all-external-module-sources'), methods=[consts.GET])
 def get_external__modules__sources() -> dict:
     ext_sources: dict = {consts.EXTERNAL_MODULE_SOURCES: []}
     try:
@@ -230,7 +230,7 @@ def get_external__modules__sources() -> dict:
     return ext_sources
 
 
-@app.route(api('add-external-module-source'), methods=[POST])
+@app.route(api('add-external-module-source'), methods=[consts.POST])
 def add_external_module() -> str:
     external_source: dict = request.get_json(force=True)['external-source']
 
@@ -246,7 +246,7 @@ def add_external_module() -> str:
     return json.dumps({'error': "no_error" if not error else error})
 
 
-@app.route(api('remove-external-module-source'), methods=[DELETE])
+@app.route(api('remove-external-module-source'), methods=[consts.DELETE])
 def remove_external_module_source() -> str:
     selected_modules: list = request.get_json(force=True)['external-sources']
     log.info(f'Request to remove external sources')
@@ -289,7 +289,7 @@ def remove_external_module_source() -> str:
     return json.dumps({'error': "no_error"})
 
 
-@app.route(api('refresh-modules'), methods=[GET])
+@app.route(api('refresh-modules'), methods=[consts.GET])
 def force_refresh_magicmirror_modules() -> str:
     log.info(f'Recieved request to refresh modules')
     process: Group = Group()
@@ -298,7 +298,7 @@ def force_refresh_magicmirror_modules() -> str:
     return json.dumps(True)
 
 
-@app.route(api('get-magicmirror-config'), methods=[GET])
+@app.route(api('get-magicmirror-config'), methods=[consts.GET])
 def get_magicmirror_config():
     path: str = consts.MAGICMIRROR_CONFIG_FILE
     result: str = send_file(path, attachment_filename='config.js') if path else ''
@@ -306,7 +306,7 @@ def get_magicmirror_config():
     return result
 
 
-@app.route(api('update-magicmirror-config'), methods=[POST])
+@app.route(api('update-magicmirror-config'), methods=[consts.POST])
 def update_magicmirror_config() -> str:
     data: dict = request.get_json(force=True)
     log.info('Saving MagicMirror config file')
@@ -319,7 +319,7 @@ def update_magicmirror_config() -> str:
     return json.dumps(True)
 
 
-@app.route(api('start-magicmirror'), methods=[GET])
+@app.route(api('start-magicmirror'), methods=[consts.GET])
 def start_magicmirror() -> str:
     '''
     Restart the MagicMirror by killing all Chromium processes, the
@@ -344,7 +344,7 @@ def start_magicmirror() -> str:
     return json.dumps(True)
 
 
-@app.route(api('restart-magicmirror'), methods=[GET])
+@app.route(api('restart-magicmirror'), methods=[consts.GET])
 def restart_magicmirror() -> str:
     '''
     Restart the MagicMirror by killing all Chromium processes, the
@@ -361,7 +361,7 @@ def restart_magicmirror() -> str:
     return json.dumps(True)
 
 
-@app.route(api('stop-magicmirror'), methods=[GET])
+@app.route(api('stop-magicmirror'), methods=[consts.GET])
 def stop_magicmirror() -> str:
     '''
     Stop the MagicMirror by killing all Chromium processes
@@ -377,7 +377,7 @@ def stop_magicmirror() -> str:
     return json.dumps(True)
 
 
-@app.route(api('restart-raspberrypi'), methods=[GET])
+@app.route(api('restart-raspberrypi'), methods=[consts.GET])
 def restart_raspberrypi() -> str:
     '''
     Reboot the RaspberryPi
@@ -396,7 +396,7 @@ def restart_raspberrypi() -> str:
     return json.dumps(bool(not error_code))
 
 
-@app.route(api('shutdown-raspberrypi'), methods=[GET])
+@app.route(api('shutdown-raspberrypi'), methods=[consts.GET])
 def turn_off_raspberrypi() -> str:
     '''
     Shut down the RaspberryPi
@@ -415,7 +415,7 @@ def turn_off_raspberrypi() -> str:
     return json.dumps(bool(not error_code))
 
 
-@app.route(api('upgrade-magicmirror'), methods=[GET])
+@app.route(api('upgrade-magicmirror'), methods=[consts.GET])
 def upgrade_magicmirror() -> str:
     log.info(f'Request to upgrade MagicMirror')
     process: Group = Group()
@@ -427,7 +427,7 @@ def upgrade_magicmirror() -> str:
 
     return json.dumps(True)
 
-#@app.route(api('download-log-files'), methods=[GET])
+#@app.route(api('download-log-files'), methods=[consts.GET])
 #def download_log_files():
 #    path: str = consts.MAGICMIRROR_CONFIG_FILE
 #    result: str = send_file(path, attachment_filename='config.js') if path else ''

@@ -14,6 +14,7 @@ import { Subscription } from "rxjs";
 import { TerminalStyledPopUpWindowComponent } from "src/app/components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
 import { ModuleDetailsModalComponent } from "src/app/components/module-details-modal/module-details-modal.component";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
+import { RenameModuleDirectoryDialogComponent } from "src/app/components/rename-module-directory-dialog/rename-module-directory-dialog.component";
 
 const select = "select";
 const category = "category";
@@ -164,30 +165,46 @@ export class MagicMirrorModulesTableComponent {
 
   public onInstallModules(): void {
     if (this.selection.selected.length) {
-      this.executing();
       const selected = this.selection.selected;
       this.selection.clear();
+      console.log(selected);
 
       this.api.checkForInstallationConflicts(selected).subscribe((result: string) => {
-        console.log(result);
-        // TODO: provide prompt for user to provide alternate installation
-        // directory. Might be able to reuse the external module text box
-      });
-
-      this.api.installModules(selected).subscribe((result: string) => {
         result = JSON.parse(result);
-        const failures: Array<object> = result["failures"];
+        const dialogRef = this.dialog.open(RenameModuleDirectoryDialogComponent, this.basicDialogSettings(result["conflicts"]));
 
-        const pkg = failures.length == 1 ? "package" : "packages";
+        dialogRef.afterClosed().subscribe((updatedModules) => {
+          selected.forEach((selectedModule, selectedIndex: number) => {
+            updatedModules.forEach((updatedModule: MagicMirrorPackage, _: number) => {
+              if (selectedModule.title === updatedModule.title) {
+                if ((updatedModule.directory.length)) {
+                  selectedModule.directory = updatedModule.directory;
+                } else {
+                  selected.splice(selectedIndex, 1);
+                }
+              }
+            });
+          });
 
-        if (failures.length) {
-          this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failures));
-          this.popUpMessage(`${failures.length} ${pkg} failed to install`);
+          if (!selected.length) return;
+          this.executing();
 
-        } else {
-          this.popUpMessage("Installed successfully!");
-        }
-        this.notifier.triggerTableUpdate();
+          this.api.installModules(selected).subscribe((result: string) => {
+            result = JSON.parse(result);
+            const failures: Array<object> = result["failures"];
+
+            const pkg = failures.length == 1 ? "package" : "packages";
+
+            if (failures.length) {
+              this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failures));
+              this.popUpMessage(`${failures.length} ${pkg} failed to install`);
+
+            } else {
+              this.popUpMessage("Installed successfully!");
+            }
+            this.notifier.triggerTableUpdate();
+          });
+        });
       });
     }
   }

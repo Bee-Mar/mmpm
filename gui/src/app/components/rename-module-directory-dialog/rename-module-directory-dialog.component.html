@@ -1,0 +1,31 @@
+<h2 mat-dialog-title style="text-align: center">Installation Conflicts</h2>
+<mat-dialog-content class="mat-typography">
+  Directories with the following names already exist in your MagicMirror modules directory:
+  <ul *ngFor="let module of data | keyvalue" style="white-space: pre-wrap;">
+    <li>{{ module.value.title }}</li>
+  </ul>
+  <mat-form-field *ngFor="let module of data | keyvalue" style="white-space: pre-wrap;">
+    <mat-label>New Directory Name for {{ module.value.title }}</mat-label>
+    <input matInput [(ngModel)]="module.value.directory">
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="center">
+  <button mat-button [mat-dialog-close]="data">
+    <mat-icon>
+      close
+    </mat-icon>
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    matTooltip="Submit"
+    (click)="onSubmitNewDirectoryNames(data)"
+    >
+    <mat-icon>
+      save
+    </mat-icon>
+  </button>
+</mat-dialog-actions>
+
+

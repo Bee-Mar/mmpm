@@ -381,7 +381,7 @@ def install_modules(installation_candidates: dict, assume_yes: bool = False) -> 
     errors: List[dict] = []
 
     if not os.path.exists(modules_dir):
-        utils.error_msg('MagicMirror directory not found in {const.MAGICMIRROR_ROOT}. Is the MMPM_MAGICMIRROR_ROOT env variable set properly?')
+        utils.error_msg(f'MagicMirror directory not found in {consts.MAGICMIRROR_ROOT}. Is the MMPM_MAGICMIRROR_ROOT env variable set properly?')
         return False, errors
 
     if not installation_candidates:
@@ -537,6 +537,9 @@ def install_magicmirror(gui=False) -> bool:
     else:
         parent = os.path.abspath(input('Absolute path to MagicMirror parent directory: '))
         print(f'Please set the MMPM_MAGICMIRROR_ROOT env variable in your bashrc to {parent}/MagicMirror')
+
+    if not shutil.which('curl'):
+        utils.fatal_msg("'curl' command not found. Please install it, then re-run mmpm install --magicmirror")
 
     os.chdir(parent)
     print(colored_text(color.N_CYAN, f'Installing MagicMirror in {parent}/MagicMirror ...'))

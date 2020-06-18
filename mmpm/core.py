@@ -493,7 +493,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
         if not utils.prompt_user('An upgrade is available for MagicMirror. Would you like to upgrade now?', assume_yes=assume_yes):
             return False
 
-        utils.plain_print('\nUpgrading MagicMirror')
+        utils.plain_print(f"\n{colored_text(color.N_CYAN, 'Upgrading MagicMirror')}\n")
         error_code, _, stdout = utils.run_cmd(['git', 'pull'])
         utils.install_dependencies()
 
@@ -501,7 +501,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
             utils.error_msg('Failed to communicate with git server')
             return False
 
-        print(consts.GREEN_CHECK_MARK, '\n\nUpgrade complete!\n')
+        print('\nUpgrade complete!\n')
 
         if not utils.prompt_user('Would you like to restart MagicMirror now?', assume_yes=assume_yes):
             return False

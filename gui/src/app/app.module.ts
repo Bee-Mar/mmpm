@@ -12,6 +12,7 @@ import { MonacoEditorModule } from "ngx-monaco-editor";
 import { MagicMirrorConfigEditorComponent } from "./components/magic-mirror-config-editor/magic-mirror-config-editor.component";
 import { LiveTerminalFeedDialogComponent } from "src/app/components/live-terminal-feed-dialog/live-terminal-feed-dialog.component";
 import { RestApiService } from "src/app/services/rest-api.service";
+import { DataStoreService } from "src/app/services/data-store.service";
 import { SafePipe } from "./pipes/safe.pipe";
 import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
 import { MagicMirrorControlCenterComponent } from "./components/magic-mirror-control-center/magic-mirror-control-center.component";
@@ -64,7 +65,7 @@ import { RenameModuleDirectoryDialogComponent } from "src/app/components/rename-
       }
     })
   ],
-  providers: [RestApiService, TableUpdateNotifierService, ActiveProcessCountService],
+  providers: [RestApiService, TableUpdateNotifierService, ActiveProcessCountService, DataStoreService],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

@@ -35,18 +35,7 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 
 api = lambda path: f'/api/{path}'
 
-def __modules__() -> dict:
-    '''
-    Returns dictionary of MagicMirror modules
-
-    Parameters:
-        None
-
-    Returns:
-        dict
-    '''
-    modules = core.load_modules()
-    return modules
+_modules_ = core.load_modules()
 
 
 def __stream_cmd_output__(process: Group, cmd: list):
@@ -131,7 +120,7 @@ def server_error(error) -> Tuple[str, int]:
 
 @app.route(api('all-modules'), methods=[consts.GET])
 def get_magicmirror_modules() -> dict:
-    return __modules__()
+    return _modules_
 
 
 @app.route(api('check-for-installation-conflicts'), methods=[consts.POST])
@@ -140,12 +129,21 @@ def check_for_installation_conflicts() -> str:
     log.info(f'User selected {selected_modules} to be installed')
 
     existing_module_dirs: List[str] = utils.get_existing_module_directories()
-    result: Dict[str, list] = {'conflicts': [], 'existing': existing_module_dirs}
+    selected_titles = [module[consts.TITLE] for module in selected_modules]
+
+    result: Dict[str, list] = {
+        'conflicts': [],
+        'duplicate_selections': [],
+        'existing': existing_module_dirs
+    }
 
     for module in selected_modules:
-        if module[consts.TITLE] in existing_module_dirs:
+        if module[consts.TITLE] in selected_titles:
+            log.warning(f'A module named {module[consts.TITLE]} appears more than in user selected packages to install')
+            result['duplicate_selections'].append(module)
+        elif module[consts.TITLE] in existing_module_dirs:
             conflicting_path: str = os.path.join(consts.MAGICMIRROR_MODULES_DIR, module[consts.TITLE])
-            log.error(f'Conflict encountered. Found a package named {module[consts.TITLE]} already at {conflicting_path}')
+            log.warning(f'Found a package named {module[consts.TITLE]} already at {conflicting_path}')
             result['conflicts'].append(module)
 
     return json.dumps(result)
@@ -215,10 +213,10 @@ def upgrade_magicmirror_modules() -> str:
 
 @app.route(api('all-installed-modules'), methods=[consts.GET])
 def get_installed_magicmirror_modules() -> dict:
-    return core.get_installed_modules(__modules__())
+    return core.get_installed_modules(_modules_)
 
 
-@app.route(api('all-external-module-sources'), methods=[consts.GET])
+@app.route(api('all-external-modules'), methods=[consts.GET])
 def get_external__modules__sources() -> dict:
     ext_sources: dict = {consts.EXTERNAL_MODULE_SOURCES: []}
     try:
@@ -289,13 +287,11 @@ def remove_external_module_source() -> str:
     return json.dumps({'error': "no_error"})
 
 
-@app.route(api('refresh-modules'), methods=[consts.GET])
-def force_refresh_magicmirror_modules() -> str:
+@app.route(api('refresh-database'), methods=[consts.GET])
+def force_refresh_magicmirror_modules() -> dict:
     log.info(f'Recieved request to refresh modules')
-    process: Group = Group()
-    Response(__stream_cmd_output__(process, ['-f', '--GUI']), mimetype='text/plain')
-    log.info('Finished refresh')
-    return json.dumps(True)
+    _modules_ = core.load_modules(force_refresh=True)
+    return _modules_
 
 
 @app.route(api('get-magicmirror-config'), methods=[consts.GET])
@@ -396,7 +392,7 @@ def restart_raspberrypi() -> str:
     return json.dumps(bool(not error_code))
 
 
-@app.route(api('shutdown-raspberrypi'), methods=[consts.GET])
+@app.route(api('stop-raspberrypi'), methods=[consts.GET])
 def turn_off_raspberrypi() -> str:
     '''
     Shut down the RaspberryPi

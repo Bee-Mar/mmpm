@@ -15,6 +15,7 @@ import { TerminalStyledPopUpWindowComponent } from "src/app/components/terminal-
 import { ModuleDetailsModalComponent } from "src/app/components/module-details-modal/module-details-modal.component";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { RenameModuleDirectoryDialogComponent } from "src/app/components/rename-module-directory-dialog/rename-module-directory-dialog.component";
+import { DataStoreService } from "src/app/services/data-store.service";
 
 const select = "select";
 const category = "category";
@@ -40,6 +41,7 @@ export class MagicMirrorModulesTableComponent {
 
   constructor(
     private api: RestApiService,
+    private dataStore: DataStoreService,
     public dialog: MatDialog,
     private snackbar: MatSnackBar,
     private notifier: TableUpdateNotifierService,
@@ -163,48 +165,63 @@ export class MagicMirrorModulesTableComponent {
     this.isAllSelected() ? this.selection.clear() : this.dataSource?.data.forEach((row) => { this.selection.select(row); });
   }
 
+  private _installModules(selected: MagicMirrorPackage[]) {
+    this.executing();
+
+    this.api.installModules(selected).subscribe((result: string) => {
+      result = JSON.parse(result);
+
+      const failures: Array<object> = result["failures"];
+      const pkg = failures.length == 1 ? "package" : "packages";
+
+      if (failures.length) {
+        this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failures));
+        this.popUpMessage(`${failures.length} ${pkg} failed to install`);
+
+      } else {
+        this.popUpMessage("Installed successfully!");
+      }
+      this.notifier.triggerTableUpdate();
+    });
+  }
+
   public onInstallModules(): void {
     if (this.selection.selected.length) {
       const selected = this.selection.selected;
       this.selection.clear();
-      console.log(selected);
 
       this.api.checkForInstallationConflicts(selected).subscribe((result: string) => {
         result = JSON.parse(result);
-        const dialogRef = this.dialog.open(RenameModuleDirectoryDialogComponent, this.basicDialogSettings(result["conflicts"]));
 
-        dialogRef.afterClosed().subscribe((updatedModules) => {
-          selected.forEach((selectedModule, selectedIndex: number) => {
-            updatedModules.forEach((updatedModule: MagicMirrorPackage, _: number) => {
-              if (selectedModule.title === updatedModule.title) {
-                if ((updatedModule.directory.length)) {
-                  selectedModule.directory = updatedModule.directory;
-                } else {
-                  selected.splice(selectedIndex, 1);
+        let dialogRef: any = null;
+
+        if (!result["conflicts"].length) {
+          this._installModules(selected);
+        } else {
+
+          dialogRef = this.dialog.open(
+            RenameModuleDirectoryDialogComponent,
+            this.basicDialogSettings(result["conflicts"])
+          );
+
+          dialogRef.afterClosed().subscribe((updatedModules) => {
+            selected.forEach((selectedModule, selectedIndex: number) => {
+              updatedModules.forEach((updatedModule: MagicMirrorPackage, _: number) => {
+                if (selectedModule.title === updatedModule.title) {
+                  if ((updatedModule.directory.length)) {
+                    selectedModule.directory = updatedModule.directory;
+                  } else {
+                    selected.splice(selectedIndex, 1);
+                  }
                 }
-              }
+              });
             });
-          });
 
-          if (!selected.length) return;
-          this.executing();
-
-          this.api.installModules(selected).subscribe((result: string) => {
-            result = JSON.parse(result);
-            const failures: Array<object> = result["failures"];
-
-            const pkg = failures.length == 1 ? "package" : "packages";
-
-            if (failures.length) {
-              this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failures));
-              this.popUpMessage(`${failures.length} ${pkg} failed to install`);
-
-            } else {
-              this.popUpMessage("Installed successfully!");
+            if (selected.length) {
+              this._installModules(selected);
             }
-            this.notifier.triggerTableUpdate();
           });
-        });
+        }
       });
     }
   }

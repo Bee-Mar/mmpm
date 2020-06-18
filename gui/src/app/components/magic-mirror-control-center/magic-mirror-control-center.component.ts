@@ -4,6 +4,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 import { LiveTerminalFeedDialogComponent } from "src/app/components/live-terminal-feed-dialog/live-terminal-feed-dialog.component";
+import { URL } from "src/app/utils/urls";
 
 interface Tile {
   icon: string;
@@ -37,7 +38,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       tooltip: "Start MagicMirror",
       cols: 1,
       rows: 1,
-      url: "/start-magicmirror",
+      url: URL.START_MAGICMIRROR,
       message: "MagicMirror will be started."
     },
     {
@@ -45,7 +46,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       tooltip: "Stop MagicMirror",
       cols: 1,
       rows: 1,
-      url: "/stop-magicmirror",
+      url: URL.STOP_MAGICMIRROR,
       message: "MagicMirror will be stopped."
     },
     {
@@ -53,7 +54,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       tooltip: "Restart MagicMirror",
       cols: 1,
       rows: 1,
-      url: "/restart-magicmirror",
+      url: URL.RESTART_MAGICMIRROR,
       message: "MagicMirror will be restarted."
     },
     {
@@ -61,7 +62,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       tooltip: "Upgrade MagicMirror",
       cols: 1,
       rows: 1,
-      url: "/upgrade-magicmirror",
+      url: URL.UPGRADE_MAGICMIRROR,
       message: "MagicMirror will be upgraded and restarted, if running."
     },
     {
@@ -69,7 +70,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       tooltip: "Restart RaspberryPi",
       cols: 1,
       rows: 1,
-      url: "/restart-raspberrypi",
+      url: URL.RESTART_RASPBERRYPI,
       message: "Your RaspberryPi will be rebooted."
     },
     {
@@ -77,7 +78,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       tooltip: "Shutdown RaspberryPi",
       cols: 1,
       rows: 1,
-      url: "/shutdown-raspberrypi",
+      url: URL.STOP_RASPBERRYPI,
       message: "Your RaspberryPi will be powered off."
     },
   ];
@@ -123,15 +124,15 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     dialogRef.afterClosed().subscribe((response) => {
       if (!response) return;
 
-      if (url === "/upgrade-magicmirror") {
+      if (url === URL.UPGRADE_MAGICMIRROR) {
         this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
       }
 
       this.api.retrieve(url).subscribe((success) => {
-        if (url === "/start-magicmirror") {
+        if (url === URL.START_MAGICMIRROR) {
           success ? this.working() : this.magicMirrorRunningAlready();
         } else {
-          url === "/restart-magicmirror" ? this.working() : this.executed();
+          url === URL.RESTART_MAGICMIRROR ? this.working() : this.executed();
         }
       });
     });

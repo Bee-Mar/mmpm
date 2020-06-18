@@ -1265,8 +1265,8 @@ def start_magicmirror() -> bool:
         log.info('started MagicMirror using PM2')
         return True
 
-    error_code, _, _ = utils.run_cmd(['npm', 'start'], background=True)
-    log.info(f"Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case. Return code of '{error_code}'")
+    os.system('npm start &')
+    log.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
     return False if error_code else True
 
 

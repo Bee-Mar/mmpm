@@ -136,8 +136,6 @@ def main(argv):
             utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
         elif args.details:
             core.snapshot_details(modules)
-        elif args.refresh:
-            pass
         else:
             utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
 

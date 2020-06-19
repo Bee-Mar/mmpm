@@ -8,6 +8,9 @@
   <a href="https://travis-ci.org/github/Bee-Mar/mmpm">
     <img src="https://travis-ci.org/Bee-Mar/mmpm.svg?branch=master">
   </a>
+  <a href="https://hub.docker.com/r/karsten13/mmpm">
+    <img src="https://img.shields.io/docker/pulls/karsten13/mmpm.svg">
+  </a>
 </p>
 
 # MMPM - The MagicMirror Package Manager
@@ -16,9 +19,9 @@
 | --------------- | --------------------------------- |
 | Brandon Marlowe | bpmarlowe-software@protonmail.com |
 
-The MagicMirror Package Manager (`mmpm`) is both a command line and web interface designed to simplify the installation, removal, and maintenance of MagicMirror modules. 
+The MagicMirror Package Manager (`mmpm`) is both a command line and web interface designed to simplify the installation, removal, and maintenance of MagicMirror modules.
 
-<i>Consider this project to be in an Alpha state, so don't get too picky just yet, as you most likely will discover some bugs I was unable to find.</i> 
+<i>Consider this project to be in an Alpha state, so don't get too picky just yet, as you most likely will discover some bugs I was unable to find.</i>
 
 The MagicMirror Package Manager is featured as an alternative installation method on the [MagicMirror Documentation](https://docs.magicmirror.builders/getting-started/installation.html#alternative-installation-methods).
 

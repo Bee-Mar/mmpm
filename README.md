@@ -8,6 +8,9 @@
   <a href="https://travis-ci.org/github/Bee-Mar/mmpm">
     <img src="https://travis-ci.org/Bee-Mar/mmpm.svg?branch=master">
   </a>
+    <a href="https://hub.docker.com/r/karsten13/mmpm">
+    <img src="https://img.shields.io/docker/pulls/karsten13/mmpm.svg">
+  </a>
 </p>
 
 # MMPM - The MagicMirror Package Manager

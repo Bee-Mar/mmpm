@@ -6,3 +6,4 @@ export interface MagicMirrorPackage {
   description: string;
   directory: string;
 }
+

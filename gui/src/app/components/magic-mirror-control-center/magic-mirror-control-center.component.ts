@@ -128,13 +128,13 @@ export class MagicMirrorControlCenterComponent implements OnInit {
         this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
       }
 
-      this.api.retrieve(url).subscribe((success) => {
+      this.api.retrieve(url).then((success) => {
         if (url === URL.START_MAGICMIRROR) {
           success ? this.working() : this.magicMirrorRunningAlready();
         } else {
           url === URL.RESTART_MAGICMIRROR ? this.working() : this.executed();
         }
-      });
+      }).catch((error) => { console.log(error); });
     });
   }
 }

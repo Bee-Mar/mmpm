@@ -1,5 +1,5 @@
 import { BrowserModule } from "@angular/platform-browser";
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA, APP_INITIALIZER } from "@angular/core";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
@@ -21,6 +21,10 @@ import { TerminalStyledPopUpWindowComponent } from "./components/terminal-styled
 import { ModuleDetailsModalComponent } from "./components/module-details-modal/module-details-modal.component";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { RenameModuleDirectoryDialogComponent } from "src/app/components/rename-module-directory-dialog/rename-module-directory-dialog.component";
+import { CustomSnackbarComponent } from "./components/custom-snackbar/custom-snackbar.component";
+import { MMPMMarketplaceComponent } from "./components/mmpmmarketplace/mmpmmarketplace.component";
+import { MMPMLocalPackagesComponent } from "./components/mmpmlocal-packages/mmpmlocal-packages.component";
+import { MMPMExternalSourcesComponent } from "./components/mmpmexternal-sources/mmpmexternal-sources.component";
 
 @NgModule({
   declarations: [
@@ -34,7 +38,11 @@ import { RenameModuleDirectoryDialogComponent } from "src/app/components/rename-
     ConfirmationDialogComponent,
     TerminalStyledPopUpWindowComponent,
     ModuleDetailsModalComponent,
-    RenameModuleDirectoryDialogComponent
+    RenameModuleDirectoryDialogComponent,
+    CustomSnackbarComponent,
+    MMPMMarketplaceComponent,
+    MMPMLocalPackagesComponent,
+    MMPMExternalSourcesComponent
   ],
   imports: [
     BrowserModule,
@@ -65,7 +73,12 @@ import { RenameModuleDirectoryDialogComponent } from "src/app/components/rename-
       }
     })
   ],
-  providers: [RestApiService, TableUpdateNotifierService, ActiveProcessCountService, DataStoreService],
+  providers: [
+    RestApiService,
+    TableUpdateNotifierService,
+    ActiveProcessCountService,
+    DataStoreService
+  ],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

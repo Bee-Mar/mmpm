@@ -61,8 +61,8 @@ export class MMPMMarketplaceComponent implements OnInit {
   snackbarSettings: object = { duration: 5000 };
 
   public ngOnInit(): void {
-    this.retrieveModules();
-    this.subscription = this.notifier.getNotification().subscribe((_) => { this.retrieveModules(); });
+    this.setupTableData();
+    this.subscription = this.notifier.getNotification().subscribe((_) => { this.setupTableData(); });
     this.paginator.pageSize = 10;
   }
 
@@ -79,9 +79,9 @@ export class MMPMMarketplaceComponent implements OnInit {
     };
   }
 
-  private retrieveModules(): void {
-    this.api.retrieve(URL.ALL_AVAILABLE_MODULES).then((data) => {
-      this.packages = fillMagicMirrorPackageArray(data);
+  private setupTableData(): void {
+    this.dataStore.getAllAvailablePackages().then((pkgs) => {
+      this.packages = pkgs;
       this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
       this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.packages);
       this.dataSource.paginator = this.paginator;

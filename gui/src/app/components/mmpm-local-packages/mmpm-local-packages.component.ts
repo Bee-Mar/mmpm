@@ -1,4 +1,4 @@
-import { Component, ViewChild, ViewEncapsulation, OnInit } from "@angular/core";
+import { Component, ViewChild, OnInit } from "@angular/core";
 import { MatTableDataSource } from "@angular/material/table";
 import { SelectionModel } from "@angular/cdk/collections";
 import { RestApiService } from "src/app/services/rest-api.service";
@@ -11,11 +11,9 @@ import { MatDialog } from "@angular/material/dialog";
 import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
 import { Subscription } from "rxjs";
 import { TerminalStyledPopUpWindowComponent } from "src/app/components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
-import { RenameModuleDirectoryDialogComponent } from "src/app/components/rename-module-directory-dialog/rename-module-directory-dialog.component";
 import { DataStoreService } from "src/app/services/data-store.service";
-import { MagicMirrorTableUtility, fillMagicMirrorPackageArray } from "src/app/utils/magic-mirror-table-utlity";
+import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity";
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
-import { URL } from "src/app/utils/urls";
 
 const select = "select";
 const category = "category";
@@ -23,12 +21,12 @@ const title = "title";
 const description = "description";
 
 @Component({
-  selector: "app-mmpmmarketplace",
-  templateUrl: "./mmpmmarketplace.component.html",
-  styleUrls: ["./mmpmmarketplace.component.scss"],
-  encapsulation: ViewEncapsulation.None
+  selector: "app-mmpm-local-packages",
+  templateUrl: "./mmpm-local-packages.component.html",
+  styleUrls: ["./mmpm-local-packages.component.scss"]
 })
-export class MMPMMarketplaceComponent implements OnInit {
+export class MMPMLocalPackagesComponent implements OnInit {
+
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
 
@@ -80,7 +78,7 @@ export class MMPMMarketplaceComponent implements OnInit {
   }
 
   private setupTableData(): void {
-    this.dataStore.getAllAvailablePackages().then((pkgs) => {
+    this.dataStore.getAllInstalledPackages().then((pkgs) => {
       this.packages = pkgs;
       this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
       this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.packages);
@@ -90,65 +88,6 @@ export class MMPMMarketplaceComponent implements OnInit {
     }).catch((error) => {
       console.log(error);
     });
-  }
-
-  private _installModules(selected: MagicMirrorPackage[]) {
-    this.api.installModules(selected).then((result: string) => {
-      result = JSON.parse(result);
-
-      const failures: Array<object> = result["failures"];
-      const pkg = failures.length == 1 ? "package" : "packages";
-
-      if (failures.length) {
-        this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failures));
-        this.snackbar.error(`${failures.length} ${pkg} failed to install`);
-
-      } else {
-        this.snackbar.success("Installed successfully!");
-      }
-      this.notifier.triggerTableUpdate();
-    }).catch((error) => { console.log(error); });
-  }
-
-  public onInstallModules(): void {
-    if (this.selection.selected.length) {
-      const selected = this.selection.selected;
-      this.selection.clear();
-
-      this.api.checkForInstallationConflicts(selected).then((result: string) => {
-        result = JSON.parse(result);
-
-        let dialogRef: any = null;
-
-        if (!result["conflicts"].length) {
-          this._installModules(selected);
-        } else {
-
-          dialogRef = this.dialog.open(
-            RenameModuleDirectoryDialogComponent,
-            this.basicDialogSettings(result["conflicts"])
-          );
-
-          dialogRef.afterClosed().subscribe((updatedModules: MagicMirrorPackage[]) => {
-            selected.forEach((selectedModule, selectedIndex: number) => {
-              updatedModules.forEach((updatedModule: MagicMirrorPackage, _: number) => {
-                if (selectedModule.title === updatedModule.title) {
-                  if ((updatedModule.directory.length)) {
-                    selectedModule.directory = updatedModule.directory;
-                  } else {
-                    selected.splice(selectedIndex, 1);
-                  }
-                }
-              });
-            });
-
-            if (selected.length) {
-              this._installModules(selected);
-            }
-          });
-        }
-      }).catch((error) => { console.log(error); });
-    }
   }
 
   public onRefreshModules(): void {
@@ -163,4 +102,49 @@ export class MMPMMarketplaceComponent implements OnInit {
   ngOnDestroy() {
     this.subscription.unsubscribe();
   }
+
+  public onUninstallModules(): void {
+    if (this.selection.selected.length) {
+      this.snackbar.notify("Executing ...");
+      const selected = this.selection.selected;
+      this.selection.clear();
+
+      this.api.uninstallModules(selected).then((result: string) => {
+        this.selection.clear();
+        result = JSON.parse(result);
+        const failures: Array<object> = result["failures"];
+
+        if (failures.length) {
+          const pkg = failures.length == 1 ? "package" : "packages";
+          this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failures));
+          this.snackbar.error(`Failed to remove ${failures.length} ${pkg}`);
+
+        } else {
+          this.snackbar.success("Removed successfully!");
+        }
+
+        this.notifier.triggerTableUpdate();
+      }).catch((error) => { console.log(error); });
+    }
+  }
+
+  public onUpgradeModules(): void {
+    if (this.selection.selected) {
+      this.snackbar.notify("Executing ...");
+
+      this.api.upgradeModules(this.selection.selected).then((fails) => {
+        fails = JSON.parse(fails);
+
+        if (fails.length) {
+          const pkg = fails.length == 1 ? "package" : "packages";
+          this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(fails));
+          this.snackbar.error(`Failed to upgrade ${fails.length} ${pkg}`);
+        } else {
+          this.snackbar.success("Upgraded selected modules successfully!");
+        }
+        this.notifier.triggerTableUpdate();
+      }).catch((error) => { console.log(error); });
+    }
+  }
+
 }

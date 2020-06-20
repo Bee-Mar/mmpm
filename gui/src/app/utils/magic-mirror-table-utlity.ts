@@ -74,26 +74,3 @@ export class MagicMirrorTableUtility {
   }
 }
 
-
-export function fillMagicMirrorPackageArray(data: object) {
-  let array: MagicMirrorPackage[] = new Array<MagicMirrorPackage>();
-
-  Object.keys(data).forEach((_category) => {
-    if (data) {
-      for (const pkg of data[_category]) {
-        array.push({
-          category: _category,
-          title: pkg["title"],
-          description: pkg["description"],
-          author: pkg["author"],
-          repository: pkg["repository"],
-          directory: pkg["directory"] ?? ""
-        });
-      }
-    }
-  });
-
-  return array;
-}
-
-

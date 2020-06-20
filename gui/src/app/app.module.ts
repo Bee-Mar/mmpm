@@ -22,9 +22,9 @@ import { ModuleDetailsModalComponent } from "./components/module-details-modal/m
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { RenameModuleDirectoryDialogComponent } from "src/app/components/rename-module-directory-dialog/rename-module-directory-dialog.component";
 import { CustomSnackbarComponent } from "./components/custom-snackbar/custom-snackbar.component";
-import { MMPMMarketplaceComponent } from "./components/mmpmmarketplace/mmpmmarketplace.component";
-import { MMPMLocalPackagesComponent } from "./components/mmpmlocal-packages/mmpmlocal-packages.component";
-import { MMPMExternalSourcesComponent } from "./components/mmpmexternal-sources/mmpmexternal-sources.component";
+import { MMPMMarketplaceComponent } from "./components/mmpm-marketplace/mmpm-marketplace.component";
+import { MMPMLocalPackagesComponent } from "./components/mmpm-local-packages/mmpm-local-packages.component";
+import { MMPMExternalSourcesComponent } from "./components/mmpm-external-sources/mmpm-external-sources.component";
 
 @NgModule({
   declarations: [

@@ -1,5 +1,5 @@
 export const URL = {
-  ALL_MODULES: "/all-modules",
+  ALL_AVAILABLE_MODULES: "/all-available-modules",
   CHECK_FOR_INSTALLATION_CONFLICT: "/check-for-installation-conflicts",
   INSTALL_MODULES: "/install-modules",
   UNINSTALL_MODULES: "/uninstall-modules",

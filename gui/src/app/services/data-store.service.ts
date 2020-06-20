@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
 import { RestApiService } from "src/app/services/rest-api.service";
+import { URL } from "src/app/utils/urls";
 
 @Injectable({
   providedIn: "root"
@@ -39,7 +40,7 @@ export class DataStoreService {
   }
 
   public getAllAvailablePackages(): MagicMirrorPackage[] {
-    if (!this.availablePackages) this.availablePackages = this.retrievePackages("all-modules");
+    if (!this.availablePackages) this.availablePackages = this.retrievePackages(URL.ALL_AVAILABLE_MODULES);
     return this.availablePackages;
   }
 
@@ -54,7 +55,7 @@ export class DataStoreService {
   }
 
   public refreshAllAvailablePackages(): void {
-    this.availablePackages = this.retrievePackages("all-modules");
+    this.availablePackages = this.retrievePackages(URL.ALL_AVAILABLE_MODULES);
   }
 
   public refreshExternalPackages(): void {

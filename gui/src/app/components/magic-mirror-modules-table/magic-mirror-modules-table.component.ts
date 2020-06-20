@@ -12,18 +12,18 @@ import { MatDialog } from "@angular/material/dialog";
 import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
 import { Subscription } from "rxjs";
 import { TerminalStyledPopUpWindowComponent } from "src/app/components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
-import { ModuleDetailsModalComponent } from "src/app/components/module-details-modal/module-details-modal.component";
-import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { RenameModuleDirectoryDialogComponent } from "src/app/components/rename-module-directory-dialog/rename-module-directory-dialog.component";
 import { DataStoreService } from "src/app/services/data-store.service";
+import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity";
+import { SnackbarUtility } from "src/app/utils/snackbar-utility";
 
 const select = "select";
 const category = "category";
 const title = "title";
-const repository = "repository";
-const author = "author";
 const description = "description";
-const directory = "directory";
+//const repository = "repository";
+//const author = "author";
+//const directory = "directory";
 
 @Component({
   selector: "app-magic-mirror-modules-table",
@@ -36,8 +36,9 @@ export class MagicMirrorModulesTableComponent {
   @ViewChild(MatSort) sort: MatSort;
   @Input() url: string;
 
+  public tableUtility: MagicMirrorTableUtility;
   private subscription: Subscription;
-  private activeProcessSubsription: Subscription;
+  private snackbarUtility: SnackbarUtility;
 
   constructor(
     private api: RestApiService,
@@ -45,7 +46,6 @@ export class MagicMirrorModulesTableComponent {
     public dialog: MatDialog,
     private snackbar: MatSnackBar,
     private notifier: TableUpdateNotifierService,
-    private activeProcessCount: ActiveProcessCountService
   ) {}
 
   ALL_PACKAGES: Array<MagicMirrorPackage>;
@@ -55,22 +55,18 @@ export class MagicMirrorModulesTableComponent {
     select,
     category,
     title,
-    //repository,
-    //author,
     description
   ];
 
   dataSource: MatTableDataSource<MagicMirrorPackage>;
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
   tooltipPosition: TooltipPosition[] = ["below"];
-  currentProcessCount: number = 0;
 
   snackbarSettings: object = { duration: 5000 };
 
   public ngOnInit(): void {
     this.retrieveModules();
     this.subscription = this.notifier.getNotification().subscribe((_) => { this.retrieveModules(); });
-    this.activeProcessSubsription = this.activeProcessCount.getCurrentProcessCount().subscribe((count) => { this.currentProcessCount = count; });
   }
 
   private basicDialogSettings(data?: any): object {
@@ -110,6 +106,8 @@ export class MagicMirrorModulesTableComponent {
       this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.ALL_PACKAGES);
       this.dataSource.paginator = this.paginator;
       this.dataSource.sort = this.sort;
+
+      this.tableUtility = new MagicMirrorTableUtility(this.selection, this.dataSource, this.sort, this.dialog);
     });
   }
 
@@ -121,53 +119,7 @@ export class MagicMirrorModulesTableComponent {
     this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
   };
 
-  private popUpMessage = (message: string) => {
-    this.snackbar.open(message, "Close", this.snackbarSettings);
-  };
-
-  public compare(a: number | string, b: number | string, ascending: boolean): number {
-    return (a < b ? -1 : 1) * (ascending ? 1 : -1);
-  }
-
-  public onSort(sort: MatSort) {
-    const data = this.ALL_PACKAGES.slice();
-
-    if (!sort.active || sort.direction === "") {
-      this.ALL_PACKAGES = data;
-      return;
-    }
-
-    this.ALL_PACKAGES = data.sort((a, b) => {
-      const ascending = sort.direction === "asc";
-      switch (sort.active) {
-        case category:
-          return this.compare(a.category, b.category, ascending);
-        case title:
-          return this.compare(a.title, b.title, ascending);
-        case author:
-          return this.compare(a.author, b.author, ascending);
-        default:
-          return 0;
-      }
-    });
-  }
-
-  public searchFilter(event: Event): void {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-  }
-
-  public isAllSelected(): boolean {
-    return this.dataSource?.data.length === this.selection.selected.length;
-  }
-
-  public toggleSelectAll(): void {
-    this.isAllSelected() ? this.selection.clear() : this.dataSource?.data.forEach((row) => { this.selection.select(row); });
-  }
-
   private _installModules(selected: MagicMirrorPackage[]) {
-    this.executing();
-
     this.api.installModules(selected).subscribe((result: string) => {
       result = JSON.parse(result);
 
@@ -176,10 +128,10 @@ export class MagicMirrorModulesTableComponent {
 
       if (failures.length) {
         this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failures));
-        this.popUpMessage(`${failures.length} ${pkg} failed to install`);
+        this.snackbarUtility.notification(`${failures.length} ${pkg} failed to install`);
 
       } else {
-        this.popUpMessage("Installed successfully!");
+        this.snackbarUtility.notification("Installed successfully!");
       }
       this.notifier.triggerTableUpdate();
     });
@@ -300,10 +252,10 @@ export class MagicMirrorModulesTableComponent {
         if (failures.length) {
           const pkg = failures.length == 1 ? "package" : "packages";
           this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failures));
-          this.popUpMessage(`Failed to remove ${failures.length} ${pkg}`);
+          this.snackbarUtility.notification(`Failed to remove ${failures.length} ${pkg}`);
 
         } else {
-          this.popUpMessage("Removed successfully!");
+          this.snackbarUtility.notification("Removed successfully!");
         }
 
         this.notifier.triggerTableUpdate();
@@ -321,31 +273,13 @@ export class MagicMirrorModulesTableComponent {
         if (fails.length) {
           const pkg = fails.length == 1 ? "package" : "packages";
           this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(fails));
-          this.popUpMessage(`Failed to upgrade ${fails.length} ${pkg}`);
+          this.snackbarUtility.notification(`Failed to upgrade ${fails.length} ${pkg}`);
         } else {
-          this.popUpMessage("Upgraded selected modules successfully!");
+          this.snackbarUtility.notification("Upgraded selected modules successfully!");
         }
         this.notifier.triggerTableUpdate();
       });
     }
-  }
-
-  public checkboxLabel(row?: MagicMirrorPackage): string {
-    if (!row) return `${this.isAllSelected() ? "select" : "deselect"} all`;
-    return `${this.selection.isSelected(row) ? "deselect" : "select"} row ${row.category + 1}`;
-  }
-
-  public showModuleDetails(pkg: MagicMirrorPackage) {
-    // since clicking on a cell selects the value, this actually sets the value
-    // to state it was in at the time of selection
-    this.selection.toggle(pkg);
-
-    this.dialog.open(ModuleDetailsModalComponent, {
-      width: "45vw",
-      height: "50vh",
-      disableClose: true,
-      data: pkg
-    });
   }
 
   ngOnDestroy() {

@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable, throwError } from "rxjs";
 import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
 import { retry, catchError } from "rxjs/operators";
+import { URL } from "src/app/utils/urls";
 
 const httpOptions = (httpHeaders: object = {}) => {
   return new HttpHeaders({
@@ -15,13 +16,15 @@ const httpOptions = (httpHeaders: object = {}) => {
   providedIn: "root"
 })
 export class RestApiService {
-  private BASE_API_URL = `http://${window.location.hostname}:7890/api`;
-
   constructor(private http: HttpClient) {}
+
+  private route(path: string): string {
+    return `http://${window.location.hostname}:7890/api${path}`;
+  }
 
   public retrieve(path: string): Observable<any> {
     return this.http.get<any>(
-      this.BASE_API_URL + `${path}`,
+      this.route(path),
       {
         headers: httpOptions()
       }).pipe(retry(1), catchError(this.handleError));
@@ -29,7 +32,7 @@ export class RestApiService {
 
   public refreshModules(): Observable<any> {
     return this.http.get<any>(
-      this.BASE_API_URL + "/refresh-modules",
+      this.route(URL.REFRESH_DATABASE),
       {
         headers: httpOptions()
       }).pipe(retry(1), catchError(this.handleError));
@@ -37,7 +40,7 @@ export class RestApiService {
 
   public getMagicMirrorConfig() {
     return this.http.get(
-      this.BASE_API_URL + "/get-magicmirror-config",
+      this.route(URL.GET_MAGICMIRROR_CONFIG),
       {
         headers: httpOptions(),
         responseType: "text"
@@ -46,7 +49,7 @@ export class RestApiService {
 
   private genericPost(url: string, selectedModules: MagicMirrorPackage[]): Observable<any> {
     return this.http.post(
-        this.BASE_API_URL + url,
+        this.route(url),
         {
           "selected-modules": selectedModules
         },
@@ -60,24 +63,24 @@ export class RestApiService {
   }
 
   public installModules(selectedModules: MagicMirrorPackage[]): Observable<any> {
-    return this.genericPost("/install-modules", selectedModules);
+    return this.genericPost(URL.INSTALL_MODULES, selectedModules);
   }
 
   public upgradeModules(selectedModules: MagicMirrorPackage[]): Observable<any> {
-    return this.genericPost("/upgrade-modules", selectedModules);
+    return this.genericPost(URL.UPGRADE_MODULES, selectedModules);
   }
 
   public uninstallModules(selectedModules: MagicMirrorPackage[]): Observable<any> {
-    return this.genericPost("/uninstall-modules", selectedModules);
+    return this.genericPost(URL.UNINSTALL_MODULES, selectedModules);
   }
 
   public checkForInstallationConflicts(selectedModules: MagicMirrorPackage[]): Observable<any> {
-    return this.genericPost("/check-for-installation-conflicts", selectedModules);
+    return this.genericPost(URL.CHECK_FOR_INSTALLATION_CONFLICT, selectedModules);
   }
 
   public updateMagicMirrorConfig(code: string): Observable<Response> {
     return this.http.post<any>(
-        this.BASE_API_URL + "/update-magicmirror-config",
+        this.route(URL.UPDATE_MAGICMIRROR_CONFIG),
         {
           code
         },
@@ -88,9 +91,8 @@ export class RestApiService {
         }).pipe(retry(1), catchError(this.handleError));
   }
 
-  public addExternalModuleSource(externalSource: MagicMirrorPackage): Observable<any> {
-    return this.http.post<any>(
-        this.BASE_API_URL + "/add-external-module-source",
+  public addExternalModuleSource(externalSource: MagicMirrorPackage): Observable<any> { return this.http.post<any>(
+        this.route("/add-external-module-source"),
         {
           "external-source": externalSource
         },
@@ -104,7 +106,7 @@ export class RestApiService {
   public removeExternalModuleSource(externalSources: MagicMirrorPackage[]): Observable<any> {
     return this.http.request(
       "DELETE",
-      this.BASE_API_URL + "/remove-external-module-source",
+      this.route(URL.REMOVE_EXTERNAL_MODULE),
       {
         body: {
         "external-sources": externalSources

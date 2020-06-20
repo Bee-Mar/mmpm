@@ -1,24 +1,25 @@
 <mat-form-field>
-  <input matInput (keyup)="searchFilter($event)" placeholder="Search ..." />
+  <input matInput (keyup)="tableUtility.searchFilter($event)" placeholder="Search ..." />
 </mat-form-field>
 
 <div class="table-container">
   <table
     mat-table
     matSort
-    (matSortChange)="onSort($event)"
+    (matSortChange)="tableUtility?.onSort($event, ALL_PACKAGES)"
     [dataSource]="dataSource"
     class="mat-elevation-z8"
     style="margin: 0 auto; width: 90vw; position: relative;"
   >
     <ng-container matColumnDef="select">
+
       <th mat-header-cell *matHeaderCellDef>
         <mat-checkbox
           color="primary"
-          (change)="$event ? toggleSelectAll() : null"
-          [checked]="selection.hasValue() && isAllSelected()"
-          [indeterminate]="selection.hasValue() && !isAllSelected()"
-          [aria-label]="checkboxLabel()"
+          (change)="$event ? tableUtility?.toggleSelectAll() : null"
+          [checked]="selection.hasValue() && tableUtility?.isAllSelected()"
+          [indeterminate]="selection.hasValue() && !tableUtility?.isAllSelected()"
+          [aria-label]="tableUtility?.checkboxLabel()"
         >
         </mat-checkbox>
       </th>
@@ -29,7 +30,7 @@
           (click)="$event.stopPropagation()"
           (change)="$event ? selection.toggle(row) : null"
           [checked]="selection.isSelected(row)"
-          [aria-label]="checkboxLabel(row)"
+          [aria-label]="tableUtility?.checkboxLabel(row)"
         >
         </mat-checkbox>
       </td>
@@ -68,7 +69,7 @@
         matTooltip="Click for more details"
         matTooltipClass="matTooltipClass"
       >
-      <button mat-button style="font-weight: normal" (click)="showModuleDetails(package)">
+      <button mat-button style="font-weight: normal" (click)="tableUtility?.showModuleDetails(package)">
         {{ (package.description.length > maxDescriptionLength) ?  package.description.slice(0, maxDescriptionLength - 3) + '...' : package.description }}
       </button>
       </td>
@@ -89,21 +90,21 @@
   ></mat-paginator>
 
   <button
-    *ngIf="url === 'all-modules' || url === 'all-installed-modules'"
+    *ngIf="url === 'all-available-modules' || url === 'all-installed-modules'"
     mat-raised-button
     color="primary"
     [disabled]="!selection.selected.length || !ALL_PACKAGES.length"
-    matTooltip="{{ url === 'all-modules' ? 'Install module(s)' : 'Upgrade module(s)' }}"
+    matTooltip="{{ url === 'all-available-modules' ? 'Install module(s)' : 'Upgrade module(s)' }}"
     [matTooltipPosition]="tooltipPosition"
-    (click)="url === 'all-modules' ? onInstallModules() : onUpgradeModules()"
+    (click)="url === 'all-available-modules' ? onInstallModules() : onUpgradeModules()"
   >
     <mat-icon>
-      {{ url == 'all-modules' ? 'get_app' : 'open_in_browser' }}
+      {{ url == 'all-available-modules' ? 'get_app' : 'open_in_browser' }}
     </mat-icon>
   </button>
 
   <button
-    *ngIf="url === 'all-modules'"
+    *ngIf="url === 'all-available-modules'"
     color="accent"
     mat-raised-button
     matTooltip="Refresh Marketplace"

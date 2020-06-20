@@ -92,6 +92,7 @@ def on_disconnect() -> None:
     log.info(message)
     socketio.emit(message, {'data': message})
 
+
 @app.after_request
 def after_request(response: Response) -> Response:
     log.info('Headers being added after the request')
@@ -118,7 +119,7 @@ def server_error(error) -> Tuple[str, int]:
     return f'An internal error occurred [{__name__}.py]: {error}', 500
 
 
-@app.route(api('all-modules'), methods=[consts.GET])
+@app.route(api('all-available-modules'), methods=[consts.GET])
 def get_magicmirror_modules() -> dict:
     return _modules_
 

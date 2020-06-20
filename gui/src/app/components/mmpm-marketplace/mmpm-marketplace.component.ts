@@ -24,7 +24,10 @@ const description = "description";
 @Component({
   selector: "app-mmpm-marketplace",
   templateUrl: "./mmpm-marketplace.component.html",
-  styleUrls: ["./mmpm-marketplace.component.scss"],
+  styleUrls: [
+    "./mmpm-marketplace.component.scss",
+    "../../shared-styles/shared-table-styles.scss"
+  ],
   encapsulation: ViewEncapsulation.None
 })
 export class MMPMMarketplaceComponent implements OnInit {

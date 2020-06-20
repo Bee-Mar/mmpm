@@ -23,7 +23,10 @@ const description = "description";
 @Component({
   selector: "app-mmpm-local-packages",
   templateUrl: "./mmpm-local-packages.component.html",
-  styleUrls: ["./mmpm-local-packages.component.scss"]
+  styleUrls: [
+    "./mmpm-local-packages.component.scss",
+    "../../shared-styles/shared-table-styles.scss"
+  ]
 })
 export class MMPMLocalPackagesComponent implements OnInit {
 

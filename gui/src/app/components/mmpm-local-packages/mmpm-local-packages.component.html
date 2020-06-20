@@ -93,7 +93,7 @@
     mat-raised-button
     color="primary"
     [disabled]="!selection.selected.length || !packages.length"
-    matTooltip="'Upgrade module(s)'"
+    matTooltip="{{ selection?.selected?.length === 1 ? 'Upgrade module' : 'Upgrade modules' }}"
     [matTooltipPosition]="tooltipPosition"
     (click)="onUpgradeModules()"
   >
@@ -106,7 +106,7 @@
     mat-raised-button
     color="accent"
     style="margin-left: 3em;"
-    matTooltip="'Uninstall module(s)'"
+    matTooltip="{{ selection?.selected?.length === 1 ? 'Uninstall module' : 'Uninstall modules' }}"
     [matTooltipPosition]="tooltipPosition"
     (click)="onUninstallModules()"
     [disabled]="!selection.selected.length || !packages.length"

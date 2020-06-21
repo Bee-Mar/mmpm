@@ -25,6 +25,7 @@ import { MMPMMarketplaceComponent } from "./components/mmpm-marketplace/mmpm-mar
 import { MMPMLocalPackagesComponent } from "./components/mmpm-local-packages/mmpm-local-packages.component";
 import { MMPMExternalSourcesComponent } from "./components/mmpm-external-sources/mmpm-external-sources.component";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
+import { ActiveProcessCountTickerComponent } from './components/active-process-count-ticker/active-process-count-ticker.component';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,8 @@ import { MMPMUtility } from "src/app/utils/mmpm-utility";
     CustomSnackbarComponent,
     MMPMMarketplaceComponent,
     MMPMLocalPackagesComponent,
-    MMPMExternalSourcesComponent
+    MMPMExternalSourcesComponent,
+    ActiveProcessCountTickerComponent
   ],
   imports: [
     BrowserModule,

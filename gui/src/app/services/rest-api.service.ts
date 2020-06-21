@@ -29,21 +29,21 @@ export class RestApiService {
       }).pipe(retry(1), catchError(this.handleError)).toPromise();
   }
 
-  public refreshModules(): Observable<any> {
+  public refreshModules(): Promise<any> {
     return this.http.get<any>(
       this.route(URL.REFRESH_DATABASE),
       {
         headers: httpOptions()
-      }).pipe(retry(1), catchError(this.handleError));
+      }).pipe(retry(1), catchError(this.handleError)).toPromise();
   }
 
-  public getMagicMirrorConfig() {
+  public getMagicMirrorConfig(): Promise<any> {
     return this.http.get(
       this.route(URL.GET_MAGICMIRROR_CONFIG),
       {
         headers: httpOptions(),
         responseType: "text"
-      });
+      }).toPromise();
   }
 
   private genericPost(url: string, selectedModules: MagicMirrorPackage[]): Promise<any> {
@@ -90,7 +90,7 @@ export class RestApiService {
       }).pipe(retry(1), catchError(this.handleError));
   }
 
-  public addExternalModuleSource(externalSource: MagicMirrorPackage): Observable<any> {
+  public addExternalModuleSource(externalSource: MagicMirrorPackage): Promise<any> {
     return this.http.post<any>(
       this.route("/add-external-module-source"),
       {
@@ -100,10 +100,10 @@ export class RestApiService {
         headers: httpOptions({
           "Content-Type": "application/x-www-form-urlencoded"
         })
-      }).pipe(retry(1), catchError(this.handleError));
+      }).pipe(retry(1), catchError(this.handleError)).toPromise();
   }
 
-  public removeExternalModuleSource(externalSources: MagicMirrorPackage[]): Observable<any> {
+  public removeExternalModuleSource(externalSources: MagicMirrorPackage[]): Promise<any> {
     return this.http.request(
       "DELETE",
       this.route(URL.REMOVE_EXTERNAL_MODULE),
@@ -114,14 +114,14 @@ export class RestApiService {
         headers: httpOptions({
           "Content-Type": "text/plain"
         })
-      }).pipe(retry(1), catchError(this.handleError));
+      }).pipe(retry(1), catchError(this.handleError)).toPromise();
   }
 
-  public handleError(error: any) {
+  public handleError(error: any): Promise<any> {
     const errorMessage = error.error instanceof ErrorEvent ?
       error.error.message :  `Error Code: ${error.status}\nMessage: ${error.message}`;
 
     window.alert(errorMessage);
-    return throwError(errorMessage);
+    return throwError(errorMessage).toPromise();
   }
 }

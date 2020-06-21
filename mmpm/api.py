@@ -290,9 +290,10 @@ def remove_external_module_source() -> str:
 
 @app.route(api('refresh-database'), methods=[consts.GET])
 def force_refresh_magicmirror_modules() -> dict:
-    log.info(f'Recieved request to refresh modules')
-    _modules_ = core.load_modules(force_refresh=True)
-    return _modules_
+    log.info(f'Received request to refresh modules')
+    updated = core.load_modules(force_refresh=True)
+    _modules_ = updated
+    return updated
 
 
 @app.route(api('get-magicmirror-config'), methods=[consts.GET])

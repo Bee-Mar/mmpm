@@ -1,19 +1,32 @@
 import { Injectable } from "@angular/core";
-import { Observable, Subject } from "rxjs";
+import { Subject, Observable } from "rxjs";
+import { ActiveProcess } from "src/app/interfaces/active-process";
 
 @Injectable({
   providedIn: "root"
 })
 export class ActiveProcessCountService {
-  public currentCount: Subject<number> = new Subject();
+  private activeProcesses: Map<number, ActiveProcess> = new Map<number, ActiveProcess>();
+  private ticketNumber: number = 0;
+  private subject: Subject<Map<number, ActiveProcess>> = new Subject();
 
   constructor() {}
 
-  public setCurrentProcessCount(count: number): void {
-    this.currentCount.next(count);
+  public ngOnInit() {}
+
+  public insertProcess(process: ActiveProcess): number {
+    this.activeProcesses.set(this.ticketNumber++, process);
+    this.subject.next(this.activeProcesses);
+    return this.ticketNumber - 1;
   }
 
-  public getCurrentProcessCount(): Observable<number> {
-    return this.currentCount.asObservable();
+  public removeProcess(key: number) {
+    this.activeProcesses.delete(key);
+    console.log(this.activeProcesses);
+    this.subject.next(this.activeProcesses);
+  }
+
+  public getProcesses(): Observable<Map<number, ActiveProcess>> {
+    return this.subject.asObservable();
   }
 }

@@ -51,13 +51,7 @@ export class MMPMExternalSourcesComponent implements OnInit {
 
   public ngOnInit(): void {
     this.setupTableData();
-
-    this.subscription = this.notifier.getNotification().subscribe((_) => {
-      this.dataStore.refreshAllExternalPackages().then((_) => {
-      }).catch((error) => {
-        console.log(error);
-      });
-    });
+    this.subscription = this.notifier.getNotification().subscribe((_) => { this.setupTableData(true); });
 
     if (!this.mmpmUtility.getCookie(this.mmpmExternalPackagesPageSizeCookie)) {
       this.mmpmUtility.setCookie(this.mmpmExternalPackagesPageSizeCookie, "10");
@@ -66,8 +60,8 @@ export class MMPMExternalSourcesComponent implements OnInit {
     this.paginator.pageSize = Number(this.mmpmUtility.getCookie(this.mmpmExternalPackagesPageSizeCookie));
   }
 
-  private setupTableData(): void {
-    this.dataStore.getAllExternalPackages().then((pkgs) => {
+  private setupTableData(refresh: boolean = false): void {
+    this.dataStore.getAllExternalPackages(refresh).then((pkgs) => {
       this.packages = pkgs;
       this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
       this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.packages);
@@ -85,7 +79,7 @@ export class MMPMExternalSourcesComponent implements OnInit {
     dialogRef.afterClosed().subscribe((newExternalPackage: MagicMirrorPackage) => {
       // the user may have exited without entering anything
       if (newExternalPackage) {
-        this.api.addExternalModuleSource(newExternalPackage).subscribe((error) => {
+        this.api.addExternalModuleSource(newExternalPackage).then((error) => {
           console.log(error["error"]);
           const message = error["error"] === "no_error" ?
             `Successfully added '${newExternalPackage.title}' to 'External Module Sources'` :
@@ -93,6 +87,8 @@ export class MMPMExternalSourcesComponent implements OnInit {
 
           this.notifier.triggerTableUpdate();
           this.snackbar.success(message);
+        }).catch((error) => {
+          console.log(error);
         });
       }
     });
@@ -103,20 +99,13 @@ export class MMPMExternalSourcesComponent implements OnInit {
       this.snackbar.notify("Executing ... ");
 
       console.log(this.selection.selected);
-      this.api.removeExternalModuleSource(this.selection.selected).subscribe((unused) => {
+      this.api.removeExternalModuleSource(this.selection.selected).then((unused) => {
         this.snackbar.success("Process complete!");
         this.notifier.triggerTableUpdate();
+      }).catch((error) => {
+        console.log(error);
       });
     }
-  }
-
-  public onRefreshModules(): void {
-    this.snackbar.notify("Executing ... ");
-
-    this.api.refreshModules().subscribe((unused) => {
-      this.snackbar.success("Process complete!");
-      this.notifier.triggerTableUpdate();
-    });
   }
 
   ngOnDestroy() {

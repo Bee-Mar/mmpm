@@ -18,9 +18,9 @@ export class DataStoreService {
     this.installedPackages = new Array<MagicMirrorPackage>();
     this.externalPackages = new Array<MagicMirrorPackage>();
 
-    this.refreshAllAvailablePackages();
-    this.refreshAllInstalledPackages();
-    this.refreshAllExternalPackages();
+    this.getAllAvailablePackages();
+    this.getAllInstalledPackages();
+    this.getAllExternalPackages();
   }
 
   private fillArray(data: any): Array<MagicMirrorPackage> {
@@ -44,10 +44,10 @@ export class DataStoreService {
     return array;
   }
 
-  public getAllAvailablePackages(): Promise<MagicMirrorPackage[]> {
+  public getAllAvailablePackages(refresh: boolean = false): Promise<MagicMirrorPackage[]> {
     let promise = new Promise<MagicMirrorPackage[]>((resolve, reject) => {
 
-      if (this.availablePackages?.length) resolve(this.availablePackages);
+      if (this.availablePackages?.length && !refresh) resolve(this.availablePackages);
 
       this.api.retrieve(URL.ALL_AVAILABLE_MODULES).then((data) => {
         this.availablePackages = this.fillArray(data);
@@ -62,25 +62,10 @@ export class DataStoreService {
     return promise;
   }
 
-  public refreshAllAvailablePackages(): Promise<boolean> {
-    let promise = new Promise<boolean>((resolve, reject) => {
-      this.api.retrieve(URL.ALL_AVAILABLE_MODULES).then((data) => {
-        this.availablePackages = this.fillArray(data);
-        resolve(true);
-
-      }).catch((error) => {
-        console.log(error);
-        reject(false);
-      });
-    });
-
-    return promise;
-  }
-
-  public getAllInstalledPackages(): Promise<MagicMirrorPackage[]> {
+  public getAllInstalledPackages(refresh: boolean = false): Promise<MagicMirrorPackage[]> {
     let promise = new Promise<MagicMirrorPackage[]>((resolve, reject) => {
 
-      if (this.availablePackages?.length) resolve(this.availablePackages);
+      if (this.installedPackages?.length && !refresh) resolve(this.installedPackages);
 
       this.api.retrieve(URL.ALL_INSTALLED_MODULES).then((data) => {
         this.installedPackages = this.fillArray(data);
@@ -95,24 +80,11 @@ export class DataStoreService {
     return promise;
   }
 
-  public refreshAllInstalledPackages(): Promise<boolean> {
-    let promise = new Promise<boolean>((resolve, reject) => {
-      this.api.retrieve(URL.ALL_INSTALLED_MODULES).then((data) => {
-        this.installedPackages = this.fillArray(data);
-        resolve(true);
-      }).catch((error) => {
-        console.log(error);
-        reject(false);
-      });
-    });
 
-    return promise;
-  }
-
-  public getAllExternalPackages(): Promise<MagicMirrorPackage[]> {
+  public getAllExternalPackages(refresh: boolean = false): Promise<MagicMirrorPackage[]> {
     let promise = new Promise<MagicMirrorPackage[]>((resolve, reject) => {
 
-      if (this.externalPackages?.length) resolve(this.externalPackages);
+      if (this.externalPackages?.length && !refresh) resolve(this.externalPackages);
 
       this.api.retrieve(URL.ALL_EXTERNAL_MODULES).then((data) => {
         this.externalPackages = this.fillArray(data);
@@ -120,20 +92,6 @@ export class DataStoreService {
       }).catch((error) => {
         console.log(error);
         reject(new Array<MagicMirrorPackage>());
-      });
-    });
-
-    return promise;
-  }
-
-  public refreshAllExternalPackages(): Promise<boolean> {
-    let promise = new Promise<boolean>((resolve, reject) => {
-      this.api.retrieve(URL.ALL_EXTERNAL_MODULES).then((data) => {
-        this.externalPackages = this.fillArray(data);
-        resolve(true);
-      }).catch((error) => {
-        console.log(error);
-        reject(false);
       });
     });
 

@@ -16,6 +16,8 @@ import { DataStoreService } from "src/app/services/data-store.service";
 import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity";
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
+import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
+import { ActiveProcess } from "src/app/interfaces/active-process";
 
 @Component({
   selector: "app-mmpm-marketplace",
@@ -36,7 +38,8 @@ export class MMPMMarketplaceComponent implements OnInit {
     public dialog: MatDialog,
     private notifier: TableUpdateNotifierService,
     private mSnackBar: MatSnackBar,
-    private mmpmUtility: MMPMUtility
+    private mmpmUtility: MMPMUtility,
+    private activeProcessService: ActiveProcessCountService
   ) {}
 
   public packages: MagicMirrorPackage[];
@@ -44,7 +47,7 @@ export class MMPMMarketplaceComponent implements OnInit {
 
   private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this.mSnackBar);
   private subscription: Subscription;
-  private mmpmMarketplacePaginatorCookieSize: string = "MMPM-marketplace-page-size";
+  private mmpmMarketplacePaginatorCookieSize: string = "MMPM-marketplace-packages-page-size";
 
 
   dataSource: MatTableDataSource<MagicMirrorPackage>;
@@ -55,7 +58,7 @@ export class MMPMMarketplaceComponent implements OnInit {
 
   public ngOnInit(): void {
     this.setupTableData();
-    this.subscription = this.notifier.getNotification().subscribe((_) => { this.setupTableData(); });
+    this.subscription = this.notifier.getNotification().subscribe((_) => { this.setupTableData(true); });
 
     if (!this.mmpmUtility.getCookie(this.mmpmMarketplacePaginatorCookieSize)) {
       this.mmpmUtility.setCookie(this.mmpmMarketplacePaginatorCookieSize, 10);
@@ -64,8 +67,8 @@ export class MMPMMarketplaceComponent implements OnInit {
     this.paginator.pageSize = Number(this.mmpmUtility.getCookie(this.mmpmMarketplacePaginatorCookieSize));
   }
 
-  private setupTableData(): void {
-    this.dataStore.getAllAvailablePackages().then((pkgs) => {
+  private setupTableData(refresh: boolean = false): void {
+    this.dataStore.getAllAvailablePackages(refresh).then((pkgs) => {
       this.packages = pkgs;
       this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
       this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.packages);
@@ -78,6 +81,15 @@ export class MMPMMarketplaceComponent implements OnInit {
   }
 
   private _installModules(selected: MagicMirrorPackage[]) {
+    let ids: Array<number> = new Array<number>();
+
+    for (let pkg of selected) {
+      ids.push(this.activeProcessService.insertProcess({
+        name: `Installating: ${pkg.title}`,
+        startTime: Date.now().toLocaleString()
+      }));
+    }
+
     this.api.installModules(selected).then((result: string) => {
       result = JSON.parse(result);
 
@@ -91,6 +103,11 @@ export class MMPMMarketplaceComponent implements OnInit {
       } else {
         this.snackbar.success("Installed successfully!");
       }
+
+      for (let id of ids) {
+        this.activeProcessService.removeProcess(id);
+      }
+
       this.notifier.triggerTableUpdate();
     }).catch((error) => { console.log(error); });
   }
@@ -136,14 +153,16 @@ export class MMPMMarketplaceComponent implements OnInit {
     }
   }
 
-  public onRefreshModules(): void {
-    this.snackbar.notify("Executing ... ");
+  // public onRefreshModules(): void {
+  //   this.snackbar.notify("Executing ... ");
 
-    this.api.refreshModules().subscribe((_: any) => {
-      this.snackbar.notify("Complete");
-      this.notifier.triggerTableUpdate();
-    });
-  }
+  //   this.api.refreshModules().then((_: any) => {
+  //     this.snackbar.notify("Database refresh complete!");
+  //     this.notifier.triggerTableUpdate();
+  //   }).catch((error) => {
+  //     console.log(error);
+  //   });
+  // }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();

@@ -53,7 +53,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
 
   public ngOnInit(): void {
     this.setupTableData();
-    this.subscription = this.notifier.getNotification().subscribe((_) => { this.setupTableData(); });
+    this.subscription = this.notifier.getNotification().subscribe((_) => { this.setupTableData(true); });
 
     if (!this.mmpmUtility.getCookie(this.mmpmLocalPackagesPageSizeCookie)) {
       this.mmpmUtility.setCookie(this.mmpmLocalPackagesPageSizeCookie, "10");
@@ -62,8 +62,8 @@ export class MMPMLocalPackagesComponent implements OnInit {
     this.paginator.pageSize = Number(this.mmpmUtility.getCookie(this.mmpmLocalPackagesPageSizeCookie));
   }
 
-  private setupTableData(): void {
-    this.dataStore.getAllInstalledPackages().then((pkgs) => {
+  private setupTableData(refresh: boolean = false): void {
+    this.dataStore.getAllInstalledPackages(refresh).then((pkgs) => {
       this.packages = pkgs;
       this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
       this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.packages);
@@ -72,15 +72,6 @@ export class MMPMLocalPackagesComponent implements OnInit {
       this.tableUtility = new MagicMirrorTableUtility(this.selection, this.dataSource, this.sort, this.dialog);
     }).catch((error) => {
       console.log(error);
-    });
-  }
-
-  public onRefreshModules(): void {
-    this.snackbar.notify("Executing ... ");
-
-    this.api.refreshModules().subscribe((_: any) => {
-      this.snackbar.notify("Complete");
-      this.notifier.triggerTableUpdate();
     });
   }
 

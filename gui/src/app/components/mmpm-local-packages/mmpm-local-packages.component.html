@@ -70,20 +70,21 @@
         matTooltipClass="matTooltipClass"
       >
       <button mat-button style="font-weight: normal" (click)="tableUtility?.showModuleDetails(package)">
-        {{ (package.description.length > maxDescriptionLength) ?  package.description.slice(0, maxDescriptionLength - 3) + '...' : package.description }}
+        {{ tableUtility.trimDescription(package.description) }}
       </button>
       </td>
     </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-header-row *matHeaderRowDef="tableUtility.displayedColumns; sticky: true"></tr>
     <tr
       mat-row
-      *matRowDef="let row; columns: displayedColumns;"
+      *matRowDef="let row; columns: tableUtility.displayedColumns;"
       (click)="selection.toggle(row)"
     ></tr>
   </table>
 
   <mat-paginator
+    (page)="setPaginationCookie($event)"
     [pageSizeOptions]="[5, 10]"
     showFirstLastButtons
     style="width: 100%;"

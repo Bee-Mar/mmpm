@@ -6,7 +6,6 @@ import { SelectionModel } from "@angular/cdk/collections";
 import { ModuleDetailsModalComponent } from "src/app/components/module-details-modal/module-details-modal.component";
 
 export class MagicMirrorTableUtility {
-
   constructor(
     private selection: SelectionModel<MagicMirrorPackage>,
     private dataSource: MatTableDataSource<MagicMirrorPackage>,
@@ -14,6 +13,12 @@ export class MagicMirrorTableUtility {
     public dialog: MatDialog
   ) {}
 
+  public displayedColumns: string[] = [
+    "select",
+    "category",
+    "title",
+    "description"
+  ];
 
   public compare(a: number | string, b: number | string, ascending: boolean): number {
     return (a < b ? -1 : 1) * (ascending ? 1 : -1);
@@ -58,6 +63,15 @@ export class MagicMirrorTableUtility {
   public checkboxLabel(row?: MagicMirrorPackage): string {
     if (!row) return `${this.isAllSelected() ? "select" : "deselect"} all`;
     return `${this.selection.isSelected(row) ? "deselect" : "select"} row ${row.category + 1}`;
+  }
+
+  public trimDescription(description: string) {
+    const maxDescriptionLength: number = 75;
+
+    if (description.length <= maxDescriptionLength)
+      return description;
+
+    return `${description.slice(0, maxDescriptionLength - 3)} ...`;
   }
 
   public showModuleDetails(pkg: MagicMirrorPackage) {

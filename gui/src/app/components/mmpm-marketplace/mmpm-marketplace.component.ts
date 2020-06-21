@@ -3,7 +3,7 @@ import { MatTableDataSource } from "@angular/material/table";
 import { SelectionModel } from "@angular/cdk/collections";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { MatSort } from "@angular/material/sort";
-import { MatPaginator } from "@angular/material/paginator";
+import { MatPaginator, PageEvent } from "@angular/material/paginator";
 import { TooltipPosition } from "@angular/material/tooltip";
 import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
 import { MatSnackBar } from "@angular/material/snack-bar";
@@ -15,11 +15,7 @@ import { RenameModuleDirectoryDialogComponent } from "src/app/components/rename-
 import { DataStoreService } from "src/app/services/data-store.service";
 import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity";
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
-
-const select = "select";
-const category = "category";
-const title = "title";
-const description = "description";
+import { MMPMUtility } from "src/app/utils/mmpm-utility";
 
 @Component({
   selector: "app-mmpm-marketplace",
@@ -40,21 +36,16 @@ export class MMPMMarketplaceComponent implements OnInit {
     public dialog: MatDialog,
     private notifier: TableUpdateNotifierService,
     private mSnackBar: MatSnackBar,
+    private mmpmUtility: MMPMUtility
   ) {}
 
   public packages: MagicMirrorPackage[];
-  private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this.mSnackBar);
   public tableUtility: MagicMirrorTableUtility;
+
+  private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this.mSnackBar);
   private subscription: Subscription;
+  private mmpmMarketplacePaginatorCookieSize: string = "MMPM-marketplace-page-size";
 
-  maxDescriptionLength: number = 75;
-
-  displayedColumns: string[] = [
-    select,
-    category,
-    title,
-    description
-  ];
 
   dataSource: MatTableDataSource<MagicMirrorPackage>;
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
@@ -65,20 +56,12 @@ export class MMPMMarketplaceComponent implements OnInit {
   public ngOnInit(): void {
     this.setupTableData();
     this.subscription = this.notifier.getNotification().subscribe((_) => { this.setupTableData(); });
-    this.paginator.pageSize = 10;
-  }
 
-  private basicDialogSettings(data?: any): object {
-    return data ? {
-      width: "75vw",
-      height: "75vh",
-      disableClose: true,
-      data
-    } : {
-      width: "75vw",
-      height: "75vh",
-      disableClose: true
-    };
+    if (!this.mmpmUtility.getCookie(this.mmpmMarketplacePaginatorCookieSize)) {
+      this.mmpmUtility.setCookie(this.mmpmMarketplacePaginatorCookieSize, 10);
+    }
+
+    this.paginator.pageSize = Number(this.mmpmUtility.getCookie(this.mmpmMarketplacePaginatorCookieSize));
   }
 
   private setupTableData(): void {
@@ -102,7 +85,7 @@ export class MMPMMarketplaceComponent implements OnInit {
       const pkg = failures.length == 1 ? "package" : "packages";
 
       if (failures.length) {
-        this.dialog.open(TerminalStyledPopUpWindowComponent, this.basicDialogSettings(failures));
+        this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings(failures));
         this.snackbar.error(`${failures.length} ${pkg} failed to install`);
 
       } else {
@@ -128,7 +111,7 @@ export class MMPMMarketplaceComponent implements OnInit {
 
           dialogRef = this.dialog.open(
             RenameModuleDirectoryDialogComponent,
-            this.basicDialogSettings(result["conflicts"])
+            this.mmpmUtility.basicDialogSettings(result["conflicts"])
           );
 
           dialogRef.afterClosed().subscribe((updatedModules: MagicMirrorPackage[]) => {
@@ -164,5 +147,9 @@ export class MMPMMarketplaceComponent implements OnInit {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+  }
+
+  public setPaginationCookie(pageEvent?: PageEvent): void {
+    this.mmpmUtility.setCookie(this.mmpmMarketplacePaginatorCookieSize, pageEvent.pageSize);
   }
 }

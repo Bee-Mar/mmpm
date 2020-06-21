@@ -11,7 +11,7 @@ import * as Cookie from "js-cookie";
 export class MagicMirrorConfigEditorComponent implements OnInit {
   editor: any;
 
-  mmpmEditorThemeCookie = "MMPM-editor-theme";
+  private mmpmEditorThemeCookie = "MMPM-editor-theme";
 
   constructor(private api: RestApiService, private snackbar: MatSnackBar) {}
 

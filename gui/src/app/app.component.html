@@ -1,12 +1,12 @@
-<mat-toolbar
-  style="font-family: Orbitron, Roboto; background-color: cyan; font-size: 32px; text-shadow: 2px 2px gray"
->
-  <span style="margin: 0 auto">
+<mat-toolbar>
+  <span style="margin: 0 auto" id="banner">
     <a href="https://github.com/Bee-Mar/mmpm" target="_blank" id="homepage">
       MagicMirror Package Manager
     </a>
   </span>
-
+  <div>
+    count
+  </div>
 </mat-toolbar>
 
 <mat-tab-group color="primary" mat-align-tabs="center">
@@ -30,7 +30,7 @@
       <iframe
         style="height: 100%; width: 100%;"
         [src]="webSSHLocation | safe"
-      ></iframe>
+        ></iframe>
     </mat-card>
   </mat-tab>
   <mat-tab label="MagicMirror Config">

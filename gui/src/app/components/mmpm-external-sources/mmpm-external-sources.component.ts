@@ -3,7 +3,7 @@ import { MatTableDataSource } from "@angular/material/table";
 import { SelectionModel } from "@angular/cdk/collections";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { MatSort } from "@angular/material/sort";
-import { MatPaginator } from "@angular/material/paginator";
+import { MatPaginator, PageEvent } from "@angular/material/paginator";
 import { TooltipPosition } from "@angular/material/tooltip";
 import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
 import { MatSnackBar } from "@angular/material/snack-bar";
@@ -14,12 +14,7 @@ import { DataStoreService } from "src/app/services/data-store.service";
 import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity";
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
 import { ExternalSourceRegistrationDialogComponent } from "src/app/components/external-source-registration-dialog/external-source-registration-dialog.component";
-
-const select = "select";
-const category = "category";
-const title = "title";
-const description = "description";
-
+import { MMPMUtility } from "src/app/utils/mmpm-utility";
 
 @Component({
   selector: "app-mmpm-external-sources",
@@ -36,23 +31,17 @@ export class MMPMExternalSourcesComponent implements OnInit {
   constructor(
     private api: RestApiService,
     private dataStore: DataStoreService,
-    public dialog: MatDialog,
     private notifier: TableUpdateNotifierService,
-    private mSnackBar: MatSnackBar
+    private mSnackBar: MatSnackBar,
+    private mmpmUtility: MMPMUtility,
+    public dialog: MatDialog,
   ) {}
 
   public packages: MagicMirrorPackage[];
   private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this.mSnackBar);
   public tableUtility: MagicMirrorTableUtility;
   private subscription: Subscription;
-  maxDescriptionLength: number = 75;
-
-  displayedColumns: string[] = [
-    select,
-    category,
-    title,
-    description
-  ];
+  private mmpmExternalPackagesPageSizeCookie: string = "MMPM-external-packages-page-size";
 
   dataSource: MatTableDataSource<MagicMirrorPackage>;
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
@@ -62,12 +51,19 @@ export class MMPMExternalSourcesComponent implements OnInit {
 
   public ngOnInit(): void {
     this.setupTableData();
+
     this.subscription = this.notifier.getNotification().subscribe((_) => {
       this.dataStore.refreshAllExternalPackages().then((_) => {
       }).catch((error) => {
         console.log(error);
       });
     });
+
+    if (!this.mmpmUtility.getCookie(this.mmpmExternalPackagesPageSizeCookie)) {
+      this.mmpmUtility.setCookie(this.mmpmExternalPackagesPageSizeCookie, "10");
+    }
+
+    this.paginator.pageSize = Number(this.mmpmUtility.getCookie(this.mmpmExternalPackagesPageSizeCookie));
   }
 
   private setupTableData(): void {
@@ -82,14 +78,6 @@ export class MMPMExternalSourcesComponent implements OnInit {
       console.log(error);
     });
   }
-
-  private complete = () => {
-    this.snackbar.notify("Process complete");
-  };
-
-  private executing = () => {
-    this.snackbar.notify("Process executing ...");
-  };
 
   public onAddExternalSources(): void {
     let externalSource: MagicMirrorPackage;
@@ -132,26 +120,30 @@ export class MMPMExternalSourcesComponent implements OnInit {
 
   public onRemoveExternalSource(): void {
     if (this.selection.selected.length) {
-      this.executing();
+      this.snackbar.notify("Executing ... ");
 
       console.log(this.selection.selected);
       this.api.removeExternalModuleSource(this.selection.selected).subscribe((unused) => {
-        this.complete();
+        this.snackbar.success("Process complete!");
         this.notifier.triggerTableUpdate();
       });
     }
   }
 
   public onRefreshModules(): void {
-    this.executing();
+    this.snackbar.notify("Executing ... ");
 
     this.api.refreshModules().subscribe((unused) => {
-      this.complete();
+      this.snackbar.success("Process complete!");
       this.notifier.triggerTableUpdate();
     });
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+  }
+
+  public setPaginationCookie(pageEvent?: PageEvent): void {
+    this.mmpmUtility.setCookie(this.mmpmExternalPackagesPageSizeCookie, pageEvent.pageSize);
   }
 }

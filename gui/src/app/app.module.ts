@@ -24,6 +24,7 @@ import { CustomSnackbarComponent } from "./components/custom-snackbar/custom-sna
 import { MMPMMarketplaceComponent } from "./components/mmpm-marketplace/mmpm-marketplace.component";
 import { MMPMLocalPackagesComponent } from "./components/mmpm-local-packages/mmpm-local-packages.component";
 import { MMPMExternalSourcesComponent } from "./components/mmpm-external-sources/mmpm-external-sources.component";
+import { MMPMUtility } from "src/app/utils/mmpm-utility";
 
 @NgModule({
   declarations: [
@@ -75,7 +76,8 @@ import { MMPMExternalSourcesComponent } from "./components/mmpm-external-sources
     RestApiService,
     TableUpdateNotifierService,
     ActiveProcessCountService,
-    DataStoreService
+    DataStoreService,
+    MMPMUtility
   ],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

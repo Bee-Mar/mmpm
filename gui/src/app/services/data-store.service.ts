@@ -112,7 +112,7 @@ export class DataStoreService {
   public getAllExternalPackages(): Promise<MagicMirrorPackage[]> {
     let promise = new Promise<MagicMirrorPackage[]>((resolve, reject) => {
 
-      if (this.availablePackages?.length) resolve(this.availablePackages);
+      if (this.externalPackages?.length) resolve(this.externalPackages);
 
       this.api.retrieve(URL.ALL_EXTERNAL_MODULES).then((data) => {
         this.externalPackages = this.fillArray(data);

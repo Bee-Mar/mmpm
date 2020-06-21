@@ -1,5 +1,5 @@
 <mat-form-field>
-  <input matInput (keyup)="tableUtility.searchFilter($event)" placeholder="Search ..." />
+  <input matInput (keyup)="tableUtility?.searchFilter($event)" placeholder="Search ..." />
 </mat-form-field>
 
 <div class="table-container">
@@ -70,15 +70,15 @@
         matTooltipClass="matTooltipClass"
       >
       <button mat-button style="font-weight: normal" (click)="tableUtility?.showModuleDetails(package)">
-        {{ tableUtility.trimDescription(package.description) }}
+        {{ tableUtility?.trimDescription(package.description) }}
       </button>
       </td>
     </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="tableUtility.displayedColumns; sticky: true"></tr>
+    <tr mat-header-row *matHeaderRowDef="tableUtility?.displayedColumns; sticky: true"></tr>
     <tr
       mat-row
-      *matRowDef="let row; columns: tableUtility.displayedColumns;"
+      *matRowDef="let row; columns: tableUtility?.displayedColumns;"
       (click)="selection.toggle(row)"
     ></tr>
   </table>

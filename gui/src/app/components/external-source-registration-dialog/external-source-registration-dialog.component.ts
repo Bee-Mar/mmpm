@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject } from "@angular/core";
-import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
+import { MatDialogRef } from "@angular/material/dialog";
 import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
 import { FormControl, Validators } from "@angular/forms";
 
@@ -14,8 +14,6 @@ export class ExternalSourceRegistrationDialogComponent implements OnInit {
   author: string = "";
   description: string = "";
 
-  externalSource: MagicMirrorPackage;
-
   titleFormControl = new FormControl("", [Validators.required]);
   repositoryFormControl = new FormControl("", [Validators.required]);
   authorFormControl = new FormControl("", [Validators.required]);
@@ -23,13 +21,9 @@ export class ExternalSourceRegistrationDialogComponent implements OnInit {
 
   constructor(
     private dialogRef: MatDialogRef<ExternalSourceRegistrationDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
 
-  ngOnInit(): void {
-    this.externalSource = this.data.externalSource;
-    console.log(this.data.externalSources);
-  }
+  ngOnInit(): void {}
 
   public getErrorMessage(formControl: FormControl): string {
     if (formControl.hasError("required")) {
@@ -38,13 +32,17 @@ export class ExternalSourceRegistrationDialogComponent implements OnInit {
   }
 
   public onRegisterSource(): void {
-    if (
-      this.externalSource.title &&
-      this.externalSource.repository &&
-      this.externalSource.author &&
-      this.externalSource.description
-    ) {
-      this.dialogRef.close(this.externalSource);
+    if (this.title && this.repository && this.author && this.description) {
+      const pkg: MagicMirrorPackage = {
+        title: this.title,
+        repository: this.repository,
+        author: this.author,
+        description: this.description,
+        category: "External Module Sources",
+        directory: "",
+      };
+
+      this.dialogRef.close(pkg);
     }
   }
 

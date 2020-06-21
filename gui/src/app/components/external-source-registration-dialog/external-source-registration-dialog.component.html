@@ -4,7 +4,7 @@
     <input
       matInput
       [formControl]="titleFormControl"
-      [(ngModel)]="externalSource.title"
+      [(ngModel)]="title"
       required
       />
     <mat-error *ngIf="titleFormControl.invalid"
@@ -16,7 +16,7 @@
         <input
           matInput
           [formControl]="repositoryFormControl"
-          [(ngModel)]="externalSource.repository"
+          [(ngModel)]="repository"
           required
           />
         <mat-error *ngIf="repositoryFormControl.invalid"
@@ -28,7 +28,7 @@
             <input
               matInput
               [formControl]="authorFormControl"
-              [(ngModel)]="externalSource.author"
+              [(ngModel)]="author"
               required
               />
             <mat-error *ngIf="authorFormControl.invalid"
@@ -41,7 +41,7 @@
                   matInput
                   [formControl]="descriptionFormControl"
                   rows="10"
-                  [(ngModel)]="externalSource.description"
+                  [(ngModel)]="description"
                   required
                   >
                 </textarea>
@@ -57,7 +57,7 @@
     color="primary"
     matTooltip="Save external source"
     (click)="onRegisterSource()"
-    [disabled]="!externalSource.title || !externalSource.repository || !externalSource.author || !externalSource.description"
+    [disabled]="!title || !repository || !author || !description"
     >
     <mat-icon>
       save

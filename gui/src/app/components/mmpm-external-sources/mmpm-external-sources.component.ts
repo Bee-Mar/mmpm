@@ -80,35 +80,15 @@ export class MMPMExternalSourcesComponent implements OnInit {
   }
 
   public onAddExternalSources(): void {
-    let externalSource: MagicMirrorPackage;
+    const dialogRef = this.dialog.open(ExternalSourceRegistrationDialogComponent, { minWidth: "60vw", disableClose: true });
 
-    externalSource = {
-      title: "",
-      author: "",
-      repository: "",
-      category: "External Module Sources",
-      description: "",
-      directory: ""
-    };
-
-    const dialogRef = this.dialog.open(
-      ExternalSourceRegistrationDialogComponent,
-      {
-        minWidth: "60vw",
-        data: {
-          externalSource
-        },
-        disableClose: true
-      }
-    );
-
-    dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.afterClosed().subscribe((newExternalPackage: MagicMirrorPackage) => {
       // the user may have exited without entering anything
-      if (result) {
-        this.api.addExternalModuleSource(result).subscribe((error) => {
+      if (newExternalPackage) {
+        this.api.addExternalModuleSource(newExternalPackage).subscribe((error) => {
           console.log(error["error"]);
           const message = error["error"] === "no_error" ?
-            `Successfully added '${externalSource.title}' to 'External Module Sources'` :
+            `Successfully added '${newExternalPackage.title}' to 'External Module Sources'` :
             "Failed to add new source";
 
           this.notifier.triggerTableUpdate();

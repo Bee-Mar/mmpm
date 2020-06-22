@@ -76,9 +76,7 @@ export class MMPMExternalSourcesComponent implements OnInit {
         this.activeProcessService
       );
 
-    }).catch((error) => {
-      console.log(error);
-    });
+    }).catch((error) => console.log(error));
   }
 
   public onAddExternalSources(): void {
@@ -102,9 +100,7 @@ export class MMPMExternalSourcesComponent implements OnInit {
 
           this.notifier.triggerTableUpdate();
           this.snackbar.success(message);
-        }).catch((error) => {
-          console.log(error);
-        });
+        }).catch((error) => console.log(error));
       }
     });
   }

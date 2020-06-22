@@ -54,7 +54,7 @@ export class MMPMMarketplaceComponent implements OnInit {
 
   public ngOnInit(): void {
     this.setupTableData();
-    this.subscription = this.notifier.getNotification().subscribe((_) => { this.setupTableData(true); });
+    this.subscription = this.notifier.getNotification().subscribe((_) => this.setupTableData(true));
 
     if (!this.mmpmUtility.getCookie(this.mmpmMarketplacePaginatorCookieSize)) {
       this.mmpmUtility.setCookie(this.mmpmMarketplacePaginatorCookieSize, 10);
@@ -64,28 +64,82 @@ export class MMPMMarketplaceComponent implements OnInit {
   }
 
   private setupTableData(refresh: boolean = false): void {
-    this.dataStore.getAllAvailablePackages(refresh).then((pkgs) => {
-      this.packages = pkgs;
-      this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
-      this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.packages);
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
+    this.dataStore.getAllAvailablePackages(refresh).then((allPackages: MagicMirrorPackage[]) => {
+      this.dataStore.getAllInstalledPackages(refresh).then((installedPackages: MagicMirrorPackage[]) => {
 
-      this.tableUtility = new MagicMirrorTableUtility(
-        this.selection,
-        this.dataSource,
-        this.sort,
-        this.dialog,
-        this.activeProcessService
-      );
+        // removing all the packages that are currently installed from the list of available packages
+        for (const installedPackage of installedPackages) {
+          let index: number = allPackages.findIndex(
+            (availablePackage: MagicMirrorPackage) =>
+            availablePackage.repository === installedPackage.repository &&
+            availablePackage.title === installedPackage.title &&
+            availablePackage.author === installedPackage.author
+          );
 
-    }).catch((error) => {
-      console.log(error);
-    });
+          if (index > -1) allPackages.splice(index, 1);
+        }
+
+        this.packages = allPackages;
+        this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
+        this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.packages);
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+
+        this.tableUtility = new MagicMirrorTableUtility(
+          this.selection,
+          this.dataSource,
+          this.sort,
+          this.dialog,
+          this.activeProcessService
+        );
+      }).catch((error) => console.log(error));
+    }).catch((error) => console.log(error));
   }
 
-  private _installModules(selected: MagicMirrorPackage[]) {
-    let ids: Array<number> = this.tableUtility.saveProcessIds(selected, "Installating");
+  private checkForInstallationConflicts(selectedPackages: MagicMirrorPackage[]): Promise<MagicMirrorPackage[]> {
+    let promise = new Promise<MagicMirrorPackage[]>((resolve, reject) => {
+      this.dataStore.getAllInstalledPackages().then((installedPackages: MagicMirrorPackage[]) => {
+
+        let duplicates: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
+        let existingPackages: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
+
+        for (const selectedPackage of selectedPackages) {
+          const index = this.tableUtility.findPackageInstalledWithSameName(
+            selectedPackage,
+            installedPackages
+          );
+
+          if (index !== -1) {
+            existingPackages.push(installedPackages[index]);
+            continue;
+          }
+
+          let dups = this.tableUtility.findDuplicateSelectedPackages(selectedPackages, selectedPackage.title);
+          console.log(dups);
+
+          if (!dups?.length) {
+            continue;
+          }
+
+          //duplicates += dups;
+        }
+
+        resolve(duplicates);
+
+      }).catch((error) => {
+        console.log(error);
+        reject(new Array<MagicMirrorPackage>());
+      });
+    });
+
+    return promise;
+  }
+
+  private installModules(selected: MagicMirrorPackage[]) {
+    let ids: Array<number> = this.tableUtility.saveProcessIds(
+      selected,
+      selected.length > 1 ? "[ Batch Installation ]" : "[ Installing ]"
+    );
 
     this.api.installModules(selected).then((result: string) => {
       result = JSON.parse(result);
@@ -104,7 +158,7 @@ export class MMPMMarketplaceComponent implements OnInit {
       this.tableUtility.deleteProcessIds(ids);
       this.notifier.triggerTableUpdate();
 
-    }).catch((error) => { console.log(error); });
+    }).catch((error) => console.log(error));
   }
 
   public onInstallModules(): void {
@@ -112,52 +166,53 @@ export class MMPMMarketplaceComponent implements OnInit {
       const selected = this.selection.selected;
       this.selection.clear();
 
-      this.api.checkForInstallationConflicts(selected).then((result: string) => {
-        result = JSON.parse(result);
+      this.checkForInstallationConflicts(selected).then((duplicates: MagicMirrorPackage[]) => {
+        console.log(duplicates);
 
-        let dialogRef: any = null;
+        //if (!conflicts.length) {
+        //  this.installModules(selected);
+        //} else {
 
-        if (!result["conflicts"].length) {
-          this._installModules(selected);
-        } else {
+        //  let dialogRef = this.dialog.open(
+        //    RenamePackageDirectoryDialogComponent,
+        //    this.mmpmUtility.basicDialogSettings(result["conflicts"])
+        //  );
 
-          dialogRef = this.dialog.open(
-            RenamePackageDirectoryDialogComponent,
-            this.mmpmUtility.basicDialogSettings(result["conflicts"])
-          );
+        //  dialogRef.afterClosed().subscribe((updatedModules: MagicMirrorPackage[]) => {
+        //    selected.forEach((selectedModule, selectedIndex: number) => {
+        //      updatedModules.forEach((updatedModule: MagicMirrorPackage, _: number) => {
+        //        if (selectedModule.title === updatedModule.title) {
+        //          if ((updatedModule.directory.length)) {
+        //            selectedModule.directory = updatedModule.directory;
+        //          } else {
+        //            selected.splice(selectedIndex, 1);
+        //          }
+        //        }
+        //      });
+        //    });
 
-          dialogRef.afterClosed().subscribe((updatedModules: MagicMirrorPackage[]) => {
-            selected.forEach((selectedModule, selectedIndex: number) => {
-              updatedModules.forEach((updatedModule: MagicMirrorPackage, _: number) => {
-                if (selectedModule.title === updatedModule.title) {
-                  if ((updatedModule.directory.length)) {
-                    selectedModule.directory = updatedModule.directory;
-                  } else {
-                    selected.splice(selectedIndex, 1);
-                  }
-                }
-              });
-            });
-
-            if (selected.length) {
-              this._installModules(selected);
-            }
-          });
-        }
-      }).catch((error) => { console.log(error); });
+        //    if (selected.length) {
+        //      this.installModules(selected);
+        //    }
+        //  });
+        //}
+      }).catch((error) => console.log(error));
     }
   }
 
-  // public onRefreshModules(): void {
-  //   this.snackbar.notify("Executing ... ");
+  /*
+  NOTE: this is broken simply because of the eventlet bug
+  public onRefreshModules(): void {
+    this.snackbar.notify("Executing ... ");
 
-  //   this.api.refreshModules().then((_: any) => {
-  //     this.snackbar.notify("Database refresh complete!");
-  //     this.notifier.triggerTableUpdate();
-  //   }).catch((error) => {
-  //     console.log(error);
-  //   });
-  // }
+    this.api.refreshModules().then((_: any) => {
+      this.snackbar.notify("Database refresh complete!");
+      this.notifier.triggerTableUpdate();
+    }).catch((error) => {
+      console.log(error);
+    });
+  }
+   */
 
   ngOnDestroy() {
     this.subscription.unsubscribe();

@@ -53,7 +53,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
 
   public ngOnInit(): void {
     this.setupTableData();
-    this.subscription = this.notifier.getNotification().subscribe((_) => { this.setupTableData(true); });
+    this.subscription = this.notifier.getNotification().subscribe((_) => this.setupTableData(true));
 
     if (!this.mmpmUtility.getCookie(this.mmpmLocalPackagesPageSizeCookie)) {
       this.mmpmUtility.setCookie(this.mmpmLocalPackagesPageSizeCookie, "10");
@@ -77,9 +77,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
         this.dialog,
         this.activeProcessService
       );
-    }).catch((error) => {
-      console.log(error);
-    });
+    }).catch((error) => console.log(error));
   }
 
   ngOnDestroy() {
@@ -112,7 +110,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
         this.tableUtility.deleteProcessIds(ids);
 
         this.notifier.triggerTableUpdate();
-      }).catch((error) => { console.log(error); });
+      }).catch((error) => console.log(error));
     }
   }
 
@@ -131,7 +129,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
           this.snackbar.success("Upgraded selected modules successfully!");
         }
         this.notifier.triggerTableUpdate();
-      }).catch((error) => { console.log(error); });
+      }).catch((error) => console.log(error));
     }
   }
 

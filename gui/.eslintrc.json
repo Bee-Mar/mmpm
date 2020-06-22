@@ -29,7 +29,7 @@
       "double"
     ],
     "comma-dangle": "off",
-    "arrow-body-style": [2, "always"],
+    "arrow-body-style": [2, "as-needed"],
     "no-unused-vars": "off"
   }
 }

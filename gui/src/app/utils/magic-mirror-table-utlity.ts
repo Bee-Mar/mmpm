@@ -97,11 +97,11 @@ export class MagicMirrorTableUtility {
   }
 
   public deleteProcessIds(ids: Array<number>): void {
-      for (let id of ids) {
-        if (!this.activeProcessService.removeProcess(id)) {
-          console.log(`Failed to remove process ${id}`);
-        }
+    for (let id of ids) {
+      if (!this.activeProcessService.removeProcess(id)) {
+        console.log(`Failed to remove process ${id}`);
       }
+    }
   }
 
   public showPackageDetails(pkg: MagicMirrorPackage) {
@@ -116,5 +116,14 @@ export class MagicMirrorTableUtility {
       data: pkg
     });
   }
+
+  public findDuplicateSelectedPackages(packages: MagicMirrorPackage[], titleOfInterest: string): Array<MagicMirrorPackage> {
+    return packages.filter((pkg: MagicMirrorPackage) => pkg.title === titleOfInterest);
+  }
+
+  public findPackageInstalledWithSameName(pkgToSearchFor: MagicMirrorPackage, installedPackages: MagicMirrorPackage[]) {
+    return installedPackages.findIndex((pkg: MagicMirrorPackage) => pkg.title === pkgToSearchFor.title);
+  }
+
 }
 

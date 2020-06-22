@@ -24,7 +24,6 @@ export class ActiveProcessCountTickerComponent implements OnInit {
       this.activeProcesses = processes;
 
     });
-    console.log(this.subscription);
   }
 
   public ngOnDestroy(): void {

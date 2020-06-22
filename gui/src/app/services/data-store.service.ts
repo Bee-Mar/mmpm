@@ -47,16 +47,19 @@ export class DataStoreService {
   public getAllAvailablePackages(refresh: boolean = false): Promise<MagicMirrorPackage[]> {
     let promise = new Promise<MagicMirrorPackage[]>((resolve, reject) => {
 
-      if (this.availablePackages?.length && !refresh) resolve(this.availablePackages);
-
-      this.api.retrieve(URL.ALL_AVAILABLE_MODULES).then((data) => {
-        this.availablePackages = this.fillArray(data);
+      if (this.availablePackages?.length && !refresh) {
         resolve(this.availablePackages);
 
-      }).catch((error) => {
-        console.log(error);
-        reject(new Array<MagicMirrorPackage>());
-      });
+      } else {
+        this.api.retrieve(URL.ALL_AVAILABLE_MODULES).then((data) => {
+          this.availablePackages = this.fillArray(data);
+          resolve(this.availablePackages);
+
+        }).catch((error) => {
+          console.log(error);
+          reject(new Array<MagicMirrorPackage>());
+        });
+      }
     });
 
     return promise;
@@ -65,16 +68,19 @@ export class DataStoreService {
   public getAllInstalledPackages(refresh: boolean = false): Promise<MagicMirrorPackage[]> {
     let promise = new Promise<MagicMirrorPackage[]>((resolve, reject) => {
 
-      if (this.installedPackages?.length && !refresh) resolve(this.installedPackages);
-
-      this.api.retrieve(URL.ALL_INSTALLED_MODULES).then((data) => {
-        this.installedPackages = this.fillArray(data);
+      if (this.installedPackages?.length && !refresh) {
         resolve(this.installedPackages);
 
-      }).catch((error) => {
-        console.log(error);
-        reject(new Array<MagicMirrorPackage>());
-      });
+      } else {
+        this.api.retrieve(URL.ALL_INSTALLED_MODULES).then((data) => {
+          this.installedPackages = this.fillArray(data);
+          resolve(this.installedPackages);
+
+        }).catch((error) => {
+          console.log(error);
+          reject(new Array<MagicMirrorPackage>());
+        });
+      }
     });
 
     return promise;
@@ -84,15 +90,19 @@ export class DataStoreService {
   public getAllExternalPackages(refresh: boolean = false): Promise<MagicMirrorPackage[]> {
     let promise = new Promise<MagicMirrorPackage[]>((resolve, reject) => {
 
-      if (this.externalPackages?.length && !refresh) resolve(this.externalPackages);
-
-      this.api.retrieve(URL.ALL_EXTERNAL_MODULES).then((data) => {
-        this.externalPackages = this.fillArray(data);
+      if (this.externalPackages?.length && !refresh) {
         resolve(this.externalPackages);
-      }).catch((error) => {
-        console.log(error);
-        reject(new Array<MagicMirrorPackage>());
-      });
+
+      } else {
+        this.api.retrieve(URL.ALL_EXTERNAL_MODULES).then((data) => {
+          this.externalPackages = this.fillArray(data);
+          resolve(this.externalPackages);
+
+        }).catch((error) => {
+          console.log(error);
+          reject(new Array<MagicMirrorPackage>());
+        });
+      }
     });
 
     return promise;

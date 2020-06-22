@@ -1,8 +1,8 @@
-<h2 mat-dialog-title style="text-align: center">Active Process Details</h2>
+<h2 mat-dialog-title style="text-align: center">Active Processes</h2>
 
-<mat-dialog-content *ngIf="data.processes?.length; else display_empty" class="mat-typography" style="text-align: center;">
+<mat-dialog-content *ngIf="data.service.activeProcesses?.size; else display_empty" class="mat-typography" style="text-align: left; padding-left: 3em;">
 
-  <span *ngFor="let process of data.processes | keyvalue">
+  <span *ngFor="let process of data.service.activeProcesses | keyvalue">
     <p><strong>Process:</strong> {{ process.value.name }}</p>
     <p><strong>Start Time:</strong> {{ process.value.startTime }}</p>
   </span>

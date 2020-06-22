@@ -95,7 +95,7 @@
     color="primary"
     style="margin-left: 3em;"
     matTooltip="Add external module source"
-    [matTooltipPosition]="tooltipPosition"
+    [matTooltipPosition]="tableUtility?.tooltipPosition"
     (click)="onAddExternalSources()"
   >
     <mat-icon>
@@ -108,7 +108,7 @@
     color="accent"
     style="margin-left: 3em;"
     matTooltip="{{ selection?.selected?.length === 1 ? 'Remove external module source' : 'Remove external module sources' }}"
-    [matTooltipPosition]="tooltipPosition"
+    [matTooltipPosition]="tableUtility?.tooltipPosition"
     (click)="onRemoveExternalSource()"
     [disabled]="!selection.selected.length || !packages.length"
   >

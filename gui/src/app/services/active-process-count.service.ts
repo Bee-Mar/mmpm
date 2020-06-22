@@ -20,9 +20,10 @@ export class ActiveProcessCountService {
     return this.ticketNumber - 1;
   }
 
-  public removeProcess(key: number) {
-    this.activeProcesses.delete(key);
+  public removeProcess(key: number): boolean {
+    const result: boolean = this.activeProcesses.delete(key);
     this.subject.next(this.activeProcesses);
+    return result;
   }
 
   public getProcesses(): Observable<Map<number, ActiveProcess>> {

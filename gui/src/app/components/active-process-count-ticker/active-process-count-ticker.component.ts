@@ -16,17 +16,15 @@ export class ActiveProcessCountTickerComponent implements OnInit {
     private dialog: MatDialog
   ) { }
 
-  public currentCount: number = 0;
   private subscription: Subscription;
   public activeProcesses: Map<number, ActiveProcess> = new Map<number, ActiveProcess>();
 
   public ngOnInit(): void {
     this.subscription = this.activeProcessService.getProcesses().subscribe((processes: Map<number, ActiveProcess>) => {
-      console.log(processes);
-      this.currentCount = processes.size;
       this.activeProcesses = processes;
-      console.log(Array.from(this.activeProcesses.values()));
+
     });
+    console.log(this.subscription);
   }
 
   public ngOnDestroy(): void {
@@ -39,9 +37,8 @@ export class ActiveProcessCountTickerComponent implements OnInit {
       height: "50vh",
       disableClose: true,
       data: {
-        processes: Array.from(this.activeProcesses.values())
+        service: this.activeProcessService
       }
     });
   }
-
 }

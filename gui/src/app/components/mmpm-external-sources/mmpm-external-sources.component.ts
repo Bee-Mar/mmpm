@@ -4,7 +4,6 @@ import { SelectionModel } from "@angular/cdk/collections";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { MatSort } from "@angular/material/sort";
 import { MatPaginator, PageEvent } from "@angular/material/paginator";
-import { TooltipPosition } from "@angular/material/tooltip";
 import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
@@ -47,7 +46,6 @@ export class MMPMExternalSourcesComponent implements OnInit {
 
   dataSource: MatTableDataSource<MagicMirrorPackage>;
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
-  tooltipPosition: TooltipPosition[] = ["below"];
 
   snackbarSettings: object = { duration: 5000 };
 
@@ -69,7 +67,15 @@ export class MMPMExternalSourcesComponent implements OnInit {
       this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.packages);
       this.dataSource.paginator = this.paginator;
       this.dataSource.sort = this.sort;
-      this.tableUtility = new MagicMirrorTableUtility(this.selection, this.dataSource, this.sort, this.dialog);
+
+      this.tableUtility = new MagicMirrorTableUtility(
+        this.selection,
+        this.dataSource,
+        this.sort,
+        this.dialog,
+        this.activeProcessService
+      );
+
     }).catch((error) => {
       console.log(error);
     });
@@ -83,14 +89,7 @@ export class MMPMExternalSourcesComponent implements OnInit {
     dialogRef.afterClosed().subscribe((newExternalPackage: MagicMirrorPackage) => {
       // the user may have exited without entering anything
       if (newExternalPackage) {
-        let ids: Array<number> = new Array<number>();
-
-        for (let pkg of this.selection.selected) {
-          ids.push(this.activeProcessService.insertProcess({
-            name: `Adding External Source ${pkg.title}`,
-            startTime: Date().toString()
-          }));
-        }
+        let ids: Array<number> = this.tableUtility.saveProcessIds(this.selection.selected, "Adding External Source");
 
         this.api.addExternalModuleSource(newExternalPackage).then((error) => {
           console.log(error["error"]);
@@ -99,9 +98,8 @@ export class MMPMExternalSourcesComponent implements OnInit {
             `Successfully added '${newExternalPackage.title}' to 'External Module Sources'` :
             "Failed to add new source";
 
-          for (let id of ids) {
-            this.activeProcessService.removeProcess(id);
-          }
+          this.tableUtility.deleteProcessIds(ids);
+
           this.notifier.triggerTableUpdate();
           this.snackbar.success(message);
         }).catch((error) => {

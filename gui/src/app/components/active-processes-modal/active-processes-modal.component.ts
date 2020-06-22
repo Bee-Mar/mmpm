@@ -1,6 +1,5 @@
 import { Component, OnInit, Inject } from "@angular/core";
 import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
-import { Observable, Subject } from "rxjs";
 
 @Component({
   selector: "app-active-processes-modal",
@@ -16,5 +15,5 @@ export class ActiveProcessesModalComponent implements OnInit {
   public ngOnInit(): void {}
 
   public ngOnDestroy(): void {}
-
 }
+

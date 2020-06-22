@@ -94,9 +94,9 @@
     <button
       mat-raised-button
       color="primary"
-      [disabled]="!selection.selected.length || !packages.length"
-      matTooltip="{{ selection.selected.length === 1 ? 'Install module' : 'Install Modules' }}"
-      [matTooltipPosition]="tooltipPosition"
+      [disabled]="!selection?.selected?.length || !packages?.length"
+      matTooltip="{{ selection?.selected?.length === 1 ? 'Install module' : 'Install Modules' }}"
+      [matTooltipPosition]="tableUtility?.tooltipPosition"
       (click)="onInstallModules()"
       >
       <mat-icon>

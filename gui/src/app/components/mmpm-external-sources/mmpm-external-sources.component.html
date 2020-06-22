@@ -46,20 +46,6 @@
       <td mat-cell *matCellDef="let package">{{package.title}}
     </ng-container>
 
-    <ng-container matColumnDef="repository">
-      <th mat-header-cell *matHeaderCellDef>Repository</th>
-      <td mat-cell *matCellDef="let package">
-        <a href="{{package.repository}}" target="_blank">
-          {{package.repository}}
-        </a>
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="author">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Author</th>
-      <td mat-cell *matCellDef="let package">{{package.author}}</td>
-    </ng-container>
-
     <ng-container matColumnDef="description">
       <th mat-header-cell *matHeaderCellDef>Description</th>
       <td

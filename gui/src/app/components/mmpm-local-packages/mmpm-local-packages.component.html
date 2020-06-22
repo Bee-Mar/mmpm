@@ -18,7 +18,7 @@
           color="primary"
           (change)="$event ? tableUtility?.toggleSelectAll() : null"
           [checked]="selection.hasValue() && tableUtility?.isAllSelected()"
-          [indeterminate]="selection.hasValue() && !tableUtility?.isAllSelected()"
+          [indeterminate]="selection?.hasValue() && !tableUtility?.isAllSelected()"
           [aria-label]="tableUtility?.checkboxLabel()"
         >
         </mat-checkbox>
@@ -38,26 +38,12 @@
 
     <ng-container matColumnDef="category">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
-      <td mat-cell *matCellDef="let package">{{package.category}}</td>
+      <td mat-cell *matCellDef="let package">{{ package.category }}</td>
     </ng-container>
 
     <ng-container matColumnDef="title">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>Title</th>
-      <td mat-cell *matCellDef="let package">{{package.title}}
-    </ng-container>
-
-    <ng-container matColumnDef="repository">
-      <th mat-header-cell *matHeaderCellDef>Repository</th>
-      <td mat-cell *matCellDef="let package">
-        <a href="{{package.repository}}" target="_blank">
-          {{package.repository}}
-        </a>
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="author">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Author</th>
-      <td mat-cell *matCellDef="let package">{{package.author}}</td>
+      <td mat-cell *matCellDef="let package">{{ package.title }}
     </ng-container>
 
     <ng-container matColumnDef="description">
@@ -79,7 +65,7 @@
     <tr
       mat-row
       *matRowDef="let row; columns: tableUtility?.displayedColumns;"
-      (click)="selection.toggle(row)"
+      (click)="selection?.toggle(row)"
     ></tr>
   </table>
 
@@ -93,7 +79,7 @@
   <button
     mat-raised-button
     color="primary"
-    [disabled]="!selection.selected.length || !packages.length"
+    [disabled]="!selection?.selected?.length || !packages?.length"
     matTooltip="{{ selection?.selected?.length === 1 ? 'Upgrade module' : 'Upgrade modules' }}"
     [matTooltipPosition]="tableUtility?.tooltipPosition"
     (click)="onUpgradeModules()"
@@ -110,7 +96,7 @@
     matTooltip="{{ selection?.selected?.length === 1 ? 'Uninstall module' : 'Uninstall modules' }}"
     [matTooltipPosition]="tableUtility?.tooltipPosition"
     (click)="onUninstallModules()"
-    [disabled]="!selection.selected.length || !packages.length"
+    [disabled]="!selection?.selected?.length || !packages?.length"
   >
     <mat-icon>
       delete

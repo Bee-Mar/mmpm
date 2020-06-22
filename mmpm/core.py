@@ -761,7 +761,6 @@ def get_module_categories(modules: dict) -> List[dict]:
     Returns:
         modules (List[dict]): list of dictionaries containing the category names and module count per category
     '''
-    print(type(modules))
     return [{consts.CATEGORY: key, consts.MODULES: len(modules[key])} for key in modules.keys()]
 
 

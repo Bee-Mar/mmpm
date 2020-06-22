@@ -2,13 +2,13 @@ import { Component, OnInit, Inject } from "@angular/core";
 import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 
 @Component({
-  selector: "app-rename-module-directory-dialog",
-  templateUrl: "./rename-module-directory-dialog.component.html",
-  styleUrls: ["./rename-module-directory-dialog.component.scss"]
+  selector: "app-rename-package-directory-dialog",
+  templateUrl: "./rename-package-directory-dialog.component.html",
+  styleUrls: ["./rename-package-directory-dialog.component.scss"]
 })
-export class RenameModuleDirectoryDialogComponent implements OnInit {
+export class RenamePackageDirectoryDialogComponent implements OnInit {
   constructor(
-    private dialogRef: MatDialogRef<RenameModuleDirectoryDialogComponent>,
+    private dialogRef: MatDialogRef<RenamePackageDirectoryDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) { }
 

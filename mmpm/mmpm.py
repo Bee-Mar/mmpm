@@ -21,6 +21,9 @@ def main(argv):
 
     modules = core.load_modules(force_refresh=should_refresh)
 
+    if args.subcommand == opts.DATABASE and args.refresh:
+        sys.exit(0)
+
     if not modules:
         utils.fatal_msg('Unable to retrieve modules.')
 

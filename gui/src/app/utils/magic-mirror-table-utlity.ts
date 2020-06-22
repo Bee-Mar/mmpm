@@ -3,7 +3,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
 import { MatTableDataSource } from "@angular/material/table";
 import { SelectionModel } from "@angular/cdk/collections";
-import { ModuleDetailsModalComponent } from "src/app/components/module-details-modal/module-details-modal.component";
+import { PackageDetailsModalComponent } from "src/app/components/package-details-modal/package-details-modal.component";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { TooltipPosition } from "@angular/material/tooltip";
 
@@ -104,12 +104,12 @@ export class MagicMirrorTableUtility {
       }
   }
 
-  public showModuleDetails(pkg: MagicMirrorPackage) {
+  public showPackageDetails(pkg: MagicMirrorPackage) {
     // since clicking on a cell selects the value, this actually sets the value
     // to state it was in at the time of selection
     this.selection.toggle(pkg);
 
-    this.dialog.open(ModuleDetailsModalComponent, {
+    this.dialog.open(PackageDetailsModalComponent, {
       width: "45vw",
       height: "50vh",
       disableClose: true,

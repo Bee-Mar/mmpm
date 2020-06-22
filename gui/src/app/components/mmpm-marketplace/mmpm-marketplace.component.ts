@@ -10,7 +10,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
 import { Subscription } from "rxjs";
 import { TerminalStyledPopUpWindowComponent } from "src/app/components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
-import { RenameModuleDirectoryDialogComponent } from "src/app/components/rename-module-directory-dialog/rename-module-directory-dialog.component";
+import { RenamePackageDirectoryDialogComponent } from "src/app/components/rename-package-directory-dialog/rename-package-directory-dialog.component";
 import { DataStoreService } from "src/app/services/data-store.service";
 import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity";
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
@@ -122,7 +122,7 @@ export class MMPMMarketplaceComponent implements OnInit {
         } else {
 
           dialogRef = this.dialog.open(
-            RenameModuleDirectoryDialogComponent,
+            RenamePackageDirectoryDialogComponent,
             this.mmpmUtility.basicDialogSettings(result["conflicts"])
           );
 

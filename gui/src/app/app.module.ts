@@ -17,9 +17,9 @@ import { TableUpdateNotifierService } from "src/app/services/table-update-notifi
 import { MagicMirrorControlCenterComponent } from "./components/magic-mirror-control-center/magic-mirror-control-center.component";
 import { ConfirmationDialogComponent } from "./components/confirmation-dialog/confirmation-dialog.component";
 import { TerminalStyledPopUpWindowComponent } from "./components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
-import { ModuleDetailsModalComponent } from "./components/module-details-modal/module-details-modal.component";
+import { PackageDetailsModalComponent } from "./components/package-details-modal/package-details-modal.component";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
-import { RenameModuleDirectoryDialogComponent } from "src/app/components/rename-module-directory-dialog/rename-module-directory-dialog.component";
+import { RenamePackageDirectoryDialogComponent } from "src/app/components/rename-package-directory-dialog/rename-package-directory-dialog.component";
 import { CustomSnackbarComponent } from "./components/custom-snackbar/custom-snackbar.component";
 import { MMPMMarketplaceComponent } from "./components/mmpm-marketplace/mmpm-marketplace.component";
 import { MMPMLocalPackagesComponent } from "./components/mmpm-local-packages/mmpm-local-packages.component";
@@ -27,7 +27,7 @@ import { MMPMExternalSourcesComponent } from "./components/mmpm-external-sources
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountTickerComponent } from "./components/active-process-count-ticker/active-process-count-ticker.component";
 import { ActiveProcessesModalComponent } from "./components/active-processes-modal/active-processes-modal.component";
-import { MmpmTableContainerComponent } from './components/mmpm-table-container/mmpm-table-container.component';
+import { MMPMTableContainerComponent } from "./components/mmpm-table-container/mmpm-table-container.component";
 
 @NgModule({
   declarations: [
@@ -39,15 +39,15 @@ import { MmpmTableContainerComponent } from './components/mmpm-table-container/m
     MagicMirrorControlCenterComponent,
     ConfirmationDialogComponent,
     TerminalStyledPopUpWindowComponent,
-    ModuleDetailsModalComponent,
-    RenameModuleDirectoryDialogComponent,
+    PackageDetailsModalComponent,
+    RenamePackageDirectoryDialogComponent,
     CustomSnackbarComponent,
     MMPMMarketplaceComponent,
     MMPMLocalPackagesComponent,
     MMPMExternalSourcesComponent,
     ActiveProcessCountTickerComponent,
     ActiveProcessesModalComponent,
-    MmpmTableContainerComponent
+    MMPMTableContainerComponent
   ],
   imports: [
     BrowserModule,

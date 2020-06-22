@@ -13,9 +13,8 @@ export class ModuleDetailsModalComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: any
   ) { }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
   }
 
-  onNoClick() {
-  }
+  public onNoClick(): void {}
 }

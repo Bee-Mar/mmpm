@@ -17,7 +17,6 @@ import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
-import { ActiveProcess } from "src/app/interfaces/active-process";
 
 @Component({
   selector: "app-mmpm-marketplace",
@@ -33,9 +32,9 @@ export class MMPMMarketplaceComponent implements OnInit {
   @ViewChild(MatSort) sort: MatSort;
 
   constructor(
+    public dialog: MatDialog,
     private api: RestApiService,
     private dataStore: DataStoreService,
-    public dialog: MatDialog,
     private notifier: TableUpdateNotifierService,
     private mSnackBar: MatSnackBar,
     private mmpmUtility: MMPMUtility,
@@ -85,8 +84,8 @@ export class MMPMMarketplaceComponent implements OnInit {
 
     for (let pkg of selected) {
       ids.push(this.activeProcessService.insertProcess({
-        name: `Installating: ${pkg.title}`,
-        startTime: Date.now().toLocaleString()
+        name: `Installating ${pkg.title}`,
+        startTime: Date().toString()
       }));
     }
 

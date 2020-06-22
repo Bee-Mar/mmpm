@@ -7,8 +7,8 @@ import { ActiveProcess } from "src/app/interfaces/active-process";
 })
 export class ActiveProcessCountService {
   private activeProcesses: Map<number, ActiveProcess> = new Map<number, ActiveProcess>();
-  private ticketNumber: number = 0;
   private subject: Subject<Map<number, ActiveProcess>> = new Subject();
+  private ticketNumber: number = 0;
 
   constructor() {}
 
@@ -22,7 +22,6 @@ export class ActiveProcessCountService {
 
   public removeProcess(key: number) {
     this.activeProcesses.delete(key);
-    console.log(this.activeProcesses);
     this.subject.next(this.activeProcesses);
   }
 

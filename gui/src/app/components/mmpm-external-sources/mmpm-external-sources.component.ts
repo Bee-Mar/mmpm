@@ -15,6 +15,7 @@ import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
 import { ExternalSourceRegistrationDialogComponent } from "src/app/components/external-source-registration-dialog/external-source-registration-dialog.component";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
+import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 
 @Component({
   selector: "app-mmpm-external-sources",
@@ -29,12 +30,13 @@ export class MMPMExternalSourcesComponent implements OnInit {
   @ViewChild(MatSort) sort: MatSort;
 
   constructor(
+    public dialog: MatDialog,
     private api: RestApiService,
     private dataStore: DataStoreService,
     private notifier: TableUpdateNotifierService,
     private mSnackBar: MatSnackBar,
     private mmpmUtility: MMPMUtility,
-    public dialog: MatDialog,
+    private activeProcessService: ActiveProcessCountService,
   ) {}
 
   public packages: MagicMirrorPackage[];
@@ -74,17 +76,32 @@ export class MMPMExternalSourcesComponent implements OnInit {
   }
 
   public onAddExternalSources(): void {
-    const dialogRef = this.dialog.open(ExternalSourceRegistrationDialogComponent, { minWidth: "60vw", disableClose: true });
+    const dialogRef = this.dialog.open(ExternalSourceRegistrationDialogComponent, {
+      minWidth: "60vw", disableClose: true
+    });
 
     dialogRef.afterClosed().subscribe((newExternalPackage: MagicMirrorPackage) => {
       // the user may have exited without entering anything
       if (newExternalPackage) {
+        let ids: Array<number> = new Array<number>();
+
+        for (let pkg of this.selection.selected) {
+          ids.push(this.activeProcessService.insertProcess({
+            name: `Adding External Source ${pkg.title}`,
+            startTime: Date().toString()
+          }));
+        }
+
         this.api.addExternalModuleSource(newExternalPackage).then((error) => {
           console.log(error["error"]);
+
           const message = error["error"] === "no_error" ?
             `Successfully added '${newExternalPackage.title}' to 'External Module Sources'` :
             "Failed to add new source";
 
+          for (let id of ids) {
+            this.activeProcessService.removeProcess(id);
+          }
           this.notifier.triggerTableUpdate();
           this.snackbar.success(message);
         }).catch((error) => {

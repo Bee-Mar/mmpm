@@ -26,6 +26,7 @@ import { MMPMLocalPackagesComponent } from "./components/mmpm-local-packages/mmp
 import { MMPMExternalSourcesComponent } from "./components/mmpm-external-sources/mmpm-external-sources.component";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountTickerComponent } from './components/active-process-count-ticker/active-process-count-ticker.component';
+import { ActiveProcessesModalComponent } from './components/active-processes-modal/active-processes-modal.component';
 
 @NgModule({
   declarations: [
@@ -43,7 +44,8 @@ import { ActiveProcessCountTickerComponent } from './components/active-process-c
     MMPMMarketplaceComponent,
     MMPMLocalPackagesComponent,
     MMPMExternalSourcesComponent,
-    ActiveProcessCountTickerComponent
+    ActiveProcessCountTickerComponent,
+    ActiveProcessesModalComponent
   ],
   imports: [
     BrowserModule,

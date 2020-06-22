@@ -15,6 +15,7 @@ import { DataStoreService } from "src/app/services/data-store.service";
 import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity";
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
+import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 
 @Component({
   selector: "app-mmpm-local-packages",
@@ -35,7 +36,8 @@ export class MMPMLocalPackagesComponent implements OnInit {
     public dialog: MatDialog,
     private notifier: TableUpdateNotifierService,
     private mSnackBar: MatSnackBar,
-    private mmpmUtility: MMPMUtility
+    private mmpmUtility: MMPMUtility,
+    private activeProcessService: ActiveProcessCountService
   ) {}
 
   public packages: MagicMirrorPackage[];
@@ -81,8 +83,18 @@ export class MMPMLocalPackagesComponent implements OnInit {
 
   public onUninstallModules(): void {
     if (this.selection.selected.length) {
+      let ids: Array<number> = new Array<number>();
+
+      for (let pkg of this.selection.selected) {
+        ids.push(this.activeProcessService.insertProcess({
+          name: `Removing ${pkg.title}`,
+          startTime: Date().toString()
+        }));
+      }
+
       this.snackbar.notify("Executing ...");
       const selected = this.selection.selected;
+
       this.selection.clear();
 
       this.api.uninstallModules(selected).then((result: string) => {
@@ -97,6 +109,10 @@ export class MMPMLocalPackagesComponent implements OnInit {
 
         } else {
           this.snackbar.success("Removed successfully!");
+        }
+
+        for (let id of ids) {
+          this.activeProcessService.removeProcess(id);
         }
 
         this.notifier.triggerTableUpdate();

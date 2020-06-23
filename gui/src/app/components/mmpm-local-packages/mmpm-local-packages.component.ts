@@ -4,7 +4,7 @@ import { SelectionModel } from "@angular/cdk/collections";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { MatSort } from "@angular/material/sort";
 import { MatPaginator, PageEvent } from "@angular/material/paginator";
-import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
+import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
 import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";

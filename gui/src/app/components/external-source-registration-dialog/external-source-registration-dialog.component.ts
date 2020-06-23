@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject } from "@angular/core";
 import { MatDialogRef } from "@angular/material/dialog";
-import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
+import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { FormControl, Validators } from "@angular/forms";
 
 @Component({

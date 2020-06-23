@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { ActiveProcessesModalComponent } from "src/app/components/active-processes-modal/active-processes-modal.component";
-import { ActiveProcess } from "src/app/interfaces/active-process";
+import { ActiveProcess } from "src/app/interfaces/interfaces";
 import { Subscription } from "rxjs";
 import { MatDialog } from "@angular/material/dialog";
 

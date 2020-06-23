@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
+import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { URL } from "src/app/utils/urls";
 

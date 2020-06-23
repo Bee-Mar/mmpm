@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable, throwError } from "rxjs";
-import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
+import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { retry, catchError } from "rxjs/operators";
 import { URL } from "src/app/utils/urls";
 

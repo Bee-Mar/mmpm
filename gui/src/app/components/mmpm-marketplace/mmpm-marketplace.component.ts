@@ -4,7 +4,6 @@ import { SelectionModel } from "@angular/cdk/collections";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { MatSort } from "@angular/material/sort";
 import { MatPaginator, PageEvent } from "@angular/material/paginator";
-import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
 import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
@@ -16,6 +15,7 @@ import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
+import { InstallationConflict, MagicMirrorPackage } from "src/app/interfaces/interfaces";
 
 @Component({
   selector: "app-mmpm-marketplace",
@@ -96,41 +96,41 @@ export class MMPMMarketplaceComponent implements OnInit {
     }).catch((error) => console.log(error));
   }
 
-  private checkForInstallationConflicts(selectedPackages: MagicMirrorPackage[]): Promise<MagicMirrorPackage[]> {
-    let promise = new Promise<MagicMirrorPackage[]>((resolve, reject) => {
+  private checkForInstallationConflicts(selectedPackages: MagicMirrorPackage[]): Promise<InstallationConflict> {
+    let promise = new Promise<InstallationConflict>((resolve, reject) => {
+
+      let installationConflict: InstallationConflict = {
+        duplicateTitles: new Array<MagicMirrorPackage>(),
+        existingTitles: new Array<MagicMirrorPackage>()
+      };
+
       this.dataStore.getAllInstalledPackages().then((installedPackages: MagicMirrorPackage[]) => {
 
-        let duplicates: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
-        let existingPackages: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
-
         selectedPackages.forEach((selectedPackage: MagicMirrorPackage, index: number) => {
-          const existing: MagicMirrorPackage = this.tableUtility.findPackageInstalledWithSameName(
-            selectedPackage,
-            installedPackages
-          );
+          const existing: MagicMirrorPackage = installedPackages.find((pkg: MagicMirrorPackage) => pkg.title === selectedPackage.title);
 
           if (existing) {
-            existingPackages.push(selectedPackage);
+            installationConflict.existingTitles.push(selectedPackage);
             selectedPackages.slice(index, 1);
           } else {
 
-            let dups = this.tableUtility.findDuplicateSelectedPackages(
-              selectedPackages,
-              selectedPackage.title
-            );
+            let dups = selectedPackages.filter((pkg: MagicMirrorPackage) => pkg.title === selectedPackage.title);
 
-            if (!dups?.length) {
-              //duplicates.push(dups);
+            if (dups?.length > 1) {
+              installationConflict.duplicateTitles = installationConflict.duplicateTitles.concat(dups);
+              selectedPackages = selectedPackages.filter((pkg: MagicMirrorPackage) => pkg.title !== selectedPackage.title);
             }
           }
         });
 
-        resolve(duplicates);
+        resolve(installationConflict);
 
       }).catch((error) => {
         console.log(error);
-        reject(new Array<MagicMirrorPackage>());
+        reject(installationConflict);
       });
+
+      resolve(installationConflict);
     });
 
     return promise;
@@ -167,36 +167,36 @@ export class MMPMMarketplaceComponent implements OnInit {
       const selected = this.selection.selected;
       this.selection.clear();
 
-      this.checkForInstallationConflicts(selected).then((duplicates: MagicMirrorPackage[]) => {
-        console.log(duplicates);
+      this.checkForInstallationConflicts(selected).then((installationConflicts: InstallationConflict) => {
+        console.log(installationConflicts);
 
-        //if (!conflicts.length) {
-        //  this.installModules(selected);
-        //} else {
+        if (!installationConflicts?.duplicateTitles?.length && !installationConflicts?.existingTitles?.length) {
+          this.installModules(selected);
+        } else {
 
-        //  let dialogRef = this.dialog.open(
-        //    RenamePackageDirectoryDialogComponent,
-        //    this.mmpmUtility.basicDialogSettings(result["conflicts"])
-        //  );
+          let dialogRef = this.dialog.open(
+            RenamePackageDirectoryDialogComponent,
+            this.mmpmUtility.basicDialogSettings(installationConflicts)
+          );
 
-        //  dialogRef.afterClosed().subscribe((updatedModules: MagicMirrorPackage[]) => {
-        //    selected.forEach((selectedModule, selectedIndex: number) => {
-        //      updatedModules.forEach((updatedModule: MagicMirrorPackage, _: number) => {
-        //        if (selectedModule.title === updatedModule.title) {
-        //          if ((updatedModule.directory.length)) {
-        //            selectedModule.directory = updatedModule.directory;
-        //          } else {
-        //            selected.splice(selectedIndex, 1);
-        //          }
-        //        }
-        //      });
-        //    });
+          dialogRef.afterClosed().subscribe((updatedModules: MagicMirrorPackage[]) => {
+            selected.forEach((selectedModule, selectedIndex: number) => {
+              updatedModules.forEach((updatedModule: MagicMirrorPackage, _: number) => {
+                if (selectedModule.title === updatedModule.title) {
+                  if ((updatedModule.directory.length)) {
+                    selectedModule.directory = updatedModule.directory;
+                  } else {
+                    selected.splice(selectedIndex, 1);
+                  }
+                }
+              });
+            });
 
-        //    if (selected.length) {
-        //      this.installModules(selected);
-        //    }
-        //  });
-        //}
+            if (selected.length) {
+              //this.installModules(selected);
+            }
+          });
+        }
       }).catch((error) => console.log(error));
     }
   }

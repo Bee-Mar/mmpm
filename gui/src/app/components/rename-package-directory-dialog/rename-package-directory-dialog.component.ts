@@ -12,9 +12,11 @@ export class RenamePackageDirectoryDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: any
   ) { }
 
-  public ngOnInit(): void {}
+  public ngOnInit(): void {
+    console.log(this.data);
+  }
 
-  public onSubmitNewDirectoryNames(data: any): void {
-    this.dialogRef.close(data);
+  public onSubmitNewDirectoryNames(): void {
+    this.dialogRef.close(this.data);
   }
 }

@@ -1,6 +1,6 @@
 import { MatSort } from "@angular/material/sort";
 import { MatDialog } from "@angular/material/dialog";
-import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
+import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { MatTableDataSource } from "@angular/material/table";
 import { SelectionModel } from "@angular/cdk/collections";
 import { PackageDetailsModalComponent } from "src/app/components/package-details-modal/package-details-modal.component";
@@ -116,14 +116,5 @@ export class MagicMirrorTableUtility {
       data: pkg
     });
   }
-
-  public findDuplicateSelectedPackages(packages: MagicMirrorPackage[], titleOfInterest: string): Array<MagicMirrorPackage> {
-    return packages.filter((pkg: MagicMirrorPackage) => pkg.title === titleOfInterest);
-  }
-
-  public findPackageInstalledWithSameName(pkgToSearchFor: MagicMirrorPackage, installedPackages: MagicMirrorPackage[]): MagicMirrorPackage {
-    return installedPackages.find((pkg: MagicMirrorPackage) => pkg.title === pkgToSearchFor.title);
-  }
-
 }
 

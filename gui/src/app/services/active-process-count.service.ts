@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Subject, Observable } from "rxjs";
-import { ActiveProcess } from "src/app/interfaces/active-process";
+import { ActiveProcess } from "src/app/interfaces/interfaces";
 
 @Injectable({
   providedIn: "root"

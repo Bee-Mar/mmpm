@@ -4,6 +4,11 @@ from os import environ
 from mmpm import color
 from typing import Dict
 
+def __get_or_set_env_var__(var: str, value: str) -> str:
+    if not var in environ:
+        environ[env_var] = value
+
+    return environ[var]
 
 TITLE: str = 'title'
 REPOSITORY: str = 'repository'
@@ -34,8 +39,8 @@ MMPM_MAGICMIRROR_ROOT: str = 'MMPM_MAGICMIRROR_ROOT'
 MAGICMIRROR_PM2_PROC: str = 'MAGICMIRROR_PM2_PROC'
 
 MMPM_ENV_VARS: Dict[str, str] = {
-        MMPM_MAGICMIRROR_ROOT: environ.get(MMPM_MAGICMIRROR_ROOT, join(HOME_DIR, 'MagicMirror')),
-        MAGICMIRROR_PM2_PROC: environ.get(MAGICMIRROR_PM2_PROC, 'MagicMirror')
+        MMPM_MAGICMIRROR_ROOT: __get_or_set_env_var__(MMPM_MAGICMIRROR_ROOT, join(HOME_DIR, 'MagicMirror')),
+        MAGICMIRROR_PM2_PROC: __get_or_set_env_var__(MAGICMIRROR_PM2_PROC, 'MagicMirror')
 }
 
 MMPM_REPO_URL: str = "https://github.com/Bee-Mar/mmpm.git"

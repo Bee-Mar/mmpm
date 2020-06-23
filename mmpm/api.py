@@ -124,31 +124,6 @@ def get_magicmirror_modules() -> dict:
     return _modules_
 
 
-@app.route(api('check-for-installation-conflicts'), methods=[consts.POST])
-def check_for_installation_conflicts() -> str:
-    selected_modules: list = request.get_json(force=True)['selected-modules']
-    log.info(f'User selected {selected_modules} to be installed')
-
-    existing_module_dirs: List[str] = utils.get_existing_module_directories()
-    selected_titles = [module[consts.TITLE] for module in selected_modules]
-
-    result: Dict[str, list] = {
-        'conflicts': [],
-        'duplicate_selections': [],
-        'existing': existing_module_dirs
-    }
-
-    for module in selected_modules:
-        if module[consts.TITLE] in selected_titles:
-            log.warning(f'A module named {module[consts.TITLE]} appears more than in user selected packages to install')
-            result['duplicate_selections'].append(module)
-        elif module[consts.TITLE] in existing_module_dirs:
-            conflicting_path: str = os.path.join(consts.MAGICMIRROR_MODULES_DIR, module[consts.TITLE])
-            log.warning(f'Found a package named {module[consts.TITLE]} already at {conflicting_path}')
-            result['conflicts'].append(module)
-
-    return json.dumps(result)
-
 @app.route(api('install-modules'), methods=[consts.POST])
 def install_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']

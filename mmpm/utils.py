@@ -699,3 +699,5 @@ def get_existing_module_directories() -> List[str]:
 
     dirs: List[str] = os.listdir(consts.MAGICMIRROR_MODULES_DIR)
     return [d for d in dirs if os.path.isdir(os.path.join(consts.MAGICMIRROR_MODULES_DIR, d))]
+
+

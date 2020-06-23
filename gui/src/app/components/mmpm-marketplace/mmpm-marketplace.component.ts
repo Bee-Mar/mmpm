@@ -180,19 +180,21 @@ export class MMPMMarketplaceComponent implements OnInit {
           );
 
           dialogRef.afterClosed().subscribe((updatedModules: MagicMirrorPackage[]) => {
-            selected.forEach((selectedModule, selectedIndex: number) => {
-              updatedModules.forEach((updatedModule: MagicMirrorPackage, _: number) => {
-                if (selectedModule.title === updatedModule.title) {
-                  if ((updatedModule.directory.length)) {
-                    selectedModule.directory = updatedModule.directory;
-                  } else {
-                    selected.splice(selectedIndex, 1);
+            if (updatedModules?.length) {
+              selected.forEach((selectedModule: MagicMirrorPackage, selectedIndex: number) => {
+                updatedModules.forEach((updatedModule: MagicMirrorPackage, _: number) => {
+                  if (selectedModule.title === updatedModule.title) {
+                    if ((updatedModule.directory.length)) {
+                      selectedModule.directory = updatedModule.directory;
+                    } else {
+                      selected.splice(selectedIndex, 1);
+                    }
                   }
-                }
+                });
               });
-            });
+            }
 
-            if (selected.length) {
+            if (selected?.length) {
               //this.installModules(selected);
             }
           });

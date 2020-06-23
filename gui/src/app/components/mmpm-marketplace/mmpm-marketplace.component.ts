@@ -103,26 +103,27 @@ export class MMPMMarketplaceComponent implements OnInit {
         let duplicates: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
         let existingPackages: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
 
-        for (const selectedPackage of selectedPackages) {
-          const index = this.tableUtility.findPackageInstalledWithSameName(
+        selectedPackages.forEach((selectedPackage: MagicMirrorPackage, index: number) => {
+          const existing: MagicMirrorPackage = this.tableUtility.findPackageInstalledWithSameName(
             selectedPackage,
             installedPackages
           );
 
-          if (index !== -1) {
-            existingPackages.push(installedPackages[index]);
-            continue;
+          if (existing) {
+            existingPackages.push(selectedPackage);
+            selectedPackages.slice(index, 1);
+          } else {
+
+            let dups = this.tableUtility.findDuplicateSelectedPackages(
+              selectedPackages,
+              selectedPackage.title
+            );
+
+            if (!dups?.length) {
+              //duplicates.push(dups);
+            }
           }
-
-          let dups = this.tableUtility.findDuplicateSelectedPackages(selectedPackages, selectedPackage.title);
-          console.log(dups);
-
-          if (!dups?.length) {
-            continue;
-          }
-
-          //duplicates += dups;
-        }
+        });
 
         resolve(duplicates);
 

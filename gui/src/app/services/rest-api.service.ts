@@ -5,12 +5,10 @@ import { MagicMirrorPackage } from "src/app/interfaces/magic-mirror-package";
 import { retry, catchError } from "rxjs/operators";
 import { URL } from "src/app/utils/urls";
 
-const httpOptions = (httpHeaders: object = {}) => {
-  return new HttpHeaders({
-    "Content-Type": "application/json",
-    ...httpHeaders
-  });
-};
+const httpOptions = (httpHeaders: object = {}) => new HttpHeaders({
+  "Content-Type": "application/json",
+  ...httpHeaders
+});
 
 @Injectable({
   providedIn: "root"
@@ -119,7 +117,7 @@ export class RestApiService {
 
   public handleError(error: any): Promise<any> {
     const errorMessage = error.error instanceof ErrorEvent ?
-      error.error.message :  `Error Code: ${error.status}\nMessage: ${error.message}`;
+    error.error.message :  `Error Code: ${error.status}\nMessage: ${error.message}`;
 
     window.alert(errorMessage);
     return throwError(errorMessage).toPromise();

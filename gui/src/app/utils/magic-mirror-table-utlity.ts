@@ -121,8 +121,8 @@ export class MagicMirrorTableUtility {
     return packages.filter((pkg: MagicMirrorPackage) => pkg.title === titleOfInterest);
   }
 
-  public findPackageInstalledWithSameName(pkgToSearchFor: MagicMirrorPackage, installedPackages: MagicMirrorPackage[]) {
-    return installedPackages.findIndex((pkg: MagicMirrorPackage) => pkg.title === pkgToSearchFor.title);
+  public findPackageInstalledWithSameName(pkgToSearchFor: MagicMirrorPackage, installedPackages: MagicMirrorPackage[]): MagicMirrorPackage {
+    return installedPackages.find((pkg: MagicMirrorPackage) => pkg.title === pkgToSearchFor.title);
   }
 
 }

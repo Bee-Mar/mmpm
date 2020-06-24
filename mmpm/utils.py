@@ -68,10 +68,13 @@ def plain_print(msg: str) -> None:
 
 def error_msg(msg: str) -> None:
     '''
-    Displays error message to user, and continues program execution.
+    Logs error message, displays error message to user, and continues program execution
 
     Parameters:
         msg (str): The error message to be printed to stdout
+
+    Returns:
+        None
     '''
     log.error(msg)
     print(colored_text(color.B_RED, "ERROR:"), msg)
@@ -79,7 +82,7 @@ def error_msg(msg: str) -> None:
 
 def warning_msg(msg: str) -> None:
     '''
-    Displays warning message to user and continues program execution.
+    Logs warning message, displays warning message to user, and continues program execution
 
     Parameters:
         msg (str): The warning message to be printed to stdout
@@ -93,7 +96,7 @@ def warning_msg(msg: str) -> None:
 
 def fatal_msg(msg: str) -> None:
     '''
-    Displays fatal error message to user and halts program execution
+    Logs fatal message, displays fatal message to user, and halts program execution
 
     Parameters:
         msg (str): The fatal error message to be printed to stdout
@@ -416,10 +419,11 @@ def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool
 
 def install_dependencies() -> str:
     '''
-    Utility method to handle installation/upgrade process of modules. If the
-    install is successful, an empty string is returned. The installation
-    process relies on the location of the current directory the os library
-    detects.
+    Utility method that detects package.json, Gemfiles, Makefiles, and
+    CMakeLists.txt files, and handles the build process for each of the
+    previously mentioned files. If the install is successful, an empty string
+    is returned. The installation process relies on the location of the current
+    directory the os library detects.
 
     Parameters:
         None

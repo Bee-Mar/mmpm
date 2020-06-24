@@ -489,28 +489,52 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
         utils.error_msg('Unable to communicate with git server')
         return False
 
-    if stdout:
-        if not utils.prompt_user('An upgrade is available for MagicMirror. Would you like to upgrade now?', assume_yes=assume_yes):
-            return False
-
-        utils.plain_print(f"\n{colored_text(color.N_CYAN, 'Upgrading MagicMirror')}\n")
-        error_code, _, stdout = utils.run_cmd(['git', 'pull'])
-        utils.install_dependencies()
-
-        if error_code:
-            utils.error_msg('Failed to communicate with git server')
-            return False
-
-        print('\nUpgrade complete!\n')
-
-        if not utils.prompt_user('Would you like to restart MagicMirror now?', assume_yes=assume_yes):
-            return False
-
-        restart_magicmirror()
-
-    else:
+    if not stdout:
         print(f'No updates available for MagicMirror {consts.YELLOW_X}')
+        return False
 
+    if not utils.prompt_user('An update is available for MagicMirror. Would you like to upgrade now?', assume_yes=assume_yes):
+        return False
+
+    if not upgrade_magicmirror():
+        utils.error_msg('Unable to upgrade MagicMirror')
+        return False
+
+    if not utils.prompt_user('Would you like to restart MagicMirror now?', assume_yes=assume_yes):
+        return True
+
+    restart_magicmirror()
+    return True
+
+
+def upgrade_magicmirror() -> bool:
+    '''
+    Handles upgrade processs of MagicMirror by pulling changes from MagicMirror
+    repo, and installing dependencies.
+
+    Parameters:
+        None
+
+    Returns:
+        success (bool): True if success, False if failure
+
+    '''
+
+    print(f"\n{colored_text(color.N_CYAN, 'Upgrading MagicMirror')}")
+    os.chdir(consts.MAGICMIRROR_ROOT)
+    error_code, _, stdout = utils.run_cmd(['git', 'pull'])
+
+    if error_code:
+        utils.error_msg('Failed to communicate with git server')
+        return False
+
+    error: str = utils.install_dependencies()
+
+    if error:
+        utils.error_msg(error)
+        return False
+
+    print('\nUpgrade complete!\n')
     return True
 
 

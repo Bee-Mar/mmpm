@@ -11,29 +11,28 @@
       >{{getErrorMessage(titleFormControl)}}</mat-error
     >
   </mat-form-field>
-      <mat-form-field appearance="fill">
-        <mat-label>Repository</mat-label>
-        <input
-          matInput
-          [formControl]="repositoryFormControl"
-          [(ngModel)]="repository"
-          required
-          />
-        <mat-error *ngIf="repositoryFormControl.invalid"
-          >{{getErrorMessage(repositoryFormControl)}}</mat-error
-        >
-      </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-label>Author</mat-label>
-            <input
-              matInput
-              [formControl]="authorFormControl"
-              [(ngModel)]="author"
-              required
-              />
-            <mat-error *ngIf="authorFormControl.invalid"
-              >{{getErrorMessage(authorFormControl)}}</mat-error
-            >
+    <mat-form-field appearance="fill"> <mat-label>Repository</mat-label>
+      <input
+        matInput
+        [formControl]="repositoryFormControl"
+        [(ngModel)]="repository"
+        required
+        />
+      <mat-error *ngIf="repositoryFormControl.invalid"
+        >{{getErrorMessage(repositoryFormControl)}}</mat-error
+      >
+    </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Author</mat-label>
+          <input
+            matInput
+            [formControl]="authorFormControl"
+            [(ngModel)]="author"
+            required
+            />
+          <mat-error *ngIf="authorFormControl.invalid"
+            >{{getErrorMessage(authorFormControl)}}</mat-error
+          >
           </mat-form-field>
               <mat-form-field appearance="fill">
                 <mat-label>Description</mat-label>

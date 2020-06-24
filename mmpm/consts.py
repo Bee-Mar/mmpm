@@ -6,7 +6,7 @@ from typing import Dict
 
 def __get_or_set_env_var__(var: str, value: str) -> str:
     if not var in environ:
-        environ[env_var] = value
+        environ[var] = value
 
     return environ[var]
 

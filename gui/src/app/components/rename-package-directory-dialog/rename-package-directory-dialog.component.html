@@ -1,35 +1,60 @@
 <h2 mat-dialog-title style="text-align: center">Installation Conflicts</h2>
-<mat-dialog-content class="mat-typography">
+<div>
+  <mat-dialog-content class="mat-typography">
+    <div *ngIf="data.installationConflicts?.existingTitles?.length">
+      <h4>
+        The following selected packages conflict with already installed packages:
+      </h4>
+      <div *ngFor="let module of data.installationConflicts.existingTitles | keyvalue">
+        <mat-form-field
+          appearance="fill"
+          style="width: 50%;"
+          >
+          <mat-label>New Directory Name for {{ module.value.title }} ({{ module.value.repository }})</mat-label>
+          <input
+            matInput
+            required
+            style="width: 50%;"
+            [formControl]="packageDirectoryFormControl"
+            [(ngModel)]="module.value.directory"
+            >
+            <mat-error *ngIf="packageDirectoryFormControl.invalid">
+              {{getErrorMessage(packageDirectoryFormControl)}}
+            </mat-error>
+        </mat-form-field>
+      </div>
+      <br>
+    </div>
 
-  <div *ngIf="data.existingTitles?.length">
-    <p>
-    The following selected packages conflict with already installed packages:
-    </p>
-    <ul *ngFor="let module of data.existingTitles | keyvalue" style="white-space: pre-wrap;">
-      <li>{{ module.value.title }} ({{ module.value.repository }})</li>
-    </ul>
-    <mat-form-field *ngFor="let module of data | keyvalue" style="white-space: pre-wrap;">
-      <mat-label>New Directory Name for {{ module.value.title }}</mat-label>
-      <input matInput [(ngModel)]="module.value.directory">
-    </mat-form-field>
-  </div>
-
-  <div *ngIf="data.duplicateTitles?.length">
-    <p>
-    The following selected packages have conflicting titles:
-    </p>
-    <ul *ngFor="let module of data.duplicateTitles | keyvalue" style="white-space: pre-wrap;">
-      <li>{{ module.value.title }} ({{ module.value.repository }})</li>
-    </ul>
-    <mat-form-field *ngFor="let module of data | keyvalue" style="white-space: pre-wrap;">
-      <mat-label>New Directory Name for {{ module.value.title }}</mat-label>
-      <input matInput [(ngModel)]="module.value.directory">
-    </mat-form-field>
-  </div>
-</mat-dialog-content>
+    <div *ngIf="data.installationConflicts?.duplicateTitles?.length">
+      <h4>
+        The following selected packages have conflicting titles:
+      </h4>
+      <div *ngFor="let module of data.installationConflicts.duplicateTitles | keyvalue">
+        <mat-form-field
+          appearance="fill"
+          style="width: 50%;"
+          >
+          <mat-label>New Directory Name for {{ module.value.title }} ({{ module.value.repository }})</mat-label>
+          <input
+            matInput
+            required
+            style="width: 50%;"
+            [formControl]="packageDirectoryFormControl"
+            [(ngModel)]="module.value.directory"
+            />
+          <mat-error *ngIf="packageDirectoryFormControl.invalid">
+            {{getErrorMessage(packageDirectoryFormControl)}}
+          </mat-error>
+        </mat-form-field>
+      </div>
+      <br>
+    </div>
+  </mat-dialog-content>
+</div>
 
 <mat-dialog-actions align="center">
-  <button mat-button [mat-dialog-close]="data">
+  <button mat-raised-button (click)="onCancel()">
     <mat-icon>
       close
     </mat-icon>
@@ -45,5 +70,4 @@
     </mat-icon>
   </button>
 </mat-dialog-actions>
-
 

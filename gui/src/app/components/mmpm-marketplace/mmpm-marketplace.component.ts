@@ -40,7 +40,8 @@ export class MMPMMarketplaceComponent implements OnInit {
     private activeProcessService: ActiveProcessCountService
   ) {}
 
-  public packages: MagicMirrorPackage[];
+  public allPackages: MagicMirrorPackage[];
+  public installedPackages: MagicMirrorPackage[];
   public tableUtility: MagicMirrorTableUtility;
 
   private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this.mSnackBar);
@@ -66,6 +67,7 @@ export class MMPMMarketplaceComponent implements OnInit {
   private setupTableData(refresh: boolean = false): void {
     this.dataStore.getAllAvailablePackages(refresh).then((allPackages: MagicMirrorPackage[]) => {
       this.dataStore.getAllInstalledPackages(refresh).then((installedPackages: MagicMirrorPackage[]) => {
+        this.installedPackages = installedPackages;
 
         // removing all the packages that are currently installed from the list of available packages
         for (const installedPackage of installedPackages) {
@@ -73,15 +75,16 @@ export class MMPMMarketplaceComponent implements OnInit {
             (availablePackage: MagicMirrorPackage) =>
             availablePackage.repository === installedPackage.repository &&
             availablePackage.title === installedPackage.title &&
-            availablePackage.author === installedPackage.author
+            availablePackage.author === installedPackage.author &&
+            availablePackage.category === installedPackage.category
           );
 
           if (index > -1) allPackages.splice(index, 1);
         }
 
-        this.packages = allPackages;
+        this.allPackages = allPackages;
         this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
-        this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.packages);
+        this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.allPackages);
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
 
@@ -129,8 +132,6 @@ export class MMPMMarketplaceComponent implements OnInit {
         console.log(error);
         reject(installationConflict);
       });
-
-      resolve(installationConflict);
     });
 
     return promise;
@@ -168,7 +169,6 @@ export class MMPMMarketplaceComponent implements OnInit {
       this.selection.clear();
 
       this.checkForInstallationConflicts(selected).then((installationConflicts: InstallationConflict) => {
-        console.log(installationConflicts);
 
         if (!installationConflicts?.duplicateTitles?.length && !installationConflicts?.existingTitles?.length) {
           this.installModules(selected);
@@ -176,46 +176,37 @@ export class MMPMMarketplaceComponent implements OnInit {
 
           let dialogRef = this.dialog.open(
             RenamePackageDirectoryDialogComponent,
-            this.mmpmUtility.basicDialogSettings(installationConflicts)
+            this.mmpmUtility.basicDialogSettings({
+              installationConflicts,
+              installedPackages: this.installedPackages
+            })
           );
 
           dialogRef.afterClosed().subscribe((updatedModules: MagicMirrorPackage[]) => {
-            if (updatedModules?.length) {
-              selected.forEach((selectedModule: MagicMirrorPackage, selectedIndex: number) => {
-                updatedModules.forEach((updatedModule: MagicMirrorPackage, _: number) => {
-                  if (selectedModule.title === updatedModule.title) {
-                    if ((updatedModule.directory.length)) {
-                      selectedModule.directory = updatedModule.directory;
-                    } else {
-                      selected.splice(selectedIndex, 1);
-                    }
-                  }
-                });
-              });
+            if (!updatedModules?.length) {
+              return;
             }
 
-            if (selected?.length) {
-              //this.installModules(selected);
-            }
+            selected.forEach((selectedModule: MagicMirrorPackage) => {
+              updatedModules.forEach((updatedModule: MagicMirrorPackage) => {
+                if (selectedModule.title === updatedModule.title && updatedModule.directory.length) {
+                  selectedModule.directory = updatedModule.directory;
+                }
+              });
+            });
+
+            this.installModules(selected);
           });
         }
       }).catch((error) => console.log(error));
     }
   }
 
-  /*
-  NOTE: this is broken simply because of the eventlet bug
   public onRefreshModules(): void {
     this.snackbar.notify("Executing ... ");
-
-    this.api.refreshModules().then((_: any) => {
-      this.snackbar.notify("Database refresh complete!");
-      this.notifier.triggerTableUpdate();
-    }).catch((error) => {
-      console.log(error);
-    });
+    this.setupTableData(true);
+    this.snackbar.notify("Refresh complete!");
   }
-   */
 
   ngOnDestroy() {
     this.subscription.unsubscribe();

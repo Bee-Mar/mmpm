@@ -6,7 +6,7 @@
   <table
     mat-table
     matSort
-    (matSortChange)="tableUtility?.onSort($event, packages)"
+    (matSortChange)="tableUtility?.onSort($event, allPackages)"
     [dataSource]="dataSource"
     class="mat-elevation-z8"
     style="margin: 0 auto; width: 90vw; position: relative;"
@@ -94,7 +94,7 @@
     <button
       mat-raised-button
       color="primary"
-      [disabled]="!selection?.selected?.length || !packages?.length"
+      [disabled]="!selection?.selected?.length || !allPackages?.length"
       matTooltip="{{ selection?.selected?.length === 1 ? 'Install module' : 'Install Modules' }}"
       [matTooltipPosition]="tableUtility?.tooltipPosition"
       (click)="onInstallModules()"
@@ -104,12 +104,11 @@
       </mat-icon>
     </button>
 
-    <!--
     <button
       color="accent"
       mat-raised-button
       matTooltip="Refresh Marketplace"
-      [matTooltipPosition]="tooltipPosition"
+      [matTooltipPosition]="tableUtility?.tooltipPosition"
       style="margin-left: 3em;"
       (click)="onRefreshModules()"
       >
@@ -117,5 +116,4 @@
         refresh
       </mat-icon>
     </button>
-    -->
 </div>

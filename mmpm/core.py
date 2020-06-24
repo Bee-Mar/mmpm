@@ -574,10 +574,8 @@ def remove_modules(installed_modules: dict, modules_to_remove: List[str], assume
             for module in modules:
                 dir_name = os.path.basename(module[consts.DIRECTORY])
                 if dir_name in module_dirs and dir_name in modules_to_remove:
-                    if utils.prompt_user(
-                        f'Would you like to remove {colored_text(color.N_GREEN, module[consts.TITLE])} ({dir_name})?',
-                        assume_yes=assume_yes
-                    ):
+                    prompt: str = f'Would you like to remove {colored_text(color.N_GREEN, module[consts.TITLE])} ({dir_name})?'
+                    if utils.prompt_user(prompt, assume_yes=assume_yes):
                         marked_for_removal.append(dir_name)
                         log.info(f'User marked {dir_name} for removal')
                     else:
@@ -815,7 +813,7 @@ def display_modules(modules: dict, table_formatted: bool = False, include_path: 
     Returns:
         None
     '''
-    format_description = lambda desc : desc[:MAX_LENGTH] + '...' if len(desc) > MAX_LENGTH else desc
+    format_description = lambda desc: desc[:MAX_LENGTH] + '...' if len(desc) > MAX_LENGTH else desc
     MAX_LENGTH: int = 120
 
     if table_formatted:
@@ -836,12 +834,12 @@ def display_modules(modules: dict, table_formatted: bool = False, include_path: 
         table[0][1] = to_bytes(consts.DESCRIPTION)
 
         if include_path:
-            table[0][2] =  to_bytes(consts.DIRECTORY)
+            table[0][2] = to_bytes(consts.DIRECTORY)
 
             def __fill_row__(table, row, module):
                 table[row][0] = to_bytes(module[consts.TITLE])
                 table[row][1] = to_bytes(format_description(module[consts.DESCRIPTION]))
-                table[row][2] =  to_bytes(os.path.basename(module[consts.DIRECTORY]))
+                table[row][2] = to_bytes(os.path.basename(module[consts.DIRECTORY]))
         else:
             def __fill_row__(table, row, module):
                 table[row][0] = to_bytes(module[consts.TITLE])
@@ -856,14 +854,14 @@ def display_modules(modules: dict, table_formatted: bool = False, include_path: 
 
     else:
         if include_path:
-            _print_ = lambda module : print(
+            _print_ = lambda module: print(
                 colored_text(color.N_GREEN, f'{module[consts.TITLE]}'),
                 (f'\n  Directory: {os.path.basename(module[consts.DIRECTORY])}'),
                 (f"\n  {format_description(module[consts.DESCRIPTION])}\n")
             )
 
         else:
-            _print_ = lambda module : print(
+            _print_ = lambda module: print(
                 colored_text(color.N_GREEN, f'{module[consts.TITLE]}'),
                 (f"\n  {format_description(module[consts.DESCRIPTION])}\n")
             )
@@ -1051,10 +1049,8 @@ def remove_external_module_source(titles: List[str] = None, assume_yes: bool = F
     for title in titles:
         for module in modules[consts.EXTERNAL_MODULE_SOURCES]:
             if module[consts.TITLE] == title:
-                if utils.prompt_user(
-                    f'Would you like to remove {colored_text(color.N_GREEN, title)} ({module[consts.REPOSITORY]}) from the MMPM/MagicMirror local database?',
-                    assume_yes=assume_yes
-                ):
+                prompt: str = f'Would you like to remove {colored_text(color.N_GREEN, title)} ({module[consts.REPOSITORY]}) from the MMPM/MagicMirror local database?'
+                if utils.prompt_user(prompt, assume_yes=assume_yes):
                     marked_for_removal.append(module)
                 else:
                     cancelled_removal.append(module)
@@ -1215,10 +1211,7 @@ def stop_magicmirror() -> bool:
     '''
     if shutil.which('pm2'):
         log.info("Using 'pm2' to stop MagicMirror")
-        error_code, stdout, stderr = utils.run_cmd([
-            'pm2', 'stop', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]],
-            progress=False
-        )
+        error_code, stdout, stderr = utils.run_cmd(['pm2', 'stop', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]], progress=False)
 
         if stderr:
             log.error(stderr)
@@ -1357,8 +1350,8 @@ def install_autocompletion(assume_yes: bool = False) -> None:
     log.info(f'detected user shell to be {shell}')
     autocomplete_url: str = 'https://github.com/kislyuk/argcomplete#activating-global-completion'
     error_message: str = f'Please see {autocomplete_url} for help installing autocompletion'
-    complete_message = lambda config : f'Autocompletion installed. Please source {config} for the changes to take effect'
-    failed_match_message = lambda shell, configs : f'Unable to locate {shell} configuration file (looked for {configs}). {error_message}'
+    complete_message = lambda config: f'Autocompletion installed. Please source {config} for the changes to take effect'
+    failed_match_message = lambda shell, configs: f'Unable to locate {shell} configuration file (looked for {configs}). {error_message}'
 
     def __match_shell_config__(configs: List[str]) -> str:
         log.info(f'searching for one of the following shell configuration files {configs}')

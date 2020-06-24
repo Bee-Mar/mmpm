@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { MatDialogRef } from "@angular/material/dialog";
 import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { FormControl, Validators } from "@angular/forms";
@@ -9,15 +9,15 @@ import { FormControl, Validators } from "@angular/forms";
   styleUrls: ["./external-source-registration-dialog.component.scss"]
 })
 export class ExternalSourceRegistrationDialogComponent implements OnInit {
-  title: string = "";
-  repository: string = "";
-  author: string = "";
-  description: string = "";
+  public title: string = "";
+  public repository: string = "";
+  public author: string = "";
+  public description: string = "";
 
-  titleFormControl = new FormControl("", [Validators.required]);
-  repositoryFormControl = new FormControl("", [Validators.required]);
-  authorFormControl = new FormControl("", [Validators.required]);
-  descriptionFormControl = new FormControl("", [Validators.required]);
+  public titleFormControl = new FormControl("", [Validators.required]);
+  public repositoryFormControl = new FormControl("", [Validators.required]);
+  public authorFormControl = new FormControl("", [Validators.required]);
+  public descriptionFormControl = new FormControl("", [Validators.required]);
 
   constructor(
     private dialogRef: MatDialogRef<ExternalSourceRegistrationDialogComponent>,

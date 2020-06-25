@@ -9,8 +9,8 @@ export interface MagicMirrorPackage {
 }
 
 export interface InstallationConflict {
-  existingTitles: Array<MagicMirrorPackage>;
-  duplicateTitles: Array<MagicMirrorPackage>;
+  matchesInstalledTitles: Array<MagicMirrorPackage>;
+  matchesSelectedTitles: Array<MagicMirrorPackage>;
 }
 
 export interface ActiveProcess {

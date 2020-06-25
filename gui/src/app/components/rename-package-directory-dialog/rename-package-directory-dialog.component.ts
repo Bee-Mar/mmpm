@@ -2,6 +2,7 @@ import { Component, OnInit, Inject } from "@angular/core";
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from "@angular/material/dialog";
 import { FormControl, Validators } from "@angular/forms";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
+import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 
 @Component({
   selector: "app-rename-package-directory-dialog",
@@ -18,29 +19,44 @@ export class RenamePackageDirectoryDialogComponent implements OnInit {
   public packageDirectoryFormControl = new FormControl("", [Validators.required]);
 
   public ngOnInit(): void {
-    console.log(this.data.installationConflicts);
+    console.log(this.data);
   }
 
   public onSubmitNewDirectoryNames(): void {
-    this.dialogRef.close(this.data);
+    if (this.verifyUniqueDirectoryNames()) {
+      this.dialogRef.close(this.data);
+    }
   }
 
   public onCancel(): void {
     const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
-        message: "The installation process will be cancelled."
+        message: "The installation process will be cancelled"
       },
       disableClose: true
     });
 
-    confirmationDialogRef.afterClosed().subscribe((response) => {
-      if (response) {
-        this.dialogRef.close();
-      }
+    confirmationDialogRef.afterClosed().subscribe((yes) => {
+      if (yes) this.dialogRef.close();
     });
   }
 
   public verifyUniqueDirectoryNames(): boolean {
+
+    let pkgs: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
+
+    for (const key of Object.keys(this.data)) {
+      for (const pkg of this.data[key]) {
+        if(pkg) pkgs.push(pkg);
+      }
+    }
+
+    this.data.matchesSelectedTitles.map((pkg: MagicMirrorPackage) => `${this.data.magicmirrorRootDirectory}/${pkg.directory}`);
+
+    for (const pkg of pkgs) {
+      if (pkgs.filter((p: MagicMirrorPackage) => p.directory === pkg.directory).length)
+        return false;
+    }
 
     return true;
   }

@@ -10,6 +10,7 @@ export class DataStoreService {
   private availablePackages: MagicMirrorPackage[];
   private installedPackages: MagicMirrorPackage[];
   private externalPackages: MagicMirrorPackage[];
+  private modulesRootDirectory: string;
 
   constructor(private api: RestApiService) {}
 

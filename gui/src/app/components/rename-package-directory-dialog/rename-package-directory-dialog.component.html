@@ -1,11 +1,11 @@
 <h2 mat-dialog-title style="text-align: center">Installation Conflicts</h2>
 <div>
   <mat-dialog-content class="mat-typography">
-    <div *ngIf="data.installationConflicts?.existingTitles?.length">
+    <div *ngIf="data?.matchesInstalledTitles?.length">
       <h4>
         The following selected packages conflict with already installed packages:
       </h4>
-      <div *ngFor="let module of data.installationConflicts.existingTitles | keyvalue">
+      <div *ngFor="let module of data.matchesInstalledTitles | keyvalue">
         <mat-form-field
           appearance="fill"
           style="width: 50%;"
@@ -26,11 +26,11 @@
       <br>
     </div>
 
-    <div *ngIf="data.installationConflicts?.duplicateTitles?.length">
+    <div *ngIf="data?.matchesSelectedTitles?.length">
       <h4>
         The following selected packages have conflicting titles:
       </h4>
-      <div *ngFor="let module of data.installationConflicts.duplicateTitles | keyvalue">
+      <div *ngFor="let module of data.duplicateTitles | keyvalue">
         <mat-form-field
           appearance="fill"
           style="width: 50%;"

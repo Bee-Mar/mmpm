@@ -17,5 +17,6 @@ export const URL = {
   RESTART_RASPBERRYPI: "/restart-raspberrypi",
   STOP_RASPBERRYPI: "/stop-raspberrypi",
   UPGRADE_MAGICMIRROR: "/upgrade-magicmirror",
-  DOWNLOAD_LOG_FILES: "/download-log-files",
+  GET_MAGICMIRROR_ROOT_DIRECTORY: "/get-magicmirror-root-directory",
+  //DOWNLOAD_LOG_FILES: "/download-log-files",
 };

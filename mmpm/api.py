@@ -400,6 +400,12 @@ def upgrade_magicmirror() -> str:
 
     return json.dumps(True)
 
+
+@app.route(api('get-magicmirror-root-directory'), methods=[consts.GET])
+def get_magicmirror_root_directory() -> str:
+    log.info(f'Request to get MagicMirror root directory')
+    return json.dumps({"magicmirror_root": consts.MAGICMIRROR_ROOT})
+
 #@app.route(api('download-log-files'), methods=[consts.GET])
 #def download_log_files():
 #    path: str = consts.MAGICMIRROR_CONFIG_FILE

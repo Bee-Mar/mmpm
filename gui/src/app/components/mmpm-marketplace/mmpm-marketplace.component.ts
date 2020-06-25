@@ -16,6 +16,8 @@ import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/cust
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { InstallationConflict, MagicMirrorPackage } from "src/app/interfaces/interfaces";
+import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
+import { URL } from "src/app/utils/urls";
 
 @Component({
   selector: "app-mmpm-marketplace",
@@ -47,6 +49,7 @@ export class MMPMMarketplaceComponent implements OnInit {
   private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this.mSnackBar);
   private subscription: Subscription;
   private mmpmMarketplacePaginatorCookieSize: string = "MMPM-marketplace-packages-page-size";
+  private magicmirrorRootDirectory: string;
 
   dataSource: MatTableDataSource<MagicMirrorPackage>;
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
@@ -55,6 +58,11 @@ export class MMPMMarketplaceComponent implements OnInit {
 
   public ngOnInit(): void {
     this.setupTableData();
+
+    this.api.retrieve(URL.GET_MAGICMIRROR_ROOT_DIRECTORY).then((url: object) => {
+      this.magicmirrorRootDirectory = url["magicmirror_root"];
+    }).catch((error) => console.log(error));
+
     this.subscription = this.notifier.getNotification().subscribe((_) => this.setupTableData(true));
 
     if (!this.mmpmUtility.getCookie(this.mmpmMarketplacePaginatorCookieSize)) {
@@ -103,8 +111,8 @@ export class MMPMMarketplaceComponent implements OnInit {
     let promise = new Promise<InstallationConflict>((resolve, reject) => {
 
       let installationConflict: InstallationConflict = {
-        duplicateTitles: new Array<MagicMirrorPackage>(),
-        existingTitles: new Array<MagicMirrorPackage>()
+        matchesSelectedTitles: new Array<MagicMirrorPackage>(),
+        matchesInstalledTitles: new Array<MagicMirrorPackage>()
       };
 
       this.dataStore.getAllInstalledPackages().then((installedPackages: MagicMirrorPackage[]) => {
@@ -113,14 +121,14 @@ export class MMPMMarketplaceComponent implements OnInit {
           const existing: MagicMirrorPackage = installedPackages.find((pkg: MagicMirrorPackage) => pkg.title === selectedPackage.title);
 
           if (existing) {
-            installationConflict.existingTitles.push(selectedPackage);
+            installationConflict.matchesInstalledTitles.push(selectedPackage);
             selectedPackages.slice(index, 1);
           } else {
 
             let dups = selectedPackages.filter((pkg: MagicMirrorPackage) => pkg.title === selectedPackage.title);
 
             if (dups?.length > 1) {
-              installationConflict.duplicateTitles = installationConflict.duplicateTitles.concat(dups);
+              installationConflict.matchesSelectedTitles = installationConflict.matchesSelectedTitles.concat(dups);
               selectedPackages = selectedPackages.filter((pkg: MagicMirrorPackage) => pkg.title !== selectedPackage.title);
             }
           }
@@ -164,21 +172,35 @@ export class MMPMMarketplaceComponent implements OnInit {
   }
 
   public onInstallModules(): void {
-    if (this.selection.selected.length) {
+    if (!this.selection?.selected?.length) return;
+
+    const numPackages: number = this.selection.selected.length;
+
+    const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: `${numPackages} ${numPackages === 1 ? "package" : "packages"} will be installed`
+      },
+      disableClose: true
+    });
+
+    confirmationDialogRef.afterClosed().subscribe((yes) => {
+      if (!yes) return;
+
       const selected = this.selection.selected;
       this.selection.clear();
 
       this.checkForInstallationConflicts(selected).then((installationConflicts: InstallationConflict) => {
 
-        if (!installationConflicts?.duplicateTitles?.length && !installationConflicts?.existingTitles?.length) {
+        if (!installationConflicts?.matchesSelectedTitles?.length && !installationConflicts?.matchesInstalledTitles?.length) {
           this.installModules(selected);
         } else {
-
           let dialogRef = this.dialog.open(
             RenamePackageDirectoryDialogComponent,
             this.mmpmUtility.basicDialogSettings({
-              installationConflicts,
-              installedPackages: this.installedPackages
+              matchesSelectedTitles: installationConflicts.matchesSelectedTitles,
+              matchesInstalledTitles: installationConflicts.matchesInstalledTitles,
+              installedPackages: this.installedPackages,
+              magicmirrorRootDirectory: this.magicmirrorRootDirectory
             })
           );
 
@@ -199,7 +221,7 @@ export class MMPMMarketplaceComponent implements OnInit {
           });
         }
       }).catch((error) => console.log(error));
-    }
+    });
   }
 
   public onRefreshModules(): void {

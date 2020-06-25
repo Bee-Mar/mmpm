@@ -15,6 +15,7 @@ import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
+import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 
 @Component({
   selector: "app-mmpm-local-packages",
@@ -85,7 +86,19 @@ export class MMPMLocalPackagesComponent implements OnInit {
   }
 
   public onUninstallModules(): void {
-    if (this.selection.selected.length) {
+    if (!this.selection?.selected?.length) return;
+
+    const numPackages: number = this.selection.selected.length;
+
+    const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: `${numPackages} ${numPackages === 1 ? "package" : "packages"} will be removed`
+      },
+      disableClose: true
+    });
+
+    confirmationDialogRef.afterClosed().subscribe((yes) => {
+      if (!yes) return;
       let ids: Array<number> = this.tableUtility.saveProcessIds(this.selection.selected, "Removing");
 
       this.snackbar.notify("Executing ...");
@@ -111,11 +124,24 @@ export class MMPMLocalPackagesComponent implements OnInit {
 
         this.notifier.triggerTableUpdate();
       }).catch((error) => console.log(error));
-    }
+    });
   }
 
   public onUpgradeModules(): void {
-    if (this.selection.selected) {
+    if (!this.selection?.selected?.length) return;
+
+    const numPackages: number = this.selection.selected.length;
+
+    const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: `${numPackages} ${numPackages === 1 ? "package" : "packages"} will be upgraded, if available`
+      },
+      disableClose: true
+    });
+
+    confirmationDialogRef.afterClosed().subscribe((yes) => {
+      if (!yes) return;
+
       this.snackbar.notify("Executing ...");
 
       this.api.upgradeModules(this.selection.selected).then((fails) => {
@@ -130,7 +156,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
         }
         this.notifier.triggerTableUpdate();
       }).catch((error) => console.log(error));
-    }
+    });
   }
 
   public setPaginationCookie(pageEvent?: PageEvent): void {

@@ -17,40 +17,42 @@ def main(argv):
         sys.exit(0)
 
     current_snapshot, next_snapshot = utils.calc_snapshot_timestamps()
-    should_refresh = True if args.subcommand == opts.DATABASE and args.refresh else utils.should_refresh_modules(current_snapshot, next_snapshot)
+    should_refresh = True if args.subcommand == opts.DATABASE and args.refresh else utils.should_refresh_packages(current_snapshot, next_snapshot)
 
-    modules = core.load_modules(force_refresh=should_refresh)
+    packages = core.load_packages(force_refresh=should_refresh)
 
-    if not modules:
-        utils.fatal_msg('Unable to retrieve modules.')
+    if not packages:
+        utils.fatal_msg('Unable to retrieve packages.')
 
     if args.subcommand == opts.LIST:
         if args.installed:
-            installed_modules = core.get_installed_modules(modules)
+            installed_modules = core.get_installed_packages(packages)
 
             if not installed_modules:
                 utils.fatal_msg('No modules are currently installed')
 
-            core.display_modules(installed_modules, table_formatted=args.table_formatted, include_path=True)
+            core.display_packages(installed_modules, table_formatted=args.table_formatted, include_path=True)
 
         elif args.categories:
-            core.display_categories(core.get_module_categories(modules), table_formatted=args.table_formatted)
+            core.display_categories(packages, table_formatted=args.table_formatted)
         elif args.all:
-            core.display_modules(modules, table_formatted=args.table_formatted)
+            core.display_packages(packages, table_formatted=args.table_formatted)
         elif args.gui_url:
             print(f'{core.get_web_interface_url()}')
+        else:
+            utils.no_arguments_provided(args.subcommand)
 
     elif args.subcommand == opts.SHOW:
         if not additional_args:
-            utils.fatal_msg('No module(s) provided')
+            utils.no_arguments_provided(args.subcommand)
 
         for query in additional_args:
-            result = core.search_modules(modules, query, show=True)
+            result = core.search_packages(packages, query, show=True)
 
             if not result:
                 utils.fatal_msg(f'Unable to match {query} to a module title')
 
-            core.show_module_details(result)
+            core.show_package_details(result)
 
     elif args.subcommand == opts.OPEN:
         if args.config:
@@ -58,19 +60,19 @@ def main(argv):
         elif args.gui:
             core.open_mmpm_gui()
         else:
-            utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
+            utils.invalid_additional_arguments(args.subcommand)
 
     elif args.subcommand == opts.ADD_EXT_MODULE:
         if args.remove:
-            core.remove_external_module_source([utils.sanitize_name(module) for module in args.remove], assume_yes=args.assume_yes)
+            core.remove_external_package_source([utils.sanitize_name(module) for module in args.remove], assume_yes=args.assume_yes)
         else:
-            core.add_external_module(args.title, args.author, args.repo, args.desc)
+            core.add_external_package(args.title, args.author, args.repo, args.desc)
 
     elif args.subcommand == opts.UPDATE:
         if additional_args:
-            utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
+            utils.invalid_additional_arguments(args.subcommand)
         elif args.full:
-            core.check_for_module_updates(modules, args.assume_yes)
+            core.check_for_package_updates(packages, args.assume_yes)
             core.check_for_magicmirror_updates(args.assume_yes)
             core.check_for_mmpm_updates(args.assume_yes)
         elif args.mmpm:
@@ -78,7 +80,7 @@ def main(argv):
         elif args.magicmirror:
             core.check_for_magicmirror_updates(args.assume_yes)
         else:
-            core.check_for_module_updates(modules, args.assume_yes)
+            core.check_for_package_updates(packages, args.assume_yes)
 
     elif args.subcommand == opts.INSTALL:
         if args.magicmirror:
@@ -87,23 +89,23 @@ def main(argv):
             core.install_autocompletion(assume_yes=args.assume_yes)
         else:
             installation_candidates = core.get_installation_candidates(
-                modules,
+                packages,
                 [utils.sanitize_name(module) for module in additional_args],
             )
 
-            core.install_modules(installation_candidates, assume_yes=args.assume_yes)
+            core.install_packages(installation_candidates, assume_yes=args.assume_yes)
 
     elif args.subcommand == opts.REMOVE:
         if not additional_args:
-            utils.fatal_msg('No module names provided')
+            utils.no_arguments_provided(args.subcommand)
 
-        installed_modules = core.get_installed_modules(modules)
+        installed_packages = core.get_installed_packages(packages)
 
-        if not installed_modules:
+        if not installed_packages:
             utils.fatal_msg("No modules are currently installed")
 
-        core.remove_modules(
-            installed_modules,
+        core.remove_packages(
+            installed_packages,
             [utils.sanitize_name(module) for module in additional_args],
             assume_yes=args.assume_yes
         )
@@ -112,16 +114,16 @@ def main(argv):
         if len(additional_args) > 1:
             utils.fatal_msg(f'Too many arguments. `mmpm {args.subcommand}` only accepts one search argument')
         else:
-            core.display_modules(
-                core.search_modules(modules, additional_args[0], case_sensitive=args.case_sensitive),
+            core.display_packages(
+                core.search_packages(packages, additional_args[0], case_sensitive=args.case_sensitive),
                 table_formatted=args.table_formatted
             )
 
     elif args.subcommand == opts.MM_CTL:
         if additional_args:
-            utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
+            utils.invalid_additional_arguments(args.subcommand)
         elif args.status:
-            core.get_active_modules(table_formatted=args.table_formatted)
+            core.get_active_packages(table_formatted=args.table_formatted)
         elif args.start:
             core.start_magicmirror()
         elif args.stop:
@@ -129,21 +131,21 @@ def main(argv):
         elif args.restart:
             core.restart_magicmirror()
         else:
-            utils.fatal_msg(utils.invalid_option(args.subcommand))
+            utils.invalid_option(args.subcommand)
 
     elif args.subcommand == opts.DATABASE:
         if args.refresh:
             sys.exit(0)
         if additional_args:
-            utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
+            utils.invalid_additional_arguments(args.subcommand)
         elif args.details:
-            core.snapshot_details(modules)
+            core.snapshot_details(packages)
         else:
-            utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
+            utils.invalid_additional_arguments(args.subcommand)
 
     elif args.subcommand == opts.LOG:
         if additional_args:
-            utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
+            utils.invalid_additional_arguments(args.subcommand)
         elif not args.cli and not args.gui:
             # if the user doesn't provide arguments, just display everything, but consider the --tail arg
             core.display_log_files(True, True, args.tail)
@@ -152,7 +154,7 @@ def main(argv):
 
     elif args.subcommand == opts.ENV:
         if additional_args:
-            utils.fatal_msg(utils.invalid_additional_arguments(args.subcommand))
+            utils.invalid_additional_arguments(args.subcommand)
         else:
             core.display_mmpm_env_vars()
 

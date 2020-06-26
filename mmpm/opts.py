@@ -3,7 +3,7 @@
 import sys
 import argparse
 import argcomplete
-from mmpm.consts import MMPM_WIKI_URL
+import mmpm.consts
 
 # subcommand names (these could go in consts.py, but for the sake of mnemonics for mmpm.py, they'll stay)
 INSTALL: str = 'install'
@@ -35,7 +35,7 @@ def get_user_args() -> object:
     arg_parser = argparse.ArgumentParser(
         prog='mmpm',
         usage='mmpm <subcommand> [option(s)]',
-        epilog=f'Visit {MMPM_WIKI_URL} for more details',
+        epilog=f'Visit {mmpm.consts.MMPM_WIKI_URL} for more details',
         description='''
             The MagicMirror Package Manager is a CLI designed to simplify the
             installation, removal, and maintenance of MagicMirror modules

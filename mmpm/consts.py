@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from os.path import join, expanduser
 from os import environ
-from mmpm import color
+import mmpm.color as color
 from typing import Dict
 
 def __get_or_set_env_var__(var: str, value: str) -> str:
@@ -15,7 +15,7 @@ REPOSITORY: str = 'repository'
 DESCRIPTION: str = 'description'
 AUTHOR: str = 'author'
 CATEGORY: str = 'category'
-MODULES: str = 'modules'
+PACKAGES: str = 'packages'
 DIRECTORY: str = 'directory'
 ERROR: str = 'error'
 TARGET: str = 'target'
@@ -51,7 +51,7 @@ MMPM_CONFIG_DIR: str = join(HOME_DIR, '.config', 'mmpm')
 MMPM_LOG_DIR: str = join(MMPM_CONFIG_DIR, 'log')
 
 LIBMMPM_SHARED_OBJECT_FILE: str = join('/', 'usr', 'local', 'lib', 'mmpm', 'libmmpm.so')
-SNAPSHOT_FILE: str = join(MMPM_CONFIG_DIR, 'MagicMirror-modules-snapshot.json')
+MAGICMIRROR_PACKAGES_SNAPSHOT_FILE: str = join(MMPM_CONFIG_DIR, 'MagicMirror-modules-snapshot.json')
 EXTERNAL_MODULE_SOURCES: str = 'External Module Sources'
 
 MMPM_EXTERNAL_SOURCES_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-external-sources.json')

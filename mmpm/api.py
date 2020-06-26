@@ -7,11 +7,12 @@ import json
 import shutil
 from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
-from mmpm import core, utils, consts
-from mmpm.utils import log
 from shelljob.proc import Group
 from flask_socketio import SocketIO
 from typing import Tuple, List, Dict
+import mmpm.utils as utils
+import mmpm.consts as consts
+import mmpm.core as core
 
 
 MMPM_EXECUTABLE: list = [os.path.join(consts.HOME_DIR, '.local', 'bin', 'mmpm')]
@@ -35,7 +36,7 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 
 api = lambda path: f'/api/{path}'
 
-_modules_ = core.load_modules()
+_modules_ = core.load_packages()
 
 
 def __stream_cmd_output__(process: Group, cmd: list):
@@ -50,15 +51,15 @@ def __stream_cmd_output__(process: Group, cmd: list):
         None
     '''
     command: list = MMPM_EXECUTABLE + cmd
-    log.info(f"Executing {command}")
+    utils.log.info(f"Executing {command}")
     process.run(command)
 
     try:
         while process.is_pending():
-            log.info('Process pending')
+            utils.log.info('Process pending')
             for _, line in process.readlines():
                 socketio.emit('live-terminal-stream', {'data': str(line.decode('utf-8'))})
-        log.info(f'Process complete: {command}')
+        utils.log.info(f'Process complete: {command}')
     except Exception:
         pass
 
@@ -75,27 +76,27 @@ def error_handler(error) -> Tuple[str, int]:
         tuple (str, int): error message and code
     '''
     message: str = f'An internal error occurred within flask_socketio: {error}'
-    log.critical(message)
+    utils.log.critical(message)
     return message, 500
 
 
 @socketio.on('connect')
 def on_connect() -> None:
     message: str = 'Server connected'
-    log.info(message)
+    utils.log.info(message)
     socketio.emit('connected', {'data': message})
 
 
 @socketio.on('disconnect')
 def on_disconnect() -> None:
     message: str = 'Server disconnected'
-    log.info(message)
+    utils.log.info(message)
     socketio.emit(message, {'data': message})
 
 
 @app.after_request
 def after_request(response: Response) -> Response:
-    log.info('Headers being added after the request')
+    utils.log.info('Headers being added after the request')
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
@@ -127,13 +128,13 @@ def get_magicmirror_modules() -> dict:
 @app.route(api('install-modules'), methods=[consts.POST])
 def install_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
-    log.info(f'User selected {selected_modules} to be installed')
+    utils.log.info(f'User selected {selected_modules} to be installed')
 
     modules_dir = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
     result: Dict[str, list] = {'failures': []}
 
     for module in selected_modules:
-        success, error = utils.install_module(
+        success, error = utils.install_package(
             module,
             module[consts.DIRECTORY] if module[consts.DIRECTORY] else module[consts.TITLE],
             modules_dir,
@@ -141,11 +142,11 @@ def install_magicmirror_modules() -> str:
         )
 
         if not success:
-            log.error(f'Failed to install {module[consts.TITLE]} with error of: {error}')
+            utils.log.error(f'Failed to install {module[consts.TITLE]} with error of: {error}')
             module[consts.ERROR] = error
             result['failures'].append(module)
         else:
-            log.info(f'Installed {module[consts.TITLE]}')
+            utils.log.info(f'Installed {module[consts.TITLE]}')
 
     return json.dumps(result)
 
@@ -153,16 +154,16 @@ def install_magicmirror_modules() -> str:
 @app.route(api('uninstall-modules'), methods=[consts.POST])
 def remove_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
-    log.info(f'User selected {selected_modules} to be removed')
+    utils.log.info(f'User selected {selected_modules} to be removed')
 
     result: Dict[str, list] = {'failures': []}
 
     for module in selected_modules:
         try:
             shutil.rmtree(module[consts.DIRECTORY])
-            log.info(f'Removed {module[consts.DIRECTORY]}')
+            utils.log.info(f'Removed {module[consts.DIRECTORY]}')
         except FileNotFoundError as error:
-            log.error(f'Failed to remove {module[consts.DIRECTORY]}')
+            utils.log.error(f'Failed to remove {module[consts.DIRECTORY]}')
             module[consts.ERROR] = error
             result['failures'].append(module)
 
@@ -172,24 +173,24 @@ def remove_magicmirror_modules() -> str:
 @app.route(api('upgrade-modules'), methods=[consts.POST])
 def upgrade_magicmirror_modules() -> str:
     selected_modules: list = request.get_json(force=True)['selected-modules']
-    log.info(f'Request to upgrade {selected_modules}')
+    utils.log.info(f'Request to upgrade {selected_modules}')
 
     result: List[dict] = []
 
     for module in selected_modules:
-        error = core.upgrade_module(module)
+        error = core.upgrade_package(module)
         if error:
-            log.error(f'Failed to upgrade {module[consts.TITLE]} with error of: {error}')
+            utils.log.error(f'Failed to upgrade {module[consts.TITLE]} with error of: {error}')
             module[consts.ERROR] = error
             result.append(module)
 
-    log.info('Finished executing upgrades')
+    utils.log.info('Finished executing upgrades')
     return json.dumps(result)
 
 
 @app.route(api('all-installed-modules'), methods=[consts.GET])
 def get_installed_magicmirror_modules() -> dict:
-    return core.get_installed_modules(_modules_)
+    return core.get_installed_packages(_modules_)
 
 
 @app.route(api('all-external-modules'), methods=[consts.GET])
@@ -199,18 +200,18 @@ def get_external__modules__sources() -> dict:
         with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
             ext_sources[consts.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES]
     except IOError as error:
-        log.error(error)
+        utils.log.error(error)
         pass
     return ext_sources
 
 
 @app.route(api('add-external-module-source'), methods=[consts.POST])
-def add_external_module() -> str:
+def add_external_package() -> str:
     external_source: dict = request.get_json(force=True)['external-source']
 
     result: List[dict] = []
 
-    error: str = core.add_external_module(
+    error: str = core.add_external_package(
         title=external_source.get('title'),
         author=external_source.get('author'),
         desc=external_source.get('description'),
@@ -223,7 +224,7 @@ def add_external_module() -> str:
 @app.route(api('remove-external-module-source'), methods=[consts.DELETE])
 def remove_external_module_source() -> str:
     selected_modules: list = request.get_json(force=True)['external-sources']
-    log.info(f'Request to remove external sources')
+    utils.log.info(f'Request to remove external sources')
 
     ext_modules: dict = {}
     marked_for_removal: list = []
@@ -231,9 +232,9 @@ def remove_external_module_source() -> str:
     try:
         with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
             ext_modules[consts.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES]
-        log.info(f'Read external modules from {consts.MMPM_EXTERNAL_SOURCES_FILE}')
+        utils.log.info(f'Read external modules from {consts.MMPM_EXTERNAL_SOURCES_FILE}')
     except IOError as error:
-        log.error(error)
+        utils.log.error(error)
         return json.dumps({'error': error})
 
     for selected_module in selected_modules:
@@ -245,44 +246,43 @@ def remove_external_module_source() -> str:
             print(module)
             if module == selected_module:
                 marked_for_removal.append(module)
-                log.info(f'Found matching external module ({module[consts.TITLE]}) and marked for removal')
+                utils.log.info(f'Found matching external module ({module[consts.TITLE]}) and marked for removal')
 
     for module in marked_for_removal:
         ext_modules[consts.EXTERNAL_MODULE_SOURCES].remove(module)
-        log.info(f'Removed {module[consts.TITLE]}')
+        utils.log.info(f'Removed {module[consts.TITLE]}')
 
     try:
         with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
             json.dump(ext_modules, mmpm_ext_srcs)
-        log.info(f'Wrote updated external modules to {consts.MMPM_EXTERNAL_SOURCES_FILE}')
+        utils.log.info(f'Wrote updated external modules to {consts.MMPM_EXTERNAL_SOURCES_FILE}')
     except IOError as error:
-        log.error(error)
+        utils.log.error(error)
         return json.dumps({'error': error})
 
-    log.info(f'Wrote external modules to {consts.MMPM_EXTERNAL_SOURCES_FILE}')
+    utils.log.info(f'Wrote external modules to {consts.MMPM_EXTERNAL_SOURCES_FILE}')
     return json.dumps({'error': "no_error"})
 
 
 @app.route(api('refresh-database'), methods=[consts.GET])
 def force_refresh_magicmirror_modules() -> dict:
-    log.info(f'Received request to refresh modules')
-    updated = core.load_modules(force_refresh=True)
-    _modules_ = updated
-    return updated
+    utils.log.info(f'Received request to refresh modules')
+    _modules_ = core.load_packages(force_refresh=True)
+    return _modules_
 
 
 @app.route(api('get-magicmirror-config'), methods=[consts.GET])
 def get_magicmirror_config():
     path: str = consts.MAGICMIRROR_CONFIG_FILE
     result: str = send_file(path, attachment_filename='config.js') if path else ''
-    log.info('Retrieving MagicMirror config')
+    utils.log.info('Retrieving MagicMirror config')
     return result
 
 
 @app.route(api('update-magicmirror-config'), methods=[consts.POST])
 def update_magicmirror_config() -> str:
     data: dict = request.get_json(force=True)
-    log.info('Saving MagicMirror config file')
+    utils.log.info('Saving MagicMirror config file')
 
     try:
         with open(consts.MAGICMIRROR_CONFIG_FILE, 'w') as config:
@@ -309,10 +309,10 @@ def start_magicmirror() -> str:
 
     # if these processes are all running, we assume MagicMirror is running currently
     if utils.get_pids('chromium') and utils.get_pids('node') and utils.get_pids('npm'):
-        log.info('MagicMirror appears to be running already. Returning False.')
+        utils.log.info('MagicMirror appears to be running already. Returning False.')
         return json.dumps(False)
 
-    log.info('MagicMirror does not appear to be running currently. Returning True.')
+    utils.log.info('MagicMirror does not appear to be running currently. Returning True.')
     core.start_magicmirror()
     return json.dumps(True)
 
@@ -362,7 +362,7 @@ def restart_raspberrypi() -> str:
         success (bool): If the command fails, False is returned. If success, the return will never reach the interface
     '''
 
-    log.info('Restarting RaspberryPi')
+    utils.log.info('Restarting RaspberryPi')
     core.stop_magicmirror()
     error_code, _, _ = utils.run_cmd(['sudo', 'reboot'])
     # if success, it'll never get the response, but we'll know if it fails
@@ -381,7 +381,7 @@ def turn_off_raspberrypi() -> str:
         success (bool): If the command fails, False is returned. If success, the return will never reach the interface
     '''
 
-    log.info('Shutting down RaspberryPi')
+    utils.log.info('Shutting down RaspberryPi')
     # if success, we'll never get the response, but we'll know if it fails
     core.stop_magicmirror()
     error_code, _, _ = utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
@@ -390,10 +390,10 @@ def turn_off_raspberrypi() -> str:
 
 @app.route(api('upgrade-magicmirror'), methods=[consts.GET])
 def upgrade_magicmirror() -> str:
-    log.info(f'Request to upgrade MagicMirror')
+    utils.log.info(f'Request to upgrade MagicMirror')
     process: Group = Group()
     Response(__stream_cmd_output__(process, ['-M', '--GUI']), mimetype='text/plain')
-    log.info('Finished installing')
+    utils.log.info('Finished installing')
 
     if utils.get_pids('node') and utils.get_pids('npm') and utils.get_pids('electron'):
         core.restart_magicmirror()
@@ -403,7 +403,7 @@ def upgrade_magicmirror() -> str:
 
 @app.route(api('get-magicmirror-root-directory'), methods=[consts.GET])
 def get_magicmirror_root_directory() -> str:
-    log.info(f'Request to get MagicMirror root directory')
+    utils.log.info(f'Request to get MagicMirror root directory')
     return json.dumps({"magicmirror_root": consts.MAGICMIRROR_ROOT})
 
 #@app.route(api('download-log-files'), methods=[consts.GET])

@@ -11,10 +11,15 @@ from logging import Logger
 from os.path import join
 from typing import List, Optional, Tuple, IO, Any
 from re import sub
-from mmpm import color, consts
 from shutil import which
 from ctypes import cdll, c_char_p, c_int, POINTER, c_bool
 
+import mmpm.color as color
+import mmpm.consts as consts
+import mmpm.models as models
+
+MagicMirrorPackage = models.MagicMirrorPackage
+MagicMirrorPackageCategory = models.MagicMirrorPackageCategory
 
 class MMPMLogger():
     '''
@@ -144,14 +149,14 @@ def calc_snapshot_timestamps() -> Tuple[float, float]:
     '''
     curr_snap = next_snap = None
 
-    if os.path.exists(consts.SNAPSHOT_FILE):
-        curr_snap = os.path.getmtime(consts.SNAPSHOT_FILE)
+    if os.path.exists(consts.MAGICMIRROR_PACKAGES_SNAPSHOT_FILE):
+        curr_snap = os.path.getmtime(consts.MAGICMIRROR_PACKAGES_SNAPSHOT_FILE)
         next_snap = curr_snap + 6 * 60 * 60
 
     return curr_snap, next_snap
 
 
-def should_refresh_modules(current_snapshot: float, next_snapshot: float) -> bool:
+def should_refresh_packages(current_snapshot: float, next_snapshot: float) -> bool:
     '''
     Determines if the MagicMirror snapshot is expired
 
@@ -164,7 +169,7 @@ def should_refresh_modules(current_snapshot: float, next_snapshot: float) -> boo
     '''
     if not current_snapshot and not next_snapshot:
         return True
-    return not os.path.exists(consts.SNAPSHOT_FILE) or next_snapshot - time.time() <= 0.0
+    return not os.path.exists(consts.MAGICMIRROR_PACKAGES_SNAPSHOT_FILE) or next_snapshot - time.time() <= 0.0
 
 
 def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, str, str]:
@@ -366,19 +371,21 @@ def basic_fail_log(error_code: int, error_message: str) -> None:
     log.info(f'Failed with return code {error_code}, and error message {error_message}')
 
 
-def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool = False) -> Tuple[bool, str]:
+def install_package(package: MagicMirrorPackage, target: str, packages_dir: str, assume_yes: bool = False) -> Tuple[bool, str]:
     '''
     Used to display more detailed information that presented in normal search results
 
     Parameters:
-        modules (dict): MagicMirror modules database snapshot
-        modules_to_install (List[str]): list of modules provided by user through command line arguments
+        package (MagicMirrorPackage): the MagicMirrorPackage to be installed
+        target (str): the intended installation directory for the package
+        packages_dir (str): the root of the installation directory for all MagicMirror packages
+        assume_yes (bool): if True, all prompts are assumed to have a response of yes from the user
 
     Returns:
         installation_candidates (List[dict]): list of modules whose module names match those of the modules_to_install
     '''
 
-    error_code, _, stderr = clone(module[consts.TITLE], module[consts.REPOSITORY], target)
+    error_code, _, stderr = clone(package.title, package.repository, target)
 
     if error_code:
         warning_msg("\n" + stderr)
@@ -392,23 +399,23 @@ def install_module(module: dict, target: str, modules_dir: str, assume_yes: bool
 
     if error:
         error_msg(error)
-        failed_install_path = os.path.join(modules_dir, module[consts.TITLE])
+        failed_install_path = os.path.join(packages_dir, package.title)
 
-        message: str = f"Failed to install {module[consts.TITLE]} at '{failed_install_path}'"
+        message: str = f"Failed to install {package.title} at '{failed_install_path}'"
 
         log.info(message)
 
         yes = prompt_user(
-            f"{colored_text(color.B_RED, 'ERROR:')} Failed to install {module[consts.TITLE]} at '{failed_install_path}'. Remove the directory?",
+            f"{colored_text(color.B_RED, 'ERROR:')} Failed to install {package.title} at '{failed_install_path}'. Remove the directory?",
             assume_yes=assume_yes
         )
 
         if yes:
-            message = f"User chose to remove {module[consts.TITLE]} at '{failed_install_path}'"
+            message = f"User chose to remove {package.title} at '{failed_install_path}'"
             run_cmd(['rm', '-rf', failed_install_path], progress=False)
             print(f"\nRemoved '{failed_install_path}'\n")
         else:
-            message = f"Keeping {module[consts.TITLE]} at '{failed_install_path}'"
+            message = f"Keeping {package.title} at '{failed_install_path}'"
             print(f'\n{message}\n')
             log.info(message)
 
@@ -654,7 +661,7 @@ def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nac
     return False
 
 
-def invalid_additional_arguments(subcommand: str) -> str:
+def invalid_additional_arguments(subcommand: str) -> None:
     '''
     Helper method to return a standardized error message when the user provides too many arguments
 
@@ -662,14 +669,13 @@ def invalid_additional_arguments(subcommand: str) -> str:
         subcommand (str): the name of the mmpm subcommand
 
     Returns:
-        message (str): the standardized error message
+        None
 
     '''
-    log.error(f'invalid addtional options supplied to `mmpm {subcommand}`')
-    return f'`mmpm {subcommand}` does not accept additional arguments. See `mmpm {subcommand} --help`'
+    fatal_msg(f'`mmpm {subcommand}` does not accept additional arguments. See `mmpm {subcommand} --help`')
 
 
-def invalid_option(subcommand: str) -> str:
+def invalid_option(subcommand: str) -> None:
     '''
     Helper method to return a standardized error message when the user provides an invalid option
 
@@ -678,11 +684,25 @@ def invalid_option(subcommand: str) -> str:
         subcommand (str): the name of the mmpm subcommand
 
     Returns:
-        message (str): the standardized error message
+        None
 
     '''
-    log.error(f'invalid option supplied to `mmpm {subcommand}`')
-    return f'Invalid option supplied to `mmpm {subcommand}`. See `mmpm {subcommand} --help`'
+    fatal_msg(f'Invalid option supplied to `mmpm {subcommand}`. See `mmpm {subcommand} --help`')
+
+
+def no_arguments_provided(subcommand: str) -> None:
+    '''
+    Helper method to return a standardized error message when the user provides no arguments
+
+
+    Parameters:
+        subcommand (str): the name of the mmpm subcommand
+
+    Returns:
+        None
+
+    '''
+    fatal_msg(f'no arguments provided. See `mmpm {subcommand} --help` for usage')
 
 
 def assert_valid_input(prompt: str, forbidden_responses: List[str] = [], reason: str = '') -> str:
@@ -697,7 +717,7 @@ def assert_valid_input(prompt: str, forbidden_responses: List[str] = [], reason:
         return value
 
 
-def get_existing_module_directories() -> List[str]:
+def get_existing_package_directories() -> List[str]:
     if not os.path.exists(consts.MAGICMIRROR_MODULES_DIR):
         return []
 
@@ -705,3 +725,5 @@ def get_existing_module_directories() -> List[str]:
     return [d for d in dirs if os.path.isdir(os.path.join(consts.MAGICMIRROR_MODULES_DIR, d))]
 
 
+def row_of_dict_to_magicmirror_packages(row: List[dict]):
+    return [MagicMirrorPackage(**pkg) for pkg in row]

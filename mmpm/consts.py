@@ -46,6 +46,7 @@ MMPM_ENV_VARS: Dict[str, str] = {
 MMPM_REPO_URL: str = "https://github.com/Bee-Mar/mmpm.git"
 MMPM_FILE_URL: str = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
 MMPM_WIKI_URL: str = 'https://github.com/Bee-Mar/mmpm/wiki'
+MAGICMIRROR_WIKI_URL: str = 'https://github.com/MichMich/MagicMirror/wiki'
 
 MMPM_CONFIG_DIR: str = join(HOME_DIR, '.config', 'mmpm')
 MMPM_LOG_DIR: str = join(MMPM_CONFIG_DIR, 'log')

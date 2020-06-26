@@ -727,3 +727,12 @@ def get_existing_package_directories() -> List[str]:
 
 def row_of_dict_to_magicmirror_packages(row: List[dict]):
     return [MagicMirrorPackage(**pkg) for pkg in row]
+
+
+def open_in_browswer(url: str) -> bool:
+    error_code, _, stderr = run_cmd(['xdg-open', url], background=True)
+
+    if error_code:
+        error_msg(stderr)
+
+

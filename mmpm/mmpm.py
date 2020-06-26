@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # pylint: disable=unused-argument
 import sys
-from mmpm import utils, core, opts
+import mmpm.utils as utils
+import mmpm.core as core
+import mmpm.opts as opts
+import mmpm.consts as consts
 
 __version__ = 1.25
 
@@ -60,9 +63,11 @@ def main(argv):
         elif args.config:
             core.open_magicmirror_config()
         elif args.gui:
-            core.open_mmpm_gui()
-        elif args.magicmirror_wiki:
-            core.open_magicmirror_wiki()
+            utils.open_in_browswer(core.get_web_interface_url())
+        elif args.mm_wiki:
+            utils.open_in_browswer(consts.MAGICMIRROR_WIKI_URL)
+        elif args.mmpm_wiki:
+            utils.open_in_browswer(consts.MMPM_WIKI_URL)
         else:
             utils.no_arguments_provided(args.subcommand)
 

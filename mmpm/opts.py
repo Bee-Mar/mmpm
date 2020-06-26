@@ -241,16 +241,22 @@ def get_user_args() -> object:
         '-g',
         '--gui',
         action='store_true',
-        help='open the MMPM GUI in your default browser using xdg-open',
+        help='open the MMPM GUI in your default browser',
         dest='gui'
     )
 
     open_parser.add_argument(
-        '-m',
-        '--magicmirror-wiki',
+        '--mm-wiki',
         action='store_true',
-        help='open the MagicMirror GitHub wiki in your default browser using xdg-open',
-        dest='magicmirror_wiki'
+        help='open the MagicMirror GitHub wiki in your default browser',
+        dest='mm_wiki'
+    )
+
+    open_parser.add_argument(
+        '--mmpm-wiki',
+        action='store_true',
+        help='open the MMPM GitHub wiki in your default browser',
+        dest='mmpm_wiki'
     )
 
     #show_parser

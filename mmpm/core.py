@@ -637,7 +637,7 @@ def load_packages(force_refresh: bool = False) -> dict:
 
         # save the new snapshot
         with open(consts.MAGICMIRROR_PACKAGES_SNAPSHOT_FILE, 'w') as snapshot:
-            json.dump(packages, snapshot, default=lambda pkg: pkg.to_json())
+            json.dump(packages, snapshot, default=lambda pkg: pkg.serialize())
 
         print(consts.GREEN_CHECK_MARK)
 
@@ -709,6 +709,8 @@ def retrieve_packages() -> dict:
             if column_number > 0:
                 td_soup: list = tr_soup[index][column_number].find_all('td')
 
+                package = MagicMirrorPackage()
+
                 title: str = consts.NOT_AVAILABLE
                 repo: str = consts.NOT_AVAILABLE
                 author: str = consts.NOT_AVAILABLE
@@ -723,8 +725,8 @@ def retrieve_packages() -> dict:
                             if a.has_attr('href'):
                                 repo = a['href']
 
-                        repo = str(repo)
-                        title = str(title)
+                        package.repository = str(repo).strip()
+                        package.title = str(title)
 
                     elif idx == 1:
                         for contents in td_soup[idx].contents:
@@ -1004,11 +1006,11 @@ def add_external_package(title: str = None, author: str = None, repo: str = None
 
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 config[consts.EXTERNAL_MODULE_SOURCES].append(external_package)
-                json.dump(config, mmpm_ext_srcs, default=lambda pkg: pkg.to_json())
+                json.dump(config, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
         else:
             # if file didn't exist previously, or it was empty, this is the first external package that's been added
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
-                json.dump({consts.EXTERNAL_MODULE_SOURCES: [external_package]}, mmpm_ext_srcs, default=lambda pkg: pkg.to_json())
+                json.dump({consts.EXTERNAL_MODULE_SOURCES: [external_package]}, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
 
         print(utils.colored_text(color.N_GREEN, f"\nSuccessfully added {title} to '{consts.EXTERNAL_MODULE_SOURCES}'\n"))
 
@@ -1066,7 +1068,7 @@ def remove_external_package_source(titles: List[str] = None, assume_yes: bool = 
 
     # if the error_msg was triggered, there's no need to even bother writing back to the file
     with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
-        json.dump(packages, mmpm_ext_srcs, default=lambda pkg: pkg.to_json())
+        json.dump(packages, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
 
     return True
 
@@ -1181,33 +1183,6 @@ def get_web_interface_url() -> str:
 
     return f'http://{gethostbyname(gethostname())}:{port}'
 
-
-def open_mmpm_gui() -> bool:
-    '''
-    Attempts to open the MMPM web interface using 'xdg-open'
-
-    Parameters:
-        None
-
-    Returns:
-        bool: True upon sucess, False upon failure
-    '''
-    error_code, _, stderr = utils.run_cmd(['xdg-open', get_web_interface_url()], background=True)
-
-    if error_code:
-        utils.error_msg(stderr)
-        return False
-    return True
-
-
-def open_magicmirror_wiki() -> bool:
-    url: str = 'https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules'
-    error_code, _, stderr = utils.run_cmd(['xdg-open', url], background=True)
-
-    if error_code:
-        utils.error_msg(stderr)
-        return False
-    return True
 
 
 def stop_magicmirror() -> bool:

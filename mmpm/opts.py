@@ -13,7 +13,7 @@ DATABASE: str = 'db'
 LIST: str = 'list'
 MM_CTL: str = 'mm-ctl'
 OPEN: str = 'open'
-ADD_EXT_MODULE: str = 'add-ext-module'
+ADD_EXT_PKG: str = 'add-ext-pkg'
 LOG: str = 'log'
 UPDATE: str = 'update'
 UPGRADE: str = 'upgrade'
@@ -38,7 +38,7 @@ def get_user_args() -> object:
         epilog=f'Visit {mmpm.consts.MMPM_WIKI_URL} for more details',
         description='''
             The MagicMirror Package Manager is a CLI designed to simplify the
-            installation, removal, and maintenance of MagicMirror modules
+            installation, removal, and maintenance of MagicMirror packages
             '''
     )
 
@@ -52,7 +52,7 @@ def get_user_args() -> object:
     search_parser = subparsers.add_parser(
         SEARCH,
         usage='\n  mmpm search <keyword> [--table] [--case-sensitive]',
-        help='search for MagicMirror modules'
+        help='search for MagicMirror packages'
     )
 
     search_parser.add_argument(
@@ -66,15 +66,15 @@ def get_user_args() -> object:
         '-c',
         '--case-sensitive',
         action='store_true',
-        help='search for modules using a case-sensitive term',
+        help='search for packages using a case-sensitive term',
         dest='case_sensitive'
     )
 
     # INSTALL PARSER
     install_parser = subparsers.add_parser(
         INSTALL,
-        usage='\n  mmpm install <module> [--yes]',
-        help='install MagicMirror modules'
+        usage='\n  mmpm install <package> [--yes]',
+        help='install MagicMirror packages'
     )
 
     install_parser.add_argument(
@@ -104,8 +104,8 @@ def get_user_args() -> object:
     # REMOVE PARSER
     remove_parser = subparsers.add_parser(
         REMOVE,
-        usage='\n  mmpm remove <module(s)> [--yes]',
-        help='remove locally installed modules'
+        usage='\n  mmpm remove <package(s)> [--yes]',
+        help='remove locally installed packages'
     )
 
     remove_parser.add_argument(
@@ -121,7 +121,7 @@ def get_user_args() -> object:
     update_parser = subparsers.add_parser(
         UPDATE,
         usage='\n  mmpm update [--mmpm] [--magicmirror] [--full] [--yes]',
-        help='check for updates to installed modules, MMPM, and/or MagicMirror'
+        help='check for updates to installed packages, MMPM, and/or MagicMirror'
     )
 
     update_parser.add_argument(
@@ -141,7 +141,7 @@ def get_user_args() -> object:
     update_parser.add_argument(
         '--full',
         action='store_true',
-        help='check for updates to all installed modules, MMPM, and MagicMirror',
+        help='check for updates to all installed packages, MMPM, and MagicMirror',
         dest='full'
     )
 
@@ -165,7 +165,7 @@ def get_user_args() -> object:
         '-r',
         '--refresh',
         action='store_true',
-        help='forces a refresh of the modules database',
+        help='forces a refresh of the packages database',
         dest='refresh'
     )
 
@@ -173,7 +173,7 @@ def get_user_args() -> object:
         '-d',
         '--details',
         action='store_true',
-        help='display details about the most recent MagicMirror modules database',
+        help='display details about the most recent MagicMirror packages database',
         dest='details'
     )
 
@@ -181,14 +181,14 @@ def get_user_args() -> object:
     list_parser = subparsers.add_parser(
         LIST,
         usage='\n  mmpm list [--installed] [--categories] [--all] [--gui-url] [--table]',
-        help='list items like installed modules, modules available, etc'
+        help='list items like installed packages, packages available, etc'
     )
 
     list_parser.add_argument(
         '-i',
         '--installed',
         action='store_true',
-        help='list all currently installed modules',
+        help='list all currently installed packages',
         dest='installed'
     )
 
@@ -196,7 +196,7 @@ def get_user_args() -> object:
         '-c',
         '--categories',
         action='store_true',
-        help='list all module categories',
+        help='list all package categories',
         dest='categories'
     )
 
@@ -204,7 +204,7 @@ def get_user_args() -> object:
         '-a',
         '--all',
         action='store_true',
-        help='list all modules available in the marketplace', dest='all'
+        help='list all packages available in the marketplace', dest='all'
     )
 
     list_parser.add_argument(
@@ -262,57 +262,57 @@ def get_user_args() -> object:
     #show_parser
     subparsers.add_parser(
         SHOW,
-        usage='\n  mmpm show <module(s)>',
-        help='show details about one or more modules listed in the MagicMirror 3rd party database'
+        usage='\n  mmpm show <package(s)>',
+        help='show details about one or more packages listed in the MagicMirror 3rd party database'
     )
 
-    # ADD EXTERNAL MODULE SUBCOMMANDS
-    add_ext_module_parser = subparsers.add_parser(
-        ADD_EXT_MODULE,
-        usage='\n  mmpm add-ext-module [--title=<title>] [--author=<author>] [--repo=<repo>] [--desc=<description>]\n  mmpm add-ext-module --remove <module>',
-        help='manually add modules to the database not found in the 3rd Party Wiki'
+    # ADD EXTERNAL PACKAGE SUBCOMMANDS
+    add_ext_package_parser = subparsers.add_parser(
+        ADD_EXT_PKG,
+        usage='\n  mmpm add-ext-package [--title=<title>] [--author=<author>] [--repo=<repo>] [--desc=<description>]\n  mmpm add-ext-package --remove <package>',
+        help='manually add packages to the database not found in the MagicMirror 3rd party database'
     )
 
-    add_ext_module_parser.add_argument(
+    add_ext_package_parser.add_argument(
         '-t',
         '--title',
         type=str,
-        help='title of external module (will be prompted if not provided)',
+        help='title of external package (will be prompted if not provided)',
         dest='title'
     )
 
-    add_ext_module_parser.add_argument(
+    add_ext_package_parser.add_argument(
         '-a',
         '--author',
         type=str,
-        help='author of external module (will be prompted if not provided)',
+        help='author of external package (will be prompted if not provided)',
         dest='author'
     )
 
-    add_ext_module_parser.add_argument(
+    add_ext_package_parser.add_argument(
         '-r',
         '--repo',
         type=str,
-        help='repo URL of external module (will be prompted if not provided)',
+        help='repo URL of external package (will be prompted if not provided)',
         dest='repo'
     )
 
-    add_ext_module_parser.add_argument(
+    add_ext_package_parser.add_argument(
         '-d',
         '--desc',
         type=str,
-        help='description of external module (will be prompted if not provided)',
+        help='description of external package (will be prompted if not provided)',
         dest='desc'
     )
 
-    add_ext_module_parser.add_argument(
+    add_ext_package_parser.add_argument(
         '--remove',
         nargs='+',
-        help='remove external module (similar pattern of add-apt-repository --remove)',
+        help='remove external package (similar pattern of add-apt-repository --remove)',
         dest='remove'
     )
 
-    add_ext_module_parser.add_argument(
+    add_ext_package_parser.add_argument(
         '-y',
         '--yes',
         action='store_true',
@@ -362,7 +362,7 @@ def get_user_args() -> object:
     mm_ctl_parser.add_argument(
         '--status',
         action='store_true',
-        help='show the status of modules on your MagicMirror',
+        help='show the status of packages on your MagicMirror',
         dest='status'
     )
 

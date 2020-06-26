@@ -54,7 +54,7 @@ def main(argv):
             result = core.search_packages(packages, query, by_title_only=True)
 
             if not result:
-                utils.fatal_msg(f'Unable to match {query} to a module title')
+                utils.fatal_msg(f'Unable to match {query} to a package title')
 
             core.show_package_details(result)
 
@@ -72,7 +72,7 @@ def main(argv):
         else:
             utils.no_arguments_provided(args.subcommand)
 
-    elif args.subcommand == opts.ADD_EXT_MODULE:
+    elif args.subcommand == opts.ADD_EXT_PKG:
         if args.remove:
             core.remove_external_package_source([utils.sanitize_name(module) for module in args.remove], assume_yes=args.assume_yes)
         else:

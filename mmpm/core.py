@@ -620,7 +620,7 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
 
     # if the snapshot has expired, or doesn't exist, get a new one
     if force_refresh or not os.path.exists(consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE):
-        utils.plain_print(f'{consts.GREEN_PLUS_SIGN} Refreshing MagicMirror 3rd party modules database ')
+        utils.plain_print(f'{consts.GREEN_PLUS_SIGN} Refreshing MagicMirror 3rd party packages database ')
         packages = retrieve_packages()
 
         # save the new snapshot
@@ -641,7 +641,7 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as f:
                 packages[consts.EXTERNAL_MODULE_SOURCES] = utils.list_of_dict_to_magicmirror_packages(json.load(f)[consts.EXTERNAL_MODULE_SOURCES])
         except Exception:
-            message = f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}. Please examine the file, it may be malformed and required manual corrective action.'
+            message = f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}. Please examine the file, as it may be malformed and required manual corrective action.'
             utils.warning_msg(message)
 
     return packages

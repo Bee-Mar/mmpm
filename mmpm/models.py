@@ -70,7 +70,6 @@ class MagicMirrorPackage():
             # appeasing mypy by casting this to bool
             return bool(self.title == other.title and self.author == other.author and self.repository == other.repository and self.description == other.description)
 
-
     def serialize(self) -> dict:
         '''
         A dictionary represenation of all fields to be stored in JSON data

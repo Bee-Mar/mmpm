@@ -19,7 +19,7 @@ import mmpm.consts as consts
 import mmpm.models as models
 
 MagicMirrorPackage = models.MagicMirrorPackage
-MagicMirrorPackageCategory = models.MagicMirrorPackageCategory
+#MagicMirrorPackageCategory = models.MagicMirrorPackageCategory
 
 
 def snapshot_details(packages: dict) -> None:

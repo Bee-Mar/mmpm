@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void display_table(const char ***modules, const int rows, const int columns);
+void display_table(const char ***packages, const int rows, const int columns);
 char ***allocate_table_memory(const int rows, const int columns);
 
 #endif

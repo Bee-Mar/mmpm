@@ -10,7 +10,7 @@ char ***allocate_table_memory(const int rows, const int columns) {
   return matrix;
 }
 
-void display_table(const char ***modules, const int rows, const int columns) {
+void display_table(const char ***packages, const int rows, const int columns) {
   if (!rows || !columns ) return;
 
   ft_table_t *table = ft_create_table();
@@ -24,7 +24,7 @@ void display_table(const char ***modules, const int rows, const int columns) {
     ft_set_cell_prop(table, 0, i, FT_CPROP_TEXT_ALIGN, FT_ALIGNED_LEFT);
   }
 
-  for (int row = 0; row < rows; row++) ft_row_write_ln(table, columns, modules[row]);
+  for (int row = 0; row < rows; row++) ft_row_write_ln(table, columns, packages[row]);
 
   printf("%s\n", ft_to_string(table));
   ft_destroy_table(table);

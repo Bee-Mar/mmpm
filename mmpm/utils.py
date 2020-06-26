@@ -3,55 +3,17 @@ import sys
 import os
 import subprocess
 import time
-import logging
-import logging.handlers
-from multiprocessing import cpu_count
-from collections import Counter, defaultdict
 from logging import Logger
-from os.path import join
-from typing import List, Optional, Tuple, IO, Any
+from multiprocessing import cpu_count
+from typing import List, Optional, Tuple
 from re import sub
-from shutil import which
-from ctypes import cdll, c_char_p, c_int, POINTER, c_bool
-
+from ctypes import cdll, c_char_p, c_int, POINTER
 import mmpm.color as color
 import mmpm.consts as consts
 import mmpm.models as models
 
 MagicMirrorPackage = models.MagicMirrorPackage
-#MagicMirrorPackageCategory = models.MagicMirrorPackageCategory
-
-class MMPMLogger():
-    '''
-    Object used for logging while MMPM is executing.
-    Log files can be found in ~/.config/mmpm/log
-    '''
-    def __init__(self):
-        self.log_file: str = consts.MMPM_LOG_FILE
-
-        if not os.path.exists(consts.MMPM_LOG_DIR):
-            os.system(f'mkdir -p {consts.MMPM_LOG_DIR}')
-
-        for log_file in [consts.MMPM_LOG_FILE, consts.GUNICORN_ERROR_LOG_FILE, consts.GUNICORN_ACCESS_LOG_FILE]:
-            if not os.path.exists(log_file):
-                os.system(f'touch {log_file}')
-
-        self.log_format: str = '%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s'
-        logging.basicConfig(filename=self.log_file, format=self.log_format)
-        logger: logging.Logger = logging.getLogger()
-        logger.setLevel(logging.INFO)
-
-        self.handler = logging.handlers.RotatingFileHandler(
-            self.log_file,
-            mode='a',
-            maxBytes=1024*1024,
-            backupCount=2,
-            encoding=None,
-            delay=0
-        )
-
-        logger.addHandler(self.handler)
-        self.logger = logger
+MMPMLogger = models.MMPMLogger
 
 
 log: Logger = MMPMLogger().logger

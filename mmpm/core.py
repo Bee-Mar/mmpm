@@ -11,7 +11,7 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 from collections import defaultdict
 from bs4 import BeautifulSoup
-from typing import List, Any, Tuple, Dict
+from typing import List, Tuple, Dict
 import mmpm.color as color
 import mmpm.utils as utils
 import mmpm.mmpm as mmpm_
@@ -19,7 +19,6 @@ import mmpm.consts as consts
 import mmpm.models as models
 
 MagicMirrorPackage = models.MagicMirrorPackage
-#MagicMirrorPackageCategory = models.MagicMirrorPackageCategory
 
 
 def snapshot_details(packages: dict) -> None:

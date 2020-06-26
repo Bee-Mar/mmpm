@@ -1,8 +1,44 @@
 #!/usr/bin/env python3
+import os
+import logging
+import logging.handlers
 import mmpm.consts as consts
-from typing import List
 
 NA: str = consts.NOT_AVAILABLE
+
+
+class MMPMLogger():
+    '''
+    Object used for logging while MMPM is executing.
+    Log files can be found in ~/.config/mmpm/log
+    '''
+
+    def __init__(self):
+        self.log_file: str = consts.MMPM_LOG_FILE
+
+        if not os.path.exists(consts.MMPM_LOG_DIR):
+            os.system(f'mkdir -p {consts.MMPM_LOG_DIR}')
+
+        for log_file in [consts.MMPM_LOG_FILE, consts.GUNICORN_ERROR_LOG_FILE, consts.GUNICORN_ACCESS_LOG_FILE]:
+            if not os.path.exists(log_file):
+                os.system(f'touch {log_file}')
+
+        self.log_format: str = '%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s'
+        logging.basicConfig(filename=self.log_file, format=self.log_format)
+        logger: logging.Logger = logging.getLogger()
+        logger.setLevel(logging.INFO)
+
+        self.handler = logging.handlers.RotatingFileHandler(
+            self.log_file,
+            mode='a',
+            maxBytes=1024*1024,
+            backupCount=2,
+            encoding=None,
+            delay=0
+        )
+
+        logger.addHandler(self.handler)
+        self.logger = logger
 
 
 class MagicMirrorPackage():
@@ -43,18 +79,3 @@ class MagicMirrorPackage():
             'repository': self.repository,
             'description': self.description
         }
-
-
-# class MagicMirrorPackageCategory():
-#    def __init__(self, name: str = '', packages: List[MagicMirrorPackage] = []):
-#        self.name = name
-#        self.packages = packages
-#
-#    def __str__(self):
-#        return str(self.__dict__)
-#
-#    def __repr__(self):
-#        return str(self.__dict__)
-#
-#    def to_json(self):
-#        return self.__dict__

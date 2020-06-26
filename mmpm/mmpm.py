@@ -6,6 +6,10 @@ import mmpm.utils as utils
 import mmpm.core as core
 import mmpm.opts as opts
 import mmpm.consts as consts
+import mmpm.models as models
+from typing import List, Dict
+
+MagicMirrorPackage = models.MagicMirrorPackage
 
 __version__ = 1.25
 
@@ -21,9 +25,14 @@ def main(argv):
         sys.exit(0)
 
     current_snapshot, next_snapshot = utils.calc_snapshot_timestamps()
-    should_refresh = True if args.subcommand == opts.DATABASE and args.refresh else utils.should_refresh_packages(current_snapshot, next_snapshot)
+    snapshot_is_expired: bool = utils.should_refresh_packages(current_snapshot, next_snapshot)
+    should_refresh: bool = True if args.subcommand == opts.DATABASE and args.refresh else snapshot_is_expired
 
-    packages = core.load_packages(force_refresh=should_refresh)
+    packages: Dict[str, List[MagicMirrorPackage]] = core.load_packages(force_refresh=should_refresh)
+
+    # automated check for updates to MMPM
+    if snapshot_is_expired and args.subcommand != opts.DATABASE or args.subcommand == opts.DATABASE and not args.refresh:
+        core.check_for_mmpm_updates()
 
     if not packages:
         utils.fatal_msg('Unable to retrieve packages.')

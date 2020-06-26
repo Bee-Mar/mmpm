@@ -245,6 +245,14 @@ def get_user_args() -> object:
         dest='gui'
     )
 
+    open_parser.add_argument(
+        '-m',
+        '--magicmirror-wiki',
+        action='store_true',
+        help='open the MagicMirror GitHub wiki in your default browser using xdg-open',
+        dest='magicmirror_wiki'
+    )
+
     #show_parser
     subparsers.add_parser(
         SHOW,

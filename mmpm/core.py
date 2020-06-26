@@ -902,7 +902,7 @@ def get_installed_packages(packages: dict) -> dict:
     packages_found: Dict[str, List[MagicMirrorPackage]] = {consts.PACKAGES: []}
 
     for package_dir in package_dirs:
-        if not os.path.isdir(package_dir):
+        if not os.path.isdir(package_dir) or not os.path.exists(os.path.join(os.getcwd(), package_dir, '.git')):
             continue
 
         try:
@@ -923,7 +923,7 @@ def get_installed_packages(packages: dict) -> dict:
             )
 
             if error_code:
-                utils.error_msg('Unable to communicate with git server')
+                utils.error_msg(f'Unable to determine repository origin for {project_name}')
                 continue
 
             packages_found[consts.PACKAGES].append(
@@ -1193,6 +1193,16 @@ def open_mmpm_gui() -> bool:
         bool: True upon sucess, False upon failure
     '''
     error_code, _, stderr = utils.run_cmd(['xdg-open', get_web_interface_url()], background=True)
+
+    if error_code:
+        utils.error_msg(stderr)
+        return False
+    return True
+
+
+def open_magicmirror_wiki() -> bool:
+    url: str = 'https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules'
+    error_code, _, stderr = utils.run_cmd(['xdg-open', url], background=True)
 
     if error_code:
         utils.error_msg(stderr)

@@ -55,12 +55,16 @@ def main(argv):
             core.show_package_details(result)
 
     elif args.subcommand == opts.OPEN:
-        if args.config:
+        if additional_args:
+            utils.invalid_additional_arguments(args.subcommand)
+        elif args.config:
             core.open_magicmirror_config()
         elif args.gui:
             core.open_mmpm_gui()
+        elif args.magicmirror_wiki:
+            core.open_magicmirror_wiki()
         else:
-            utils.invalid_additional_arguments(args.subcommand)
+            utils.no_arguments_provided(args.subcommand)
 
     elif args.subcommand == opts.ADD_EXT_MODULE:
         if args.remove:
@@ -83,7 +87,9 @@ def main(argv):
             core.check_for_package_updates(packages, args.assume_yes)
 
     elif args.subcommand == opts.INSTALL:
-        if args.magicmirror:
+        if not additional_args:
+            utils.no_arguments_provided(args.subcommand)
+        elif args.magicmirror:
             core.install_magicmirror(args.GUI)
         elif args.autocomplete:
             core.install_autocompletion(assume_yes=args.assume_yes)
@@ -111,7 +117,9 @@ def main(argv):
         )
 
     elif args.subcommand == opts.SEARCH:
-        if len(additional_args) > 1:
+        if not additional_args:
+            utils.no_arguments_provided(args.subcommand)
+        elif len(additional_args) > 1:
             utils.fatal_msg(f'Too many arguments. `mmpm {args.subcommand}` only accepts one search argument')
         else:
             core.display_packages(
@@ -131,7 +139,7 @@ def main(argv):
         elif args.restart:
             core.restart_magicmirror()
         else:
-            utils.invalid_option(args.subcommand)
+            utils.no_arguments_provided(args.subcommand)
 
     elif args.subcommand == opts.DATABASE:
         if args.refresh:
@@ -141,7 +149,7 @@ def main(argv):
         elif args.details:
             core.snapshot_details(packages)
         else:
-            utils.invalid_additional_arguments(args.subcommand)
+            utils.no_arguments_provided(args.subcommand)
 
     elif args.subcommand == opts.LOG:
         if additional_args:

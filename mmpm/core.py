@@ -43,7 +43,7 @@ def snapshot_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     next_snap_date = datetime.datetime.fromtimestamp(int(next_snapshot))
 
     for category in packages.values():
-        num_modules += len(category)
+        num_packages += len(category)
 
     print(
         utils.colored_text(color.N_YELLOW, 'Most recent snapshot of MagicMirror Modules taken:'),
@@ -187,7 +187,7 @@ def upgrade_package(package: MagicMirrorPackage) -> str:
     return ''
 
 
-def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]], assume_yes: bool = False) -> None:
+def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]], assume_yes: bool = False) -> bool:
     '''
     Depending on flags passed in as arguments:
 
@@ -208,15 +208,13 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]], ass
 
     os.chdir(consts.MAGICMIRROR_MODULES_DIR)
 
-    installed_packages: dict = get_installed_packages(packages)
+    installed_packages: Dict[str, List[MagicMirrorPackage]] = get_installed_packages(packages)
 
-    updateable: List[str] = []
+    updateable: List[MagicMirrorPackage] = []
     upgraded: bool = True
 
-    dirs: List[str] = os.listdir(consts.MAGICMIRROR_MODULES_DIR)
-
-    for _, packages in installed_packages.items():
-        for package in packages:
+    for _, _packages in installed_packages.items():
+        for package in _packages:
             os.chdir(package.directory)
 
             utils.plain_print(f'Checking {utils.colored_text(color.N_GREEN, package.title)} for updates')
@@ -329,7 +327,7 @@ def get_installation_candidates(packages: Dict[str, List[MagicMirrorPackage]], p
         installation_candidates (List[MagicMirrorPackage]): list of modules whose module names match those of the modules_to_install
     '''
 
-    installation_candidates: List[dict] = []
+    installation_candidates: List[MagicMirrorPackage] = []
 
     if 'mmpm' in packages_to_install:
         utils.warning_msg("Removing 'mmpm' as an installation candidate. It's obviously already installed " + u'\U0001F609')
@@ -381,7 +379,7 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
     for index, candidate in enumerate(installation_candidates):
         if not utils.prompt_user(f'Install {utils.colored_text(color.N_GREEN, candidate.title)} ({candidate.repository})?', assume_yes=assume_yes):
             utils.log.info(f'User not chose to install {candidate.title}')
-            installation_candidates[index] = {}
+            installation_candidates[index] = MagicMirrorPackage()
         else:
             utils.log.info(f'User chose to install {candidate.title} ({candidate.repository})')
 

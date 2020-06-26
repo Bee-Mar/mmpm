@@ -52,7 +52,7 @@ MMPM_CONFIG_DIR: str = join(HOME_DIR, '.config', 'mmpm')
 MMPM_LOG_DIR: str = join(MMPM_CONFIG_DIR, 'log')
 
 LIBMMPM_SHARED_OBJECT_FILE: str = join('/', 'usr', 'local', 'lib', 'mmpm', 'libmmpm.so')
-MAGICMIRROR_PACKAGES_SNAPSHOT_FILE: str = join(MMPM_CONFIG_DIR, 'MagicMirror-modules-snapshot.json')
+MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE: str = join(MMPM_CONFIG_DIR, 'MagicMirror-3rd-party-packages-snapshot.json')
 EXTERNAL_MODULE_SOURCES: str = 'External Module Sources'
 
 MMPM_EXTERNAL_SOURCES_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-external-sources.json')

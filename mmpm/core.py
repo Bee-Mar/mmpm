@@ -11,17 +11,17 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 from collections import defaultdict
 from bs4 import BeautifulSoup
-from typing import List, Tuple, Dict
+from typing import List, Dict
 import mmpm.color as color
 import mmpm.utils as utils
-import mmpm.mmpm as mmpm_
+import mmpm.mmpm as _mmpm
 import mmpm.consts as consts
 import mmpm.models as models
 
 MagicMirrorPackage = models.MagicMirrorPackage
 
 
-def snapshot_details(packages: dict) -> None:
+def snapshot_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     '''
     Displays information regarding the most recent 'snapshot_file', ie. when it
     was taken, when the next scheduled snapshot will be taken, how many module
@@ -29,14 +29,14 @@ def snapshot_details(packages: dict) -> None:
     tells user how to forcibly request a new snapshot be taken.
 
     Parameters:
-        packages (dict): Dictionary of MagicMirror modules
+        packages (Dict[str, List[MagicMirrorPackage]]): Dictionary of MagicMirror modules
 
     Returns:
         None
     '''
 
     num_categories: int = len(packages.keys())
-    num_modules: int = 0
+    num_packages: int = 0
 
     current_snapshot, next_snapshot = utils.calc_snapshot_timestamps()
     curr_snap_date = datetime.datetime.fromtimestamp(int(current_snapshot))
@@ -56,13 +56,13 @@ def snapshot_details(packages: dict) -> None:
     )
 
     print(
-        utils.colored_text(color.N_GREEN, 'Module Categories:'),
+        utils.colored_text(color.N_GREEN, 'Package Categories:'),
         f'{num_categories}'
     )
 
     print(
-        utils.colored_text(color.N_GREEN, 'Modules Available:'),
-        f'{num_modules}\n'
+        utils.colored_text(color.N_GREEN, 'Packages Available:'),
+        f'{num_packages}\n'
     )
 
 
@@ -81,7 +81,7 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
     '''
 
     try:
-        utils.log.info(f'Checking for newer version of MMPM. Current version: {mmpm_.__version__}')
+        utils.log.info(f'Checking for newer version of MMPM. Current version: {_mmpm.__version__}')
         utils.plain_print(f"Checking {utils.colored_text(color.N_GREEN, 'MMPM')} for updates")
 
         try:
@@ -108,21 +108,19 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
     if not version_number:
         utils.fatal_msg('No version number found on MMPM repository')
 
-    if mmpm_.__version__ >= version_number:
+    if _mmpm.__version__ >= version_number:
         print(f'No updates available for MMPM {consts.YELLOW_X}')
         utils.log.info(f'No newer version of MMPM found > {version_number} available. The current version is the latest')
         return True
 
     utils.log.info(f'Found newer version of MMPM: {version_number}')
 
-    print(f'\nInstalled version: {mmpm_.__version__}')
+    print(f'\nInstalled version: {_mmpm.__version__}')
     print(f'Available version: {version_number}\n')
 
     if gui:
         message = f"A newer version of MMPM is available ({version_number}). Please upgrade via terminal using 'mmpm uprade --mmpm"
-        utils.separator(message)
         print(message)
-        utils.separator(message)
         return True
 
     if not utils.prompt_user('A newer version of MMPM is available. Would you like to upgrade now?', assume_yes=assume_yes):
@@ -130,9 +128,7 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
 
     message = "Upgrading MMPM"
 
-    utils.separator(message)
     print(utils.colored_text(color.B_CYAN, message))
-    utils.separator(message)
 
     utils.log.info(f'User chose to update MMPM')
 
@@ -155,7 +151,7 @@ def upgrade_package(package: MagicMirrorPackage) -> str:
     '''
     Depending on flags passed in as arguments:
 
-    Checks for available module updates, and alerts the user. Or, pulls latest
+    Checks for available package updates, and alerts the user. Or, pulls latest
     version of module(s) from the associated repos.
 
     If upgrading, a user can upgrade all modules that have available upgrades
@@ -163,14 +159,13 @@ def upgrade_package(package: MagicMirrorPackage) -> str:
     supplying their case-sensitive name(s) as an addtional argument.
 
     Parameters:
-        module (dict): the MagicMirror module being upgraded
+        package (MagicMirrorPackage): the MagicMirror module being upgraded
 
     Returns:
         stderr (str): the resulting error message of the upgrade. If the message is zero length, it was successful
     '''
 
-    packages_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
-    os.chdir(packages_dir)
+    os.chdir(consts.MAGICMIRROR_MODULES_DIR)
 
     os.chdir(package.directory)
     utils.plain_print(f'{consts.GREEN_PLUS_SIGN} Retrieving upgrade for {package.title}')
@@ -192,7 +187,7 @@ def upgrade_package(package: MagicMirrorPackage) -> str:
     return ''
 
 
-def check_for_package_updates(packages: dict, assume_yes: bool = False):
+def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]], assume_yes: bool = False) -> None:
     '''
     Depending on flags passed in as arguments:
 
@@ -204,25 +199,21 @@ def check_for_package_updates(packages: dict, assume_yes: bool = False):
     supplying their case-sensitive name(s) as an addtional argument.
 
     Parameters:
-        modules (dict): Dictionary of MagicMirror modules
-        update (bool): Flag to update modules
-        upgrade (bool): Flag to upgrade modules
-        modules_to_upgrade (List[str]): List of modules to update/upgrade
+        packages (Dict[str, List[MagicMirrorPackage]]): Dictionary of MagicMirror modules
+        assume_yes (bool): if True, assume yes for user response, and do not display prompt
 
     Returns:
         None
     '''
 
-    original_dir: str = os.getcwd()
-    modules_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
-    os.chdir(modules_dir)
+    os.chdir(consts.MAGICMIRROR_MODULES_DIR)
 
     installed_packages: dict = get_installed_packages(packages)
 
     updateable: List[str] = []
     upgraded: bool = True
 
-    dirs: List[str] = os.listdir(modules_dir)
+    dirs: List[str] = os.listdir(consts.MAGICMIRROR_MODULES_DIR)
 
     for _, packages in installed_packages.items():
         for package in packages:
@@ -268,7 +259,7 @@ def check_for_package_updates(packages: dict, assume_yes: bool = False):
     return True
 
 
-def search_packages(packages: dict, query: str, case_sensitive: bool = False, show: bool = False) -> dict:
+def search_packages(packages: Dict[str, List[MagicMirrorPackage]], query: str, case_sensitive: bool = False, by_title_only: bool = False) -> dict:
     '''
     Used to search the 'modules' for either a category, or keyword/phrase
     appearing within module descriptions. If the argument supplied is a
@@ -277,19 +268,22 @@ def search_packages(packages: dict, query: str, case_sensitive: bool = False, sh
     displayed.
 
     Parameters:
-        packages (dict): Dictionary of MagicMirror modules
-        query (str): Search query
+        packages (Dict[str, List[MagicMirrorPackage]]): Dictionary of MagicMirror modules
+        query (str): user provided search string
+        case_sensitive (bool): if True, the query's exact casing is used in search
+        by_title_only (bool): if True, only the title is considered when matching packages to query
 
     Returns:
         dict
     '''
 
+    # if the query matches one of the category names exactly, return everything in that category
     if query in packages:
         return {query: packages[query]}
 
     search_results = defaultdict(list)
 
-    if show:
+    if by_title_only:
         match = lambda query, pkg: query == pkg.title
     elif case_sensitive:
         match = lambda query, pkg: query in pkg.description or query in pkg.title or query in pkg.author
@@ -323,16 +317,16 @@ def show_package_details(packages: dict) -> None:
             print(indent(fill(f'Description: {package.description}\n', width=80), prefix='  '), '\n')
 
 
-def get_installation_candidates(packages: dict, packages_to_install: List[str]) -> list:
+def get_installation_candidates(packages: Dict[str, List[MagicMirrorPackage]], packages_to_install: List[str]) -> List[MagicMirrorPackage]:
     '''
     Used to display more detailed information that presented in normal search results
 
     Parameters:
-        packages (dict): MagicMirror modules database snapshot
+        packages (Dict[str, List[MagicMirrorPackage]]): MagicMirror modules database snapshot
         packages_to_install (List[str]): list of modules provided by user through command line arguments
 
     Returns:
-        installation_candidates (List[dict]): list of modules whose module names match those of the modules_to_install
+        installation_candidates (List[MagicMirrorPackage]): list of modules whose module names match those of the modules_to_install
     '''
 
     installation_candidates: List[dict] = []
@@ -351,24 +345,23 @@ def get_installation_candidates(packages: dict, packages_to_install: List[str]) 
     return installation_candidates
 
 
-def install_packages(installation_candidates: dict, assume_yes: bool = False) -> bool:
+def install_packages(installation_candidates: List[MagicMirrorPackage], assume_yes: bool = False) -> bool:
     '''
     Compares list of 'modules_to_install' to modules found within the
     'modules', clones the repository within the ~/MagicMirror/modules
     directory, and runs 'npm install' for each newly installed module.
 
     Parameters:
-        packages_to_install (List[str]): List of packages to install
+        installation_candidates (List[MagicMirrorPackage]): List of MagicMirrorPackages to install
         assume_yes (bool): if True, assume yes for user response, and do not display prompt
 
     Returns:
         bool: True upon success, False upon failure
     '''
 
-    packages_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
     errors: List[dict] = []
 
-    if not os.path.exists(packages_dir):
+    if not os.path.exists(consts.MAGICMIRROR_MODULES_DIR):
         utils.error_msg(f'MagicMirror directory not found in {consts.MAGICMIRROR_ROOT}. Is the MMPM_MAGICMIRROR_ROOT env variable set properly?')
         return False
 
@@ -376,8 +369,8 @@ def install_packages(installation_candidates: dict, assume_yes: bool = False) ->
         utils.error_msg('Unable to match query any to installation candidates')
         return False
 
-    utils.log.info(f'Changing into MagicMirror modules directory {packages_dir}')
-    os.chdir(packages_dir)
+    utils.log.info(f'Changing into MagicMirror modules directory {consts.MAGICMIRROR_MODULES_DIR}')
+    os.chdir(consts.MAGICMIRROR_MODULES_DIR)
 
     # a flag to check if any of the modules have been installed. Used for displaying a message later
     successes: int = 0
@@ -418,7 +411,7 @@ def install_packages(installation_candidates: dict, assume_yes: bool = False) ->
                     utils.warning_msg(f'Skipping installation of {package.title} ({package.repository})\n')
                     continue
 
-            success, error = utils.install_package(package, target, packages_dir, assume_yes=assume_yes)
+            success, _ = utils.install_package(package, target, consts.MAGICMIRROR_MODULES_DIR, assume_yes=assume_yes)
 
             if success:
                 successes += 1
@@ -442,8 +435,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
     Checks for updates available to the MagicMirror repository. Alerts user if an upgrade is available.
 
     Parameters:
-        modules (dict): Dictionary of MagicMirror modules
-        modules_to_install (List[str]): List of modules to install
+        assume_yes (bool): if True, assume yes for user response, and do not display prompt
 
     Returns:
         bool: True upon success, False upon failure
@@ -506,7 +498,7 @@ def upgrade_magicmirror() -> bool:
 
     print(f"\n{utils.colored_text(color.N_CYAN, 'Upgrading MagicMirror')}")
     os.chdir(consts.MAGICMIRROR_ROOT)
-    error_code, _, stdout = utils.run_cmd(['git', 'pull'])
+    error_code, _, _ = utils.run_cmd(['git', 'pull'])
 
     if error_code:
         utils.error_msg('Failed to communicate with git server')
@@ -522,7 +514,7 @@ def upgrade_magicmirror() -> bool:
     return True
 
 
-def install_magicmirror(gui=False) -> bool:
+def install_magicmirror() -> bool:
     '''
     Installs MagicMirror. First checks if a MagicMirror installation can be
     found, and if one is found, prompts user to update the MagicMirror.
@@ -547,7 +539,7 @@ def install_magicmirror(gui=False) -> bool:
         print(f'Please set the MMPM_MAGICMIRROR_ROOT env variable in your bashrc to {parent}/MagicMirror')
 
     if not shutil.which('curl'):
-        utils.fatal_msg("'curl' command not found. Please install it, then re-run mmpm install --magicmirror")
+        utils.fatal_msg("'curl' command not found. Please install 'curl', then re-run mmpm install --magicmirror")
 
     os.chdir(parent)
     print(utils.colored_text(color.N_CYAN, f'Installing MagicMirror in {parent}/MagicMirror ...'))
@@ -555,7 +547,7 @@ def install_magicmirror(gui=False) -> bool:
     return True
 
 
-def remove_packages(installed_packages: dict, packages_to_remove: List[str], assume_yes: bool = False) -> bool:
+def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], packages_to_remove: List[str], assume_yes: bool = False) -> bool:
     '''
     Gathers list of modules currently installed in the ~/MagicMirror/modules
     directory, and removes each of the modules from the folder, if modules are
@@ -563,22 +555,21 @@ def remove_packages(installed_packages: dict, packages_to_remove: List[str], ass
     them no modules are currently installed.
 
     Parameters:
-        installed_packages (List[defaultdict]): List of dictionary of MagicMirror packages
+        installed_packages (Dict[str, List[MagicMirrorPackage]]): List of dictionary of MagicMirror packages
         modules_to_remove (list): List of modules to remove
         assume_yes (bool): if True, all prompts are assumed to have a response of yes from the user
 
     Returns:
         bool: True upon success, False upon failure
     '''
+
     cancelled_removal: List[str] = []
     marked_for_removal: List[str] = []
-    curr_dir: str = os.getcwd()
 
-    packages_dir: str = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
-    package_dirs: List[str] = os.listdir(packages_dir)
+    package_dirs: List[str] = os.listdir(consts.MAGICMIRROR_MODULES_DIR)
 
     try:
-        for category, packages in installed_packages.items():
+        for _, packages in installed_packages.items():
             for package in packages:
                 dir_name = os.path.basename(package.directory)
                 if dir_name in package_dirs and dir_name in packages_to_remove:
@@ -596,8 +587,8 @@ def remove_packages(installed_packages: dict, packages_to_remove: List[str], ass
 
     for title in packages_to_remove:
         if title not in marked_for_removal and title not in cancelled_removal:
-            utils.error_msg(f"No module named '{title}' found in {packages_dir}")
-            utils.log.info(f"User attemped to remove {title}, but no module named '{title}' was found in {packages_dir}")
+            utils.error_msg(f"No module named '{title}' found in {consts.MAGICMIRROR_MODULES_DIR}")
+            utils.log.info(f"User attemped to remove {title}, but no module named '{title}' was found in {consts.MAGICMIRROR_MODULES_DIR}")
 
     for dir_name in marked_for_removal:
         shutil.rmtree(dir_name)
@@ -610,7 +601,7 @@ def remove_packages(installed_packages: dict, packages_to_remove: List[str], ass
     return True
 
 
-def load_packages(force_refresh: bool = False) -> dict:
+def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPackage]]:
     '''
     Reads in modules from the hidden 'snapshot_file'  and checks if the file is
     out of date. If so, the modules are gathered again from the MagicMirror 3rd
@@ -620,7 +611,7 @@ def load_packages(force_refresh: bool = False) -> dict:
         force_refresh (bool): Boolean flag to force refresh of snapshot
 
     Returns:
-        packages (dict): dictionary of MagicMirror 3rd party modules
+        packages (Dict[str, List[MagicMirrorPackage]]): dictionary of MagicMirror 3rd party modules
     '''
 
     packages: dict = {}
@@ -630,35 +621,35 @@ def load_packages(force_refresh: bool = False) -> dict:
         utils.fatal_msg(message)
 
     # if the snapshot has expired, or doesn't exist, get a new one
-    if force_refresh or not os.path.exists(consts.MAGICMIRROR_PACKAGES_SNAPSHOT_FILE):
+    if force_refresh or not os.path.exists(consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE):
         utils.plain_print(f'{consts.GREEN_PLUS_SIGN} Refreshing MagicMirror 3rd party modules database ')
         packages = retrieve_packages()
 
         # save the new snapshot
-        with open(consts.MAGICMIRROR_PACKAGES_SNAPSHOT_FILE, 'w') as snapshot:
+        with open(consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE, 'w') as snapshot:
             json.dump(packages, snapshot, default=lambda pkg: pkg.serialize())
 
         print(consts.GREEN_CHECK_MARK)
 
     if not packages:
-        with open(consts.MAGICMIRROR_PACKAGES_SNAPSHOT_FILE, 'r') as snapshot_file:
+        with open(consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE, 'r') as snapshot_file:
             packages = json.load(snapshot_file)
 
-            for key in packages.keys():
-                packages[key] = utils.row_of_dict_to_magicmirror_packages(packages[key])
+            for category in packages.keys():
+                packages[category] = utils.list_of_dict_to_magicmirror_packages(packages[category])
 
     if os.path.exists(consts.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(consts.MMPM_EXTERNAL_SOURCES_FILE).st_size:
         try:
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as f:
-                packages[consts.EXTERNAL_MODULE_SOURCES] = utils.row_of_dict_to_magicmirror_packages(json.load(f)[consts.EXTERNAL_MODULE_SOURCES])
-        except Exception as error:
+                packages[consts.EXTERNAL_MODULE_SOURCES] = utils.list_of_dict_to_magicmirror_packages(json.load(f)[consts.EXTERNAL_MODULE_SOURCES])
+        except Exception:
             message = f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}. Please examine the file, it may be malformed and required manual corrective action.'
             utils.warning_msg(message)
 
     return packages
 
 
-def retrieve_packages() -> dict:
+def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
     '''
     Scrapes the MagicMirror 3rd Party Wiki, and saves all modules along with
     their full, available descriptions in a hidden JSON file in the users home
@@ -671,7 +662,7 @@ def retrieve_packages() -> dict:
         packages (dict): dictionary of MagicMirror 3rd party modules
     '''
 
-    packages: dict = {}
+    packages: Dict[str, List[MagicMirrorPackage]] = {}
 
     try:
         url = urlopen(consts.MAGICMIRROR_MODULES_URL)
@@ -759,20 +750,19 @@ def retrieve_packages() -> dict:
     return packages
 
 
-def display_categories(packages: dict, table_formatted: bool = False) -> None:
+def display_categories(packages: Dict[str, List[MagicMirrorPackage]], table_formatted: bool = False) -> None:
     '''
     Prints module category names and the total number of modules in one of two
     formats. The default is similar to the Debian apt package manager, and the
     prettified table alternative
 
     Parameters:
-        categories (List[dict]): list of dictionaries containing category names and module count
+        packages (Dict[str, List[MagicMirrorPackage]]): list of dictionaries containing category names and module count
         table_formatted (bool): if True, the output is printed as a prettified table
 
     Returns:
         None
     '''
-    MAX_LENGTH: int = 120
 
     categories: List[dict] = [
         {
@@ -794,7 +784,7 @@ def display_categories(packages: dict, table_formatted: bool = False) -> None:
     rows = len(categories) + 1  # to include the header row
 
     table = utils.allocate_table_memory(rows, columns)
-    table[0][0], table[0][1] = utils.to_bytes(consts.CATEGORY), utils.to_bytes(consts.PACKAGES)
+    table[0][0], table[0][1] = utils.to_bytes(consts.CATEGORY.title()), utils.to_bytes(consts.PACKAGES.title())
 
     for category in categories:
         table[global_row][0] = utils.to_bytes(category[consts.CATEGORY])
@@ -804,14 +794,14 @@ def display_categories(packages: dict, table_formatted: bool = False) -> None:
     utils.display_table(table, rows, columns)
 
 
-def display_packages(packages: dict, table_formatted: bool = False, include_path: bool = False) -> None:
+def display_packages(packages: Dict[str, List[MagicMirrorPackage]], table_formatted: bool = False, include_path: bool = False) -> None:
     '''
     Depending on the user flags passed in from the command line, either all
     existing packages may be displayed, or the names of all categories of
     packages may be displayed.
 
     Parameters:
-        packages (dict): dictionary of MagicMirror 3rd party packages
+        packages (Dict[str, List[MagicMirrorPackage]]): dictionary of MagicMirror 3rd party packages
         list_categories (bool): Boolean flag to list categories
 
     Returns:
@@ -834,22 +824,22 @@ def display_packages(packages: dict, table_formatted: bool = False, include_path
 
         table = utils.allocate_table_memory(rows, columns)
 
-        table[0][0] = utils.to_bytes(consts.TITLE)
-        table[0][1] = utils.to_bytes(consts.DESCRIPTION)
+        table[0][0] = utils.to_bytes(consts.TITLE.title())
+        table[0][1] = utils.to_bytes(consts.DESCRIPTION.title())
 
         if include_path:
-            table[0][2] = utils.to_bytes(consts.DIRECTORY)
+            table[0][2] = utils.to_bytes(consts.DIRECTORY.title())
 
-            def __fill_row__(table, row, package):
+            def __fill_row__(table, row, package: MagicMirrorPackage):
                 table[row][0] = utils.to_bytes(package.title)
                 table[row][1] = utils.to_bytes(format_description(package.description))
                 table[row][2] = utils.to_bytes(os.path.basename(package.directory))
         else:
-            def __fill_row__(table, row, package):
+            def __fill_row__(table, row, package: MagicMirrorPackage):
                 table[row][0] = utils.to_bytes(package.title)
                 table[row][1] = utils.to_bytes(format_description(package.description))
 
-        for category, _packages in packages.items():
+        for _, _packages in packages.items():
             for _, package in enumerate(_packages):
                 __fill_row__(table, global_row, package)
                 global_row += 1
@@ -870,23 +860,22 @@ def display_packages(packages: dict, table_formatted: bool = False, include_path
                 (f"\n  {format_description(package.description)}\n")
             )
 
-        for category, _packages in packages.items():
-            for index, package in enumerate(_packages):
+        for _, _packages in packages.items():
+            for _, package in enumerate(_packages):
                 _print_(package)
 
 
-def get_installed_packages(packages: dict) -> dict:
+def get_installed_packages(packages: Dict[str, List[MagicMirrorPackage]]) -> Dict[str, List[MagicMirrorPackage]]:
     '''
     Saves a list of all currently installed packages in the
     ~/MagicMirror/modules directory, and compares against the known packages
     from the MagicMirror 3rd Party Wiki.
 
     Parameters:
-        packages (dict): Dictionary of MagicMirror packages
+        packages (Dict[str, List[MagicMirrorPackage]]): Dictionary of MagicMirror packages
 
     Returns:
-        None upon failure
-        installed_modules (dict): Dictionary of installed MagicMirror packages
+        installed_modules (Dict[str, List[MagicMirrorPackage]]): Dictionary of installed MagicMirror packages
     '''
 
     package_dirs: List[str] = utils.get_existing_package_directories()
@@ -1001,7 +990,7 @@ def add_external_package(title: str = None, author: str = None, repo: str = None
             config: dict = {}
 
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
-                config[consts.EXTERNAL_MODULE_SOURCES] = utils.row_of_dict_to_magicmirror_packages(json.load(mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES])
+                config[consts.EXTERNAL_MODULE_SOURCES] = utils.list_of_dict_to_magicmirror_packages(json.load(mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES])
 
             with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 config[consts.EXTERNAL_MODULE_SOURCES].append(external_package)
@@ -1026,10 +1015,10 @@ def remove_external_package_source(titles: List[str] = None, assume_yes: bool = 
     ~/.config/mmpm/mmpm-external-sources.json
 
     Parameters:
-        title (List[str]): External source titles
+        titles (List[str]): External source titles
 
     Returns:
-        (bool): Upon success, a True result is returned, False on error
+        success (bool): True on success, False on error
     '''
 
     if not os.path.exists(consts.MMPM_EXTERNAL_SOURCES_FILE):
@@ -1038,18 +1027,18 @@ def remove_external_package_source(titles: List[str] = None, assume_yes: bool = 
     elif not os.stat(consts.MMPM_EXTERNAL_SOURCES_FILE).st_size:
         utils.fatal_msg(f'{consts.MMPM_EXTERNAL_SOURCES_FILE} is empty')
 
-    packages: dict = {}
-    marked_for_removal: list = []
-    cancelled_removal: list = []
+    ext_packages: Dict[str, List[MagicMirrorPackage]] = {}
+    marked_for_removal: List[MagicMirrorPackage] = []
+    cancelled_removal: List[MagicMirrorPackage] = []
 
     with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
-        packages[consts.EXTERNAL_MODULE_SOURCES] = utils.row_of_dict_to_magicmirror_packages(json.load(mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES])
+        ext_packages[consts.EXTERNAL_MODULE_SOURCES] = utils.list_of_dict_to_magicmirror_packages(json.load(mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES])
 
-    if not packages[consts.EXTERNAL_MODULE_SOURCES]:
+    if not ext_packages[consts.EXTERNAL_MODULE_SOURCES]:
         utils.fatal_msg('No external packages found in database')
 
     for title in titles:
-        for package in packages[consts.EXTERNAL_MODULE_SOURCES]:
+        for package in ext_packages[consts.EXTERNAL_MODULE_SOURCES]:
             if package.title == title:
                 prompt: str = f'Would you like to remove {utils.colored_text(color.N_GREEN, title)} ({package.repository}) from the MMPM/MagicMirror local database?'
                 if utils.prompt_user(prompt, assume_yes=assume_yes):
@@ -1062,12 +1051,12 @@ def remove_external_package_source(titles: List[str] = None, assume_yes: bool = 
         return False
 
     for package in marked_for_removal:
-        packages[consts.EXTERNAL_MODULE_SOURCES].remove(package)
+        ext_packages[consts.EXTERNAL_MODULE_SOURCES].remove(package)
         print(f'{consts.GREEN_PLUS_SIGN} Removed {package.title} ({package.repository})')
 
     # if the error_msg was triggered, there's no need to even bother writing back to the file
     with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
-        json.dump(packages, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
+        json.dump(ext_packages, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
 
     return True
 
@@ -1080,7 +1069,7 @@ def open_magicmirror_config() -> bool:
         None
 
     Returns:
-        bool: True upon success, False upon failure
+        success (bool): True upon success, False upon failure
     '''
     if not os.path.exists(consts.MAGICMIRROR_CONFIG_FILE):
         utils.error_msg(f'{consts.MAGICMIRROR_CONFIG_FILE} not found. Is the MMPM_MAGICMIRROR_ROOT env variable set properly?')
@@ -1093,7 +1082,7 @@ def open_magicmirror_config() -> bool:
     return True
 
 
-def get_active_packages(table_formatted: bool = False) -> None:
+def display_active_packages(table_formatted: bool = False) -> None:
 
     '''
     Parses the MagicMirror config file for the modules listed, and reports
@@ -1102,7 +1091,7 @@ def get_active_packages(table_formatted: bool = False) -> None:
     the module is considered enabled.
 
     Parameters:
-        None
+        table_formatted (bool): if True, output is displayed in a table
 
     Returns:
         None
@@ -1117,7 +1106,7 @@ def get_active_packages(table_formatted: bool = False) -> None:
     with open(temp_config, 'a') as temp:
         temp.write('console.log(JSON.stringify(config))')
 
-    _, stdout, stderr = utils.run_cmd(['node', temp_config], progress=False)
+    _, stdout, _ = utils.run_cmd(['node', temp_config], progress=False)
     config: dict = json.loads(stdout.split('\n')[0])
 
     # using -f so any errors can be ignored
@@ -1197,7 +1186,7 @@ def stop_magicmirror() -> bool:
     '''
     if shutil.which('pm2'):
         utils.log.info("Using 'pm2' to stop MagicMirror")
-        error_code, _, stderr = utils.run_cmd(['pm2', 'stop', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]], progress=False)
+        _, _, stderr = utils.run_cmd(['pm2', 'stop', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]], progress=False)
 
         if stderr:
             utils.error_msg(f'{stderr.strip()}. Is the MAGICMIRROR_PM2_PROC env variable set correctly?')
@@ -1222,14 +1211,13 @@ def start_magicmirror() -> bool:
         None
     '''
     utils.log.info('Starting MagicMirror')
-    original_dir = os.getcwd()
     os.chdir(consts.MAGICMIRROR_ROOT)
 
     utils.log.info("Running 'npm start' in the background")
 
     if shutil.which('pm2'):
         utils.log.info("Using 'pm2' to start MagicMirror")
-        error_code, stdout, stderr = utils.run_cmd(
+        error_code, _, stderr = utils.run_cmd(
             ['pm2', 'start', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]],
             background=True
         )
@@ -1259,7 +1247,7 @@ def restart_magicmirror() -> bool:
     '''
     if shutil.which('pm2'):
         utils.log.info("Using 'pm2' to restart MagicMirror")
-        error_code, stdout, stderr = utils.run_cmd(
+        _, _, stderr = utils.run_cmd(
             ['pm2', 'restart', consts.MMPM_ENV_VARS[consts.MAGICMIRROR_PM2_PROC]],
             progress=False
         )
@@ -1284,6 +1272,18 @@ def restart_magicmirror() -> bool:
 
 
 def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool = False) -> None:
+    '''
+    Displays contents of log files to stdout. If the --tail option is supplied,
+    log contents will be displayed in real-time
+
+    Parameters:
+       cli_logs (bool): if True, the CLI log files will be displayed
+       gui_logs (bool): if True, the Gunicorn log files for the web interface will be displayed
+       tail (bool): if True, the contents will be displayed in real time
+
+    Returns:
+        None
+    '''
     logs: List[str] = []
 
     if cli_logs:
@@ -1307,18 +1307,29 @@ def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool
 
 
 def display_mmpm_env_vars() -> None:
+    '''
+    Displays the environment variables associated with MMPM, as well as their
+    current value. A user may modify these values by setting them in their
+    shell configuration file
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+
     for key, value in consts.MMPM_ENV_VARS.items():
         print(f'{key}={value}')
 
 
 def install_autocompletion(assume_yes: bool = False) -> None:
     '''
-    Adds appropriate autocompletion configuration to a user's shell
-    configuration file. Detects configuration files for bash, zsh, fish,
-    and tcsh
+    Adds autocompletion configuration to a user's shell configuration file.
+    Detects configuration files for bash, zsh, fish, and tcsh
 
     Parameters:
-       None
+        assume_yes (bool): if True, assume yes for user response, and do not display prompt
 
     Returns:
         None

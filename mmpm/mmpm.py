@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=unused-argument
 import sys
+import webbrowser
 import mmpm.utils as utils
 import mmpm.core as core
 import mmpm.opts as opts
@@ -50,7 +51,7 @@ def main(argv):
             utils.no_arguments_provided(args.subcommand)
 
         for query in additional_args:
-            result = core.search_packages(packages, query, show=True)
+            result = core.search_packages(packages, query, by_title_only=True)
 
             if not result:
                 utils.fatal_msg(f'Unable to match {query} to a module title')
@@ -63,11 +64,11 @@ def main(argv):
         elif args.config:
             core.open_magicmirror_config()
         elif args.gui:
-            utils.open_in_browswer(core.get_web_interface_url())
+            webbrowser.open(core.get_web_interface_url())
         elif args.mm_wiki:
-            utils.open_in_browswer(consts.MAGICMIRROR_WIKI_URL)
+            webbrowser.open(consts.MAGICMIRROR_WIKI_URL)
         elif args.mmpm_wiki:
-            utils.open_in_browswer(consts.MMPM_WIKI_URL)
+            webbrowser.open(consts.MMPM_WIKI_URL)
         else:
             utils.no_arguments_provided(args.subcommand)
 
@@ -95,7 +96,7 @@ def main(argv):
         if not additional_args:
             utils.no_arguments_provided(args.subcommand)
         elif args.magicmirror:
-            core.install_magicmirror(args.GUI)
+            core.install_magicmirror()
         elif args.autocomplete:
             core.install_autocompletion(assume_yes=args.assume_yes)
         else:
@@ -136,7 +137,7 @@ def main(argv):
         if additional_args:
             utils.invalid_additional_arguments(args.subcommand)
         elif args.status:
-            core.get_active_packages(table_formatted=args.table_formatted)
+            core.display_active_packages(table_formatted=args.table_formatted)
         elif args.start:
             core.start_magicmirror()
         elif args.stop:

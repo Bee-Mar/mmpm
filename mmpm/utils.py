@@ -76,19 +76,6 @@ def fatal_msg(msg: str) -> None:
     sys.exit(127)
 
 
-def separator(message) -> None:
-    '''
-    Used to pretty print a dashed line as long as the provided message
-
-    Parameters:
-        message (str): The string that will go under or above the dashed line
-
-    Returns:
-        None
-    '''
-    print(colored_text(color.RESET, '-' * len(message)), flush=True)
-
-
 def assert_snapshot_directory() -> bool:
     if not os.path.exists(consts.MMPM_CONFIG_DIR):
         try:
@@ -111,8 +98,8 @@ def calc_snapshot_timestamps() -> Tuple[float, float]:
     '''
     curr_snap = next_snap = None
 
-    if os.path.exists(consts.MAGICMIRROR_PACKAGES_SNAPSHOT_FILE):
-        curr_snap = os.path.getmtime(consts.MAGICMIRROR_PACKAGES_SNAPSHOT_FILE)
+    if os.path.exists(consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE):
+        curr_snap = os.path.getmtime(consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE)
         next_snap = curr_snap + 6 * 60 * 60
 
     return curr_snap, next_snap
@@ -131,7 +118,7 @@ def should_refresh_packages(current_snapshot: float, next_snapshot: float) -> bo
     '''
     if not current_snapshot and not next_snapshot:
         return True
-    return not os.path.exists(consts.MAGICMIRROR_PACKAGES_SNAPSHOT_FILE) or next_snapshot - time.time() <= 0.0
+    return not os.path.exists(consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE) or next_snapshot - time.time() <= 0.0
 
 
 def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, str, str]:
@@ -561,10 +548,10 @@ def to_bytes(string: str) -> bytes:
     Wrapper method to convert a string to UTF-8 encoded bytes
 
     Parameters:
-        string (str): The text that will be UTF-8 encoded
+        string (str): text that will be UTF-8 encoded
 
     Returns:
-        message (str): The UTF-8 encoded string
+        message (str): the UTF-8 encoded string
 
     '''
     return bytes(string, 'utf-8')
@@ -575,8 +562,8 @@ def colored_text(text_color: str, message: str) -> str:
     Returns the `color` concatenated with the `message` string
 
     Parameters:
-        message (str): The text that will be displayed in the `color`
-        color (str): The colorama color
+        text_color (str): a colorama color
+        message (str): text that will be displayed in the `color`
 
     Returns:
         message (str): The original text concatenated with the colorama color
@@ -592,7 +579,7 @@ def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nac
     function returns True
 
     Parameters:
-        user_prompt (str): The text that will be presented to the user
+        user_prompt (str): the text that will be presented to the user
         valid_ack (List[str]): valid 'yes' responses
         valid_nack (List[str]): valid 'no' responses
         assume_yes (bool): if True, the `user_prompt` is printed followed by 'yes'
@@ -668,18 +655,39 @@ def no_arguments_provided(subcommand: str) -> None:
 
 
 def assert_valid_input(prompt: str, forbidden_responses: List[str] = [], reason: str = '') -> str:
+    '''
+    Continues to prompt user with given input until the response provided is of
+    non-zero length and not found in the list forbidden responses
+
+    Parameters:
+        prompt (str): the prompt given to the user
+        forbidden_responses (List[str]): a list of responses the user may not supply
+        reason (str): a reason why the user may not supply one of the 'forbidden_responses'
+
+    Returns:
+        user_response (str): valid, user provided input
+    '''
     while True:
-        value = input(prompt)
-        if not value:
+        user_response = input(prompt)
+        if not user_response:
             warning_msg('A non-empty response must be given')
             continue
-        elif value in forbidden_responses:
-            warning_msg(f'Invalid response, {value} {reason}')
+        elif user_response in forbidden_responses:
+            warning_msg(f'Invalid response, {user_response} {reason}')
             continue
-        return value
+        return user_response
 
 
 def get_existing_package_directories() -> List[str]:
+    '''
+    Retrieves list of directories found in MagicMirror modules directory
+
+    Parameters:
+        None
+
+    Returns:
+        directories (List[str]): a list of directories found in the MagicMirror modules directory
+    '''
     if not os.path.exists(consts.MAGICMIRROR_MODULES_DIR):
         return []
 
@@ -687,14 +695,15 @@ def get_existing_package_directories() -> List[str]:
     return [d for d in dirs if os.path.isdir(os.path.join(consts.MAGICMIRROR_MODULES_DIR, d))]
 
 
-def row_of_dict_to_magicmirror_packages(row: List[dict]):
-    return [MagicMirrorPackage(**pkg) for pkg in row]
+def list_of_dict_to_magicmirror_packages(list_of_dict: List[dict]):
+    '''
+    Converts a list of dictionary contents to a list of MagicMirrorPackage objects
 
+    Parameters:
+        list_of_dict (List[dict]): a list of dictionaries representing MagicMirrorPackage data
 
-def open_in_browswer(url: str) -> bool:
-    error_code, _, stderr = run_cmd(['xdg-open', url], background=True)
+    Returns:
+        packages (List[MagicMirrorPackage]): a list of MagicMirrorPackage objects
+    '''
 
-    if error_code:
-        error_msg(stderr)
-
-
+    return [MagicMirrorPackage(**pkg) for pkg in list_of_dict]

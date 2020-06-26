@@ -214,7 +214,7 @@ def add_external_package() -> str:
     error: str = core.add_external_package(
         title=external_source.get('title'),
         author=external_source.get('author'),
-        desc=external_source.get('description'),
+        description=external_source.get('description'),
         repo=external_source.get('repository')
     )
 

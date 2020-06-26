@@ -371,11 +371,11 @@ def install_packages(installation_candidates: dict, assume_yes: bool = False) ->
 
     if not os.path.exists(packages_dir):
         utils.error_msg(f'MagicMirror directory not found in {consts.MAGICMIRROR_ROOT}. Is the MMPM_MAGICMIRROR_ROOT env variable set properly?')
-        return False, errors
+        return False
 
     if not installation_candidates:
         utils.error_msg('Unable to match query any to installation candidates')
-        return False, errors
+        return False
 
     utils.log.info(f'Changing into MagicMirror modules directory {packages_dir}')
     os.chdir(packages_dir)
@@ -596,7 +596,7 @@ def remove_packages(installed_packages: dict, packages_to_remove: List[str], ass
         return True
 
     for title in packages_to_remove:
-        if title not in marked_for_removal and name not in cancelled_removal:
+        if title not in marked_for_removal and title not in cancelled_removal:
             utils.error_msg(f"No module named '{title}' found in {packages_dir}")
             utils.log.info(f"User attemped to remove {title}, but no module named '{title}' was found in {packages_dir}")
 

@@ -39,12 +39,12 @@ def main(argv):
 
     if args.subcommand == opts.LIST:
         if args.installed:
-            installed_modules = core.get_installed_packages(packages)
+            installed_packages = core.get_installed_packages(packages)
 
-            if not installed_modules:
-                utils.fatal_msg('No modules are currently installed')
+            if not installed_packages:
+                utils.fatal_msg('No packages are currently installed')
 
-            core.display_packages(installed_modules, table_formatted=args.table_formatted, include_path=True)
+            core.display_packages(installed_packages, table_formatted=args.table_formatted, include_path=True)
 
         elif args.categories:
             core.display_categories(packages, table_formatted=args.table_formatted)
@@ -83,7 +83,7 @@ def main(argv):
 
     elif args.subcommand == opts.ADD_EXT_PKG:
         if args.remove:
-            core.remove_external_package_source([utils.sanitize_name(module) for module in args.remove], assume_yes=args.assume_yes)
+            core.remove_external_package_source([utils.sanitize_name(package) for package in args.remove], assume_yes=args.assume_yes)
         else:
             core.add_external_package(args.title, args.author, args.repo, args.desc)
 
@@ -111,7 +111,7 @@ def main(argv):
         else:
             installation_candidates = core.get_installation_candidates(
                 packages,
-                [utils.sanitize_name(module) for module in additional_args],
+                [utils.sanitize_name(package) for package in additional_args],
             )
 
             core.install_packages(installation_candidates, assume_yes=args.assume_yes)
@@ -123,11 +123,11 @@ def main(argv):
         installed_packages = core.get_installed_packages(packages)
 
         if not installed_packages:
-            utils.fatal_msg("No modules are currently installed")
+            utils.fatal_msg("No packages are currently installed")
 
         core.remove_packages(
             installed_packages,
-            [utils.sanitize_name(module) for module in additional_args],
+            [utils.sanitize_name(package) for package in additional_args],
             assume_yes=args.assume_yes
         )
 

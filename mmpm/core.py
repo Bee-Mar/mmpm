@@ -235,7 +235,7 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]], ass
             print(consts.GREEN_CHECK_MARK)
 
     if not updateable:
-        print(f'No updates available for packages {consts.YELLOW_X}')
+        print(f'No updates available for installed packages {consts.YELLOW_X}')
         return False
 
     print(f'\n{len(updateable)} updates are available\n')

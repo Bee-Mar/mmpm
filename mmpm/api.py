@@ -127,26 +127,22 @@ def get_magicmirror_modules() -> dict:
 
 @app.route(api('install-modules'), methods=[consts.POST])
 def install_magicmirror_modules() -> str:
-    selected_modules: list = request.get_json(force=True)['selected-modules']
-    utils.log.info(f'User selected {selected_modules} to be installed')
+    selected_packages: list = request.get_json(force=True)['selected-modules']
+    selected_packages = utils.list_of_dict_to_magicmirror_packages(selected_packages)
 
-    modules_dir = os.path.join(consts.MAGICMIRROR_ROOT, 'modules')
+    utils.log.info(f'User selected {selected_packages} to be installed')
+
     result: Dict[str, list] = {'failures': []}
 
-    for module in selected_modules:
-        success, error = utils.install_package(
-            module,
-            module[consts.DIRECTORY] if module[consts.DIRECTORY] else module[consts.TITLE],
-            modules_dir,
-            assume_yes=True
-        )
+    for package in selected_packages:
+        success, error = core.install_package(package, assume_yes=True)
 
         if not success:
-            utils.log.error(f'Failed to install {module[consts.TITLE]} with error of: {error}')
+            utils.log.error(f'Failed to install {package.title} with error of: {error}')
             module[consts.ERROR] = error
-            result['failures'].append(module)
+            result['failures'].append(package)
         else:
-            utils.log.info(f'Installed {module[consts.TITLE]}')
+            utils.log.info(f'Installed {package.title}')
 
     return json.dumps(result)
 

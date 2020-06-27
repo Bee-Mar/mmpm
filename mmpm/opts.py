@@ -51,7 +51,7 @@ def get_user_args() -> object:
     # SEARCH PARSER
     search_parser = subparsers.add_parser(
         SEARCH,
-        usage='\n  mmpm search <keyword> [--table] [--case-sensitive]',
+        usage='\n  mmpm search <query> [--table] [--case-sensitive]',
         help='search for MagicMirror packages'
     )
 
@@ -73,7 +73,7 @@ def get_user_args() -> object:
     # INSTALL PARSER
     install_parser = subparsers.add_parser(
         INSTALL,
-        usage='\n  mmpm install <package> [--yes]',
+        usage='\n  mmpm install <package(s)> [--yes]\n  mmpm install [--magicmirror] [--autocomplete]',
         help='install MagicMirror packages'
     )
 

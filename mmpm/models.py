@@ -60,15 +60,28 @@ class MagicMirrorPackage():
     def __repr__(self) -> str:
         return str(self.__dict__)
 
+
     def __eq__(self, other) -> bool:
         # allows comparion of a MagicMirrorPackage to None
         if other is None:
-            return self.title == NA and self.author == NA and self.repository == NA and self.description == NA
+            return self.title == NA or self.title == '' \
+                    and self.author == NA or self.author == '' \
+                    and self.repository == NA or self.repository == '' \
+                    and self.description == NA or self.description == ''
+
         elif not other or not isinstance(MagicMirrorPackage, other):
             return False
         else:
             # appeasing mypy by casting this to bool
-            return bool(self.title == other.title and self.author == other.author and self.repository == other.repository and self.description == other.description)
+            return bool(self.title == other.title and \
+                    self.author == other.author and \
+                    self.repository == other.repository and \
+                    self.description == other.description)
+
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
     def serialize(self) -> dict:
         '''

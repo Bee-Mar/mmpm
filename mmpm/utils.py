@@ -216,7 +216,7 @@ def clone(title: str, repo: str, target_dir: str = '') -> Tuple[int, str, str]:
     # by using "repo.split()", it allows the user to bake in additional commands when making custom sources
     # ie. git clone [repo] -b [branch] [target]
     log.info(f'Cloning {repo} into {target_dir if target_dir else os.path.join(os.getcwd(), title)}')
-    plain_print(consts.GREEN_PLUS_SIGN + f" {colored_text(color.N_CYAN, f'Cloning {title} repository')} " + color.RESET)
+    plain_print(consts.GREEN_PLUS_SIGN + f" Cloning {colored_text(color.N_GREEN, f'{title}')} repository" + color.RESET)
 
     command = ['git', 'clone'] + repo.split()
 
@@ -318,59 +318,6 @@ def basic_fail_log(error_code: int, error_message: str) -> None:
         None
     '''
     log.info(f'Failed with return code {error_code}, and error message {error_message}')
-
-
-def install_package(package: MagicMirrorPackage, target: str, packages_dir: str, assume_yes: bool = False) -> Tuple[bool, str]:
-    '''
-    Used to display more detailed information that presented in normal search results
-
-    Parameters:
-        package (MagicMirrorPackage): the MagicMirrorPackage to be installed
-        target (str): the intended installation directory for the package
-        packages_dir (str): the root of the installation directory for all MagicMirror packages
-        assume_yes (bool): if True, all prompts are assumed to have a response of yes from the user
-
-    Returns:
-        installation_candidates (List[dict]): list of modules whose module names match those of the modules_to_install
-    '''
-
-    error_code, _, stderr = clone(package.title, package.repository, target)
-
-    if error_code:
-        warning_msg("\n" + stderr)
-        return False, stderr
-
-    print(consts.GREEN_CHECK_MARK)
-
-    os.chdir(target)
-    error: str = install_dependencies()
-    os.chdir('..')
-
-    if error:
-        error_msg(error)
-        failed_install_path = os.path.join(packages_dir, package.title)
-
-        message: str = f"Failed to install {package.title} at '{failed_install_path}'"
-
-        log.info(message)
-
-        yes = prompt_user(
-            f"{colored_text(color.B_RED, 'ERROR:')} Failed to install {package.title} at '{failed_install_path}'. Remove the directory?",
-            assume_yes=assume_yes
-        )
-
-        if yes:
-            message = f"User chose to remove {package.title} at '{failed_install_path}'"
-            run_cmd(['rm', '-rf', failed_install_path], progress=False)
-            print(f"\nRemoved '{failed_install_path}'\n")
-        else:
-            message = f"Keeping {package.title} at '{failed_install_path}'"
-            print(f'\n{message}\n')
-            log.info(message)
-
-        return False, error
-
-    return True, str()
 
 
 def install_dependencies() -> str:

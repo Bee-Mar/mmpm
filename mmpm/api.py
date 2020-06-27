@@ -111,7 +111,7 @@ def packages_external() -> dict:
 
 
 @app.route(api('packages/install'), methods=[consts.POST])
-def packages_install() -> str:
+def install_magicmirror_modules() -> str:
     selected_packages: list = request.get_json(force=True)['selected-modules']
     selected_packages = utils.list_of_dict_to_magicmirror_packages(selected_packages)
 

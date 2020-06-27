@@ -51,7 +51,7 @@ def get_user_args() -> object:
     # SEARCH PARSER
     search_parser = subparsers.add_parser(
         SEARCH,
-        usage='\n  mmpm search <keyword> [--table] [--case-sensitive]',
+        usage='\n  mmpm search <query> [--table] [--case-sensitive]',
         help='search for MagicMirror packages'
     )
 
@@ -73,7 +73,7 @@ def get_user_args() -> object:
     # INSTALL PARSER
     install_parser = subparsers.add_parser(
         INSTALL,
-        usage='\n  mmpm install <package> [--yes]',
+        usage='\n  mmpm install <package(s)> [--yes]\n  mmpm install [--magicmirror] [--autocomplete]',
         help='install MagicMirror packages'
     )
 
@@ -230,15 +230,20 @@ def get_user_args() -> object:
     )
 
     open_parser.add_argument(
-        '-c',
         '--config',
         action='store_true',
-        help='open MagicMirror config in your $EDITOR',
+        help='open MagicMirror config/config.js file in your $EDITOR',
         dest='config'
     )
 
     open_parser.add_argument(
-        '-g',
+        '--css',
+        action='store_true',
+        help='open MagicMirror custom/custom.css file (if it exists) in your $EDITOR',
+        dest='custom_css'
+    )
+
+    open_parser.add_argument(
         '--gui',
         action='store_true',
         help='open the MMPM GUI in your default browser',
@@ -348,7 +353,7 @@ def get_user_args() -> object:
         '-t',
         '--tail',
         action='store_true',
-        help='tail the log file(s) in real time (used in conjuction with -c and/or -g)',
+        help='tail the log file(s) in real time',
         dest='tail'
     )
 

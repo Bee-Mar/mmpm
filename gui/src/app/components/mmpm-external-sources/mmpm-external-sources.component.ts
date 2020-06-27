@@ -89,7 +89,7 @@ export class MMPMExternalSourcesComponent implements OnInit {
       if (newExternalPackage) {
         let ids: Array<number> = this.tableUtility.saveProcessIds(this.selection.selected, "Adding External Source");
 
-        this.api.addExternalModuleSource(newExternalPackage).then((error) => {
+        this.api.addExternalPackage(newExternalPackage).then((error) => {
           console.log(error["error"]);
 
           const message = error["error"] === "no_error" ?

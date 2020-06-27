@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { RestApiService } from "src/app/services/rest-api.service";
-import { URL } from "src/app/utils/urls";
+import { URLS } from "src/app/utils/urls";
 
 @Injectable({
   providedIn: "root"
@@ -10,7 +10,6 @@ export class DataStoreService {
   private availablePackages: MagicMirrorPackage[];
   private installedPackages: MagicMirrorPackage[];
   private externalPackages: MagicMirrorPackage[];
-  private modulesRootDirectory: string;
 
   constructor(private api: RestApiService) {}
 
@@ -52,7 +51,7 @@ export class DataStoreService {
         resolve(this.availablePackages);
 
       } else {
-        this.api.retrieve(URL.ALL_AVAILABLE_MODULES).then((data) => {
+        this.api.retrieve(URLS.GET.PACKAGES.MARKETPLACE).then((data) => {
           this.availablePackages = this.fillArray(data);
           resolve(this.availablePackages);
 
@@ -73,7 +72,7 @@ export class DataStoreService {
         resolve(this.installedPackages);
 
       } else {
-        this.api.retrieve(URL.ALL_INSTALLED_MODULES).then((data) => {
+        this.api.retrieve(URLS.GET.PACKAGES.INSTALLED).then((data) => {
           this.installedPackages = this.fillArray(data);
           resolve(this.installedPackages);
 
@@ -95,7 +94,7 @@ export class DataStoreService {
         resolve(this.externalPackages);
 
       } else {
-        this.api.retrieve(URL.ALL_EXTERNAL_MODULES).then((data) => {
+        this.api.retrieve(URLS.GET.PACKAGES.EXTERNAL).then((data) => {
           this.externalPackages = this.fillArray(data);
           resolve(this.externalPackages);
 

@@ -11,7 +11,7 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 from collections import defaultdict
 from bs4 import BeautifulSoup
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import mmpm.color as color
 import mmpm.utils as utils
 import mmpm.mmpm as _mmpm
@@ -383,33 +383,22 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
         else:
             utils.log.info(f'User chose to install {candidate.title} ({candidate.repository})')
 
-    existing_module_dirs: List[str] = utils.get_existing_package_directories()
-
     for package in installation_candidates:
-        if not package: # the module may be empty due to the above for loop
+        if package == None: # the module may be empty due to the above for loop
             continue
 
-        target: str = os.path.join(consts.MAGICMIRROR_MODULES_DIR, package.title)
+        package.directory = os.path.join(consts.MAGICMIRROR_MODULES_DIR, package.title)
+        existing_module_dirs: List[str] = utils.get_existing_package_directories()
+
+        # ideally, providiing alternative installation directories would be done, but it would require messing with file names within the renamed
+        # module, which can cause a lot of problems when trying to update those repos
+        if package.title in existing_module_dirs:
+            utils.log.error(f'Conflict encountered. Found a package named {package.title} already at {package.directory}')
+            utils.error_msg(f'A module named {package.title} is already installed in {package.directory}. Please remove {package.title} first.')
+            continue
 
         try:
-            if package.title in existing_module_dirs:
-                utils.log.error(f'Conflict encountered. Found a package named {package.title} already at {target}')
-
-                if assume_yes:
-                    utils.log.warning(f'A module named {package.title} is already installed in {target}. Skipping alt installation option due to --yes flag')
-                    continue
-
-                print()
-
-                if utils.prompt_user(f'A module named {package.title} is installed already in {target}\nWould you like to provide an alternative directory name to install {package.title}?'):
-                    print()
-                    target = utils.assert_valid_input(f'New directory name: ', forbidden_responses=existing_module_dirs, reason='already exists')
-
-                else:
-                    utils.warning_msg(f'Skipping installation of {package.title} ({package.repository})\n')
-                    continue
-
-            success, _ = utils.install_package(package, target, consts.MAGICMIRROR_MODULES_DIR, assume_yes=assume_yes)
+            success, _ = install_package(package, assume_yes=assume_yes)
 
             if success:
                 successes += 1
@@ -426,6 +415,55 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
 
     print(f'Execute `mmpm open --config` to edit the configuration for newly installed modules')
     return True
+
+
+def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tuple[bool, str]:
+    '''
+    Used to display more detailed information that presented in normal search results
+
+    Parameters:
+        package (MagicMirrorPackage): the MagicMirrorPackage to be installed
+        assume_yes (bool): if True, all prompts are assumed to have a response of yes from the user
+
+    Returns:
+        installation_candidates (List[dict]): list of modules whose module names match those of the modules_to_install
+    '''
+
+    os.chdir(consts.MAGICMIRROR_MODULES_DIR)
+    error_code, _, stderr = utils.clone(package.title, package.repository, package.directory)
+
+    if error_code:
+        utils.warning_msg("\n" + stderr)
+        return False, stderr
+
+    print(consts.GREEN_CHECK_MARK)
+
+    os.chdir(package.directory)
+    error: str = utils.install_dependencies()
+    os.chdir('..')
+
+    if error:
+        utils.error_msg(error)
+        message: str = f"Failed to install {package.title} at '{package.directory}'"
+        utils.log.info(message)
+
+        yes = utils.prompt_user(
+            f"{utils.colored_text(color.B_RED, 'ERROR:')} Failed to install {package.title} at '{package.directory}'. Remove the directory?",
+            assume_yes=assume_yes
+        )
+
+        if yes:
+            message = f"User chose to remove {package.title} at '{package.directory}'"
+            utils.run_cmd(['rm', '-rf', package.directory], progress=False)
+            print(f"\nRemoved '{package.directory}'\n")
+        else:
+            message = f"Keeping {package.title} at '{package.directory}'"
+            print(f'\n{message}\n')
+            utils.log.info(message)
+
+        return False, error
+
+    return True, str()
 
 
 def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
@@ -637,15 +675,34 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
                 packages[category] = utils.list_of_dict_to_magicmirror_packages(packages[category])
 
     if os.path.exists(consts.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(consts.MMPM_EXTERNAL_SOURCES_FILE).st_size:
-        try:
-            with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as f:
-                packages[consts.EXTERNAL_MODULE_SOURCES] = utils.list_of_dict_to_magicmirror_packages(json.load(f)[consts.EXTERNAL_MODULE_SOURCES])
-        except Exception:
-            message = f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}. Please examine the file, as it may be malformed and required manual corrective action.'
-            utils.warning_msg(message)
+        packages[consts.EXTERNAL_MODULE_SOURCES] = load_external_packages()
 
     return packages
 
+
+def load_external_packages() -> List[MagicMirrorPackage]:
+    '''
+    Extracts the external packages from the JSON files stored in
+    ~/.config/mmpm/mmpm-external-sources.json
+
+    If no data is found, an empty list is returned
+
+    Parameters:
+        None
+
+    Returns:
+        external_packages (List[MagicMirrorPackage]): the list of manually added MagicMirror packages
+    '''
+    external_packages: List[MagicMirrorPackage] = []
+
+    try:
+        with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as f:
+            external_packages = utils.list_of_dict_to_magicmirror_packages(json.load(f)[consts.EXTERNAL_MODULE_SOURCES])
+    except Exception:
+        message = f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}. Please examine the file, as it may be malformed and required manual corrective action.'
+        utils.warning_msg(message)
+
+    return external_packages
 
 def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
     '''
@@ -976,9 +1033,9 @@ def add_external_package(title: str = None, author: str = None, repo: str = None
         else:
             print(f'Description: {description}')
 
-    except KeyboardInterrupt as error:
+    except KeyboardInterrupt:
         print()
-        utils.log.error(error)
+        utils.log.info('User cancelled creation of external package')
         sys.exit(1)
 
     external_package = MagicMirrorPackage(title=title, repository=repo, author=author, description=description)
@@ -1055,27 +1112,6 @@ def remove_external_package_source(titles: List[str] = None, assume_yes: bool = 
     # if the error_msg was triggered, there's no need to even bother writing back to the file
     with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
         json.dump(ext_packages, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
-
-    return True
-
-
-def open_magicmirror_config() -> bool:
-    '''
-    Allows user to edit the MagicMirror config file using their $EDITOR
-
-    Parameters:
-        None
-
-    Returns:
-        success (bool): True upon success, False upon failure
-    '''
-    if not os.path.exists(consts.MAGICMIRROR_CONFIG_FILE):
-        utils.error_msg(f'{consts.MAGICMIRROR_CONFIG_FILE} not found. Is the MMPM_MAGICMIRROR_ROOT env variable set properly?')
-        return False
-    try:
-        utils.open_default_editor(consts.MAGICMIRROR_CONFIG_FILE)
-    except Exception:
-        return False
 
     return True
 

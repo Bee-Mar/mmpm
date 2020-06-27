@@ -17,7 +17,7 @@ import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { InstallationConflict, MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
-import { URL } from "src/app/utils/urls";
+import { URLS } from "src/app/utils/urls";
 
 @Component({
   selector: "app-mmpm-marketplace",
@@ -59,7 +59,7 @@ export class MMPMMarketplaceComponent implements OnInit {
   public ngOnInit(): void {
     this.setupTableData();
 
-    this.api.retrieve(URL.GET_MAGICMIRROR_ROOT_DIRECTORY).then((url: object) => {
+    this.api.retrieve(URLS.GET.MAGICMIRROR.ROOT_DIR).then((url: object) => {
       this.magicmirrorRootDirectory = url["magicmirror_root"];
     }).catch((error) => console.log(error));
 

@@ -30,9 +30,8 @@ def main(argv):
 
     packages: Dict[str, List[MagicMirrorPackage]] = core.load_packages(force_refresh=should_refresh)
 
-    # automated check for updates to MMPM
     if snapshot_is_expired and args.subcommand != opts.DATABASE or args.subcommand == opts.DATABASE and not args.refresh:
-        core.check_for_mmpm_updates()
+        core.check_for_mmpm_updates() # automated check for updates to MMPM
 
     if not packages:
         utils.fatal_msg('Unable to retrieve packages.')
@@ -71,7 +70,9 @@ def main(argv):
         if additional_args:
             utils.invalid_additional_arguments(args.subcommand)
         elif args.config:
-            core.open_magicmirror_config()
+            utils.open_default_editor(consts.MAGICMIRROR_CONFIG_FILE)
+        elif args.custom_css:
+            utils.open_default_editor(consts.MAGICMIRROR_CUSTOM_CSS_FILE)
         elif args.gui:
             webbrowser.open(core.get_web_interface_url())
         elif args.mm_wiki:

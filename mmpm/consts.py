@@ -64,3 +64,4 @@ MAGICMIRROR_MODULES_URL: str = "https://github.com/MichMich/MagicMirror/wiki/3rd
 MAGICMIRROR_ROOT: str = MMPM_ENV_VARS[MMPM_MAGICMIRROR_ROOT]
 MAGICMIRROR_MODULES_DIR: str = join(MAGICMIRROR_ROOT, 'modules')
 MAGICMIRROR_CONFIG_FILE: str = join(MAGICMIRROR_ROOT, 'config', 'config.js')
+MAGICMIRROR_CUSTOM_CSS_FILE: str = join(MAGICMIRROR_ROOT, 'custom', 'custom.css')

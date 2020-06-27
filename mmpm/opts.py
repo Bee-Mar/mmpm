@@ -37,15 +37,15 @@ def get_user_args() -> object:
         usage='mmpm <subcommand> [option(s)]',
         epilog=f'Visit {mmpm.consts.MMPM_WIKI_URL} for more details',
         description='''
-            The MagicMirror Package Manager is a CLI designed to simplify the
-            installation, removal, and maintenance of MagicMirror packages
+            The MagicMirror Package Manager CLI simplifies the
+            installation, removal, and general maintenance of MagicMirror packages
             '''
     )
 
     subparsers = arg_parser.add_subparsers(
         title='MMPM subcommands',
         description='use `mmpm <subcommand> --help` to see more details',
-        dest='subcommand'
+        dest='subcommand',
     )
 
     # SEARCH PARSER
@@ -56,19 +56,20 @@ def get_user_args() -> object:
     )
 
     search_parser.add_argument(
-        '--table',
-        action='store_true',
-        help='display output in table format',
-        dest='table_formatted'
-    )
-
-    search_parser.add_argument(
         '-c',
         '--case-sensitive',
         action='store_true',
         help='search for packages using a case-sensitive term',
         dest='case_sensitive'
     )
+
+    search_parser.add_argument(
+        '--table',
+        action='store_true',
+        help='display output in table format',
+        dest='table_formatted'
+    )
+
 
     # INSTALL PARSER
     install_parser = subparsers.add_parser(
@@ -125,6 +126,15 @@ def get_user_args() -> object:
     )
 
     update_parser.add_argument(
+        '-y',
+        '--yes',
+        action='store_true',
+        default=False,
+        help='assume yes for user response and do not show prompt',
+        dest='assume_yes'
+    )
+
+    update_parser.add_argument(
         '--mmpm',
         action='store_true',
         help='only check for updates to MMPM',
@@ -143,15 +153,6 @@ def get_user_args() -> object:
         action='store_true',
         help='check for updates to all installed packages, MMPM, and MagicMirror',
         dest='full'
-    )
-
-    update_parser.add_argument(
-        '-y',
-        '--yes',
-        action='store_true',
-        default=False,
-        help='assume yes for user response and do not show prompt',
-        dest='assume_yes'
     )
 
     # DATABASE SUBCOMMANDS
@@ -274,7 +275,7 @@ def get_user_args() -> object:
     # ADD EXTERNAL PACKAGE SUBCOMMANDS
     add_ext_package_parser = subparsers.add_parser(
         ADD_EXT_PKG,
-        usage='\n  mmpm add-ext-package [--title=<title>] [--author=<author>] [--repo=<repo>] [--desc=<description>]\n  mmpm add-ext-package --remove <package>',
+        usage='\n  mmpm add-ext-package [--title=<title>] [--author=<author>] [--repo=<repo>] [--desc=<description>]\n  mmpm add-ext-package --remove <package> [--yes]',
         help='manually add packages to the database not found in the MagicMirror 3rd party database'
     )
 
@@ -313,7 +314,7 @@ def get_user_args() -> object:
     add_ext_package_parser.add_argument(
         '--remove',
         nargs='+',
-        help='remove external package (similar pattern of add-apt-repository --remove)',
+        help='remove external package (similar to `add-apt-repository` --remove)',
         dest='remove'
     )
 
@@ -322,7 +323,7 @@ def get_user_args() -> object:
         '--yes',
         action='store_true',
         default=False,
-        help='assume yes for user response and do not show prompt',
+        help='assume yes for user response and do not show prompt (used with --remove)',
         dest='assume_yes'
     )
 

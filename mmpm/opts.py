@@ -46,7 +46,7 @@ def get_user_args() -> object:
     subparsers = arg_parser.add_subparsers(
         title='MMPM subcommands',
         description='use `mmpm <subcommand> --help` to see more details',
-        dest='subcommand',
+        dest='subcmd',
     )
 
     # SEARCH PARSER

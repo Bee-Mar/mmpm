@@ -73,10 +73,13 @@ class MagicMirrorPackage():
             return False
         else:
             # appeasing mypy by casting this to bool
-            return bool(self.title == other.title and \
-                    self.author == other.author and \
-                    self.repository == other.repository and \
-                    self.description == other.description)
+            return bool(
+                self.title == other.title and \
+                self.author == other.author and \
+                self.repository == other.repository and \
+                self.description == other.description and \
+                self.directory == other.directory
+            )
 
 
     def __ne__(self, other):
@@ -91,14 +94,36 @@ class MagicMirrorPackage():
             None
 
         Returns:
-            serialized (dict): a dictionary containing the pcakge title, author, repository, and description
+            serialized (dict): a dictionary containing the package title, author, repository, and description
         '''
 
         # the directory will always be empty when writing all packages to the
-        # JSON database, so there's no point in keeping it when writing out data
+        # JSON database, so there's no point in keeping it when writing out data to a file
         return {
             'title': self.title,
             'author': self.author,
             'repository': self.repository,
             'description': self.description
         }
+
+
+    def serialize_full(self) -> dict:
+
+        '''
+        A dictionary represenation of all fields to be stored in JSON data
+
+        Parameters:
+            None
+
+        Returns:
+            serialized (dict): a dictionary containing the pcakge title, author, repository, description, and directory
+        '''
+
+        return {
+            'title': self.title,
+            'author': self.author,
+            'repository': self.repository,
+            'description': self.description,
+            'directory': self.directory
+        }
+

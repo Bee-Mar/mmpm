@@ -18,10 +18,10 @@ import mmpm.color as color
 import mmpm.utils as utils
 import mmpm.mmpm as _mmpm
 import mmpm.consts as consts
-import mmpm.models as models
+import mmpm.models
 
 
-MagicMirrorPackage = models.MagicMirrorPackage
+MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 
 
 def snapshot_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
@@ -91,8 +91,7 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
             # just to keep the console output the same as all other update commands
             error_code, contents, _ = utils.run_cmd(['curl', consts.MMPM_FILE_URL])
         except KeyboardInterrupt:
-            print()
-            utils.fatal_msg('Caught keyboard interrupt. Exiting.')
+            utils.keyboard_interrupt_log()
 
         if error_code:
             utils.fatal_msg('Failed to retrieve MMPM version number')
@@ -224,8 +223,7 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]], ass
             try:
                 error_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
             except KeyboardInterrupt:
-                print()
-                utils.fatal_msg('Caught keyboard interrupt. Exiting.')
+                utils.keyboard_interrupt_log()
 
             if error_code:
                 utils.error_msg('Unable to communicate with git server')
@@ -406,11 +404,10 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
                 successes += 1
 
         except KeyboardInterrupt:
-            print()
-            message = f'Cancelling installation of {package.title} {package.repository}'
-            utils.log.info(message)
-            utils.warning_msg(message)
-            continue
+            utils.log.info(f'Cleaning up cancelled installation path of {package.directory} before exiting')
+            os.chdir(consts.HOME_DIR)
+            os.system(f'rm -rf {package.directory}')
+            utils.keyboard_interrupt_log()
 
     if not successes:
         return False
@@ -494,8 +491,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
     try:
         error_code, _, stdout = utils.run_cmd(['git', 'fetch', '--dry-run'])
     except KeyboardInterrupt:
-        print()
-        utils.fatal_msg('Caught keyboard interrupt. Exiting.')
+        utils.keyboard_interrupt_log()
 
     print(consts.GREEN_CHECK_MARK)
 
@@ -619,9 +615,7 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
                         cancelled_removal.append(dir_name)
                         utils.log.info(f'User chose not to remove {dir_name}')
     except KeyboardInterrupt:
-        print()
-        utils.log.info('Caught keyboard interrupt during attempt to remove modules')
-        return True
+        utils.keyboard_interrupt_log()
 
     for title in packages_to_remove:
         if title not in marked_for_removal and title not in cancelled_removal:
@@ -677,12 +671,12 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
                 packages[category] = utils.list_of_dict_to_magicmirror_packages(packages[category])
 
     if os.path.exists(consts.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(consts.MMPM_EXTERNAL_SOURCES_FILE).st_size:
-        packages[consts.EXTERNAL_MODULE_SOURCES] = load_external_packages()
+        packages.update(**load_external_packages())
 
     return packages
 
 
-def load_external_packages() -> List[MagicMirrorPackage]:
+def load_external_packages() -> Dict[str, List[MagicMirrorPackage]]:
     '''
     Extracts the external packages from the JSON files stored in
     ~/.config/mmpm/mmpm-external-sources.json
@@ -693,7 +687,7 @@ def load_external_packages() -> List[MagicMirrorPackage]:
         None
 
     Returns:
-        external_packages (List[MagicMirrorPackage]): the list of manually added MagicMirror packages
+        external_packages (Dict[str, List[MagicMirrorPackage]]): the list of manually added MagicMirror packages
     '''
     external_packages: List[MagicMirrorPackage] = []
 
@@ -704,7 +698,7 @@ def load_external_packages() -> List[MagicMirrorPackage]:
         message = f'Failed to load data from {consts.MMPM_EXTERNAL_SOURCES_FILE}. Please examine the file, as it may be malformed and required manual corrective action.'
         utils.warning_msg(message)
 
-    return external_packages
+    return {consts.EXTERNAL_MODULE_SOURCES: external_packages}
 
 def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
     '''
@@ -1033,9 +1027,7 @@ def add_external_package(title: str = None, author: str = None, repo: str = None
             print(f'Description: {description}')
 
     except KeyboardInterrupt:
-        print()
-        utils.log.info('User cancelled creation of external package')
-        sys.exit(1)
+        utils.keyboard_interrupt_log()
 
     external_package = MagicMirrorPackage(title=title, repository=repo, author=author, description=description)
 

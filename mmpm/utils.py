@@ -12,10 +12,10 @@ from ctypes import cdll, c_char_p, c_int, POINTER
 
 import mmpm.color as color
 import mmpm.consts as consts
-import mmpm.models as models
+import mmpm.models
 
-MagicMirrorPackage = models.MagicMirrorPackage
-MMPMLogger = models.MMPMLogger
+MagicMirrorPackage = mmpm.models.MagicMirrorPackage
+MMPMLogger = mmpm.models.MMPMLogger
 
 
 log: Logger = MMPMLogger().logger
@@ -47,6 +47,22 @@ def error_msg(msg: str) -> None:
     '''
     log.error(msg)
     print(colored_text(color.B_RED, "ERROR:"), msg)
+
+
+def keyboard_interrupt_log() -> None:
+    '''
+    Logs info message stating user killed a process with a keyboard interrupt,
+    and exits program with error code of 127
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+    print()
+    log.info('User killed process with keyboard interrupt')
+    sys.exit(127)
 
 
 def warning_msg(msg: str) -> None:
@@ -643,7 +659,7 @@ def get_existing_package_directories() -> List[str]:
     return [d for d in dirs if os.path.isdir(os.path.join(consts.MAGICMIRROR_MODULES_DIR, d))]
 
 
-def list_of_dict_to_magicmirror_packages(list_of_dict: List[dict]):
+def list_of_dict_to_magicmirror_packages(list_of_dict: List[dict]) -> List[MagicMirrorPackage]:
     '''
     Converts a list of dictionary contents to a list of MagicMirrorPackage objects
 

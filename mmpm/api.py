@@ -17,7 +17,9 @@ from typing import Tuple, List, Dict
 import mmpm.utils as utils
 import mmpm.consts as consts
 import mmpm.core as core
+import mmpm.models
 
+MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 
 MMPM_EXECUTABLE: list = [os.path.join(consts.HOME_DIR, '.local', 'bin', 'mmpm')]
 
@@ -41,6 +43,20 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 api = lambda path: f'/api/{path}'
 
 _modules_ = core.load_packages()
+
+
+def __get_selected_packages__(request) -> List[MagicMirrorPackage]:
+    '''
+    Helper method to extract a list of MagicMirrorPackage objects from Flask
+    request object
+
+    Parameters:
+       request (werkzeug.wrappers.Request): the Flask request object
+
+    Returns:
+        selected_packages (List[MagicMirrorPackage]): extracted list of MagicMirrorPackage objects
+    '''
+    return utils.list_of_dict_to_magicmirror_packages(request.get_json(force=True)['selected-packages'])
 
 
 @socketio.on_error()
@@ -101,126 +117,111 @@ def server_error(error) -> Tuple[str, int]:
 
 #  -- START: PACKAGES --
 @app.route(api('packages/marketplace'), methods=[consts.GET])
-def packages_marketplace() -> dict:
-    return _modules_
+def packages_marketplace() -> str:
+    utils.log.info('Sending all marketplace packages')
+    return json.dumps(_modules_, default=lambda pkg: pkg.serialize_full())
 
 
 @app.route(api('packages/installed'), methods=[consts.GET])
-def packages_installed() -> dict:
-    return core.get_installed_packages(_modules_)
+def packages_installed() -> str:
+    utils.log.info('Sending all installed packages')
+    return json.dumps(core.get_installed_packages(_modules_), default=lambda pkg: pkg.serialize_full())
 
 
 @app.route(api('packages/external'), methods=[consts.GET])
-def packages_external() -> dict:
-    return {consts.EXTERNAL_MODULE_SOURCES: core.load_external_packages()}
+def packages_external() -> str:
+    utils.log.info('Sending all external packages')
+    return json.dumps(core.load_external_packages(), default=lambda pkg: pkg.serialize_full())
 
 
 @app.route(api('packages/install'), methods=[consts.POST])
 def install_magicmirror_modules() -> str:
-    selected_packages: list = request.get_json(force=True)['selected-modules']
-    selected_packages = utils.list_of_dict_to_magicmirror_packages(selected_packages)
-
+    selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
     utils.log.info(f'User selected {selected_packages} to be installed')
-
-    result: Dict[str, list] = {'failures': []}
+    failures: List[Dict[str, MagicMirrorPackage]] = []
 
     for package in selected_packages:
         success, error = core.install_package(package, assume_yes=True)
 
         if not success:
             utils.log.error(f'Failed to install {package.title} with error of: {error}')
-            package[consts.ERROR] = error
-            result['failures'].append(package)
+            failures.append({'package': package.serialize(), 'error': error})
         else:
             utils.log.info(f'Installed {package.title}')
 
-    return json.dumps(result)
+    return json.dumps(failures)
 
 
 @app.route(api('packages/remove'), methods=[consts.POST])
 def packages_remove() -> str:
-    selected_modules: list = request.get_json(force=True)['selected-modules']
-    utils.log.info(f'User selected {selected_modules} to be removed')
+    selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
+    utils.log.info(f'User selected {selected_packages} to be removed')
+    failures: List[Dict[str, MagicMirrorPackage]] = []
 
-    result: Dict[str, list] = {'failures': []}
-
-    for module in selected_modules:
+    for package in selected_packages:
         try:
-            shutil.rmtree(module[consts.DIRECTORY])
-            utils.log.info(f'Removed {module[consts.DIRECTORY]}')
+            shutil.rmtree(package.directory)
+            utils.log.info(f'Removed {package.directory}')
         except FileNotFoundError as error:
-            utils.log.error(f'Failed to remove {module[consts.DIRECTORY]}')
-            module[consts.ERROR] = error
-            result['failures'].append(module)
+            utils.log.error(f'Failed to remove {package.directory}')
+            failures.append({'package': package.serialize(), 'error': error})
 
-    return json.dumps(result)
+    return json.dumps(failures)
 
 
 @app.route(api('packages/upgrade'), methods=[consts.POST])
 def packages_upgrade() -> str:
-    selected_modules: list = request.get_json(force=True)['selected-modules']
-    utils.log.info(f'Request to upgrade {selected_modules}')
+    selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
+    utils.log.info(f'Request to upgrade {selected_packages}')
 
-    result: List[dict] = []
+    failures: List[Dict[str, MagicMirrorPackage]] = []
 
-    for module in selected_modules:
-        error = core.upgrade_package(module)
+    for package in selected_packages:
+        error = core.upgrade_package(package)
         if error:
-            utils.log.error(f'Failed to upgrade {module[consts.TITLE]} with error of: {error}')
-            module[consts.ERROR] = error
-            result.append(module)
+            utils.log.error(f'Failed to upgrade {package.title} with error of: {error}')
+            failures.append({'package': package.serialize(), 'error': error})
 
     utils.log.info('Finished executing upgrades')
-    return json.dumps(result)
+    return json.dumps(failures)
 #  -- END: PACKAGES --
 
 #  -- START: EXTERNAL PACKAGES --
 @app.route(api('external-packages/add'), methods=[consts.POST])
 def external_packages_add() -> str:
-    external_source: dict = request.get_json(force=True)['external-source']
+    package: dict = request.get_json(force=True)['external-package']
 
-    result: List[dict] = []
+    failures: List[Dict[str, MagicMirrorPackage]] = []
 
     error: str = core.add_external_package(
-        title=external_source.get('title'),
-        author=external_source.get('author'),
-        description=external_source.get('description'),
-        repo=external_source.get('repository')
+        title=package.get('title'),
+        author=package.get('author'),
+        description=package.get('description'),
+        repo=package.get('repository')
     )
 
+    failures.append({'package': package.serialize(), 'error': error})
     return json.dumps({'error': "no_error" if not error else error})
 
 
 @app.route(api('external-packages/remove'), methods=[consts.DELETE])
 def external_packages_remove() -> str:
-    selected_modules: list = request.get_json(force=True)['external-sources']
+    selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
     utils.log.info(f'Request to remove external sources')
 
     ext_modules: dict = {}
     marked_for_removal: list = []
+    external_packages: List[MagicMirrorPackage] = core.load_external_packages()[consts.EXTERNAL_MODULE_SOURCES]
 
-    try:
-        with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
-            ext_modules[consts.EXTERNAL_MODULE_SOURCES] = json.load(mmpm_ext_srcs)[consts.EXTERNAL_MODULE_SOURCES]
-        utils.log.info(f'Read external modules from {consts.MMPM_EXTERNAL_SOURCES_FILE}')
-    except IOError as error:
-        utils.log.error(error)
-        return json.dumps({'error': error})
+    for selected_package in selected_packages:
+        for external_package in external_packages:
+            if external_package == selected_package:
+                marked_for_removal.append(external_package)
+                utils.log.info(f'Found matching external module ({external_package.title}) and marked for removal')
 
-    for selected_module in selected_modules:
-        # will clean this ugliness up, but for the moment leaving just because it works
-        del selected_module[consts.DIRECTORY]
-        del selected_module[consts.CATEGORY]
-
-        for module in ext_modules[consts.EXTERNAL_MODULE_SOURCES]:
-            print(module)
-            if module == selected_module:
-                marked_for_removal.append(module)
-                utils.log.info(f'Found matching external module ({module[consts.TITLE]}) and marked for removal')
-
-    for module in marked_for_removal:
-        ext_modules[consts.EXTERNAL_MODULE_SOURCES].remove(module)
-        utils.log.info(f'Removed {module[consts.TITLE]}')
+    for package in marked_for_removal:
+        external_packages.remove(package)
+        utils.log.info(f'Removed {package.title}')
 
     try:
         with open(consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
@@ -295,7 +296,7 @@ def magicmirror_custom_css():
 @app.route(api('magicmirror/start'), methods=[consts.GET])
 def magicmirror_start() -> str:
     '''
-    Restart the MagicMirror by killing all Chromium processes, the
+    Restart the MagicMirror by killing all associated processes, the
     re-running the startup script for MagicMirror
 
     Parameters:
@@ -308,7 +309,8 @@ def magicmirror_start() -> str:
     # need to find way to capturing return codes
 
     # if these processes are all running, we assume MagicMirror is running currently
-    if utils.get_pids('chromium') and utils.get_pids('node') and utils.get_pids('npm'):
+    # TODO: Change this to include functionality for pm2
+    if utils.get_pids('node') and utils.get_pids('npm') and utils.get_pids('electron'):
         utils.log.info('MagicMirror appears to be running already. Returning False.')
         return json.dumps(False)
 
@@ -320,7 +322,7 @@ def magicmirror_start() -> str:
 @app.route(api('magicmirror/restart'), methods=[consts.GET])
 def magicmirror_restart() -> str:
     '''
-    Restart the MagicMirror by killing all Chromium processes, the
+    Restart the MagicMirror by killing all associated processes, then
     re-running the startup script for MagicMirror
 
     Parameters:
@@ -337,7 +339,7 @@ def magicmirror_restart() -> str:
 @app.route(api('magicmirror/stop'), methods=[consts.GET])
 def magicmirror_stop() -> str:
     '''
-    Stop the MagicMirror by killing all Chromium processes
+    Stop the MagicMirror by killing all associated processes
 
     Parameters:
         None
@@ -353,10 +355,11 @@ def magicmirror_stop() -> str:
 @app.route(api('magicmirror/upgrade'), methods=[consts.GET])
 def magicmirror_upgrade() -> str:
     utils.log.info(f'Request to upgrade MagicMirror')
-    process: Group = Group()
-    #Response(__stream_cmd_output__(process, ['-M', '--GUI']), mimetype='text/plain')
     utils.log.info('Finished installing')
 
+    core.upgrade_magicmirror()
+
+    # TODO: Change this to include functionality for pm2
     if utils.get_pids('node') and utils.get_pids('npm') and utils.get_pids('electron'):
         core.restart_magicmirror()
 
@@ -410,5 +413,5 @@ def download_log_files():
     today = datetime.datetime.now()
     zip_file_name = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
     shutil.make_archive(zip_file_name, 'zip', consts.MMPM_LOG_DIR)
-    return send_file(f'/tmp/{zip_file_name}.zip', attachment_filename='capsule.zip', as_attachment=True)
+    return send_file(f'/tmp/{zip_file_name}.zip', attachment_filename='{}.zip'.format(zip_file_name), as_attachment=True)
 #  -- END: MMPM --

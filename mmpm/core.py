@@ -630,7 +630,7 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
 
     for dir_name in marked_for_removal:
         shutil.rmtree(dir_name)
-        print(f'{consts.GREEN_PLUS_SIGN} Removed {dir_name}')
+        print(f'{consts.GREEN_PLUS_SIGN} Removed {dir_name} {consts.GREEN_CHECK_MARK}')
         utils.log.info(f'Removed {dir_name}')
 
     if marked_for_removal:

@@ -5,18 +5,21 @@ import json
 import datetime
 import shutil
 import sys
+
 from socket import gethostname, gethostbyname
 from textwrap import fill, indent
 from urllib.error import HTTPError
 from urllib.request import urlopen
 from collections import defaultdict
 from bs4 import BeautifulSoup
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Final
+
 import mmpm.color as color
 import mmpm.utils as utils
 import mmpm.mmpm as _mmpm
 import mmpm.consts as consts
 import mmpm.models as models
+
 
 MagicMirrorPackage = models.MagicMirrorPackage
 
@@ -165,9 +168,8 @@ def upgrade_package(package: MagicMirrorPackage) -> str:
         stderr (str): the resulting error message of the upgrade. If the message is zero length, it was successful
     '''
 
-    os.chdir(consts.MAGICMIRROR_MODULES_DIR)
-
     os.chdir(package.directory)
+
     utils.plain_print(f'{consts.GREEN_PLUS_SIGN} Retrieving upgrade for {package.title}')
     error_code, _, _ = utils.run_cmd(["git", "pull"])
 
@@ -828,10 +830,7 @@ def display_categories(packages: Dict[str, List[MagicMirrorPackage]], table_form
 
     if not table_formatted:
         for category in categories:
-            print(
-                utils.colored_text(color.N_GREEN, category[consts.CATEGORY]),
-                f'\n  Packages: {category[consts.PACKAGES]}\n'
-            )
+            print(utils.colored_text(color.N_GREEN, category[consts.CATEGORY]), f'\n  Packages: {category[consts.PACKAGES]}\n')
         return
 
     global_row: int = 1
@@ -1189,13 +1188,11 @@ def get_web_interface_url() -> str:
         str: The URL of the MMPM web interface
     '''
 
-    mmpm_conf_path = '/etc/nginx/sites-enabled/mmpm.conf'
-
-    if not os.path.exists(mmpm_conf_path):
+    if not os.path.exists(consts.MMPM_NGINX_CONF_FILE):
         utils.fatal_msg('The MMPM NGINX configuration file does not appear to exist. Is the GUI installed?')
 
     # this value needs to be retrieved dynamically in case the user modifies the nginx conf
-    with open(mmpm_conf_path, 'r') as conf:
+    with open(consts.MMPM_NGINX_CONF_FILE, 'r') as conf:
         mmpm_conf = conf.read()
 
     try:
@@ -1327,12 +1324,12 @@ def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool
             utils.error_msg('MMPM log file not found')
 
     if gui_logs:
-        if os.path.exists(consts.GUNICORN_ACCESS_LOG_FILE):
-            logs.append(consts.GUNICORN_ACCESS_LOG_FILE)
+        if os.path.exists(consts.MMPM_GUNICORN_ACCESS_LOG_FILE):
+            logs.append(consts.MMPM_GUNICORN_ACCESS_LOG_FILE)
         else:
             utils.error_msg('Gunicorn access log file not found')
-        if os.path.exists(consts.GUNICORN_ERROR_LOG_FILE):
-            logs.append(consts.GUNICORN_ERROR_LOG_FILE)
+        if os.path.exists(consts.MMPM_GUNICORN_ERROR_LOG_FILE):
+            logs.append(consts.MMPM_GUNICORN_ERROR_LOG_FILE)
         else:
             utils.error_msg('Gunicorn error log file not found')
 
@@ -1374,10 +1371,13 @@ def install_autocompletion(assume_yes: bool = False) -> None:
         return
 
     utils.log.info('user attempting to install MMPM autocompletion')
-    shell: str = os.environ['SHELL']
+    shell: Final[str] = os.environ['SHELL']
+
     utils.log.info(f'detected user shell to be {shell}')
-    autocomplete_url: str = 'https://github.com/kislyuk/argcomplete#activating-global-completion'
-    error_message: str = f'Please see {autocomplete_url} for help installing autocompletion'
+
+    autocomplete_url: Final[str] = 'https://github.com/kislyuk/argcomplete#activating-global-completion'
+    error_message: Final[str] = f'Please see {autocomplete_url} for help installing autocompletion'
+
     complete_message = lambda config: f'Autocompletion installed. Please source {config} for the changes to take effect'
     failed_match_message = lambda shell, configs: f'Unable to locate {shell} configuration file (looked for {configs}). {error_message}'
 
@@ -1403,6 +1403,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
             utils.fatal_msg(failed_match_message('bash', files))
 
         __echo_and_eval__(f'echo \'eval "$(register-python-argcomplete mmpm)"\' >> {config}')
+
         print(complete_message(config))
 
     elif 'zsh' in shell:
@@ -1415,6 +1416,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
         __echo_and_eval__(f"echo 'autoload -U bashcompinit' >> {config}")
         __echo_and_eval__(f"echo 'bashcompinit' >> {config}")
         __echo_and_eval__(f'echo \'eval "$(register-python-argcomplete mmpm)"\' >> {config}')
+
         print(complete_message(config))
 
     elif 'tcsh' in shell:
@@ -1425,6 +1427,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
             utils.fatal_msg(failed_match_message('tcsh', files))
 
         __echo_and_eval__(f"echo 'eval `register-python-argcomplete --shell tcsh mmpm`' >> {config}")
+
         print(complete_message(config))
 
     elif 'fish' in shell:
@@ -1435,7 +1438,8 @@ def install_autocompletion(assume_yes: bool = False) -> None:
             utils.fatal_msg(failed_match_message('fish', files))
 
         __echo_and_eval__(f"register-python-argcomplete --shell fish mmpm >> {config}")
+
         print(complete_message(config))
 
     else:
-        utils.fatal_msg(f'Unable install autocompletion for SHELL ({shell}). Please see {autocomplete_url} for help installing autocomplete')
+        utils.fatal_msg(f'Unable install autocompletion for ({shell}). Please see {autocomplete_url} for help installing autocomplete')

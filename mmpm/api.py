@@ -5,11 +5,15 @@ eventlet.monkey_patch()
 import os
 import json
 import shutil
+import zipfile
+import datetime
+
 from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
 from shelljob.proc import Group
 from flask_socketio import SocketIO
 from typing import Tuple, List, Dict
+
 import mmpm.utils as utils
 import mmpm.consts as consts
 import mmpm.core as core
@@ -95,6 +99,7 @@ def server_error(error) -> Tuple[str, int]:
     return f'An internal error occurred [{__name__}.py]: {error}', 500
 
 
+#  -- START: PACKAGES --
 @app.route(api('packages/marketplace'), methods=[consts.GET])
 def packages_marketplace() -> dict:
     return _modules_
@@ -167,8 +172,9 @@ def packages_upgrade() -> str:
 
     utils.log.info('Finished executing upgrades')
     return json.dumps(result)
+#  -- END: PACKAGES --
 
-
+#  -- START: EXTERNAL PACKAGES --
 @app.route(api('external-packages/add'), methods=[consts.POST])
 def external_packages_add() -> str:
     external_source: dict = request.get_json(force=True)['external-source']
@@ -226,15 +232,17 @@ def external_packages_remove() -> str:
 
     utils.log.info(f'Wrote external modules to {consts.MMPM_EXTERNAL_SOURCES_FILE}')
     return json.dumps({'error': "no_error"})
+#  -- END: EXTERNAL PACKAGES --
 
-
+#  -- START: DATABASE --
 @app.route(api('database/refresh'), methods=[consts.GET])
 def database_refresh() -> dict:
     utils.log.info(f'Received request to refresh modules')
     _modules_ = core.load_packages(force_refresh=True)
     return _modules_
+#  -- END: DATABASE --
 
-
+#  -- START: MAGICMIRROR --
 @app.route(api('magicmirror/root-dir'), methods=[consts.GET])
 def magicmirror_root_dir() -> str:
     utils.log.info(f'Request to get MagicMirror root directory')
@@ -354,7 +362,9 @@ def magicmirror_upgrade() -> str:
 
     return json.dumps(True)
 
+#  -- END: MAGICMIRROR --
 
+#  -- START: RASPBERRYPI --
 @app.route(api('raspberrypi/restart'), methods=[consts.GET])
 def raspberrypi_restart() -> str:
     '''
@@ -391,11 +401,14 @@ def raspberrypi_stop() -> str:
     core.stop_magicmirror()
     error_code, _, _ = utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
     return json.dumps(bool(not error_code))
+#  -- END: RASPBERRYPI --
 
-
-#@app.route(api('mmpm/logs'), methods=[consts.GET])
-#def download_log_files():
-#    path: str = consts.MAGICMIRROR_CONFIG_FILE
-#    result: str = send_file(path, attachment_filename='config.js') if path else ''
-#    log.info('Retrieving MMPM log files')
-#    return result
+#  -- START: MMPM --
+@app.route(api('mmpm/logs'), methods=[consts.GET])
+def download_log_files():
+    os.chdir('/tmp')
+    today = datetime.datetime.now()
+    zip_file_name = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
+    shutil.make_archive(zip_file_name, 'zip', consts.MMPM_LOG_DIR)
+    return send_file(f'/tmp/{zip_file_name}.zip', attachment_filename='capsule.zip', as_attachment=True)
+#  -- END: MMPM --

@@ -19,7 +19,7 @@ class MMPMLogger():
         if not os.path.exists(consts.MMPM_LOG_DIR):
             os.system(f'mkdir -p {consts.MMPM_LOG_DIR}')
 
-        for log_file in [consts.MMPM_LOG_FILE, consts.GUNICORN_ERROR_LOG_FILE, consts.GUNICORN_ACCESS_LOG_FILE]:
+        for log_file in [consts.MMPM_LOG_FILE, consts.MMPM_GUNICORN_ERROR_LOG_FILE, consts.MMPM_GUNICORN_ACCESS_LOG_FILE]:
             if not os.path.exists(log_file):
                 os.system(f'touch {log_file}')
 

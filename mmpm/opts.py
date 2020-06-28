@@ -3,9 +3,10 @@
 import sys
 import argparse
 import argcomplete
-import mmpm.consts
+import mmpm.consts as consts
 
-# subcommand names (these could go in consts.py, but for the sake of mnemonics for mmpm.py, they'll stay)
+# subcommand names. These could go in consts.py, but for the sake of mnemonics
+# for mmpm.py, they'll stay (ie, opts.INSTALL, opts.LIST, etc)
 INSTALL: str = 'install'
 SEARCH: str = 'search'
 REMOVE: str = 'remove'
@@ -35,7 +36,7 @@ def get_user_args() -> object:
     arg_parser = argparse.ArgumentParser(
         prog='mmpm',
         usage='mmpm <subcommand> [option(s)]',
-        epilog=f'Visit {mmpm.consts.MMPM_WIKI_URL} for more details',
+        epilog=f'Visit {consts.MMPM_WIKI_URL} for more details',
         description='''
             The MagicMirror Package Manager CLI simplifies the
             installation, removal, and general maintenance of MagicMirror packages

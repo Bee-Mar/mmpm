@@ -3,11 +3,13 @@ import sys
 import os
 import subprocess
 import time
+
 from logging import Logger
 from multiprocessing import cpu_count
 from typing import List, Optional, Tuple
 from re import sub
 from ctypes import cdll, c_char_p, c_int, POINTER
+
 import mmpm.color as color
 import mmpm.consts as consts
 import mmpm.models as models
@@ -457,7 +459,7 @@ def display_table(table, rows: int, columns: int) -> None:
         None
     '''
 
-    libmmpm = cdll.LoadLibrary(consts.LIBMMPM_SHARED_OBJECT_FILE)
+    libmmpm = cdll.LoadLibrary(consts.MMPM_LIBMMPM_SHARED_OBJECT_FILE)
 
     __display_table__ = libmmpm.display_table
     __display_table__.argtypes = [POINTER(POINTER(c_char_p)), c_int, c_int]
@@ -479,7 +481,7 @@ def allocate_table_memory(rows: int, columns: int):
     if not rows or not columns:
         fatal_msg('Positive integers must be provided as arguments')
 
-    libmmpm = cdll.LoadLibrary(consts.LIBMMPM_SHARED_OBJECT_FILE)
+    libmmpm = cdll.LoadLibrary(consts.MMPM_LIBMMPM_SHARED_OBJECT_FILE)
 
     _allocate_table_memory = libmmpm.allocate_table_memory
     _allocate_table_memory.argtypes = [c_int, c_int]
@@ -653,6 +655,3 @@ def list_of_dict_to_magicmirror_packages(list_of_dict: List[dict]):
     '''
 
     return [MagicMirrorPackage(**pkg) for pkg in list_of_dict]
-
-
-

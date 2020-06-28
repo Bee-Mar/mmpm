@@ -611,7 +611,7 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
             for package in packages:
                 dir_name = os.path.basename(package.directory)
                 if dir_name in package_dirs and dir_name in packages_to_remove:
-                    prompt: str = f'Would you like to remove {utils.colored_text(color.N_GREEN, package.title)} ({dir_name})?'
+                    prompt: str = f'Would you like to remove {utils.colored_text(color.N_GREEN, package.title)} ({package.directory})?'
                     if utils.prompt_user(prompt, assume_yes=assume_yes):
                         marked_for_removal.append(dir_name)
                         utils.log.info(f'User marked {dir_name} for removal')
@@ -630,7 +630,7 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
 
     for dir_name in marked_for_removal:
         shutil.rmtree(dir_name)
-        print(f'{consts.GREEN_PLUS_SIGN} Removed {dir_name} {consts.GREEN_CHECK_MARK}')
+        print(f'{consts.GREEN_PLUS_SIGN} Removed {utils.colored_text(color.N_GREEN, dir_name)} {consts.GREEN_CHECK_MARK}')
         utils.log.info(f'Removed {dir_name}')
 
     if marked_for_removal:
@@ -904,7 +904,7 @@ def display_packages(packages: Dict[str, List[MagicMirrorPackage]], table_format
         if include_path:
             _print_ = lambda package: print(
                 utils.colored_text(color.N_GREEN, f'{package.title}'),
-                (f'\n  Directory: {os.path.basename(package.directory)}'),
+                (f'\n  Directory: {package.directory}'),
                 (f"\n  {format_description(package.description)}\n")
             )
 

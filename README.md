@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur">
+    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank">
     <img src="https://img.shields.io/badge/Donate-PayPal-green.svg">
   </a>
   <a href="http://choosealicense.com/licenses/mit">
@@ -14,6 +14,7 @@
 </p>
 
 <p align="center">
+  <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank">
   <img src="assets/MagicMirrorPackageManager.png" alt="accessibility text">
 </p>
 

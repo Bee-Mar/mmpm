@@ -5,12 +5,10 @@ eventlet.monkey_patch()
 import os
 import json
 import shutil
-import zipfile
 import datetime
 
 from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
-from shelljob.proc import Group
 from flask_socketio import SocketIO
 from typing import Tuple, List, Dict
 
@@ -45,7 +43,7 @@ api = lambda path: f'/api/{path}'
 _modules_ = core.load_packages()
 
 
-def __get_selected_packages__(request) -> List[MagicMirrorPackage]:
+def __get_selected_packages__(rqst) -> List[MagicMirrorPackage]:
     '''
     Helper method to extract a list of MagicMirrorPackage objects from Flask
     request object
@@ -56,7 +54,16 @@ def __get_selected_packages__(request) -> List[MagicMirrorPackage]:
     Returns:
         selected_packages (List[MagicMirrorPackage]): extracted list of MagicMirrorPackage objects
     '''
-    return utils.list_of_dict_to_magicmirror_packages(request.get_json(force=True)['selected-packages'])
+    pkgs: dict = rqst.get_json(force=True)['selected-packages']
+
+    # more-or-less a bandaid to the larger problem of aligning the data structure in angular
+    for pkg in pkgs:
+        del pkg['category']
+
+        if not pkg['directory']:
+            pkg['directory'] = os.path.join(consts.MAGICMIRROR_MODULES_DIR, pkg['title'])
+
+    return utils.list_of_dict_to_magicmirror_packages(rqst.get_json(force=True)['selected-packages'])
 
 
 @socketio.on_error()
@@ -135,7 +142,7 @@ def packages_external() -> str:
 
 
 @app.route(api('packages/install'), methods=[consts.POST])
-def install_magicmirror_modules() -> str:
+def packages_install() -> str:
     selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
     utils.log.info(f'User selected {selected_packages} to be installed')
     failures: List[Dict[str, MagicMirrorPackage]] = []

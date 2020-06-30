@@ -13,7 +13,9 @@
   </a>
 </p>
 
-# MMPM - The MagicMirror Package Manager
+<p align="center">
+  <img src="assets/MagicMirrorPackageManager.png" alt="accessibility text">
+</p>
 
 | Author          | Contact                           |
 | --------------- | --------------------------------- |

@@ -9,8 +9,8 @@ B: str = Style.BRIGHT  # bright
 N_RED: str = N + Fore.RED  # normal red
 B_RED: str = B + Fore.RED  # bright red
 
-N_MAGENTA: str = B + Fore.MAGENTA  # normal magenta
-B_MAGENTA: str = N + Fore.MAGENTA  # bright magenta
+N_MAGENTA: str = N + Fore.MAGENTA  # normal magenta
+B_MAGENTA: str = B + Fore.MAGENTA  # bright magenta
 
 N_CYAN: str = N + Fore.CYAN  # normal cyan
 B_CYAN: str = B + Fore.CYAN  # bright cyan

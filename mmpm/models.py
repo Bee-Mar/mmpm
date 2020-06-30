@@ -2,9 +2,11 @@
 import os
 import logging
 import logging.handlers
-import mmpm.consts as consts
+import mmpm.consts
 
-NA: str = consts.NOT_AVAILABLE
+NA: str = mmpm.consts.NOT_AVAILABLE
+
+__NULL__ = hash(('', '', '', '', '', ''))
 
 
 class MMPMLogger():
@@ -14,12 +16,12 @@ class MMPMLogger():
     '''
 
     def __init__(self):
-        self.log_file: str = consts.MMPM_LOG_FILE
+        self.log_file: str = mmpm.consts.MMPM_LOG_FILE
 
-        if not os.path.exists(consts.MMPM_LOG_DIR):
-            os.system(f'mkdir -p {consts.MMPM_LOG_DIR}')
+        if not os.path.exists(mmpm.consts.MMPM_LOG_DIR):
+            os.system(f'mkdir -p {mmpm.consts.MMPM_LOG_DIR}')
 
-        for log_file in [consts.MMPM_LOG_FILE, consts.MMPM_GUNICORN_ERROR_LOG_FILE, consts.MMPM_GUNICORN_ACCESS_LOG_FILE]:
+        for log_file in [mmpm.consts.MMPM_LOG_FILE, mmpm.consts.MMPM_GUNICORN_ERROR_LOG_FILE, mmpm.consts.MMPM_GUNICORN_ACCESS_LOG_FILE]:
             if not os.path.exists(log_file):
                 os.system(f'touch {log_file}')
 
@@ -60,41 +62,31 @@ class MagicMirrorPackage():
     def __repr__(self) -> str:
         return str(self.__dict__)
 
+    def __hash__(self):
+        return hash((self.title, self.author, self.repository, self.description))
 
     def __eq__(self, other) -> bool:
         # allows comparion of a MagicMirrorPackage to None
         if other is None:
-            return self.title == NA or self.title == '' \
-                    and self.author == NA or self.author == '' \
-                    and self.repository == NA or self.repository == '' \
-                    and self.description == NA or self.description == ''
-
-        elif not other or not isinstance(MagicMirrorPackage, other):
-            return False
+            return bool(hash(self) == __NULL__)
         else:
-            # appeasing mypy by casting this to bool
-            return bool(
-                self.title == other.title and \
-                self.author == other.author and \
-                self.repository == other.repository and \
-                self.description == other.description and \
-                self.directory == other.directory
-            )
-
+            return hash(self) == hash(other)
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
-
     def serialize(self) -> dict:
         '''
-        A dictionary represenation of all fields to be stored in JSON data
+        A dictionary represenation of title, author, repository, and
+        description fields to be stored as JSON data. This method is used
+        primarily for serializing the object when writing to the
+        MagicMirror-3rd-party-modules.json file
 
         Parameters:
             None
 
         Returns:
-            serialized (dict): a dictionary containing the package title, author, repository, and description
+            serialized (dict): a dict containing title, author, repository, and description fields
         '''
 
         # the directory will always be empty when writing all packages to the
@@ -106,17 +98,20 @@ class MagicMirrorPackage():
             'description': self.description
         }
 
-
+    # defining this as a separate method rather than adding a comparison inside
+    # the `serialize` method for performance reasons
     def serialize_full(self) -> dict:
-
         '''
-        A dictionary represenation of all fields to be stored in JSON data
+        A dictionary represenation of title, author, repository, description,
+        and directory fields to be stored as JSON data. This method is used
+        primarily for serializing the object when sending data to the frontend
+        with Flask
 
         Parameters:
             None
 
         Returns:
-            serialized (dict): a dictionary containing the pcakge title, author, repository, description, and directory
+            serialized (dict): a dict containing title, author, repository, description, and directory fields
         '''
 
         return {
@@ -126,4 +121,3 @@ class MagicMirrorPackage():
             'description': self.description,
             'directory': self.directory
         }
-

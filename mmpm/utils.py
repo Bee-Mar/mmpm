@@ -4,14 +4,15 @@ import os
 import subprocess
 import time
 
+from re import sub
 from logging import Logger
 from multiprocessing import cpu_count
-from typing import List, Optional, Tuple
-from re import sub
+from typing import List, Optional, Tuple, Dict
 from ctypes import cdll, c_char_p, c_int, POINTER
+from collections import defaultdict
 
-import mmpm.color as color
-import mmpm.consts as consts
+import mmpm.color
+import mmpm.consts
 import mmpm.models
 
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
@@ -46,7 +47,7 @@ def error_msg(msg: str) -> None:
         None
     '''
     log.error(msg)
-    print(colored_text(color.B_RED, "ERROR:"), msg)
+    print(colored_text(mmpm.color.B_RED, "ERROR:"), msg)
 
 
 def keyboard_interrupt_log() -> None:
@@ -76,7 +77,7 @@ def warning_msg(msg: str) -> None:
         None
     '''
     log.warning(msg)
-    print(colored_text(color.B_YELLOW, "WARNING:"), msg)
+    print(colored_text(mmpm.color.B_YELLOW, "WARNING:"), msg)
 
 
 def fatal_msg(msg: str) -> None:
@@ -90,14 +91,14 @@ def fatal_msg(msg: str) -> None:
         None
     '''
     log.critical(msg)
-    print(colored_text(color.B_RED, "FATAL:"), msg)
+    print(colored_text(mmpm.color.B_RED, "FATAL:"), msg)
     sys.exit(127)
 
 
 def assert_snapshot_directory() -> bool:
-    if not os.path.exists(consts.MMPM_CONFIG_DIR):
+    if not os.path.exists(mmpm.consts.MMPM_CONFIG_DIR):
         try:
-            os.mkdir(consts.MMPM_CONFIG_DIR)
+            os.mkdir(mmpm.consts.MMPM_CONFIG_DIR)
         except OSError:
             error_msg('Failed to create directory for snapshot')
             return False
@@ -116,8 +117,8 @@ def calc_snapshot_timestamps() -> Tuple[float, float]:
     '''
     curr_snap = next_snap = None
 
-    if os.path.exists(consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE):
-        curr_snap = os.path.getmtime(consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE)
+    if os.path.exists(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE):
+        curr_snap = os.path.getmtime(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE)
         next_snap = curr_snap + 6 * 60 * 60
 
     return curr_snap, next_snap
@@ -136,7 +137,7 @@ def should_refresh_packages(current_snapshot: float, next_snapshot: float) -> bo
     '''
     if not current_snapshot and not next_snapshot:
         return True
-    return not os.path.exists(consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE) or next_snapshot - time.time() <= 0.0
+    return not os.path.exists(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE) or next_snapshot - time.time() <= 0.0
 
 
 def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, str, str]:
@@ -161,15 +162,16 @@ def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, s
 
     symbols = [u'\u25DC', u'\u25DD', u'\u25DE', u'\u25DF']
 
-    def __spinner__():
-        while True:
-            for symbol in symbols:
-                yield symbol
-
-    spinner = __spinner__()
-
     if progress:
+        def __spinner__():
+            while True:
+                for symbol in symbols:
+                    yield symbol
+
+        spinner = __spinner__()
+
         sys.stdout.write(' ')
+
         while process.poll() is None:
             sys.stdout.write(next(spinner))
             sys.stdout.flush()
@@ -209,7 +211,7 @@ def open_default_editor(path_to_file: str) -> Optional[None]:
     log.info(f'Attempting to open {path_to_file} in users default editor')
 
     if not os.path.exists(path_to_file):
-        fatal_msg(f'{path_to_file} not found. Please ensure the env variable {consts.MMPM_MAGICMIRROR_ROOT} is set properly.')
+        fatal_msg(f'{path_to_file} not found. Please ensure the env variable {mmpm.consts.MMPM_MAGICMIRROR_ROOT} is set properly.')
 
     editor = os.getenv('EDITOR') if os.getenv('EDITOR') else 'nano'
     error_code, _, _ = run_cmd(['which', editor], progress=False)
@@ -233,7 +235,7 @@ def clone(title: str, repo: str, target_dir: str = '') -> Tuple[int, str, str]:
     # by using "repo.split()", it allows the user to bake in additional commands when making custom sources
     # ie. git clone [repo] -b [branch] [target]
     log.info(f'Cloning {repo} into {target_dir if target_dir else os.path.join(os.getcwd(), title)}')
-    plain_print(consts.GREEN_PLUS_SIGN + f" Cloning {colored_text(color.N_GREEN, f'{title}')} repository" + color.RESET)
+    plain_print(mmpm.consts.GREEN_PLUS_SIGN + f" Cloning {colored_text(mmpm.color.N_GREEN, f'{title}')} repository" + mmpm.color.RESET)
 
     command = ['git', 'clone'] + repo.split()
 
@@ -270,7 +272,7 @@ def cmake() -> Tuple[int, str, str]:
 
     '''
     log.info(f"Running 'cmake ..' in {os.getcwd()}")
-    plain_print(consts.GREEN_PLUS_SIGN + " Found CMakeLists.txt. Attempting build with 'cmake'")
+    plain_print(mmpm.consts.GREEN_PLUS_SIGN + " Found CMakeLists.txt. Attempting build with 'cmake'")
 
     run_cmd(['mkdir', '-p', 'build'], progress=False)
     os.chdir('build')
@@ -289,7 +291,7 @@ def make() -> Tuple[int, str, str]:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
     log.info(f"Running 'make -j {cpu_count()}' in {os.getcwd()}")
-    plain_print(consts.GREEN_PLUS_SIGN + f" Found Makefile. Attempting to run 'make -j {cpu_count()}'")
+    plain_print(mmpm.consts.GREEN_PLUS_SIGN + f" Found Makefile. Attempting to run 'make -j {cpu_count()}'")
     return run_cmd(['make', '-j', f'{cpu_count()}'])
 
 
@@ -304,7 +306,7 @@ def npm_install() -> Tuple[int, str, str]:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
     log.info(f"Running 'npm install' in {os.getcwd()}")
-    plain_print(consts.GREEN_PLUS_SIGN + " Found package.json. Running 'npm install'")
+    plain_print(mmpm.consts.GREEN_PLUS_SIGN + " Found package.json. Running 'npm install'")
     return run_cmd(['npm', 'install'])
 
 
@@ -319,7 +321,7 @@ def bundle_install() -> Tuple[int, str, str]:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
     log.info(f"Running 'bundle install' in {os.getcwd()}")
-    plain_print(consts.GREEN_PLUS_SIGN + "Found Gemfile. Running 'bundle install'")
+    plain_print(mmpm.consts.GREEN_PLUS_SIGN + "Found Gemfile. Running 'bundle install'")
     return run_cmd(['bundle', 'install'])
 
 
@@ -352,7 +354,7 @@ def install_dependencies() -> str:
         stderr (str): Success if the string is empty, fail if not
     '''
 
-    if package_requirements_file_exists(consts.PACKAGE_JSON):
+    if package_requirements_file_exists(mmpm.consts.PACKAGE_JSON):
         error_code, _, stderr = npm_install()
 
         if error_code:
@@ -360,9 +362,9 @@ def install_dependencies() -> str:
             print()
             return str(stderr)
         else:
-            print(consts.GREEN_CHECK_MARK)
+            print(mmpm.consts.GREEN_CHECK_MARK)
 
-    if package_requirements_file_exists(consts.GEMFILE):
+    if package_requirements_file_exists(mmpm.consts.GEMFILE):
         error_code, _, stderr = bundle_install()
 
         if error_code:
@@ -370,9 +372,9 @@ def install_dependencies() -> str:
             print()
             return str(stderr)
         else:
-            print(consts.GREEN_CHECK_MARK)
+            print(mmpm.consts.GREEN_CHECK_MARK)
 
-    if package_requirements_file_exists(consts.MAKEFILE):
+    if package_requirements_file_exists(mmpm.consts.MAKEFILE):
         error_code, _, stderr = make()
 
         if error_code:
@@ -380,10 +382,10 @@ def install_dependencies() -> str:
             print()
             return str(stderr)
         else:
-            print(consts.GREEN_CHECK_MARK)
+            print(mmpm.consts.GREEN_CHECK_MARK)
 
 
-    if package_requirements_file_exists(consts.CMAKELISTS):
+    if package_requirements_file_exists(mmpm.consts.CMAKELISTS):
         error_code, _, stderr = cmake()
 
         if error_code:
@@ -391,9 +393,9 @@ def install_dependencies() -> str:
             print()
             return str(stderr)
         else:
-            print(consts.GREEN_CHECK_MARK)
+            print(mmpm.consts.GREEN_CHECK_MARK)
 
-        if package_requirements_file_exists(consts.MAKEFILE):
+        if package_requirements_file_exists(mmpm.consts.MAKEFILE):
             error_code, _, stderr = make()
 
             if error_code:
@@ -401,9 +403,9 @@ def install_dependencies() -> str:
                 print()
                 return str(stderr)
             else:
-                print(consts.GREEN_CHECK_MARK)
+                print(mmpm.consts.GREEN_CHECK_MARK)
 
-    print(consts.GREEN_PLUS_SIGN + f' Installation ' + consts.GREEN_CHECK_MARK)
+    print(mmpm.consts.GREEN_PLUS_SIGN + f' Installation ' + mmpm.consts.GREEN_CHECK_MARK)
     log.info(f'Exiting installation handler from {os.getcwd()}')
     return ''
 
@@ -475,7 +477,7 @@ def display_table(table, rows: int, columns: int) -> None:
         None
     '''
 
-    libmmpm = cdll.LoadLibrary(consts.MMPM_LIBMMPM_SHARED_OBJECT_FILE)
+    libmmpm = cdll.LoadLibrary(mmpm.consts.MMPM_LIBMMPM_SHARED_OBJECT_FILE)
 
     __display_table__ = libmmpm.display_table
     __display_table__.argtypes = [POINTER(POINTER(c_char_p)), c_int, c_int]
@@ -497,7 +499,7 @@ def allocate_table_memory(rows: int, columns: int):
     if not rows or not columns:
         fatal_msg('Positive integers must be provided as arguments')
 
-    libmmpm = cdll.LoadLibrary(consts.MMPM_LIBMMPM_SHARED_OBJECT_FILE)
+    libmmpm = cdll.LoadLibrary(mmpm.consts.MMPM_LIBMMPM_SHARED_OBJECT_FILE)
 
     _allocate_table_memory = libmmpm.allocate_table_memory
     _allocate_table_memory.argtypes = [c_int, c_int]
@@ -532,7 +534,7 @@ def colored_text(text_color: str, message: str) -> str:
     Returns:
         message (str): The original text concatenated with the colorama color
     '''
-    return (text_color + message + color.RESET)
+    return (text_color + message + mmpm.color.RESET)
 
 
 def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: List[str] = ['no', 'n'], assume_yes: bool = False) -> bool:
@@ -574,7 +576,7 @@ def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nac
     return False
 
 
-def invalid_additional_arguments(subcommand: str) -> None:
+def fatal_invalid_additional_arguments(subcommand: str) -> None:
     '''
     Helper method to return a standardized error message when the user provides too many arguments
 
@@ -583,37 +585,51 @@ def invalid_additional_arguments(subcommand: str) -> None:
 
     Returns:
         None
-
     '''
     fatal_msg(f'`mmpm {subcommand}` does not accept additional arguments. See `mmpm {subcommand} --help`')
 
 
-def invalid_option(subcommand: str) -> None:
+def fatal_invalid_option(subcommand: str) -> None:
     '''
     Helper method to return a standardized error message when the user provides an invalid option
-
 
     Parameters:
         subcommand (str): the name of the mmpm subcommand
 
     Returns:
         None
-
     '''
     fatal_msg(f'Invalid option supplied to `mmpm {subcommand}`. See `mmpm {subcommand} --help`')
 
 
-def no_arguments_provided(subcommand: str) -> None:
-    '''
-    Helper method to return a standardized error message when the user provides no arguments
 
+def fatal_too_many_options(args) -> None:
+    '''
+    Helper method to return a standardized error message when the user provides too many options
 
     Parameters:
         subcommand (str): the name of the mmpm subcommand
 
     Returns:
         None
+    '''
 
+    if 'table_formatted' in args.__dict__:
+        message: str = f'`mmpm {args.subcmd}` only accepts one optional argument in addition to `--table`. See `mmpm {args.subcmd} --help`'
+    else:
+        message: str = f'`mmpm {args.subcmd}` only accepts one optional argument. See `mmpm {args.subcmd} --help`'
+    fatal_msg(message)
+
+
+def fatal_no_arguments_provided(subcommand: str) -> None:
+    '''
+    Helper method to return a standardized error message when the user provides no arguments
+
+    Parameters:
+        subcommand (str): the name of the mmpm subcommand
+
+    Returns:
+        None
     '''
     fatal_msg(f'no arguments provided. See `mmpm {subcommand} --help` for usage')
 
@@ -652,14 +668,14 @@ def get_existing_package_directories() -> List[str]:
     Returns:
         directories (List[str]): a list of directories found in the MagicMirror modules directory
     '''
-    if not os.path.exists(consts.MAGICMIRROR_MODULES_DIR):
+    if not os.path.exists(mmpm.consts.MAGICMIRROR_MODULES_DIR):
         return []
 
-    dirs: List[str] = os.listdir(consts.MAGICMIRROR_MODULES_DIR)
-    return [d for d in dirs if os.path.isdir(os.path.join(consts.MAGICMIRROR_MODULES_DIR, d))]
+    dirs: List[str] = os.listdir(mmpm.consts.MAGICMIRROR_MODULES_DIR)
+    return [d for d in dirs if os.path.isdir(os.path.join(mmpm.consts.MAGICMIRROR_MODULES_DIR, d))]
 
 
-def list_of_dict_to_magicmirror_packages(list_of_dict: List[dict]) -> List[MagicMirrorPackage]:
+def list_of_dict_to_list_of_magicmirror_packages(list_of_dict: List[dict]) -> List[MagicMirrorPackage]:
     '''
     Converts a list of dictionary contents to a list of MagicMirrorPackage objects
 
@@ -671,3 +687,46 @@ def list_of_dict_to_magicmirror_packages(list_of_dict: List[dict]) -> List[Magic
     '''
 
     return [MagicMirrorPackage(**pkg) for pkg in list_of_dict]
+
+
+def get_difference_of_packages(original: Dict[str, List[MagicMirrorPackage]], exclude: Dict[str, List[MagicMirrorPackage]]) -> Dict[str, List[MagicMirrorPackage]]:
+    '''
+    Calculates the difference between two dictionaries of MagicMirrorPackages.
+    The result returned is the 'original' minus 'exclude'
+
+    Parameters:
+        original (Dict[str, List[MagicMirrorPackage]]): the full dictionary of packages
+        exclude (Dict[str, List[MagicMirrorPackage]]): the dictionary of packges to be removed
+
+    Returns:
+        difference (Dict[str, List[MagicMirrorPackage]]]): the reduced set of packages
+    '''
+
+    difference: Dict[str, List[MagicMirrorPackage]] = defaultdict(list)
+
+    for category in original.keys():
+        if not exclude[category]:
+            difference[category] = original[category]
+            continue
+
+        for orig_pkg in original[category]:
+            if orig_pkg not in exclude[category]:
+                difference[category].append(orig_pkg)
+
+    return difference
+
+
+def assert_one_option_selected(args) -> bool:
+    '''
+    Determines if more than one option has been selected by a user for use with a subcommand
+
+    Parameters:
+        args (argparse.Namespace): an argparse Namespace object containing chosen arguments
+
+    Returns:
+        yes (bool): True if one option is selected, False if more than one is selected
+    '''
+    args = args.__dict__
+    return not len([args[option] for option in args if args[option] == True and option != 'table_formatted']) > 1
+
+

@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank">
+  <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank">
     <img src="https://img.shields.io/badge/Donate-PayPal-green.svg">
   </a>
   <a href="http://choosealicense.com/licenses/mit">
@@ -11,11 +11,9 @@
   <a href="https://hub.docker.com/r/karsten13/mmpm">
     <img src="https://img.shields.io/docker/pulls/karsten13/mmpm.svg">
   </a>
-</p>
-
-<p align="center">
   <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank">
-  <img src="assets/MagicMirrorPackageManager.png" alt="accessibility text">
+    <img src="assets/MagicMirrorPackageManager.png" alt="accessibility text">
+  </a>
 </p>
 
 | Author          | Contact                           |
@@ -24,21 +22,21 @@
 
 The MagicMirror Package Manager (`mmpm`) is both a command line and web interface designed to simplify the installation, removal, and maintenance of MagicMirror modules.
 
-<i>Consider this project to be in an Alpha state, so don't get too picky just yet, as you most likely will discover some bugs I was unable to find.</i>
+<i>Consider this project to be in a Beta state. The CLI is quite mature, but lacks tests (don't worry, they'll be added), and the GUI is still in development.</i>
 
 The MagicMirror Package Manager is featured as an alternative installation method on the [MagicMirror Documentation](https://docs.magicmirror.builders/getting-started/installation.html#alternative-installation-methods).
 
 The supported features are comprised of the following categories:
 
-    1) Search
-    2) Installation
-    3) Removal
-    4) Checking for updates
-    5) Upgrading packages that have updates available
-    6) Adding external module sources
-    7) Accessing MagicMirror config file
-    8) Self updating
-    9) Installing MagicMirror
+1) Search
+2) Installation
+3) Removal
+4) Checking for updates
+5) Upgrading packages that have updates available
+6) Adding external module sources
+7) Accessing MagicMirror config file
+8) Self updating
+9) Installing MagicMirror
 
 ## TLDR; What's the Installation/Removal Process?
 
@@ -52,23 +50,23 @@ If any issues arise, please consult the wiki first, which can be found [here](ht
 
 - Managing Packages with Live Terminal Feed and Responsive Search
 
-![Managing Packages](https://media.giphy.com/media/MEuuL0fOIzcejxWATL/giphy.gif)
+    ![Managing Packages](https://media.giphy.com/media/MEuuL0fOIzcejxWATL/giphy.gif)
 
 - Editing MagicMirror Config
 
-![Editing MagicMirror Config](https://media.giphy.com/media/XDdeJQpzZRRwrylBVg/giphy.gif)
+    ![Editing MagicMirror Config](https://media.giphy.com/media/XDdeJQpzZRRwrylBVg/giphy.gif)
 
 - Using [WebSSH](https://github.com/huashengdun/webssh) within GUI
 
-![Using WebSSH](https://media.giphy.com/media/gkLZiyqWfDqcH0tHE0/giphy.gif)
+    ![Using WebSSH](https://media.giphy.com/media/gkLZiyqWfDqcH0tHE0/giphy.gif)
 
 - Adding External Sources
 
-![Adding External Sources](https://media.giphy.com/media/loAdplweaF3BpyGS1M/giphy.gif)
+    ![Adding External Sources](https://media.giphy.com/media/loAdplweaF3BpyGS1M/giphy.gif)
 
 - MagicMirror Control Center
 
-![MagicMirror Control Center](https://media.giphy.com/media/eH9GfGdbZfUxJuJ9o5/giphy.gif)
+    ![MagicMirror Control Center](https://media.giphy.com/media/eH9GfGdbZfUxJuJ9o5/giphy.gif)
 
 ## Future State of Affairs
 

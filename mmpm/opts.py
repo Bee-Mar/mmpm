@@ -3,9 +3,10 @@
 import sys
 import argparse
 import argcomplete
-import mmpm.consts as consts
+import mmpm.consts
+from typing import List
 
-# subcommand names. These could go in consts.py, but for the sake of mnemonics
+# subcommand names. These could go in mmpm.consts.py, but for the sake of mnemonics
 # for mmpm.py, they'll stay (ie, opts.INSTALL, opts.LIST, etc)
 INSTALL: str = 'install'
 SEARCH: str = 'search'
@@ -20,6 +21,8 @@ UPDATE: str = 'update'
 UPGRADE: str = 'upgrade'
 ENV: str = 'env'
 SHOW: str = 'show'
+
+SINGLE_OPTION_ARGS: List[str] = [INSTALL, UPDATE, DATABASE, LIST, OPEN, MM_CTL]
 
 
 def get_user_args() -> object:
@@ -36,7 +39,7 @@ def get_user_args() -> object:
     arg_parser = argparse.ArgumentParser(
         prog='mmpm',
         usage='mmpm <subcommand> [option(s)]',
-        epilog=f'Visit {consts.MMPM_WIKI_URL} for more details',
+        epilog=f'Visit {mmpm.consts.MMPM_WIKI_URL} for more details',
         description='''
             The MagicMirror Package Manager CLI simplifies the
             installation, removal, and general maintenance of MagicMirror packages
@@ -52,7 +55,7 @@ def get_user_args() -> object:
     # SEARCH PARSER
     search_parser = subparsers.add_parser(
         SEARCH,
-        usage='\n  mmpm search <query> [--table] [--case-sensitive]',
+        usage='\n  mmpm search <query> [--case-sensitive] [--exclude-local] [--table]',
         help='search for MagicMirror packages'
     )
 
@@ -60,8 +63,16 @@ def get_user_args() -> object:
         '-c',
         '--case-sensitive',
         action='store_true',
-        help='search for packages using a case-sensitive term',
+        help='search for packages using a case-sensitive query',
         dest='case_sensitive'
+    )
+
+    search_parser.add_argument(
+        '-e',
+        '--exclude-local',
+        action='store_true',
+        help='exclude locally installed packages from search results',
+        dest='exclude_local'
     )
 
     search_parser.add_argument(
@@ -70,7 +81,6 @@ def get_user_args() -> object:
         help='display output in table format',
         dest='table_formatted'
     )
-
 
     # INSTALL PARSER
     install_parser = subparsers.add_parser(
@@ -182,31 +192,40 @@ def get_user_args() -> object:
    # LIST SUBCOMMANDS
     list_parser = subparsers.add_parser(
         LIST,
-        usage='\n  mmpm list [--installed] [--categories] [--all] [--gui-url] [--table]',
+        usage='\n  mmpm list [--all] [--exclude-local] [--categories] [--gui-url] [--table]',
         help='list items like installed packages, packages available, etc'
-    )
-
-    list_parser.add_argument(
-        '-i',
-        '--installed',
-        action='store_true',
-        help='list all currently installed packages',
-        dest='installed'
-    )
-
-    list_parser.add_argument(
-        '-c',
-        '--categories',
-        action='store_true',
-        help='list all package categories',
-        dest='categories'
     )
 
     list_parser.add_argument(
         '-a',
         '--all',
         action='store_true',
-        help='list all packages available in the marketplace', dest='all'
+        help='list all available packages in the marketplace',
+        dest='all'
+    )
+
+    list_parser.add_argument(
+        '-e',
+        '--exclude-local',
+        action='store_true',
+        help='list all available packages in the marketplace, excluding locally installed packages',
+        dest='exclude_local'
+    )
+
+    list_parser.add_argument(
+        '-c',
+        '--categories',
+        action='store_true',
+        help='list all available package categories',
+        dest='categories'
+    )
+
+    list_parser.add_argument(
+        '-i',
+        '--installed',
+        action='store_true',
+        help='list all locally installed packages',
+        dest='installed'
     )
 
     list_parser.add_argument(
@@ -227,8 +246,8 @@ def get_user_args() -> object:
     # OPEN SUBCOMMANDS
     open_parser = subparsers.add_parser(
         OPEN,
-        usage='\n  mmpm open [--config] [--gui]',
-        help='open MagicMirror config or MMPM GUI'
+        usage='\n  mmpm open [--config] [--css] [--gui] [--mm-wiki] [--mmpm-wiki]',
+        help='open MagicMirror config.js, custom.css, MMPM GUI, or wiki URLs'
     )
 
     open_parser.add_argument(
@@ -266,7 +285,7 @@ def get_user_args() -> object:
         dest='mmpm_wiki'
     )
 
-    #show_parser
+    # show_parser
     subparsers.add_parser(
         SHOW,
         usage='\n  mmpm show <package(s)>',
@@ -277,7 +296,7 @@ def get_user_args() -> object:
     add_ext_package_parser = subparsers.add_parser(
         ADD_EXT_PKG,
         usage='\n  mmpm add-ext-package [--title=<title>] [--author=<author>] [--repo=<repo>] [--desc=<description>]\n  mmpm add-ext-package --remove <package> [--yes]',
-        help='manually add packages to the database not found in the MagicMirror 3rd party database'
+        help='manually add MagicMirror packages to your local database'
     )
 
     add_ext_package_parser.add_argument(
@@ -332,7 +351,7 @@ def get_user_args() -> object:
     log_parser = subparsers.add_parser(
         LOG,
         usage='\n  mmpm log [--cli] [--web] [--tail]',
-        help='display MMPM and/or Gunicorn log files'
+        help='display or tail MMPM log files'
     )
 
     log_parser.add_argument(
@@ -362,15 +381,8 @@ def get_user_args() -> object:
     # MM_CTL SUBCOMMANDS
     mm_ctl_parser = subparsers.add_parser(
         MM_CTL,
-        usage='\n  mmpm mm-ctl [--status] [--restart] [--start] [--stop]\n  mmpm mm-ctl [--status] [--table]',
+        usage='\n  mmpm mm-ctl [--status] [--restart] [--start] [--stop]\n  mmpm mm-ctl [--status] [--table]\n  mmpm mm-ctl [--rotate] {0, 90, 180, 270}',
         help='commands to control the MagicMirror'
-    )
-
-    mm_ctl_parser.add_argument(
-        '--status',
-        action='store_true',
-        help='show the status of packages on your MagicMirror',
-        dest='status'
     )
 
     mm_ctl_parser.add_argument(
@@ -378,6 +390,13 @@ def get_user_args() -> object:
         action='store_true',
         help='display output in table format, used with --status',
         dest='table_formatted'
+    )
+
+    mm_ctl_parser.add_argument(
+        '--status',
+        action='store_true',
+        help='show the status of packages on your MagicMirror',
+        dest='status'
     )
 
     mm_ctl_parser.add_argument(
@@ -401,13 +420,14 @@ def get_user_args() -> object:
         dest='restart'
     )
 
-    # magicmirror_parser.add_argument(
-    #        '--rotate',
-    #        action='store_true',
-    #        choices=['0', '90', '180', '270'],
-    #        help='rotate MagicMirror screen',
-    #        dest='rotate'
-    # )
+    mm_ctl_parser.add_argument(
+        '--rotate',
+        choices=[0, 90, 180, 270],
+        type=int,
+        help='rotate MagicMirror screen to 0, 90, 180, or 270 degrees',
+        dest='rotate'
+    )
+
 
     # ENV SUBCOMMANDS
     subparsers.add_parser(

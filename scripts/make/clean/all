@@ -1,10 +1,9 @@
 #!/bin/bash
 source ./scripts/make/constants
 
-printf "[+] \e[92mRemoving Legacy MMPM Installation Location\e[0m\n"
+printf "[+] \e[92mCleaning MMPM Lib Directory\e[0m\n"
 
-log_action "Removing Legacy Installation Destination" >> $MMPM_INSTALLATION_LOG
+log_action "Cleaning MMPM Lib Directory" >> $MMPM_INSTALLATION_LOG
 
-printf " -- removing initial version installation location"
-log_and_eval "sudo rm -vf /usr/local/bin/mmpm"
+log_and_eval "cd lib && make clean"
 _done_

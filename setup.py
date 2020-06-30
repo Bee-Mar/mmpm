@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from typing import List
 from setuptools import setup, find_packages
-from mmpm.mmpm import __version__
+import mmpm.mmpm
 from setuptools.command.install import install
 import os
 
@@ -23,7 +23,7 @@ def load_requirements() -> List[str]:
 
 setup(
     name="mmpm",
-    version=__version__,
+    version=mmpm.mmpm.__version__,
     description="The MagicMirror Package Manager (MMPM)",
     url="https://github.com/Bee-Mar/mmpm",
     author="Brandon Marlowe",

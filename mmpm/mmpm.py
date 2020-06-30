@@ -2,14 +2,16 @@
 # pylint: disable=unused-argument
 import sys
 import webbrowser
-import mmpm.utils as utils
-import mmpm.core as core
-import mmpm.opts as opts
-import mmpm.consts as consts
-import mmpm.models as models
+
 from typing import List, Dict
 
-MagicMirrorPackage = models.MagicMirrorPackage
+import mmpm.utils
+import mmpm.core
+import mmpm.opts
+import mmpm.consts
+import mmpm.models
+
+MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 
 __version__ = 1.25
 
@@ -17,173 +19,188 @@ __version__ = 1.25
 def main(argv):
     ''' Main entry point for CLI '''
 
-    parser = opts.get_user_args()
+    parser = mmpm.opts.get_user_args()
     args, additional_args = parser.parse_known_args()
 
     if args.version:
         print(f'{__version__}')
         sys.exit(0)
 
-    current_snapshot, next_snapshot = utils.calc_snapshot_timestamps()
-    snapshot_expired: bool = utils.should_refresh_packages(current_snapshot, next_snapshot)
-    should_refresh: bool = True if args.subcmd == opts.DATABASE and args.refresh else snapshot_expired
+    if args.subcmd in mmpm.opts.SINGLE_OPTION_ARGS and not mmpm.utils.assert_one_option_selected(args):
+        mmpm.utils.fatal_too_many_options(args)
 
-    packages: Dict[str, List[MagicMirrorPackage]] = core.load_packages(force_refresh=should_refresh)
+    current_snapshot, next_snapshot = mmpm.utils.calc_snapshot_timestamps()
+    snapshot_expired: bool = mmpm.utils.should_refresh_packages(current_snapshot, next_snapshot)
+    should_refresh: bool = True if args.subcmd == mmpm.opts.DATABASE and args.refresh else snapshot_expired
 
-    if (snapshot_expired and args.subcmd != opts.DATABASE) or (snapshot_expired and args.subcmd == opts.DATABASE and not args.refresh):
-        core.check_for_mmpm_updates() # automated check for updates to MMPM
+    packages: Dict[str, List[MagicMirrorPackage]] = mmpm.core.load_packages(force_refresh=should_refresh)
+
+    if (snapshot_expired and args.subcmd != mmpm.opts.DATABASE) or (snapshot_expired and args.subcmd == mmpm.opts.DATABASE and not args.refresh):
+        mmpm.core.check_for_mmpm_updates() # automated check for updates to MMPM
 
     if not packages:
-        utils.fatal_msg('Unable to retrieve packages.')
+        mmpm.utils.fatal_msg('Unable to retrieve packages. Please check your internet connection.')
 
-    if args.subcmd == opts.LIST:
+    if args.subcmd == mmpm.opts.LIST:
         if args.installed:
-            installed_packages = core.get_installed_packages(packages)
+            installed_packages = mmpm.core.get_installed_packages(packages)
 
             if not installed_packages:
-                utils.fatal_msg('No packages are currently installed')
+                mmpm.utils.fatal_msg('No packages are currently installed')
 
-            core.display_packages(installed_packages, table_formatted=args.table_formatted, include_path=True)
+            mmpm.core.display_packages(installed_packages, table_formatted=args.table_formatted, include_path=True)
 
-        elif args.categories:
-            core.display_categories(packages, table_formatted=args.table_formatted)
         elif args.all:
-            core.display_packages(packages, table_formatted=args.table_formatted)
+            mmpm.core.display_packages(packages, table_formatted=args.table_formatted)
+        elif args.exclude_local:
+            excluded = mmpm.utils.get_difference_of_packages(packages, mmpm.core.get_installed_packages(packages))
+            mmpm.core.display_packages(excluded, table_formatted=args.table_formatted)
+        elif args.categories:
+            mmpm.core.display_categories(packages, table_formatted=args.table_formatted)
         elif args.gui_url:
-            print(f'{core.get_web_interface_url()}')
+            print(f'{mmpm.core.get_web_interface_url()}')
         else:
-            utils.no_arguments_provided(args.subcmd)
+            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
-    elif args.subcmd == opts.SHOW:
+    elif args.subcmd == mmpm.opts.SHOW:
         if not additional_args:
-            utils.no_arguments_provided(args.subcmd)
+            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
         for query in additional_args:
-            result = core.search_packages(packages, query, by_title_only=True)
+            result = mmpm.core.search_packages(packages, query, by_title_only=True)
 
             if not result:
-                utils.fatal_msg(f'Unable to match {query} to a package title')
+                mmpm.utils.fatal_msg(f'Unable to match {query} to a package title')
 
-            core.show_package_details(result)
+            mmpm.core.show_package_details(result)
 
-    elif args.subcmd == opts.OPEN:
+    elif args.subcmd == mmpm.opts.OPEN:
         if additional_args:
-            utils.invalid_additional_arguments(args.subcmd)
+            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.config:
-            utils.open_default_editor(consts.MAGICMIRROR_CONFIG_FILE)
+            mmpm.utils.open_default_editor(mmpm.consts.MAGICMIRROR_CONFIG_FILE)
         elif args.custom_css:
-            utils.open_default_editor(consts.MAGICMIRROR_CUSTOM_CSS_FILE)
+            mmpm.utils.open_default_editor(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE)
         elif args.gui:
-            webbrowser.open(core.get_web_interface_url())
+            webbrowser.open(mmpm.core.get_web_interface_url())
         elif args.mm_wiki:
-            webbrowser.open(consts.MAGICMIRROR_WIKI_URL)
+            webbrowser.open(mmpm.consts.MAGICMIRROR_WIKI_URL)
         elif args.mmpm_wiki:
-            webbrowser.open(consts.MMPM_WIKI_URL)
+            webbrowser.open(mmpm.consts.MMPM_WIKI_URL)
         else:
-            utils.no_arguments_provided(args.subcmd)
+            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
-    elif args.subcmd == opts.ADD_EXT_PKG:
+    elif args.subcmd == mmpm.opts.ADD_EXT_PKG:
         if args.remove:
-            core.remove_external_package_source([utils.sanitize_name(package) for package in args.remove], assume_yes=args.assume_yes)
+            mmpm.core.remove_external_package_source(
+                [mmpm.utils.sanitize_name(package) for package in args.remove],
+                assume_yes=args.assume_yes
+            )
         else:
-            core.add_external_package(args.title, args.author, args.repo, args.desc)
+            mmpm.core.add_external_package(args.title, args.author, args.repo, args.desc)
 
-    elif args.subcmd == opts.UPDATE:
+    elif args.subcmd == mmpm.opts.UPDATE:
         if additional_args:
-            utils.invalid_additional_arguments(args.subcmd)
+            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.full:
-            core.check_for_package_updates(packages, args.assume_yes)
-            core.check_for_magicmirror_updates(args.assume_yes)
-            core.check_for_mmpm_updates(args.assume_yes)
+            mmpm.core.check_for_package_updates(packages, args.assume_yes)
+            mmpm.core.check_for_magicmirror_updates(args.assume_yes)
+            mmpm.core.check_for_mmpm_updates(args.assume_yes)
         elif args.mmpm:
-            core.check_for_mmpm_updates(args.assume_yes)
+            mmpm.core.check_for_mmpm_updates(args.assume_yes)
         elif args.magicmirror:
-            core.check_for_magicmirror_updates(args.assume_yes)
+            mmpm.core.check_for_magicmirror_updates(args.assume_yes)
         else:
-            core.check_for_package_updates(packages, args.assume_yes)
+            mmpm.core.check_for_package_updates(packages, args.assume_yes)
 
-    elif args.subcmd == opts.INSTALL:
+    elif args.subcmd == mmpm.opts.INSTALL:
         if not additional_args:
-            utils.no_arguments_provided(args.subcmd)
+            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
         elif args.magicmirror:
-            core.install_magicmirror()
+            mmpm.core.install_magicmirror()
         elif args.autocomplete:
-            core.install_autocompletion(assume_yes=args.assume_yes)
+            mmpm.core.install_autocompletion(assume_yes=args.assume_yes)
         else:
-            installation_candidates = core.get_installation_candidates(
+            installation_candidates = mmpm.core.get_installation_candidates(
                 packages,
-                [utils.sanitize_name(package) for package in additional_args],
+                [mmpm.utils.sanitize_name(package) for package in additional_args]
             )
 
-            core.install_packages(installation_candidates, assume_yes=args.assume_yes)
+            mmpm.core.install_packages(installation_candidates, assume_yes=args.assume_yes)
 
-    elif args.subcmd == opts.REMOVE:
+    elif args.subcmd == mmpm.opts.REMOVE:
         if not additional_args:
-            utils.no_arguments_provided(args.subcmd)
+            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
-        installed_packages = core.get_installed_packages(packages)
+        installed_packages = mmpm.core.get_installed_packages(packages)
 
         if not installed_packages:
-            utils.fatal_msg("No packages are currently installed")
+            mmpm.utils.fatal_msg("No packages are currently installed")
 
-        core.remove_packages(
+        mmpm.core.remove_packages(
             installed_packages,
-            [utils.sanitize_name(package) for package in additional_args],
+            [mmpm.utils.sanitize_name(package) for package in additional_args],
             assume_yes=args.assume_yes
         )
 
-    elif args.subcmd == opts.SEARCH:
+    elif args.subcmd == mmpm.opts.SEARCH:
         if not additional_args:
-            utils.no_arguments_provided(args.subcmd)
+            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
         elif len(additional_args) > 1:
-            utils.fatal_msg(f'Too many arguments. `mmpm {args.subcmd}` only accepts one search argument')
+            mmpm.utils.fatal_msg(f'Too many arguments. `mmpm {args.subcmd}` only accepts one search argument')
+
         else:
-            core.display_packages(
-                core.search_packages(packages, additional_args[0], case_sensitive=args.case_sensitive),
+            if args.exclude_local:
+                packages = mmpm.utils.get_difference_of_packages(packages, mmpm.core.get_installed_packages(packages))
+
+            mmpm.core.display_packages(
+                mmpm.core.search_packages(packages, additional_args[0], case_sensitive=args.case_sensitive),
                 table_formatted=args.table_formatted
             )
 
-    elif args.subcmd == opts.MM_CTL:
+    elif args.subcmd == mmpm.opts.MM_CTL:
         if additional_args:
-            utils.invalid_additional_arguments(args.subcmd)
+            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.status:
-            core.display_active_packages(table_formatted=args.table_formatted)
+            mmpm.core.display_active_packages(table_formatted=args.table_formatted)
         elif args.start:
-            core.start_magicmirror()
+            mmpm.core.start_magicmirror()
         elif args.stop:
-            core.stop_magicmirror()
+            mmpm.core.stop_magicmirror()
         elif args.restart:
-            core.restart_magicmirror()
+            mmpm.core.restart_magicmirror()
+        elif args.rotate:
+            mmpm.core.rotate_raspberrypi_screen(args.rotate)
         else:
-            utils.no_arguments_provided(args.subcmd)
+            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
-    elif args.subcmd == opts.DATABASE:
+    elif args.subcmd == mmpm.opts.DATABASE:
         if args.refresh:
             sys.exit(0)
         if additional_args:
-            utils.invalid_additional_arguments(args.subcmd)
+            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.details:
-            core.snapshot_details(packages)
+            mmpm.core.snapshot_details(packages)
         else:
-            utils.no_arguments_provided(args.subcmd)
+            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
-    elif args.subcmd == opts.LOG:
+    elif args.subcmd == mmpm.opts.LOG:
         if additional_args:
-            utils.invalid_additional_arguments(args.subcmd)
+            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif not args.cli and not args.gui:
             # if the user doesn't provide arguments, just display everything, but consider the --tail arg
-            core.display_log_files(True, True, args.tail)
+            mmpm.core.display_log_files(True, True, args.tail)
         else:
-            core.display_log_files(args.cli, args.gui, args.tail)
+            mmpm.core.display_log_files(args.cli, args.gui, args.tail)
 
-    elif args.subcmd == opts.ENV:
+    elif args.subcmd == mmpm.opts.ENV:
         if additional_args:
-            utils.invalid_additional_arguments(args.subcmd)
+            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         else:
-            core.display_mmpm_env_vars()
+            mmpm.core.display_mmpm_env_vars()
 
     else:
-        utils.error_msg('Unknown argument\n')
+        mmpm.utils.error_msg('Unknown argument\n')
         parser.print_help()
 
 
@@ -192,5 +209,5 @@ if __name__ == "__main__":
         main(sys.argv)
     except KeyboardInterrupt:
         print()
-        utils.log.info('User killed process with keyboard interrupt')
+        mmpm.utils.log.info('User killed process with keyboard interrupt')
         sys.exit(127)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from os.path import join, expanduser
+from os.path import join, expanduser, normpath
 from os import environ
 from typing import Dict
 import mmpm.color
@@ -18,11 +18,16 @@ CATEGORY: str = 'category'
 PACKAGES: str = 'packages'
 DIRECTORY: str = 'directory'
 ERROR: str = 'error'
+WARNING: str = 'warning'
 TARGET: str = 'target'
 GET: str = 'GET'
 POST: str = 'POST'
 DELETE: str = 'DELETE'
 EXTERNAL_MODULE_SOURCES: str = 'External Module Sources'
+
+GITHUB: str = 'github'
+GITLAB: str = 'gitlab'
+BITBUCKET: str = 'bitbucket'
 
 MAKEFILE: str = 'Makefile'
 CMAKELISTS: str = 'CMakeLists.txt'
@@ -32,6 +37,7 @@ NOT_AVAILABLE: str = 'N/A'
 
 GREEN_CHECK_MARK: str = mmpm.color.N_GREEN + u'\u2713' + mmpm.color.RESET
 YELLOW_X: str = mmpm.color.N_YELLOW + u'\u2718' + mmpm.color.RESET
+RED_X: str = mmpm.color.N_RED + u'\u2718' + mmpm.color.RESET
 GREEN_PLUS_SIGN: str = mmpm.color.RESET + '[' + mmpm.color.B_GREEN + '+' + mmpm.color.RESET + ']' # creates [+] symbol
 
 HOME_DIR: str = expanduser("~")
@@ -40,8 +46,8 @@ MMPM_MAGICMIRROR_ROOT: str = 'MMPM_MAGICMIRROR_ROOT'
 MAGICMIRROR_PM2_PROC: str = 'MAGICMIRROR_PM2_PROC'
 
 MMPM_ENV_VARS: Dict[str, str] = {
-        MMPM_MAGICMIRROR_ROOT: __get_or_set_env_var__(MMPM_MAGICMIRROR_ROOT, join(HOME_DIR, 'MagicMirror')),
-        MAGICMIRROR_PM2_PROC: __get_or_set_env_var__(MAGICMIRROR_PM2_PROC, 'MagicMirror')
+    MMPM_MAGICMIRROR_ROOT: __get_or_set_env_var__( MMPM_MAGICMIRROR_ROOT, normpath(join(HOME_DIR, 'MagicMirror'))),
+    MAGICMIRROR_PM2_PROC: __get_or_set_env_var__(MAGICMIRROR_PM2_PROC, 'MagicMirror')
 }
 
 MMPM_REPO_URL: str = "https://github.com/Bee-Mar/mmpm.git"

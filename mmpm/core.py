@@ -3,12 +3,14 @@ import re
 import os
 import json
 import datetime
+from dateutil import tz
 import shutil
 import sys
+import requests
 
 from socket import gethostname, gethostbyname
 from textwrap import fill, indent
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 from collections import defaultdict
 from bs4 import BeautifulSoup
@@ -80,9 +82,9 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
         if error_code:
             mmpm.utils.fatal_msg('Failed to retrieve MMPM version number')
 
-    except HTTPError as error:
-        message: str = 'Unable to retrieve available version number from MMPM repository'
-        mmpm.utils.log.error(error)
+    except (HTTPError, URLError) as error:
+        print(mmpm.consts.RED_X)
+        mmpm.utils.error_msg(error)
         return False
 
     version_line: List[str] = re.findall(r"__version__ = \d+\.\d+", contents)
@@ -157,15 +159,18 @@ def upgrade_package(package: MagicMirrorPackage) -> str:
     error_code, _, _ = mmpm.utils.run_cmd(["git", "pull"])
 
     if error_code:
+        print(mmpm.consts.RED_X)
         message: str = "Unable to communicate with git server"
         mmpm.utils.error_msg("Unable to communicate with git server")
         return message
 
-    print(mmpm.consts.GREEN_CHECK_MARK)
+    else:
+        print(mmpm.consts.GREEN_CHECK_MARK)
 
-    stderr = mmpm.utils.install_dependencies()
+    stderr = mmpm.utils.install_dependencies(package.directory)
 
     if stderr:
+        print(mmpm.consts.RED_X)
         mmpm.utils.error_msg(stderr)
         return stderr
 
@@ -195,6 +200,16 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]], ass
 
     installed_packages: Dict[str, List[MagicMirrorPackage]] = get_installed_packages(packages)
 
+    any_installed: bool = False
+
+    for category in installed_packages.keys():
+        if installed_packages[category]:
+            any_installed = True
+            break
+
+    if not any_installed:
+        mmpm.utils.fatal_msg('No packages installed')
+
     updateable: List[MagicMirrorPackage] = []
     upgraded: bool = True
 
@@ -207,9 +222,11 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]], ass
             try:
                 error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
             except KeyboardInterrupt:
+                print(mmpm.consts.RED_X)
                 mmpm.utils.keyboard_interrupt_log()
 
             if error_code:
+                print(mmpm.consts.RED_X)
                 mmpm.utils.error_msg('Unable to communicate with git server')
                 continue
 
@@ -281,9 +298,10 @@ def search_packages(packages: Dict[str, List[MagicMirrorPackage]], query: str, c
     return search_results
 
 
-def show_package_details(packages: dict) -> None:
+def show_package_details(packages: Dict[str, List[MagicMirrorPackage]], verbose: bool) -> None:
     '''
-    Used to display more detailed information that presented in normal search results
+    Displays more detailed information that presented in normal search results.
+    The output is formatted similarly to the output of the Debian/Ubunut 'apt' CLI
 
     Parameters:
         packages (List[defaultdict]): List of Categorized MagicMirror packages
@@ -292,13 +310,29 @@ def show_package_details(packages: dict) -> None:
         None
     '''
 
-    for category, _packages  in packages.items():
-        for package in _packages:
-            print(mmpm.utils.colored_text(mmpm.color.N_GREEN, f'{package.title}'))
-            print(f'  Category: {category}')
-            print(f'  Repository: {package.repository}')
-            print(f'  Author: {package.author}')
-            print(indent(fill(f'Description: {package.description}\n', width=80), prefix='  '), '\n')
+    def __show_package__(category: str, package: MagicMirrorPackage) -> None:
+        print(mmpm.utils.colored_text(mmpm.color.N_GREEN, f'{package.title}'))
+        print(f'  Category: {category}')
+        print(f'  Repository: {package.repository}')
+        print(f'  Author: {package.author}')
+
+    if not verbose:
+        def __show_details__(packages: dict) -> None:
+            for category, _packages  in packages.items():
+                for package in _packages:
+                    __show_package__(category, package)
+                    print(indent(fill(f'Description: {package.description}\n', width=80), prefix='  '),'\n')
+
+    else:
+        def __show_details__(packages: dict) -> None:
+            for category, _packages  in packages.items():
+                for package in _packages:
+                    __show_package__(category, package)
+                    for key, value in mmpm.utils.get_remote_package_details(package).items():
+                        print(f"  {key}: {value}")
+                    print(indent(fill(f'Description: {package.description}\n', width=80), prefix='  '),'\n')
+
+    __show_details__(packages)
 
 
 def get_installation_candidates(packages: Dict[str, List[MagicMirrorPackage]], packages_to_install: List[str]) -> List[MagicMirrorPackage]:
@@ -320,11 +354,15 @@ def get_installation_candidates(packages: Dict[str, List[MagicMirrorPackage]], p
         packages_to_install.remove('mmpm')
 
     for package_to_install in packages_to_install:
+        found: bool = False
         for category in packages.values():
             for package in category:
                 if package.title == package_to_install:
                     mmpm.utils.log.info(f'Matched {package.title} to installation candidate')
                     installation_candidates.append(package)
+                    found = True
+        if not found:
+            mmpm.utils.error_msg(f"Unable to match package to query of '{package_to_install}'. Is there a typo?")
 
     return installation_candidates
 
@@ -415,17 +453,23 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
     '''
 
     os.chdir(mmpm.consts.MAGICMIRROR_MODULES_DIR)
-    error_code, _, stderr = mmpm.utils.clone(package.title, package.repository, package.directory)
+
+    error_code, _, stderr = mmpm.utils.clone(
+        package.title,
+        package.repository,
+        os.path.basename(os.path.normpath(package.directory))
+    )
 
     if error_code:
-        mmpm.utils.warning_msg("\n" + stderr)
+        print(mmpm.consts.RED_X)
+        mmpm.utils.error_msg(stderr)
         return False, stderr
 
     print(mmpm.consts.GREEN_CHECK_MARK)
 
-    os.chdir(package.directory)
-    error: str = mmpm.utils.install_dependencies()
-    os.chdir('..')
+    error: str = mmpm.utils.install_dependencies(package.directory)
+
+    os.chdir(mmpm.consts.MAGICMIRROR_MODULES_DIR)
 
     if error:
         mmpm.utils.error_msg(error)
@@ -439,8 +483,9 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
 
         if yes:
             message = f"User chose to remove {package.title} at '{package.directory}'"
+            # just to make sure there aren't any errors in removing the directory
             mmpm.utils.run_cmd(['rm', '-rf', package.directory], progress=False)
-            print(f"\nRemoved '{package.directory}'\n")
+            print(f"{mmpm.consts.GREEN_PLUS_SIGN} Removed '{package.directory}' {mmpm.consts.GREEN_CHECK_MARK}")
         else:
             message = f"Keeping {package.title} at '{package.directory}'"
             print(f'\n{message}\n')
@@ -477,6 +522,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
     try:
         error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
     except KeyboardInterrupt:
+        print(mmpm.consts.RED_X)
         mmpm.utils.keyboard_interrupt_log()
 
     print(mmpm.consts.GREEN_CHECK_MARK)
@@ -521,10 +567,11 @@ def upgrade_magicmirror() -> bool:
     error_code, _, _ = mmpm.utils.run_cmd(['git', 'pull'], progress=False)
 
     if error_code:
+        print(mmpm.consts.RED_X)
         mmpm.utils.error_msg('Failed to communicate with git server')
         return False
 
-    error: str = mmpm.utils.install_dependencies()
+    error: str = mmpm.utils.install_dependencies(mmpm.consts.MAGICMIRROR_ROOT)
 
     if error:
         mmpm.utils.error_msg(error)
@@ -605,7 +652,7 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
 
     for title in packages_to_remove:
         if title not in marked_for_removal and title not in cancelled_removal:
-            mmpm.utils.error_msg(f"No module named '{title}' found in {mmpm.consts.MAGICMIRROR_MODULES_DIR}")
+            mmpm.utils.error_msg(f"'{title}' is not installed")
             mmpm.utils.log.info(f"User attemped to remove {title}, but no module named '{title}' was found in {mmpm.consts.MAGICMIRROR_MODULES_DIR}")
 
     for dir_name in marked_for_removal:
@@ -634,29 +681,49 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
 
     packages: dict = {}
 
+    db_exists: bool = os.path.exists(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE)
+
     if not mmpm.utils.assert_snapshot_directory():
         message: str = 'Failed to create directory for MagicMirror snapshot'
         mmpm.utils.fatal_msg(message)
 
+    if db_exists:
+        mmpm.utils.log.info(f'Backing up database file as {mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE}.bak')
+
+        shutil.copyfile(
+            mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE,
+            f'{mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE}.bak'
+        )
+
+        mmpm.utils.log.info(f'Back up of database complete')
+
     # if the snapshot has expired, or doesn't exist, get a new one
-    if force_refresh or not os.path.exists(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE):
-        mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS_SIGN} Refreshing MagicMirror 3rd party packages database ')
+    if force_refresh or not db_exists:
+        mmpm.utils.plain_print(
+            f"{mmpm.consts.GREEN_PLUS_SIGN} {'Refreshing' if db_exists else 'Initializing'} MagicMirror 3rd party packages database "
+        )
+
         packages = retrieve_packages()
 
+        if not packages:
+            print(mmpm.consts.RED_X)
+            mmpm.utils.error_msg(f'Failed to retrieve packages from {mmpm.consts.MAGICMIRROR_MODULES_URL}. Please check your internet connection.')
+
         # save the new snapshot
-        with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE, 'w') as snapshot:
-            json.dump(packages, snapshot, default=lambda pkg: pkg.serialize())
+        else:
+            with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE, 'w') as snapshot:
+                json.dump(packages, snapshot, default=lambda pkg: pkg.serialize())
 
-        print(mmpm.consts.GREEN_CHECK_MARK)
+            print(mmpm.consts.GREEN_CHECK_MARK)
 
-    if not packages:
+    if not packages and db_exists:
         with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE, 'r') as snapshot_file:
             packages = json.load(snapshot_file)
 
             for category in packages.keys():
                 packages[category] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(packages[category])
 
-    if os.path.exists(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE).st_size:
+    if packages and os.path.exists(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE).st_size:
         packages.update(**load_external_packages())
 
     return packages
@@ -702,8 +769,9 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
     try:
         url = urlopen(mmpm.consts.MAGICMIRROR_MODULES_URL)
         web_page = url.read()
-    except HTTPError:
-        mmpm.utils.error_msg('Unable to retrieve MagicMirror modules. Is your internet connection down?')
+    except (HTTPError, URLError):
+        print(mmpm.consts.RED_X)
+        mmpm.utils.fatal_msg('Unable to retrieve MagicMirror modules. Is your internet connection up?')
         return {}
 
     soup = BeautifulSoup(web_page, 'html.parser')
@@ -1324,7 +1392,10 @@ def display_mmpm_env_vars() -> None:
         None
     '''
 
+    mmpm.utils.log.info(f'User displaying environment variables')
+
     for key, value in mmpm.consts.MMPM_ENV_VARS.items():
+        mmpm.utils.log.info(f'env var {key}={value}')
         print(f'{key}={value}')
 
 
@@ -1463,6 +1534,13 @@ def rotate_raspberrypi_screen(degrees: int) -> bool:
             cfg.seek(0)
             cfg.write(contents)
 
+    elif 'Raspberry Pi 4' in rpi_model:
+        # TODO: figure this out
+        pass
+
+    else:
+        # TODO: figure this out
+        pass
 
     if mmpm.utils.prompt_user('Would you like to restart your RaspberryPi now for the changes to take effect?'):
         stop_magicmirror()

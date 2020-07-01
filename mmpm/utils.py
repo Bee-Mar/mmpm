@@ -3,6 +3,9 @@ import sys
 import os
 import subprocess
 import time
+import requests
+import datetime
+import json
 
 from re import sub
 from logging import Logger
@@ -119,7 +122,7 @@ def calc_snapshot_timestamps() -> Tuple[float, float]:
 
     if os.path.exists(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE):
         curr_snap = os.path.getmtime(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE)
-        next_snap = curr_snap + 6 * 60 * 60
+        next_snap = curr_snap + 12 * 60 * 60
 
     return curr_snap, next_snap
 
@@ -339,7 +342,7 @@ def basic_fail_log(error_code: int, error_message: str) -> None:
     log.info(f'Failed with return code {error_code}, and error message {error_message}')
 
 
-def install_dependencies() -> str:
+def install_dependencies(directory: str) -> str:
     '''
     Utility method that detects package.json, Gemfiles, Makefiles, and
     CMakeLists.txt files, and handles the build process for each of the
@@ -348,18 +351,20 @@ def install_dependencies() -> str:
     directory the os library detects.
 
     Parameters:
-        None
+        directory (str): the root directory of the package
 
     Returns:
-        stderr (str): Success if the string is empty, fail if not
+        stderr (str): success if the string is empty, fail if not
     '''
+
+    os.chdir(directory)
 
     if package_requirements_file_exists(mmpm.consts.PACKAGE_JSON):
         error_code, _, stderr = npm_install()
 
         if error_code:
+            print(mmpm.consts.RED_X)
             basic_fail_log(error_code, stderr)
-            print()
             return str(stderr)
         else:
             print(mmpm.consts.GREEN_CHECK_MARK)
@@ -368,8 +373,8 @@ def install_dependencies() -> str:
         error_code, _, stderr = bundle_install()
 
         if error_code:
+            print(mmpm.consts.RED_X)
             basic_fail_log(error_code, stderr)
-            print()
             return str(stderr)
         else:
             print(mmpm.consts.GREEN_CHECK_MARK)
@@ -378,8 +383,8 @@ def install_dependencies() -> str:
         error_code, _, stderr = make()
 
         if error_code:
+            print(mmpm.consts.RED_X)
             basic_fail_log(error_code, stderr)
-            print()
             return str(stderr)
         else:
             print(mmpm.consts.GREEN_CHECK_MARK)
@@ -389,8 +394,8 @@ def install_dependencies() -> str:
         error_code, _, stderr = cmake()
 
         if error_code:
+            print(mmpm.consts.RED_X)
             basic_fail_log(error_code, stderr)
-            print()
             return str(stderr)
         else:
             print(mmpm.consts.GREEN_CHECK_MARK)
@@ -399,13 +404,15 @@ def install_dependencies() -> str:
             error_code, _, stderr = make()
 
             if error_code:
+                print(mmpm.consts.RED_X)
                 basic_fail_log(error_code, stderr)
                 print()
                 return str(stderr)
             else:
                 print(mmpm.consts.GREEN_CHECK_MARK)
 
-    print(mmpm.consts.GREEN_PLUS_SIGN + f' Installation ' + mmpm.consts.GREEN_CHECK_MARK)
+    os.chdir(directory)
+    print(mmpm.consts.GREEN_PLUS_SIGN + f' Installation complete ' + mmpm.consts.GREEN_CHECK_MARK)
     log.info(f'Exiting installation handler from {os.getcwd()}')
     return ''
 
@@ -729,4 +736,180 @@ def assert_one_option_selected(args) -> bool:
     args = args.__dict__
     return not len([args[option] for option in args if args[option] == True and option != 'table_formatted']) > 1
 
+
+def safe_get_request(url: str) -> requests.Response:
+    '''
+    Wrapper method around the 'requests.get' call, containing a try, except block
+
+    Parameters:
+        url (str): the url used for the API request
+
+    Returns:
+        response (requests.Response): the Reponse object, which may be empty if the request failed
+    '''
+    try:
+        data = requests.get(url)
+    except requests.exceptions.RequestException as error:
+        mmpm.utils.log.error(str(error))
+        return requests.Response()
+    return data
+
+
+def get_remote_repo_api_health() -> Dict[str, dict]:
+    '''
+    Contacts GitHub, GitLab, and Bitbucket APIs to ensure they are up and
+    running. Also, captures the number of requests that may be made to the
+    GitHub API, which is more restrictive than GitLab and Bitbucket
+
+    Parameters:
+        None
+
+    Returns:
+        health (dict): a dictionary corresponding to each of the APIs,
+                       containing errors and/or warnings, if applicable.
+                       If no errors or warnings are present, the API is reachable
+    '''
+    health: dict = {
+        mmpm.consts.GITHUB: {
+            mmpm.consts.ERROR: '',
+            mmpm.consts.WARNING: ''
+        },
+        mmpm.consts.GITLAB: {
+            mmpm.consts.ERROR: '',
+            mmpm.consts.WARNING: ''
+        },
+        mmpm.consts.BITBUCKET:{
+            mmpm.consts.ERROR: '',
+            mmpm.consts.WARNING: ''
+        }
+    }
+
+    github_api = mmpm.utils.safe_get_request('https://api.github.com/rate_limit')
+
+    if not github_api.status_code or github_api.status_code != 200:
+        health[mmpm.consts.GITHUB][mmpm.consts.ERROR] = 'Unable to contact GitHub API'
+
+    github_api = json.loads(github_api.text)
+    reset: int = github_api['rate']['reset']
+    remaining: int = github_api['rate']['remaining']
+
+    if not remaining:
+        reset_time = datetime.datetime.utcfromtimestamp(reset).strftime('%Y-%m-%d %H:%M:%S')
+        health[mmpm.consts.GITHUB][mmpm.consts.ERROR] = 'No GitHub API requests remaining. Request count will reset at {reset_time}'
+    elif remaining < 10:
+        health[mmpm.consts.GITHUB][mmpm.consts.WARNING] = '{remaining} GitHub API requests remaining. Request count will reset at {reset_time}'
+
+    try:
+        # GitLab doesn't have rate limits that will cause any issues with checking for repos
+        gitlab_api = requests.head('https://gitlab.com', allow_redirects=True)
+
+        if gitlab_api.status_code != 200:
+            health[mmpm.consts.GITLAB][mmpm.consts.ERROR] = 'GitLab server returned invalid response'
+    except requests.exceptions.RequestException as error:
+        health[mmpm.consts.GITLAB][mmpm.consts.ERROR] = 'Unable to communicate with GitLab server'
+
+    try:
+        # Bitbucket rate limits are similar to GitLab
+        bitbucket_api = requests.head('https://bitbucket.org', allow_redirects=True)
+
+        if bitbucket_api.status_code != 200:
+            health[mmpm.consts.BITBUCKET][mmpm.consts.ERROR] = 'Bitbucket server returned invalid response'
+    except requests.exceptions.RequestException as error:
+        health[mmpm.consts.GITLAB][mmpm.consts.ERROR] = 'Unable to communicate with Bitbucket server'
+
+    return health
+
+
+def __format_bitbucket_api_details__(data: dict, url: str) -> dict:
+    '''
+    Helper method to format remote repository data from Bitbucket
+
+    Parameters:
+        data (dict): JSON data from the API request
+        url (str): the constructed url of the API used to retrieve additional info
+
+    Returns:
+        details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
+    '''
+    stars = mmpm.utils.safe_get_request(f'{url}/watchers')
+    forks = mmpm.utils.safe_get_request(f'{url}/watchers') if data['fork_policy'] == 'allow_forks' else 0
+    issues = mmpm.utils.safe_get_request(f'{url}/issues') if data['has_issues'] else 0
+
+    return {
+        'Stars': int(json.loads(stars.text)['pagelen']),
+        'Open Issues': int(json.loads(issues.text)['pagelen']),
+        'Created': data['created_on'].split('T')[0],
+        'Last Updated': data['updated_on'].split('T')[0],
+        'Forks': int(json.loads(forks.text)['pagelen'])
+    } if data and stars else {}
+
+
+def __format_gitlab_api_details__(data: dict, url: str) -> dict:
+    '''
+    Helper method to format remote repository data from GitLab
+
+    Parameters:
+        data (dict): JSON data from the API request
+        url (str): the constructed url of the API used to retrieve additional info
+
+    Returns:
+        details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
+    '''
+    issues = mmpm.utils.safe_get_request(f'{url}/issues')
+
+    return {
+        'Stars': data['star_count'],
+        'Open Issues': len(json.loads(issues.text)),
+        'Created': data['created_at'].split('T')[0],
+        'Last Updated': data['last_activity_at'].split('T')[0],
+        'Forks': data['forks_count']
+    } if data else {}
+
+
+def __format_github_api_details__(data: dict) -> dict:
+    '''
+    Helper method to format remote repository data from GitHub
+
+    Parameters:
+        data (dict): JSON data from the API request
+
+    Returns:
+        details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
+    '''
+    return {
+        'Stars': data['stargazers_count'],
+        'Open Issues': data['open_issues'],
+        'Created': data['created_at'].split('T')[0],
+        'Last Updated': data['updated_at'].split('T')[0],
+        'Forks': data['forks_count'],
+    } if data else {}
+
+
+def get_remote_package_details(package: MagicMirrorPackage) -> dict:
+    '''
+    Retrieves details about the provided MagicMirrorPackage from it's
+    repository. GitHub, GitLab, and Bitbucket projects are supported
+
+    Parameters:
+        package (MagicMirrorPackage): the packge to be queried
+
+    Returns:
+        details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
+    '''
+    spliced: List[str] = package.repository.split('/')
+    user: str = spliced[-2]
+    project: str = spliced[-1]
+
+    if 'github' in package.repository:
+        url = f'https://api.github.com/repos/{user}/{project}'
+        data = safe_get_request(url)
+        return __format_github_api_details__(json.loads(data.text)) if data else {}
+    elif 'gitlab' in package.repository:
+        url = f'https://gitlab.com/api/v4/projects/{user}%2F{project}'
+        data = safe_get_request(url)
+        return __format_gitlab_api_details__(json.loads(data.text), url) if data else {}
+    elif 'bitbucket' in package.repository:
+        url = f'https://api.bitbucket.org/2.0/repositories/{user}/{project}'
+        data = safe_get_request(url)
+        return __format_bitbucket_api_details__(json.loads(data.text), url) if data else {}
 

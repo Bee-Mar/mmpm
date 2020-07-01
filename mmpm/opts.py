@@ -286,10 +286,18 @@ def get_user_args() -> object:
     )
 
     # show_parser
-    subparsers.add_parser(
+    show_parser = subparsers.add_parser(
         SHOW,
-        usage='\n  mmpm show <package(s)>',
+        usage='\n  mmpm show <package(s)> [--verbose]',
         help='show details about one or more packages listed in the MagicMirror 3rd party database'
+    )
+
+    show_parser.add_argument(
+        '-v',
+        '--verbose',
+        action='store_true',
+        help='display extra detail from the GitHub/GitLab/Bitbucket API about the package(s) (takes longer)',
+        dest='verbose'
     )
 
     # ADD EXTERNAL PACKAGE SUBCOMMANDS

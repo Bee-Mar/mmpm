@@ -35,6 +35,7 @@ def main(argv):
 
     packages: Dict[str, List[MagicMirrorPackage]] = mmpm.core.load_packages(force_refresh=should_refresh)
 
+    # only check if the snapshot expired, not in the case of a user forcibly refreshing the database
     if (snapshot_expired and args.subcmd != mmpm.opts.DATABASE) or (snapshot_expired and args.subcmd == mmpm.opts.DATABASE and not args.refresh):
         mmpm.core.check_for_mmpm_updates() # automated check for updates to MMPM
 
@@ -66,13 +67,22 @@ def main(argv):
         if not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
+        if args.verbose:
+            health: dict = mmpm.utils.get_remote_repo_api_health()
+
+            for api in health.keys():
+                if health[api][mmpm.consts.ERROR]:
+                    mmpm.utils.fatal_msg(health[api][mmpm.consts.ERROR])
+                elif health[api][mmpm.consts.WARNING]:
+                    mmpm.utils.warning_msg(health[api][mmpm.consts.WARNING])
+
         for query in additional_args:
             result = mmpm.core.search_packages(packages, query, by_title_only=True)
 
             if not result:
                 mmpm.utils.fatal_msg(f'Unable to match {query} to a package title')
 
-            mmpm.core.show_package_details(result)
+            mmpm.core.show_package_details(result, args.verbose)
 
     elif args.subcmd == mmpm.opts.OPEN:
         if additional_args:

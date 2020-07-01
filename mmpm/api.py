@@ -166,12 +166,15 @@ def packages_remove() -> str:
     failures: List[dict] = []
 
     for package in selected_packages:
+        if not os.path.exists(package.directory):
+            failures.append({'package': package.serialize(), 'error': f'{package.directory} not found'})
+            continue
         try:
             shutil.rmtree(package.directory)
             mmpm.utils.log.info(f'Removed {package.directory}')
         except FileNotFoundError as error:
             mmpm.utils.log.error(f'Failed to remove {package.directory}')
-            failures.append({'package': package.serialize(), 'error': error})
+            failures.append({'package': package.serialize(), 'error': str(error)})
 
     return json.dumps(failures)
 
@@ -236,7 +239,7 @@ def external_packages_remove() -> str:
         mmpm.utils.log.info(f'Wrote updated external modules to {mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE}')
     except IOError as error:
         mmpm.utils.log.error(error)
-        return json.dumps({'error': error})
+        return json.dumps({'error': str(error)})
 
     mmpm.utils.log.info(f'Wrote external modules to {mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE}')
     return json.dumps({'error': "no_error"})

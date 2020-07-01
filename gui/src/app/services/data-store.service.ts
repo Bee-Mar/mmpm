@@ -35,7 +35,7 @@ export class DataStoreService {
             description: pkg["description"],
             author: pkg["author"],
             repository: pkg["repository"],
-            directory: pkg["directory"] ?? ""
+            directory: pkg["directory"]
           });
         }
       }

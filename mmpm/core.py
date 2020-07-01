@@ -69,7 +69,7 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
 
     try:
         mmpm.utils.log.info(f'Checking for newer version of MMPM. Current version: {mmpm.mmpm.__version__}')
-        mmpm.utils.plain_print(f"Checking {mmpm.utils.colored_text(mmpm.mmpm.color.N_GREEN, 'MMPM')} for updates")
+        mmpm.utils.plain_print(f"Checking {mmpm.utils.colored_text(mmpm.color.N_GREEN, 'MMPM')} for updates")
 
         try:
             # just to keep the console output the same as all other update commands
@@ -1420,7 +1420,17 @@ def install_autocompletion(assume_yes: bool = False) -> None:
 
 
 def rotate_raspberrypi_screen(degrees: int) -> bool:
-    config = '/boot/config.txt'
+    '''
+    Rotates screen of RaspberryPi 3 and RaspberryPi 4 to the setting supplied
+    by the user
+
+    Parameters:
+        degrees (int): desired setting in degrees
+
+    Returns:
+        success (bool): True if successful, False if failure
+    '''
+    config: str = '/boot/config.txt'
 
     rotation_map: Dict[int, int] = {
         0: 0,
@@ -1429,24 +1439,36 @@ def rotate_raspberrypi_screen(degrees: int) -> bool:
         270: 1
     }
 
-    desired_setting: str = f'display_rotate={rotation_map[degrees]}'
-    pattern: str = r'display_rotate=\d'
+    with open('/proc/device-tree/model', 'r') as model_info:
+        rpi_model = model_info.read()
 
-    # this really should exist anyway
-    if not os.path.exists(config):
-        os.system(f'touch {config}')
+    if 'Raspberry Pi 3' in rpi_model:
+        desired_setting: str = f'display_rotate={rotation_map[degrees]}'
+        pattern: str = r'display_rotate=\d'
 
-    with open(config, 'r+') as cfg:
-        contents: str = cfg.read()
-        setting: List[str] = re.findall(pattern, contents)
+        # this really should exist anyway
+        if not os.path.exists(config):
+            os.system(f'touch {config}')
 
-        if not setting:
-            # who knows why this file would be empty, but just in case
-            contents += f'\n{desired_setting}\n'
-        else:
-            contents = re.sub(pattern, desired_setting, contents, count=1)
+        with open(config, 'r+') as cfg:
+            contents: str = cfg.read()
+            setting: List[str] = re.findall(pattern, contents)
 
-        cfg.seek(0)
-        cfg.write(contents)
+            if not setting:
+                # who knows why this file would be empty, but just in case
+                contents += f'\n{desired_setting}\n'
+            else:
+                contents = re.sub(pattern, desired_setting, contents, count=1)
+
+            cfg.seek(0)
+            cfg.write(contents)
+
+
+    if mmpm.utils.prompt_user('Would you like to restart your RaspberryPi now for the changes to take effect?'):
+        stop_magicmirror()
+        error_code, _, _ = mmpm.utils.run_cmd(['sudo', 'reboot'])
+
+        if error_code:
+            mmpm.utils.fatal_msg('Unable to restart RaspberryPi')
 
     return True

@@ -36,9 +36,9 @@ export class RestApiService {
       }).pipe(retry(1), catchError(this.handleError)).toPromise();
   }
 
-  public getMagicMirrorConfig(): Promise<any> {
+  public getFile(url: string): Promise<any> {
     return this.http.get(
-      this.route(URLS.GET.MAGICMIRROR.CONFIG),
+      this.route(url),
       {
         headers: httpOptions(),
         responseType: "text"
@@ -72,9 +72,9 @@ export class RestApiService {
     return this.postWithSelectedPackages(URLS.POST.PACKAGES.INSTALL, selectedModules);
   }
 
-  public updateMagicMirrorConfig(code: string): Observable<Response> {
+  public updateMagicMirrorConfig(url: string, code: string): Observable<Response> {
     return this.http.post<any>(
-      this.route(URLS.POST.MAGICMIRROR.CONFIG),
+      this.route(url),
       {
         code
       },

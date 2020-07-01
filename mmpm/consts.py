@@ -10,7 +10,7 @@ def __get_or_set_env_var__(var: str, value: str) -> str:
         environ[var] = value
     return environ[var]
 
-TITLE: [str] = 'title'
+TITLE: str = 'title'
 REPOSITORY: str = 'repository'
 DESCRIPTION: str = 'description'
 AUTHOR: str = 'author'

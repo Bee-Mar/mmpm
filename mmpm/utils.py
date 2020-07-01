@@ -617,7 +617,7 @@ def fatal_too_many_options(args) -> None:
     if 'table_formatted' in args.__dict__:
         message: str = f'`mmpm {args.subcmd}` only accepts one optional argument in addition to `--table`. See `mmpm {args.subcmd} --help`'
     else:
-        message: str = f'`mmpm {args.subcmd}` only accepts one optional argument. See `mmpm {args.subcmd} --help`'
+        message = f'`mmpm {args.subcmd}` only accepts one optional argument. See `mmpm {args.subcmd} --help`'
     fatal_msg(message)
 
 

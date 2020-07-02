@@ -111,7 +111,7 @@ export class MagicMirrorTableUtility {
 
     this.dialog.open(PackageDetailsModalComponent, {
       width: "45vw",
-      height: "50vh",
+      height: "55vh",
       disableClose: true,
       data: pkg
     });

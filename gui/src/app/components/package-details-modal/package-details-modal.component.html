@@ -5,18 +5,17 @@
   <p><strong>Author:</strong> {{ data.author }}</p>
   <p><strong>Repository:</strong> <a href="{{ data.repository }}" target="_blank"> {{ data.repository }} </a></p>
   <p><strong>Description:</strong> {{ data.description }}</p>
-  <p *ngIf="data.directory"><strong>Directory:</strong> {{ data.directory }}</p>
-  <p *ngIf="data['Stars']"><strong>Stars:</strong> {{ data["Stars"] }}</p>
-  <p *ngIf="data['Open Issues']"><strong>Open Issues:</strong> {{ data["Open Issues"] }}</p>
-  <p *ngIf="data['Last Updated']"><strong>Last Updated:</strong> {{ data["Last Updated"] }}</p>
-  <p *ngIf="data['Created']"><strong>Created:</strong> {{ data["Created"] }}</p>
-  <p *ngIf="data['Forks']"><strong>Forks:</strong> {{ data["Forks"] }}</p>
+  <p><strong *ngIf="data.directory">Directory:</strong> {{ data.directory }}</p>
+  <p><strong>Stars:</strong> {{ data["Stars"] ? data["Stars"] : "N/A" }}</p>
+  <p><strong>Open Issues:</strong> {{ data["Open Issues"] ? data["Open Issues"] : "N/A" }}</p>
+  <p><strong>Last Updated:</strong> {{ data["Last Updated"] ? data["Last Updated"] : "N/A" }}</p>
+  <p><strong>Created:</strong> {{ data["Created"] ? data["Created"] : "N/A" }}</p>
+  <p><strong>Forks:</strong> {{ data["Forks"] ? data["Forks"] : "N/A" }}</p>
 </mat-dialog-content>
 <mat-dialog-actions align="center">
-  <button mat-button mat-dialog-close>
+  <button mat-button mat-dialog-close color="primary">
     <mat-icon>
       close
     </mat-icon>
   </button>
 </mat-dialog-actions>
-

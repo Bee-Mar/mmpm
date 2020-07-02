@@ -407,12 +407,13 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
         else:
             mmpm.utils.log.info(f'User chose to install {candidate.title} ({candidate.repository})')
 
+    existing_module_dirs: List[str] = mmpm.utils.get_existing_package_directories()
+
     for package in installation_candidates:
         if package == None: # the module may be empty due to the above for loop
             continue
 
         package.directory = os.path.join(mmpm.consts.MAGICMIRROR_MODULES_DIR, package.title)
-        existing_module_dirs: List[str] = mmpm.utils.get_existing_package_directories()
 
         # ideally, providiing alternative installation directories would be done, but it would require messing with file names within the renamed
         # module, which can cause a lot of problems when trying to update those repos
@@ -425,12 +426,13 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
             success, _ = install_package(package, assume_yes=assume_yes)
 
             if success:
+                existing_module_dirs.append(package.directory)
                 successes += 1
 
         except KeyboardInterrupt:
             mmpm.utils.log.info(f'Cleaning up cancelled installation path of {package.directory} before exiting')
             os.chdir(mmpm.consts.HOME_DIR)
-            os.system(f'rm -rf {package.directory}')
+            os.system(f"rm -rf '{package.directory}'")
             mmpm.utils.keyboard_interrupt_log()
 
     if not successes:
@@ -457,7 +459,10 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
     error_code, _, stderr = mmpm.utils.clone(
         package.title,
         package.repository,
-        os.path.basename(os.path.normpath(package.directory))
+        os.path.normpath(package.directory if package.directory else os.path.join(
+                mmpm.consts.MAGICMIRROR_MODULES_DIR, package.title
+            )
+        )
     )
 
     if error_code:
@@ -484,7 +489,7 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
         if yes:
             message = f"User chose to remove {package.title} at '{package.directory}'"
             # just to make sure there aren't any errors in removing the directory
-            mmpm.utils.run_cmd(['rm', '-rf', package.directory], progress=False)
+            os.system(f"rm -rf '{package.directory}'")
             print(f"{mmpm.consts.GREEN_PLUS_SIGN} Removed '{package.directory}' {mmpm.consts.GREEN_CHECK_MARK}")
         else:
             message = f"Keeping {package.title} at '{package.directory}'"

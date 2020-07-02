@@ -61,9 +61,10 @@ def __get_selected_packages__(rqst) -> List[MagicMirrorPackage]:
         del pkg['category']
 
         if not pkg['directory']:
+            mmpm.utils.log.info(pkg)
             pkg['directory'] = os.path.join(mmpm.consts.MAGICMIRROR_MODULES_DIR, pkg['title'])
 
-    return mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(rqst.get_json(force=True)['selected-packages'])
+    return mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(pkgs)
 
 
 @socketio.on_error()
@@ -169,12 +170,9 @@ def packages_remove() -> str:
         if not os.path.exists(package.directory):
             failures.append({'package': package.serialize(), 'error': f'{package.directory} not found'})
             continue
-        try:
-            shutil.rmtree(package.directory)
-            mmpm.utils.log.info(f'Removed {package.directory}')
-        except FileNotFoundError as error:
-            mmpm.utils.log.error(f'Failed to remove {package.directory}')
-            failures.append({'package': package.serialize(), 'error': str(error)})
+
+        os.system(f"rm -rf '{package.directory}'")
+        mmpm.utils.log.info(f'Removed {package.directory}')
 
     return json.dumps(failures)
 
@@ -286,7 +284,6 @@ def magicmirror_root_dir() -> str:
 @app.route(api('magicmirror/config'), methods=[mmpm.consts.GET, mmpm.consts.POST])
 def magicmirror_config():
     if request.method == mmpm.consts.GET:
-
         result: str = send_file(
             mmpm.consts.MAGICMIRROR_CONFIG_FILE,
             attachment_filename='config.js'
@@ -298,7 +295,6 @@ def magicmirror_config():
     elif request.method == mmpm.consts.POST:
         data: dict = request.get_json(force=True)
         mmpm.utils.log.info('Saving MagicMirror config file')
-        print(data)
 
         try:
             with open(mmpm.consts.MAGICMIRROR_CONFIG_FILE, 'w') as config:
@@ -312,7 +308,6 @@ def magicmirror_config():
 @app.route(api('magicmirror/custom-css'), methods=[mmpm.consts.GET, mmpm.consts.POST])
 def magicmirror_custom_css():
     if request.method == mmpm.consts.GET:
-
         result: str = send_file(
             mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE,
             attachment_filename='custom.css'
@@ -324,7 +319,6 @@ def magicmirror_custom_css():
     elif request.method == mmpm.consts.POST:
         data: dict = request.get_json(force=True)
         mmpm.utils.log.info('Saving MagicMirror custom/custom.css file')
-        print(data)
 
         try:
             with open(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE, 'w') as custom_css:

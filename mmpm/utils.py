@@ -277,9 +277,9 @@ def cmake() -> Tuple[int, str, str]:
     log.info(f"Running 'cmake ..' in {os.getcwd()}")
     plain_print(mmpm.consts.GREEN_PLUS_SIGN + " Found CMakeLists.txt. Attempting build with 'cmake'")
 
-    run_cmd(['mkdir', '-p', 'build'], progress=False)
+    os.system('mkdir -p build')
     os.chdir('build')
-    run_cmd(['rm', '-rf', '*'], progress=False)
+    os.system('rm -rf *')
     return run_cmd(['cmake', '..'])
 
 
@@ -900,16 +900,36 @@ def get_remote_package_details(package: MagicMirrorPackage) -> dict:
     user: str = spliced[-2]
     project: str = spliced[-1]
 
+    if '.git' == project[-4:]:
+        mmpm.utils.log.info(f"Found '.git' in repository url, trimmed project name from {project} to {project[:-4]}")
+        project = project[:-4]
+
     if 'github' in package.repository:
         url = f'https://api.github.com/repos/{user}/{project}'
+        mmpm.utils.log.info(f'Constructed {url} to request more details for {package.title}')
         data = safe_get_request(url)
+
+        if not data:
+            mmpm.utils.log.error(f'Unable to retrieve {package.title} details, data was empty')
+
         return __format_github_api_details__(json.loads(data.text)) if data else {}
+
     elif 'gitlab' in package.repository:
         url = f'https://gitlab.com/api/v4/projects/{user}%2F{project}'
+        mmpm.utils.log.info(f'Constructed {url} to request more details for {package.title}')
         data = safe_get_request(url)
+
+        if not data:
+            mmpm.utils.log.error(f'Unable to retrieve {package.title} details, data was empty')
+
         return __format_gitlab_api_details__(json.loads(data.text), url) if data else {}
     elif 'bitbucket' in package.repository:
         url = f'https://api.bitbucket.org/2.0/repositories/{user}/{project}'
+        mmpm.utils.log.info(f'Constructed {url} to request more details for {package.title}')
         data = safe_get_request(url)
+
+        if not data:
+            mmpm.utils.log.error(f'Unable to retrieve {package.title} details, data was empty')
+
         return __format_bitbucket_api_details__(json.loads(data.text), url) if data else {}
 

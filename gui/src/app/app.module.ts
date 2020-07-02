@@ -1,5 +1,5 @@
 import { BrowserModule } from "@angular/platform-browser";
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA, APP_INITIALIZER } from "@angular/core";
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
@@ -19,7 +19,6 @@ import { ConfirmationDialogComponent } from "./components/confirmation-dialog/co
 import { TerminalStyledPopUpWindowComponent } from "./components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
 import { PackageDetailsModalComponent } from "./components/package-details-modal/package-details-modal.component";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
-import { RenamePackageDirectoryDialogComponent } from "src/app/components/rename-package-directory-dialog/rename-package-directory-dialog.component";
 import { CustomSnackbarComponent } from "./components/custom-snackbar/custom-snackbar.component";
 import { MMPMMarketplaceComponent } from "./components/mmpm-marketplace/mmpm-marketplace.component";
 import { MMPMLocalPackagesComponent } from "./components/mmpm-local-packages/mmpm-local-packages.component";
@@ -28,6 +27,7 @@ import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountTickerComponent } from "./components/active-process-count-ticker/active-process-count-ticker.component";
 import { ActiveProcessesModalComponent } from "./components/active-processes-modal/active-processes-modal.component";
 import { MMPMTableContainerComponent } from "./components/mmpm-table-container/mmpm-table-container.component";
+import { InstallationConflictResolutionDialogComponent } from "./components/installation-conflict-resolution-dialog/installation-conflict-resolution-dialog.component";
 
 @NgModule({
   declarations: [
@@ -40,14 +40,14 @@ import { MMPMTableContainerComponent } from "./components/mmpm-table-container/m
     ConfirmationDialogComponent,
     TerminalStyledPopUpWindowComponent,
     PackageDetailsModalComponent,
-    RenamePackageDirectoryDialogComponent,
     CustomSnackbarComponent,
     MMPMMarketplaceComponent,
     MMPMLocalPackagesComponent,
     MMPMExternalSourcesComponent,
     ActiveProcessCountTickerComponent,
     ActiveProcessesModalComponent,
-    MMPMTableContainerComponent
+    MMPMTableContainerComponent,
+    InstallationConflictResolutionDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -58,7 +58,8 @@ import { MMPMTableContainerComponent } from "./components/mmpm-table-container/m
     ReactiveFormsModule,
     FormsModule,
     MonacoEditorModule.forRoot({
-      baseUrl: "./static/assets",
+      //baseUrl: "./static/assets",
+      baseUrl: "../assets", // NOTE: DEV ONLY
       defaultOptions: {
         language: "javascript",
         scrollBeyondLastLine: false,

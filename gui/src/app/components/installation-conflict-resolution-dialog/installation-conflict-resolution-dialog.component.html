@@ -1,0 +1,51 @@
+<h2 mat-dialog-title style="text-align: center">Installation Conflicts</h2>
+<div>
+  <mat-dialog-content class="mat-typography">
+    <div *ngIf="data?.matchesInstalledTitles?.length">
+      <h4>
+        The following selected packages conflict with already installed packages. Please remove the conflicting packages and try to reinstall the ones you've selected:
+      </h4>
+      <div *ngFor="let pkg of data.matchesInstalledTitles | keyvalue">
+        {{ pkg.value.title }} ({{ pkg.value.repository }})
+      </div>
+      <br>
+    </div>
+
+    <div *ngIf="data?.matchesSelectedTitles?.length">
+      <h4>
+        The following selected packages have conflicting titles:
+      </h4>
+      <div *ngFor="let pkg of data.matchesSelectedTitles | keyvalue">
+        <mat-checkbox
+          color="primary"
+          (click)="$event.stopPropagation()"
+          (change)="$event ? selection.toggle(pkg) : null"
+          [checked]="selection.isSelected(pkg)"
+          >
+        </mat-checkbox>
+          {{ pkg.value.title }} ({{ pkg.value.repository }})
+      </div>
+      <br>
+    </div>
+  </mat-dialog-content>
+</div>
+
+<mat-dialog-actions align="center">
+  <button mat-raised-button (click)="onCancel()">
+    <mat-icon>
+      close
+    </mat-icon>
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    matTooltip="Submit"
+    (click)="onSubmit()"
+    >
+    <mat-icon>
+      save
+    </mat-icon>
+  </button>
+</mat-dialog-actions>
+
+

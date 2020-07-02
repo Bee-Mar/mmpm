@@ -39,6 +39,7 @@ export const URLS = {
       get REMOVE() { return `${this.ROOT}/remove`; },
       get INSTALL() { return `${this.ROOT}/install`; },
       get UPGRADE() { return `${this.ROOT}/upgrade`; },
+      get DETAILS() { return `${this.ROOT}/details`; },
     },
 
     EXTERNAL_PACKAGES: {

@@ -1,16 +1,16 @@
 <h2 mat-dialog-title style="text-align: center">Package Details</h2>
 <mat-dialog-content class="mat-typography">
   <p><strong>Title:</strong> {{ data.title }}</p>
-  <br>
   <p><strong>Category:</strong> {{ data.category }}</p>
-  <br>
   <p><strong>Author:</strong> {{ data.author }}</p>
-  <br>
   <p><strong>Repository:</strong> <a href="{{ data.repository }}" target="_blank"> {{ data.repository }} </a></p>
-  <br>
   <p><strong>Description:</strong> {{ data.description }}</p>
-  <br>
-  <p *ngIf="data.directory.length"><strong>Directory:</strong> {{ data.directory }}</p>
+  <p *ngIf="data.directory"><strong>Directory:</strong> {{ data.directory }}</p>
+  <p *ngIf="data['Stars']"><strong>Stars:</strong> {{ data["Stars"] }}</p>
+  <p *ngIf="data['Open Issues']"><strong>Open Issues:</strong> {{ data["Open Issues"] }}</p>
+  <p *ngIf="data['Last Updated']"><strong>Last Updated:</strong> {{ data["Last Updated"] }}</p>
+  <p *ngIf="data['Created']"><strong>Created:</strong> {{ data["Created"] }}</p>
+  <p *ngIf="data['Forks']"><strong>Forks:</strong> {{ data["Forks"] }}</p>
 </mat-dialog-content>
 <mat-dialog-actions align="center">
   <button mat-button mat-dialog-close>

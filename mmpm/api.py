@@ -194,6 +194,29 @@ def packages_upgrade() -> str:
 
     mmpm.utils.log.info('Finished executing upgrades')
     return json.dumps(failures)
+
+
+@app.route(api('packages/details'), methods=[mmpm.consts.POST])
+def packages_details() -> str:
+    selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
+    mmpm.utils.log.info(f'Request to get verbose details about {selected_packages}')
+
+    result: List[dict] = []
+
+    for package in selected_packages:
+        try:
+            result.append({
+                'package': package.serialize_full(),
+                'details': mmpm.utils.get_remote_package_details(package)
+            })
+        except Exception:
+            result.append({
+                'package': package.serialize_full(),
+                'details': {}
+            })
+
+    mmpm.utils.log.info('Finished retrieving verbose details for packages')
+    return json.dumps(result)
 #  -- END: PACKAGES --
 
 #  -- START: EXTERNAL PACKAGES --

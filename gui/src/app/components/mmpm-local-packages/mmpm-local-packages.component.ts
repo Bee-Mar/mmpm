@@ -34,7 +34,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
     public dialog: MatDialog,
     private api: RestApiService,
     private dataStore: DataStoreService,
-    private notifier: TableUpdateNotifierService,
+    private tableUpdateNotifier: TableUpdateNotifierService,
     private mSnackBar: MatSnackBar,
     private mmpmUtility: MMPMUtility,
     private activeProcessService: ActiveProcessCountService
@@ -54,7 +54,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
 
   public ngOnInit(): void {
     this.setupTableData();
-    this.subscription = this.notifier.getNotification().subscribe((_) => this.setupTableData(true));
+    this.subscription = this.tableUpdateNotifier.getNotification().subscribe((_) => this.setupTableData(true));
 
     if (!this.mmpmUtility.getCookie(this.mmpmLocalPackagesPageSizeCookie)) {
       this.mmpmUtility.setCookie(this.mmpmLocalPackagesPageSizeCookie, "10");
@@ -106,10 +106,9 @@ export class MMPMLocalPackagesComponent implements OnInit {
 
       this.selection.clear();
 
-      this.api.uninstallModules(selected).then((result: string) => {
+      this.api.packagesRemove(selected).then((result: string) => {
         this.selection.clear();
-        result = JSON.parse(result);
-        const failures: Array<object> = result["failures"];
+        const failures: Array<object> = JSON.parse(result);
 
         if (failures.length) {
           const pkg = failures.length == 1 ? "package" : "packages";
@@ -122,7 +121,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
 
         this.tableUtility.deleteProcessIds(ids);
 
-        this.notifier.triggerTableUpdate();
+        this.tableUpdateNotifier.triggerTableUpdate();
       }).catch((error) => console.log(error));
     });
   }
@@ -144,7 +143,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
 
       this.snackbar.notify("Executing ...");
 
-      this.api.upgradeModules(this.selection.selected).then((fails) => {
+      this.api.packagesUpgrade(this.selection.selected).then((fails) => {
         fails = JSON.parse(fails);
 
         if (fails.length) {
@@ -154,7 +153,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
         } else {
           this.snackbar.success("Upgraded selected modules successfully!");
         }
-        this.notifier.triggerTableUpdate();
+        this.tableUpdateNotifier.triggerTableUpdate();
       }).catch((error) => console.log(error));
     });
   }

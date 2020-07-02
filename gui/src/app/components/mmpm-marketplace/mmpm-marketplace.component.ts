@@ -9,7 +9,6 @@ import { MatDialog } from "@angular/material/dialog";
 import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
 import { Subscription } from "rxjs";
 import { TerminalStyledPopUpWindowComponent } from "src/app/components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
-import { RenamePackageDirectoryDialogComponent } from "src/app/components/rename-package-directory-dialog/rename-package-directory-dialog.component";
 import { DataStoreService } from "src/app/services/data-store.service";
 import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity";
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
@@ -17,6 +16,7 @@ import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { InstallationConflict, MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
+import { InstallationConflictResolutionDialogComponent } from "src/app/components/installation-conflict-resolution-dialog/installation-conflict-resolution-dialog.component";
 import { URLS } from "src/app/utils/urls";
 
 @Component({
@@ -45,16 +45,13 @@ export class MMPMMarketplaceComponent implements OnInit {
   public allPackages: MagicMirrorPackage[];
   public installedPackages: MagicMirrorPackage[];
   public tableUtility: MagicMirrorTableUtility;
+  public dataSource: MatTableDataSource<MagicMirrorPackage>;
+  public selection = new SelectionModel<MagicMirrorPackage>(true, []);
 
   private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this.mSnackBar);
   private subscription: Subscription;
   private mmpmMarketplacePaginatorCookieSize: string = "MMPM-marketplace-packages-page-size";
   private magicmirrorRootDirectory: string;
-
-  dataSource: MatTableDataSource<MagicMirrorPackage>;
-  selection = new SelectionModel<MagicMirrorPackage>(true, []);
-
-  snackbarSettings: object = { duration: 5000 };
 
   public ngOnInit(): void {
     this.setupTableData();
@@ -108,7 +105,7 @@ export class MMPMMarketplaceComponent implements OnInit {
   }
 
   private checkForInstallationConflicts(selectedPackages: MagicMirrorPackage[]): Promise<InstallationConflict> {
-    let promise = new Promise<InstallationConflict>((resolve, reject) => {
+    let promise: Promise<InstallationConflict> = new Promise<InstallationConflict>((resolve, reject) => {
 
       let installationConflict: InstallationConflict = {
         matchesSelectedTitles: new Array<MagicMirrorPackage>(),
@@ -146,23 +143,19 @@ export class MMPMMarketplaceComponent implements OnInit {
   }
 
   private installModules(selected: MagicMirrorPackage[]) {
-    let ids: Array<number> = this.tableUtility.saveProcessIds(
-      selected,
-      selected.length > 1 ? "[ Batch Installation ]" : "[ Installing ]"
-    );
+    let ids: Array<number> = this.tableUtility.saveProcessIds(selected, "[ Installation ]");
 
-    this.api.installModules(selected).then((result: string) => {
-      result = JSON.parse(result);
+    this.api.packagesInstall(selected).then((failures: string) => {
+      failures = JSON.parse(failures);
 
-      const failures: Array<object> = result["failures"];
-      const pkg = failures.length == 1 ? "package" : "packages";
-
-      if (failures.length) {
-        this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings(failures));
-        this.snackbar.error(`${failures.length} ${pkg} failed to install`);
+      if (!failures.length) {
+        this.snackbar.success("Installed successfully!");
 
       } else {
-        this.snackbar.success("Installed successfully!");
+        const pkg = failures.length == 1 ? "package" : "packages";
+
+        this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings(failures));
+        this.snackbar.error(`${failures.length} ${pkg} failed to install`);
       }
 
       this.tableUtility.deleteProcessIds(ids);
@@ -193,13 +186,13 @@ export class MMPMMarketplaceComponent implements OnInit {
 
         if (!installationConflicts?.matchesSelectedTitles?.length && !installationConflicts?.matchesInstalledTitles?.length) {
           this.installModules(selected);
+
         } else {
           let dialogRef = this.dialog.open(
-            RenamePackageDirectoryDialogComponent,
+            InstallationConflictResolutionDialogComponent,
             this.mmpmUtility.basicDialogSettings({
               matchesSelectedTitles: installationConflicts.matchesSelectedTitles,
               matchesInstalledTitles: installationConflicts.matchesInstalledTitles,
-              installedPackages: this.installedPackages,
               magicmirrorRootDirectory: this.magicmirrorRootDirectory
             })
           );

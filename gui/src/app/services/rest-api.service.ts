@@ -60,16 +60,16 @@ export class RestApiService {
       }).pipe(retry(1), catchError(this.handleError)).toPromise();
   }
 
-  public installModules(selectedModules: MagicMirrorPackage[]): Promise<any> {
+  public packagesInstall(selectedModules: MagicMirrorPackage[]): Promise<any> {
     return this.postWithSelectedPackages(URLS.POST.PACKAGES.INSTALL, selectedModules);
   }
 
-  public upgradeModules(selectedModules: MagicMirrorPackage[]): Promise<any> {
+  public packagesUpgrade(selectedModules: MagicMirrorPackage[]): Promise<any> {
     return this.postWithSelectedPackages(URLS.POST.PACKAGES.UPGRADE, selectedModules);
   }
 
-  public uninstallModules(selectedModules: MagicMirrorPackage[]): Promise<any> {
-    return this.postWithSelectedPackages(URLS.POST.PACKAGES.INSTALL, selectedModules);
+  public packagesRemove(selectedModules: MagicMirrorPackage[]): Promise<any> {
+    return this.postWithSelectedPackages(URLS.POST.PACKAGES.REMOVE, selectedModules);
   }
 
   public updateMagicMirrorConfig(url: string, code: string): Observable<Response> {
@@ -110,6 +110,10 @@ export class RestApiService {
           "Content-Type": "text/plain"
         })
       }).pipe(retry(1), catchError(this.handleError)).toPromise();
+  }
+
+  public getRepoDetails(packages: MagicMirrorPackage[]): Promise<any> {
+    return this.postWithSelectedPackages(URLS.POST.PACKAGES.DETAILS, packages);
   }
 
   public handleError(error: any): Promise<any> {

@@ -60,6 +60,8 @@ def main(argv):
             mmpm.core.display_categories(packages, table_formatted=args.table_formatted)
         elif args.gui_url:
             print(f'{mmpm.core.get_web_interface_url()}')
+        elif args.upgradeable:
+            mmpm.core.display_available_upgrades()
         else:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
@@ -102,26 +104,30 @@ def main(argv):
 
     elif args.subcmd == mmpm.opts.ADD_EXT_PKG:
         if args.remove:
-            mmpm.core.remove_external_package_source(
-                [mmpm.utils.sanitize_name(package) for package in args.remove],
-                assume_yes=args.assume_yes
-            )
+            mmpm.core.remove_external_package_source( [mmpm.utils.sanitize_name(package) for package in args.remove], assume_yes=args.assume_yes)
         else:
             mmpm.core.add_external_package(args.title, args.author, args.repo, args.desc)
 
     elif args.subcmd == mmpm.opts.UPDATE:
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
-        elif args.full:
-            mmpm.core.check_for_package_updates(packages, args.assume_yes)
-            mmpm.core.check_for_magicmirror_updates(args.assume_yes)
-            mmpm.core.check_for_mmpm_updates(args.assume_yes)
-        elif args.mmpm:
-            mmpm.core.check_for_mmpm_updates(args.assume_yes)
-        elif args.magicmirror:
-            mmpm.core.check_for_magicmirror_updates(args.assume_yes)
+
+        package_upgrades: List[MagicMirrorPackage] = mmpm.core.check_for_package_updates(packages)
+        magicmirror_upgrade: bool = mmpm.core.check_for_magicmirror_updates()
+        mmpm_upgrade: bool = mmpm.core.check_for_mmpm_updates()
+
+        if package_upgrades or mmpm_upgrade or magicmirror_upgrade:
+            total = len(package_upgrades) + int(mmpm_upgrade) + int(magicmirror_upgrade)
+            message: str = f"{total} {'upgrade' if total == 1 else 'upgrades'} {'is' if total == 1 else 'are'} available"
+            print(f'{message}. Execute `mmpm list --upgradable` for details')
         else:
-            mmpm.core.check_for_package_updates(packages, args.assume_yes)
+            print('All packages are up to date')
+
+    elif args.subcmd == mmpm.opts.UPGRADE:
+        if additional_args:
+            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
+        else:
+            mmpm.core.upgrade_available(args.assume_yes)
 
     elif args.subcmd == mmpm.opts.INSTALL:
         if not additional_args:

@@ -3,7 +3,6 @@ import re
 import os
 import json
 import datetime
-from dateutil import tz
 import shutil
 import sys
 import requests
@@ -97,31 +96,37 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
         mmpm.utils.fatal_msg('No version number found on MMPM repository')
 
     if mmpm.mmpm.__version__ >= version_number:
-        print(f'No updates available for MMPM {mmpm.consts.YELLOW_X}')
         mmpm.utils.log.info(f'No newer version of MMPM found > {version_number} available. The current version is the latest')
-        return True
+        return False
 
     mmpm.utils.log.info(f'Found newer version of MMPM: {version_number}')
 
-    print(f'\nInstalled version: {mmpm.mmpm.__version__}')
-    print(f'Available version: {version_number}\n')
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
+        try:
+            upgrades = json.load(available_upgrades)
+        except json.JSONDecodeError:
+            upgrades: dict = {mmpm.consts.PACKAGES: [], mmpm.consts.MMPM: False, mmpm.consts.MAGICMIRROR: False}
+
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
+        upgrades[mmpm.consts.MMPM] = True
+        json.dump(upgrades, available_upgrades)
 
     if gui:
-        message = f"A newer version of MMPM is available ({version_number}). Please upgrade via terminal using 'mmpm uprade --mmpm"
-        print(message)
+        mmpm.utils.log.info('A newer version of MMPM was detected via the GUI')
+        print(f"A newer version of MMPM is available ({version_number}). Please upgrade via terminal using 'mmpm uprade --mmpm")
         return True
 
-    if not mmpm.utils.prompt_user('A newer version of MMPM is available. Would you like to upgrade now?', assume_yes=assume_yes):
-        return True
+    return True
 
+
+def upgrade_mmpm(assume_yes: bool = False) -> None:
     message = "Upgrading MMPM"
-
     print(mmpm.utils.colored_text(mmpm.color.B_CYAN, message))
 
     mmpm.utils.log.info(f'User chose to update MMPM')
 
+    os.system('rm -rf /tmp/mmpm')
     os.chdir(os.path.join('/', 'tmp'))
-    shutil.rmtree('/tmp/mmpm')
 
     error_code, _, stderr = mmpm.utils.clone('mmpm', mmpm.consts.MMPM_REPO_URL)
 
@@ -132,10 +137,9 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
 
     # if the user needs to be prompted for their password, this can't be a subprocess
     os.system('make reinstall')
-    return True
 
 
-def upgrade_package(package: MagicMirrorPackage) -> str:
+def upgrade_package(package: MagicMirrorPackage, assume_yes: bool = False) -> str:
     '''
     Depending on flags passed in as arguments:
 
@@ -156,13 +160,12 @@ def upgrade_package(package: MagicMirrorPackage) -> str:
     os.chdir(package.directory)
 
     mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS_SIGN} Retrieving upgrade for {package.title}')
-    error_code, _, _ = mmpm.utils.run_cmd(["git", "pull"])
+    error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
 
     if error_code:
-        print(mmpm.consts.RED_X)
-        message: str = "Unable to communicate with git server"
-        mmpm.utils.error_msg("Unable to communicate with git server")
-        return message
+        mmpm.utils.error_msg(f'Failed to upgrade MagicMirror {mmpm.consts.RED_X}')
+        mmpm.utils.error_msg(stderr)
+        return stderr
 
     else:
         print(mmpm.consts.GREEN_CHECK_MARK)
@@ -177,7 +180,40 @@ def upgrade_package(package: MagicMirrorPackage) -> str:
     return ''
 
 
-def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]], assume_yes: bool = False) -> bool:
+def upgrade_available(assume_yes: bool = False) -> bool:
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
+        try:
+            upgrades: dict = json.load(available_upgrades)
+        except json.JSONDecodeError:
+            upgrades = {mmpm.consts.PACKAGES: [], mmpm.consts.MMPM: False, mmpm.consts.MAGICMIRROR: False}
+            mmpm.utils.error_msg(f'Failed to read {mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE}. The file has been reset. Please re-run `mmpm update`')
+            return False
+
+    upgraded: bool = False
+    question: str = 'Would you like to upgrade now?'
+    styled = lambda name : mmpm.utils.colored_text(mmpm.color.N_GREEN, name)
+
+    if upgrades[mmpm.consts.PACKAGES]:
+        for package in mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(upgrades[mmpm.consts.PACKAGES]):
+            if mmpm.utils.prompt_user(f'An upgrade is available for {styled(package.title)} ({package.repository}). {question}', assume_yes=assume_yes):
+                upgraded = upgrade_package(package)
+
+    if upgrades[mmpm.consts.MAGICMIRROR]:
+        if mmpm.utils.prompt_user(f"An upgrade is available for {styled('MagicMirror')}. {question}", assume_yes=assume_yes):
+            upgraded = upgrade_magicmirror()
+
+    if upgrades[mmpm.consts.MMPM]:
+        if mmpm.utils.prompt_user(f"An upgrade is available for {styled('MMPM')}. {question}", assume_yes=assume_yes):
+            upgraded = upgrade_mmpm()
+
+    if upgraded and mmpm.core.is_magicmirror_running():
+        if mmpm.utils.prompt_user('Would you like to restart MagicMirror for the changes to take effect?', assume_yes=assume_yes):
+            restart_magicmirror()
+
+    return True
+
+
+def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> List[MagicMirrorPackage]:
     '''
     Depending on flags passed in as arguments:
 
@@ -210,7 +246,7 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]], ass
     if not any_installed:
         mmpm.utils.fatal_msg('No packages installed')
 
-    updateable: List[MagicMirrorPackage] = []
+    upgradeable: List[MagicMirrorPackage] = []
     upgraded: bool = True
 
     for _, _packages in installed_packages.items():
@@ -221,6 +257,7 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]], ass
 
             try:
                 error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
+
             except KeyboardInterrupt:
                 print(mmpm.consts.RED_X)
                 mmpm.utils.keyboard_interrupt_log()
@@ -231,33 +268,23 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]], ass
                 continue
 
             if stdout:
-                updateable.append(package)
+                upgradeable.append(package)
 
             print(mmpm.consts.GREEN_CHECK_MARK)
 
-    if not updateable:
-        print(f'No updates available for installed packages {mmpm.consts.YELLOW_X}')
-        return False
+    upgrades: dict = {}
 
-    print(f'\n{len(updateable)} updates are available\n')
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
+        try:
+            upgrades = json.load(available_upgrades)
+        except json.JSONDecodeError:
+            upgrades: dict = {mmpm.consts.PACKAGES: [], mmpm.consts.MMPM: False, mmpm.consts.MAGICMIRROR: False}
 
-    for package in updateable:
-        if not mmpm.utils.prompt_user(f'An upgrade is available for {package.title}. Would you like to upgrade now?', assume_yes=assume_yes):
-            upgraded = False
-            continue
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
+        upgrades[mmpm.consts.PACKAGES] = [pkg.serialize_full() for pkg in upgradeable]
+        json.dump(upgrades, available_upgrades)
 
-        if not upgrade_package(package):
-            mmpm.utils.error_msg('Unable to communicate with git server')
-
-    if not upgraded:
-        return False
-
-    if mmpm.utils.get_pids('node') and mmpm.utils.get_pids('npm') and mmpm.utils.get_pids('electron') or mmpm.utils.get_pids('pm2'):
-        if mmpm.utils.prompt_user('MagicMirror appears to be running. Would you like to restart it now?', assume_yes=assume_yes):
-            restart_magicmirror()
-
-    return True
-
+    return upgradeable
 
 
 def search_packages(packages: Dict[str, List[MagicMirrorPackage]], query: str, case_sensitive: bool = False, by_title_only: bool = False) -> dict:
@@ -479,7 +506,7 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
     if error:
         mmpm.utils.error_msg(error)
         message: str = f"Failed to install {package.title} at '{package.directory}'"
-        mmpm.utils.log.info(message)
+        mmpm.utils.log.error(message)
 
         yes = mmpm.utils.prompt_user(
             f"{mmpm.utils.colored_text(mmpm.color.B_RED, 'ERROR:')} Failed to install {package.title} at '{package.directory}'. Remove the directory?",
@@ -537,20 +564,20 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
         return False
 
     if not stdout:
-        print(f'No updates available for MagicMirror {mmpm.consts.YELLOW_X}')
         return False
 
-    if not mmpm.utils.prompt_user('An update is available for MagicMirror. Would you like to upgrade now?', assume_yes=assume_yes):
-        return False
+    upgrades: dict = {}
 
-    if not upgrade_magicmirror():
-        mmpm.utils.error_msg('Unable to upgrade MagicMirror')
-        return False
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
+        try:
+            upgrades = json.load(available_upgrades)
+        except json.JSONDecodeError:
+            upgrades: dict = {mmpm.consts.PACKAGES: [], mmpm.consts.MMPM: False, mmpm.consts.MAGICMIRROR: False}
 
-    if not mmpm.utils.prompt_user('Would you like to restart MagicMirror now?', assume_yes=assume_yes):
-        return True
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
+        upgrades[mmpm.consts.MAGICMIRROR] = True
+        json.dump(upgrades, available_upgrades)
 
-    restart_magicmirror()
     return True
 
 
@@ -567,13 +594,12 @@ def upgrade_magicmirror() -> bool:
 
     '''
 
-    print(mmpm.utils.colored_text(mmpm.color.N_CYAN, 'Upgrading MagicMirror'))
     os.chdir(mmpm.consts.MAGICMIRROR_ROOT)
-    error_code, _, _ = mmpm.utils.run_cmd(['git', 'pull'], progress=False)
+    error_code, _, stderr = mmpm.utils.run_cmd(['git', 'pull'], progress=False)
 
     if error_code:
-        print(mmpm.consts.RED_X)
-        mmpm.utils.error_msg('Failed to communicate with git server')
+        mmpm.utils.error_msg(f'Failed to upgrade MagicMirror {mmpm.consts.RED_X}')
+        mmpm.utils.error_msg(stderr)
         return False
 
     error: str = mmpm.utils.install_dependencies(mmpm.consts.MAGICMIRROR_ROOT)
@@ -582,7 +608,7 @@ def upgrade_magicmirror() -> bool:
         mmpm.utils.error_msg(error)
         return False
 
-    print('\nUpgrade complete!\n')
+    print(f"\n{mmpm.utils.colored_text(mmpm.color.N_GREEN, 'Upgrade complete!')}\nRestart MagicMirror for the changes to take effect")
     return True
 
 
@@ -966,6 +992,20 @@ def display_packages(packages: Dict[str, List[MagicMirrorPackage]], table_format
         for _, _packages in packages.items():
             for _, package in enumerate(_packages):
                 _print_(package)
+
+
+def display_available_upgrades() -> None:
+    # TODO: finish formatting
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
+        upgrades: dict = json.load(available_upgrades)
+
+        if upgrades[mmpm.consts.PACKAGES]:
+            for package in mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(upgrades[mmpm.consts.PACKAGES]):
+                print(package.title)
+        if upgrades[mmpm.consts.MMPM]:
+            print(f'{mmpm.utils.colored_text(mmpm.color.N_GREEN, mmpm.consts.MMPM)}')
+        if upgrades[mmpm.consts.MAGICMIRROR]:
+            print(f'{mmpm.utils.colored_text(mmpm.color.N_GREEN, mmpm.consts.MAGICMIRROR)}')
 
 
 def get_installed_packages(packages: Dict[str, List[MagicMirrorPackage]]) -> Dict[str, List[MagicMirrorPackage]]:
@@ -1547,11 +1587,9 @@ def rotate_raspberrypi_screen(degrees: int) -> bool:
         # TODO: figure this out
         pass
 
-    if mmpm.utils.prompt_user('Would you like to restart your RaspberryPi now for the changes to take effect?'):
-        stop_magicmirror()
-        error_code, _, _ = mmpm.utils.run_cmd(['sudo', 'reboot'])
-
-        if error_code:
-            mmpm.utils.fatal_msg('Unable to restart RaspberryPi')
-
+    print('Please restart your RaspberryPi for the changes to take effect')
     return True
+
+
+mmpm.utils.assert_mmpm_data_files_exist()
+

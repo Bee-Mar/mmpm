@@ -108,6 +108,18 @@ def assert_snapshot_directory() -> bool:
     return True
 
 
+def assert_mmpm_data_files_exist() -> bool:
+    if not os.path.exists(mmpm.consts.MMPM_CONFIG_DIR):
+        try:
+            os.mkdir(mmpm.consts.MMPM_CONFIG_DIR)
+        except OSError:
+            error_msg(f'Failed to create {mmpm.consts.MMPM_CONFIG_DIR}')
+            return False
+
+    for data_file in mmpm.consts.MMPM_DATA_FILES:
+        os.system(f'touch {data_file}')
+
+
 def calc_snapshot_timestamps() -> Tuple[float, float]:
     '''
     Calculates the expiration timestamp of the MagicMirror snapshot file
@@ -578,6 +590,7 @@ def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nac
                 warning_msg(f"Respond with [{'/'.join(valid_ack)}] or [{'/'.join(valid_nack)}]")
 
     except KeyboardInterrupt:
+        print()
         return False
 
     return False
@@ -933,3 +946,6 @@ def get_remote_package_details(package: MagicMirrorPackage) -> dict:
 
         return __format_bitbucket_api_details__(json.loads(data.text), url) if data else {}
 
+
+def is_magicmirror_running() -> bool:
+    return mmpm.utils.get_pids('node') and mmpm.utils.get_pids('npm') and mmpm.utils.get_pids('electron') or mmpm.utils.get_pids('pm2')

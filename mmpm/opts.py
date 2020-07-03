@@ -22,7 +22,7 @@ UPGRADE: str = 'upgrade'
 ENV: str = 'env'
 SHOW: str = 'show'
 
-SINGLE_OPTION_ARGS: List[str] = [INSTALL, UPDATE, DATABASE, LIST, OPEN, MM_CTL]
+SINGLE_OPTION_ARGS: List[str] = [INSTALL, DATABASE, LIST, OPEN, MM_CTL]
 
 
 def get_user_args() -> object:
@@ -132,38 +132,24 @@ def get_user_args() -> object:
     # UPDATE PARSER
     update_parser = subparsers.add_parser(
         UPDATE,
-        usage='\n  mmpm update [--mmpm] [--magicmirror] [--full] [--yes]',
+        usage='\n  mmpm update',
         help='check for updates to installed packages, MMPM, and/or MagicMirror'
     )
 
-    update_parser.add_argument(
+    # UPGRADE SUBCOMMANDS
+    upgrade_parser = subparsers.add_parser(
+        UPGRADE,
+        usage='\n  mmpm upgrade [--yes]',
+        help='upgrade packages, mmpm, and/or MagicMirror, if available'
+    )
+
+    upgrade_parser.add_argument(
         '-y',
         '--yes',
         action='store_true',
         default=False,
         help='assume yes for user response and do not show prompt',
         dest='assume_yes'
-    )
-
-    update_parser.add_argument(
-        '--mmpm',
-        action='store_true',
-        help='only check for updates to MMPM',
-        dest='mmpm'
-    )
-
-    update_parser.add_argument(
-        '--magicmirror',
-        action='store_true',
-        help='only check for updates to MagicMirror',
-        dest='magicmirror'
-    )
-
-    update_parser.add_argument(
-        '--full',
-        action='store_true',
-        help='check for updates to all installed packages, MMPM, and MagicMirror',
-        dest='full'
     )
 
     # DATABASE SUBCOMMANDS
@@ -193,7 +179,7 @@ def get_user_args() -> object:
     list_parser = subparsers.add_parser(
         LIST,
         usage='\n  mmpm list [--all] [--exclude-local] [--categories] [--gui-url] [--table]',
-        help='list items like installed packages, packages available, etc'
+        help='list items such as installed packages, packages available, available upgrades, etc'
     )
 
     list_parser.add_argument(
@@ -234,6 +220,13 @@ def get_user_args() -> object:
         action='store_true',
         help='list the URL of the MMPM GUI',
         dest='gui_url'
+    )
+
+    list_parser.add_argument(
+        '--upgradeable',
+        action='store_true',
+        help='list packages that have available upgrades',
+        dest='upgradeable'
     )
 
     list_parser.add_argument(

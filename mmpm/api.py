@@ -346,7 +346,7 @@ def magicmirror_start() -> str:
 
     # if these processes are all running, we assume MagicMirror is running currently
     # TODO: Change this to include functionality for pm2
-    if mmpm.utils.get_pids('node') and mmpm.utils.get_pids('npm') and mmpm.utils.get_pids('electron'):
+    if mmpm.utils.is_magicmirror_running():
         mmpm.utils.log.info('MagicMirror appears to be running already. Returning False.')
         return json.dumps(False)
 
@@ -396,7 +396,7 @@ def magicmirror_upgrade() -> str:
     mmpm.core.upgrade_magicmirror()
 
     # TODO: Change this to include functionality for pm2
-    if mmpm.utils.get_pids('node') and mmpm.utils.get_pids('npm') and mmpm.utils.get_pids('electron'):
+    if mmpm.utils.is_magicmirror_running():
         mmpm.core.restart_magicmirror()
 
     return json.dumps(True)

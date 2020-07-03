@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from os.path import join, expanduser, normpath
 from os import environ
-from typing import Dict
+from typing import Dict, List
 import mmpm.color
 
 def __get_or_set_env_var__(var: str, value: str) -> str:
@@ -16,6 +16,8 @@ DESCRIPTION: str = 'description'
 AUTHOR: str = 'author'
 CATEGORY: str = 'category'
 PACKAGES: str = 'packages'
+MAGICMIRROR: str = 'MagicMirror'
+MMPM: str = 'mmpm'
 DIRECTORY: str = 'directory'
 ERROR: str = 'error'
 WARNING: str = 'warning'
@@ -61,6 +63,7 @@ MMPM_LIBMMPM_SHARED_OBJECT_FILE: str = '/usr/local/lib/mmpm/libmmpm.so'
 MMPM_NGINX_CONF_FILE: str = '/etc/nginx/sites-enabled/mmpm.conf'
 MMPM_EXTERNAL_SOURCES_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
 
+MMPM_AVAILABLE_UPGRADES_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-available-upgrades.json')
 MMPM_LOG_FILE: str = join(MMPM_LOG_DIR, 'mmpm-cli-interface.log')
 MMPM_GUNICORN_ACCESS_LOG_FILE: str = join(MMPM_LOG_DIR, 'mmpm-gunicorn-access.log')
 MMPM_GUNICORN_ERROR_LOG_FILE: str = join(MMPM_LOG_DIR, 'mmpm-gunicorn-error.log')
@@ -72,3 +75,13 @@ MAGICMIRROR_ROOT: str = MMPM_ENV_VARS[MMPM_MAGICMIRROR_ROOT]
 MAGICMIRROR_MODULES_DIR: str = join(MAGICMIRROR_ROOT, 'modules')
 MAGICMIRROR_CONFIG_FILE: str = join(MAGICMIRROR_ROOT, 'config', 'config.js')
 MAGICMIRROR_CUSTOM_CSS_FILE: str = join(MAGICMIRROR_ROOT, 'custom', 'custom.css')
+
+MMPM_DATA_FILES: List[str] = [
+    MMPM_AVAILABLE_UPGRADES_FILE,
+    MMPM_LOG_FILE,
+    MMPM_GUNICORN_ERROR_LOG_FILE,
+    MMPM_GUNICORN_ACCESS_LOG_FILE,
+    MMPM_EXTERNAL_SOURCES_FILE,
+    MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE,
+]
+

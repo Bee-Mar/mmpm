@@ -119,7 +119,7 @@ def main(argv):
         if package_upgrades or mmpm_upgrade or magicmirror_upgrade:
             total = len(package_upgrades) + int(mmpm_upgrade) + int(magicmirror_upgrade)
             message: str = f"{total} {'upgrade' if total == 1 else 'upgrades'} {'is' if total == 1 else 'are'} available"
-            print(f'{message}. Execute `mmpm list --upgradable` for details')
+            print(f'{message}. Run `mmpm list --upgradable` for details')
         else:
             print('All packages are up to date')
 

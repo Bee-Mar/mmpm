@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=unused-argument
 import sys
+import os
 import webbrowser
 
 from typing import List, Dict

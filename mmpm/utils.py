@@ -950,13 +950,3 @@ def get_remote_package_details(package: MagicMirrorPackage) -> dict:
 def is_magicmirror_running() -> bool:
     return mmpm.utils.get_pids('node') and mmpm.utils.get_pids('npm') and mmpm.utils.get_pids('electron') or mmpm.utils.get_pids('pm2')
 
-
-def populate_default_mmpm_available_upgrades() -> None:
-    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
-        json.dump({
-                mmpm.consts.PACKAGES: [],
-                mmpm.consts.MMPM: False,
-                mmpm.consts.MAGICMIRROR: False
-            },
-            available_upgrades
-        )

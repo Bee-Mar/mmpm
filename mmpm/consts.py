@@ -48,7 +48,7 @@ MMPM_MAGICMIRROR_ROOT: str = 'MMPM_MAGICMIRROR_ROOT'
 MAGICMIRROR_PM2_PROC: str = 'MAGICMIRROR_PM2_PROC'
 
 MMPM_ENV_VARS: Dict[str, str] = {
-    MMPM_MAGICMIRROR_ROOT: __get_or_set_env_var__( MMPM_MAGICMIRROR_ROOT, normpath(join(HOME_DIR, 'MagicMirror'))),
+    MMPM_MAGICMIRROR_ROOT: __get_or_set_env_var__(MMPM_MAGICMIRROR_ROOT, normpath(join(HOME_DIR, 'MagicMirror'))),
     MAGICMIRROR_PM2_PROC: __get_or_set_env_var__(MAGICMIRROR_PM2_PROC, 'MagicMirror')
 }
 

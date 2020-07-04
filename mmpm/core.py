@@ -294,9 +294,8 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
                 mmpm.utils.error_msg('Unable to communicate with git server')
                 continue
 
-            #if stdout:
-            #    upgradeable.append(package)
-            upgradeable.append(package)
+            if stdout:
+                upgradeable.append(package)
 
             print(mmpm.consts.GREEN_CHECK_MARK)
 
@@ -654,7 +653,7 @@ def upgrade_magicmirror() -> bool:
         mmpm.utils.error_msg(error)
         return False
 
-    print(f"\n{mmpm.utils.colored_text(mmpm.color.N_GREEN, 'Upgrade complete!')}\nRestart MagicMirror for the changes to take effect")
+    print(f'Upgrade complete!\nRestart MagicMirror for the changes to take effect')
     return True
 
 

@@ -131,13 +131,12 @@ def main(argv):
         mmpm.core.upgrade_available(args.assume_yes)
 
     elif args.subcmd == mmpm.opts.INSTALL:
-        if not additional_args:
-            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
-
         if args.magicmirror:
             mmpm.core.install_magicmirror()
         elif args.autocomplete:
             mmpm.core.install_autocompletion(assume_yes=args.assume_yes)
+        elif not additional_args:
+            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
         else:
             installation_candidates = mmpm.core.get_installation_candidates(
                 packages,

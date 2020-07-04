@@ -48,10 +48,10 @@ def snapshot_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     for category in packages.values():
         num_packages += len(category)
 
-    print(mmpm.utils.colored_text(mmpm.color.N_GREEN, 'Last updated:'), f'{curr_snap_date}')
-    print(mmpm.utils.colored_text(mmpm.color.N_GREEN, 'Next scheduled update:'), f'{next_snap_date}')
-    print(mmpm.utils.colored_text(mmpm.color.N_GREEN, 'Package categories:'), f'{num_categories}')
-    print(mmpm.utils.colored_text(mmpm.color.N_GREEN, 'Packages available:'), f'{num_packages}')
+    print(mmpm.color.normal_green('Last updated:'), f'{curr_snap_date}')
+    print(mmpm.color.normal_green('Next scheduled update:'), f'{next_snap_date}')
+    print(mmpm.color.normal_green('Package categories:'), f'{num_categories}')
+    print(mmpm.color.normal_green('Packages available:'), f'{num_packages}')
 
 
 def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
@@ -69,9 +69,9 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
     import mmpm.mmpm
 
     try:
-        cyan_application: str = f"{mmpm.utils.colored_text(mmpm.color.N_CYAN, 'application')}"
+        cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
         mmpm.utils.log.info(f'Checking for newer version of MMPM. Current version: {mmpm.mmpm.__version__}')
-        mmpm.utils.plain_print(f"Checking {mmpm.utils.colored_text(mmpm.color.N_GREEN, 'MMPM')} [{cyan_application}] for updates")
+        mmpm.utils.plain_print(f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] for updates")
 
         try:
             # just to keep the console output the same as all other update commands
@@ -84,7 +84,7 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
 
     except (HTTPError, URLError) as error:
         print(mmpm.consts.RED_X)
-        mmpm.utils.error_msg(error)
+        mmpm.utils.error_msg(str(error))
         return False
 
     version_number: float = float(re.findall(r"\d+\.\d+", re.findall(r"__version__ = \d+\.\d+", contents)[0])[0])
@@ -115,7 +115,7 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
 
 def upgrade_mmpm(assume_yes: bool = False) -> bool:
     message = "Upgrading MMPM"
-    print(mmpm.utils.colored_text(mmpm.color.B_CYAN, message))
+    print(mmpm.color.normal_cyan(message))
 
     mmpm.utils.log.info(f'User chose to update MMPM')
 
@@ -155,7 +155,7 @@ def upgrade_package(package: MagicMirrorPackage, assume_yes: bool = False) -> st
 
     os.chdir(package.directory)
 
-    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS_SIGN} Performing upgrade for {mmpm.utils.colored_text(mmpm.color.N_GREEN, package.title)}')
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS_SIGN} Performing upgrade for {mmpm.color.normal_green(package.title)}')
     error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
 
     if error_code:
@@ -179,7 +179,6 @@ def upgrade_package(package: MagicMirrorPackage, assume_yes: bool = False) -> st
 def upgrade_available(assume_yes: bool = False) -> bool:
     confirmed: dict = {mmpm.consts.PACKAGES: [], mmpm.consts.MMPM: False, mmpm.consts.MAGICMIRROR: False}
     env: str = mmpm.consts.MMPM_ENV_VARS[mmpm.consts.MMPM_MAGICMIRROR_ROOT]
-    green_text = lambda text : mmpm.utils.colored_text(mmpm.color.N_GREEN, text)
     upgrades = get_available_upgrades()
     upgraded: bool = False
 
@@ -195,14 +194,14 @@ def upgrade_available(assume_yes: bool = False) -> bool:
 
     if upgrades[env][mmpm.consts.PACKAGES]:
         for package in upgrades[env][mmpm.consts.PACKAGES]:
-            if mmpm.utils.prompt_user(f'Upgrade {green_text(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
+            if mmpm.utils.prompt_user(f'Upgrade {mmpm.color.normal_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
                 confirmed[mmpm.consts.PACKAGES].append(package)
 
     if upgrades[env][mmpm.consts.MAGICMIRROR]:
-        confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt_user(f"Upgrade {green_text('MagicMirror')} now?", assume_yes=assume_yes)
+        confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt_user(f"Upgrade {mmpm.color.normal_green('MagicMirror')} now?", assume_yes=assume_yes)
 
     if upgrades[mmpm.consts.MMPM]:
-        confirmed[mmpm.consts.MMPM] = mmpm.utils.prompt_user(f"Upgrade {green_text('MMPM')} now?", assume_yes=assume_yes)
+        confirmed[mmpm.consts.MMPM] = mmpm.utils.prompt_user(f"Upgrade {mmpm.color.normal_green('MMPM')} now?", assume_yes=assume_yes)
 
     for pkg in confirmed[mmpm.consts.PACKAGES]:
         error = upgrade_package(pkg)
@@ -274,13 +273,13 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
 
     upgradeable: List[MagicMirrorPackage] = []
     upgraded: bool = True
-    cyan_package: str = f"{mmpm.utils.colored_text(mmpm.color.N_CYAN, 'package')}"
+    cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
 
     for _, _packages in installed_packages.items():
         for package in _packages:
             os.chdir(package.directory)
 
-            mmpm.utils.plain_print(f'Checking {mmpm.utils.colored_text(mmpm.color.N_GREEN, package.title)} [{cyan_package}] for updates')
+            mmpm.utils.plain_print(f'Checking {mmpm.color.normal_green(package.title)} [{cyan_package}] for updates')
 
             try:
                 error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
@@ -365,7 +364,7 @@ def show_package_details(packages: Dict[str, List[MagicMirrorPackage]], verbose:
     '''
 
     def __show_package__(category: str, package: MagicMirrorPackage) -> None:
-        print(mmpm.utils.colored_text(mmpm.color.N_GREEN, f'{package.title}'))
+        print(mmpm.color.normal_green(package.title))
         print(f'  Category: {category}')
         print(f'  Repository: {package.repository}')
         print(f'  Author: {package.author}')
@@ -452,10 +451,10 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
     successes: int = 0
     match_count: int = len(installation_candidates)
 
-    print(mmpm.utils.colored_text(mmpm.color.N_CYAN, f'Matched query to {match_count} package(s)\n'))
+    print(mmpm.color.normal_cyan(f'Matched query to {match_count} package(s)\n'))
 
     for index, candidate in enumerate(installation_candidates):
-        if not mmpm.utils.prompt_user(f'Install {mmpm.utils.colored_text(mmpm.color.N_GREEN, candidate.title)} ({candidate.repository})?', assume_yes=assume_yes):
+        if not mmpm.utils.prompt_user(f'Install {mmpm.color.normal_green(candidate.title)} ({candidate.repository})?', assume_yes=assume_yes):
             mmpm.utils.log.info(f'User not chose to install {candidate.title}')
             installation_candidates[index] = MagicMirrorPackage()
         else:
@@ -536,7 +535,7 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
         mmpm.utils.log.error(message)
 
         yes = mmpm.utils.prompt_user(
-            f"{mmpm.utils.colored_text(mmpm.color.B_RED, 'ERROR:')} Failed to install {package.title} at '{package.directory}'. Remove the directory?",
+            f"{mmpm.color.normal_red('ERROR:')} Failed to install {package.title} at '{package.directory}'. Remove the directory?",
             assume_yes=assume_yes
         )
 
@@ -575,17 +574,16 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
         mmpm.utils.warning_msg('The MagicMirror root is not a git repo. If running MagicMirror as a Docker container, updates cannot be performed via mmpm.')
         is_git = False
 
-    os.chdir(mmpm.consts.MAGICMIRROR_ROOT)
-    cyan_application: str = f"{mmpm.utils.colored_text(mmpm.color.N_CYAN, 'application')}"
-    mmpm.utils.plain_print(f"Checking {mmpm.utils.colored_text(mmpm.color.N_GREEN, 'MagicMirror')} [{cyan_application}] for updates")
-
-    # stdout and stderr are flipped for git command output, because that totally makes sense
-    # except now stdout doesn't even contain error messages...thanks git
-
     update_available: bool = False
 
     if is_git:
+        os.chdir(mmpm.consts.MAGICMIRROR_ROOT)
+        cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
+        mmpm.utils.plain_print(f"Checking {mmpm.color.normal_green('MagicMirror')} [{cyan_application}] for updates")
+
         try:
+            # stdout and stderr are flipped for git command output, because that totally makes sense
+            # except now stdout doesn't even contain error messages...thanks git
             error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
         except KeyboardInterrupt:
             print(mmpm.consts.RED_X)
@@ -607,13 +605,13 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
         try:
             upgrades = json.load(available_upgrades)
         except json.JSONDecodeError:
-            upgrades: dict = {
+            upgrades = {
                 mmpm.consts.MMPM: False,
                 mmpm.consts.MAGICMIRROR_ROOT: {
                     mmpm.consts.PACKAGES: [],
                     mmpm.consts.MAGICMIRROR: update_available
                 }
-            },
+            }
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
         if env not in upgrades:
@@ -685,7 +683,7 @@ def install_magicmirror() -> bool:
         mmpm.utils.fatal_msg("'curl' command not found. Please install 'curl', then re-run mmpm install --magicmirror")
 
     os.chdir(parent)
-    print(mmpm.utils.colored_text(mmpm.color.N_CYAN, f'Installing MagicMirror in {parent}/MagicMirror ...'))
+    print(mmpm.color.normal_cyan(f'Installing MagicMirror in {parent}/MagicMirror ...'))
     os.system('bash -c "$(curl -sL https://raw.githubusercontent.com/sdetweil/MagicMirror_scripts/master/raspberry.sh)"')
     return True
 
@@ -716,7 +714,7 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
             for package in packages:
                 dir_name = os.path.basename(package.directory)
                 if dir_name in package_dirs and dir_name in packages_to_remove:
-                    prompt: str = f'Would you like to remove {mmpm.utils.colored_text(mmpm.color.N_GREEN, package.title)} ({package.directory})?'
+                    prompt: str = f'Would you like to remove {mmpm.color.normal_green(package.title)} ({package.directory})?'
                     if mmpm.utils.prompt_user(prompt, assume_yes=assume_yes):
                         marked_for_removal.append(dir_name)
                         mmpm.utils.log.info(f'User marked {dir_name} for removal')
@@ -733,7 +731,7 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
 
     for dir_name in marked_for_removal:
         shutil.rmtree(dir_name)
-        print(f'{mmpm.consts.GREEN_PLUS_SIGN} Removed {mmpm.utils.colored_text(mmpm.color.N_GREEN, dir_name)} {mmpm.consts.GREEN_CHECK_MARK}')
+        print(f'{mmpm.consts.GREEN_PLUS_SIGN} Removed {mmpm.color.normal_green(dir_name)} {mmpm.consts.GREEN_CHECK_MARK}')
         mmpm.utils.log.info(f'Removed {dir_name}')
 
     if marked_for_removal:
@@ -950,7 +948,7 @@ def display_categories(packages: Dict[str, List[MagicMirrorPackage]], table_form
 
     if not table_formatted:
         for category in categories:
-            print(mmpm.utils.colored_text(mmpm.color.N_GREEN, category[mmpm.consts.CATEGORY]), f'\n  Packages: {category[mmpm.consts.PACKAGES]}\n')
+            print(mmpm.color.normal_green(category[mmpm.consts.CATEGORY]), f'\n  Packages: {category[mmpm.consts.PACKAGES]}\n')
         return
 
     global_row: int = 1
@@ -1023,14 +1021,14 @@ def display_packages(packages: Dict[str, List[MagicMirrorPackage]], table_format
     else:
         if include_path:
             _print_ = lambda package: print(
-                mmpm.utils.colored_text(mmpm.color.N_GREEN, f'{package.title}'),
+                mmpm.color.normal_green(f'{package.title}'),
                 (f'\n  Directory: {package.directory}'),
                 (f"\n  {format_description(package.description)}\n")
             )
 
         else:
             _print_ = lambda package: print(
-                mmpm.utils.colored_text(mmpm.color.N_GREEN, f'{package.title}'),
+                mmpm.color.normal_green(f'{package.title}'),
                 (f"\n  {format_description(package.description)}\n")
             )
 
@@ -1040,9 +1038,21 @@ def display_packages(packages: Dict[str, List[MagicMirrorPackage]], table_format
 
 
 def display_available_upgrades() -> None:
-    decoded: bool = False
-    cyan_application: str = f"{mmpm.utils.colored_text(mmpm.color.N_CYAN, 'application')}"
-    cyan_package: str = f"{mmpm.utils.colored_text(mmpm.color.N_CYAN, 'package')}"
+    '''
+    Based on the current environment, available upgrades for packages, and
+    MagicMirror will be displayed. The status of upgrades available for MMPM is
+    static, regardless of the environment. The available upgrades are read from
+    a file, `~/.config/mmpm/mmpm-available-upgrades.json`, which is updated
+    after running `mmpm update`
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+    cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
+    cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
     env: str = mmpm.consts.MAGICMIRROR_ROOT
 
     upgrades_available: bool = False
@@ -1050,16 +1060,16 @@ def display_available_upgrades() -> None:
 
     if upgrades[env][mmpm.consts.PACKAGES]:
         for package in upgrades[env][mmpm.consts.PACKAGES]:
-            print(mmpm.utils.colored_text(mmpm.color.N_GREEN, package.title), f'[{cyan_package}]')
+            print(mmpm.color.normal_green(package.title), f'[{cyan_package}]')
             upgrades_available = True
 
     if upgrades[mmpm.consts.MMPM]:
         upgrades_available = True
-        print(f'{mmpm.utils.colored_text(mmpm.color.N_GREEN, mmpm.consts.MMPM)} [{cyan_application}]')
+        print(f'{mmpm.color.normal_green(mmpm.consts.MMPM)} [{cyan_application}]')
 
     if upgrades[env][mmpm.consts.MAGICMIRROR]:
         upgrades_available = True
-        print(f'{mmpm.utils.colored_text(mmpm.color.N_GREEN, mmpm.consts.MAGICMIRROR)} [{cyan_application}]')
+        print(f'{mmpm.color.normal_green(mmpm.consts.MAGICMIRROR)} [{cyan_application}]')
 
     if upgrades_available:
         print('Run `mmpm upgrade` to upgrade available packages/applications')
@@ -1068,6 +1078,9 @@ def display_available_upgrades() -> None:
 
 
 def get_available_upgrades() -> dict:
+    '''
+
+    '''
     env: str = mmpm.consts.MMPM_ENV_VARS[mmpm.consts.MMPM_MAGICMIRROR_ROOT]
     reset_file: bool = False
 
@@ -1221,7 +1234,7 @@ def add_external_package(title: str = None, author: str = None, repo: str = None
             with open(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
                 json.dump({mmpm.consts.EXTERNAL_MODULE_SOURCES: [external_package]}, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
 
-        print(mmpm.utils.colored_text(mmpm.color.N_GREEN, f"\nSuccessfully added {title} to '{mmpm.consts.EXTERNAL_MODULE_SOURCES}'\n"))
+        print(mmpm.color.normal_green(f"\nSuccessfully added {title} to '{mmpm.consts.EXTERNAL_MODULE_SOURCES}'\n"))
 
     except IOError as error:
         mmpm.utils.error_msg('Failed to save external module')
@@ -1261,7 +1274,7 @@ def remove_external_package_source(titles: List[str] = None, assume_yes: bool = 
     for title in titles:
         for package in ext_packages[mmpm.consts.EXTERNAL_MODULE_SOURCES]:
             if package.title == title:
-                prompt: str = f'Would you like to remove {mmpm.utils.colored_text(mmpm.color.N_GREEN, title)} ({package.repository}) from the MMPM/MagicMirror local database?'
+                prompt: str = f'Would you like to remove {mmpm.color.normal_green(title)} ({package.repository}) from the MMPM/MagicMirror local database?'
                 if mmpm.utils.prompt_user(prompt, assume_yes=assume_yes):
                     marked_for_removal.append(package)
                 else:
@@ -1318,7 +1331,7 @@ def display_active_packages(table_formatted: bool = False) -> None:
     if not table_formatted:
         for module_config in config['modules']:
             print(
-                mmpm.utils.colored_text(mmpm.color.N_GREEN, module_config['module']),
+                mmpm.color.normal_green(module_config['module']),
                 f"\n  Status: {'disabled' if 'disabled' in module_config and module_config['disabled'] else 'enabled'}\n"
             )
         return
@@ -1562,7 +1575,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
 
     def __echo_and_eval__(command: str) -> None:
         mmpm.utils.log.info(f'executing {command} to install autocompletion')
-        print(f'{mmpm.consts.GREEN_PLUS_SIGN} {mmpm.utils.colored_text(mmpm.color.N_GREEN, command)}')
+        print(f'{mmpm.consts.GREEN_PLUS_SIGN} {mmpm.color.normal_green(command)}')
         os.system(command)
 
     if 'bash' in shell:

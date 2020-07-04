@@ -55,7 +55,6 @@ def __get_selected_packages__(rqst) -> List[MagicMirrorPackage]:
         selected_packages (List[MagicMirrorPackage]): extracted list of MagicMirrorPackage objects
     '''
     pkgs: dict = rqst.get_json(force=True)['selected-packages']
-
     # more-or-less a bandaid to the larger problem of aligning the data structure in angular
     for pkg in pkgs:
         del pkg['category']
@@ -64,7 +63,7 @@ def __get_selected_packages__(rqst) -> List[MagicMirrorPackage]:
             mmpm.utils.log.info(pkg)
             pkg['directory'] = os.path.join(mmpm.consts.MAGICMIRROR_MODULES_DIR, pkg['title'])
 
-    return mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(pkgs)
+    return [MagicMirrorPackage(**pkg) for pkg in pkgs]
 
 
 @socketio.on_error()
@@ -217,6 +216,7 @@ def packages_details() -> str:
     return json.dumps(result)
 #  -- END: PACKAGES --
 
+
 #  -- START: EXTERNAL PACKAGES --
 @app.route(api('external-packages/add'), methods=[mmpm.consts.POST])
 def external_packages_add() -> str:
@@ -266,6 +266,7 @@ def external_packages_remove() -> str:
     return json.dumps({'error': "no_error"})
 #  -- END: EXTERNAL PACKAGES --
 
+
 #  -- START: DATABASE --
 @app.route(api('database/refresh'), methods=[mmpm.consts.GET])
 def database_refresh() -> dict:
@@ -273,6 +274,7 @@ def database_refresh() -> dict:
     _modules_ = mmpm.core.load_packages(force_refresh=True)
     return _modules_
 #  -- END: DATABASE --
+
 
 #  -- START: MAGICMIRROR --
 @app.route(api('magicmirror/root-dir'), methods=[mmpm.consts.GET])
@@ -400,8 +402,8 @@ def magicmirror_upgrade() -> str:
         mmpm.core.restart_magicmirror()
 
     return json.dumps(True)
-
 #  -- END: MAGICMIRROR --
+
 
 #  -- START: RASPBERRYPI --
 @app.route(api('raspberrypi/restart'), methods=[mmpm.consts.GET])
@@ -441,6 +443,7 @@ def raspberrypi_stop() -> str:
     error_code, _, _ = mmpm.utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
     return json.dumps(bool(not error_code))
 #  -- END: RASPBERRYPI --
+
 
 #  -- START: MMPM --
 @app.route(api('mmpm/logs'), methods=[mmpm.consts.GET])

@@ -23,3 +23,15 @@ B_WHITE: str = B + Fore.WHITE  # bright white
 
 N_GREEN: str = N + Fore.GREEN  # normal green
 B_GREEN: str = B + Fore.GREEN  # bright green
+
+normal_green = lambda text : (N_GREEN + text + RESET)
+normal_cyan = lambda text : (N_CYAN + text + RESET)
+normal_red = lambda text : (N_RED + text + RESET)
+normal_magenta = lambda text : (N_MAGENTA + text + RESET)
+normal_yellow = lambda text : (N_YELLOW + text + RESET)
+
+bright_green = lambda text : (B_GREEN + text + RESET)
+bright_cyan = lambda text : (B_CYAN + text + RESET)
+bright_red = lambda text : (B_RED + text + RESET)
+bright_magenta = lambda text : (B_MAGENTA + text + RESET)
+bright_yellow = lambda text : (B_YELLOW + text + RESET)

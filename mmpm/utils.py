@@ -50,7 +50,7 @@ def error_msg(msg: str) -> None:
         None
     '''
     log.error(msg)
-    print(colored_text(mmpm.color.B_RED, "ERROR:"), msg)
+    print(mmpm.color.bright_red('ERROR:'), msg)
 
 
 def keyboard_interrupt_log() -> None:
@@ -80,7 +80,7 @@ def warning_msg(msg: str) -> None:
         None
     '''
     log.warning(msg)
-    print(colored_text(mmpm.color.B_YELLOW, "WARNING:"), msg)
+    print(mmpm.color.bright_yellow('WARNING:'), msg)
 
 
 def fatal_msg(msg: str) -> None:
@@ -94,7 +94,7 @@ def fatal_msg(msg: str) -> None:
         None
     '''
     log.critical(msg)
-    print(colored_text(mmpm.color.B_RED, "FATAL:"), msg)
+    print(mmpm.color.bright_red('FATAL:'), msg)
     sys.exit(127)
 
 
@@ -250,7 +250,7 @@ def clone(title: str, repo: str, target_dir: str = '') -> Tuple[int, str, str]:
     # by using "repo.split()", it allows the user to bake in additional commands when making custom sources
     # ie. git clone [repo] -b [branch] [target]
     log.info(f'Cloning {repo} into {target_dir if target_dir else os.path.join(os.getcwd(), title)}')
-    plain_print(mmpm.consts.GREEN_PLUS_SIGN + f" Cloning {colored_text(mmpm.color.N_GREEN, f'{title}')} repository" + mmpm.color.RESET)
+    plain_print(mmpm.consts.GREEN_PLUS_SIGN + f" Cloning {mmpm.color.normal_green(f'{title}')} repository" + mmpm.color.RESET)
 
     command = ['git', 'clone'] + repo.split()
 
@@ -542,20 +542,6 @@ def to_bytes(string: str) -> bytes:
     return bytes(string, 'utf-8')
 
 
-def colored_text(text_color: str, message: str) -> str:
-    '''
-    Returns the `color` concatenated with the `message` string
-
-    Parameters:
-        text_color (str): a colorama color
-        message (str): text that will be displayed in the `color`
-
-    Returns:
-        message (str): The original text concatenated with the colorama color
-    '''
-    return (text_color + message + mmpm.color.RESET)
-
-
 def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: List[str] = ['no', 'n'], assume_yes: bool = False) -> bool:
     '''
     Prompts user with the `user_prompt` until a response matches a value in the
@@ -797,12 +783,12 @@ def get_remote_repo_api_health() -> Dict[str, dict]:
         }
     }
 
-    github_api = mmpm.utils.safe_get_request('https://api.github.com/rate_limit')
+    github_api_response: requests.Response = mmpm.utils.safe_get_request('https://api.github.com/rate_limit')
 
-    if not github_api.status_code or github_api.status_code != 200:
+    if not github_api_response.status_code or github_api_response.status_code != 200:
         health[mmpm.consts.GITHUB][mmpm.consts.ERROR] = 'Unable to contact GitHub API'
 
-    github_api = json.loads(github_api.text)
+    github_api: dict = json.loads(github_api_response.text)
     reset: int = github_api['rate']['reset']
     remaining: int = github_api['rate']['remaining']
 
@@ -845,15 +831,15 @@ def __format_bitbucket_api_details__(data: dict, url: str) -> dict:
         details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
     '''
     stars = mmpm.utils.safe_get_request(f'{url}/watchers')
-    forks = mmpm.utils.safe_get_request(f'{url}/watchers') if data['fork_policy'] == 'allow_forks' else 0
-    issues = mmpm.utils.safe_get_request(f'{url}/issues') if data['has_issues'] else 0
+    forks = mmpm.utils.safe_get_request(f'{url}/watchers')
+    issues = mmpm.utils.safe_get_request(f'{url}/issues')
 
     return {
-        'Stars': int(json.loads(stars.text)['pagelen']),
-        'Open Issues': int(json.loads(issues.text)['pagelen']),
-        'Created': data['created_on'].split('T')[0],
-        'Last Updated': data['updated_on'].split('T')[0],
-        'Forks': int(json.loads(forks.text)['pagelen'])
+        'Stars': int(json.loads(stars.text)['pagelen']) if stars else 'N/A',
+        'Open Issues': int(json.loads(issues.text)['pagelen']) if issues else 'N/A',
+        'Created': data['created_on'].split('T')[0] if data else 'N/A',
+        'Last Updated': data['updated_on'].split('T')[0] if data else 'N/A',
+        'Forks': int(json.loads(forks.text)['pagelen']) if forks else 'N/A'
     } if data and stars else {}
 
 
@@ -871,11 +857,11 @@ def __format_gitlab_api_details__(data: dict, url: str) -> dict:
     issues = mmpm.utils.safe_get_request(f'{url}/issues')
 
     return {
-        'Stars': data['star_count'],
-        'Open Issues': len(json.loads(issues.text)),
-        'Created': data['created_at'].split('T')[0],
-        'Last Updated': data['last_activity_at'].split('T')[0],
-        'Forks': data['forks_count']
+        'Stars': data['star_count'] if data else 'N/A',
+        'Open Issues': len(json.loads(issues.text)) if issues else 'N/A',
+        'Created': data['created_at'].split('T')[0] if data else 'N/A',
+        'Last Updated': data['last_activity_at'].split('T')[0] if data else 'N/A',
+        'Forks': data['forks_count'] if data else 'N/A'
     } if data else {}
 
 
@@ -890,11 +876,11 @@ def __format_github_api_details__(data: dict) -> dict:
         details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
     '''
     return {
-        'Stars': data['stargazers_count'],
-        'Open Issues': data['open_issues'],
-        'Created': data['created_at'].split('T')[0],
-        'Last Updated': data['updated_at'].split('T')[0],
-        'Forks': data['forks_count'],
+        'Stars': data['stargazers_count'] if data else 'N/A',
+        'Open Issues': data['open_issues'] if data else 'N/A',
+        'Created': data['created_at'].split('T')[0] if data else 'N/A',
+        'Last Updated': data['updated_at'].split('T')[0] if data else 'N/A',
+        'Forks': data['forks_count'] if data else 'N/A',
     } if data else {}
 
 
@@ -948,5 +934,5 @@ def get_remote_package_details(package: MagicMirrorPackage) -> dict:
 
 
 def is_magicmirror_running() -> bool:
-    return mmpm.utils.get_pids('node') and mmpm.utils.get_pids('npm') and mmpm.utils.get_pids('electron') or mmpm.utils.get_pids('pm2')
+    return bool(mmpm.utils.get_pids('node') and mmpm.utils.get_pids('npm') and mmpm.utils.get_pids('electron') or mmpm.utils.get_pids('pm2'))
 

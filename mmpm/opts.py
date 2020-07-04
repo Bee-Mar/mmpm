@@ -133,14 +133,14 @@ def get_user_args() -> object:
     update_parser = subparsers.add_parser(
         UPDATE,
         usage='\n  mmpm update',
-        help='check for updates to installed packages, MMPM, and/or MagicMirror'
+        help='check for updates for installed packages, MMPM, and MagicMirror'
     )
 
     # UPGRADE SUBCOMMANDS
     upgrade_parser = subparsers.add_parser(
         UPGRADE,
         usage='\n  mmpm upgrade [--yes]',
-        help='upgrade packages, mmpm, and/or MagicMirror, if available'
+        help='upgrade packages, MMPM, and/or MagicMirror, if available'
     )
 
     upgrade_parser.add_argument(

@@ -87,10 +87,7 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
         mmpm.utils.error_msg(error)
         return False
 
-    version_line: List[str] = re.findall(r"__version__ = \d+\.\d+", contents)
-    version_list: List[str] = re.findall(r"\d+\.\d+", version_line[0])
-    version_number: float = float(version_list[0])
-
+    version_number: float = float(re.findall(r"\d+\.\d+", re.findall(r"__version__ = \d+\.\d+", contents)[0])[0])
     print(mmpm.consts.GREEN_CHECK_MARK)
 
     if not version_number:
@@ -101,21 +98,8 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
         return False
 
     mmpm.utils.log.info(f'Found newer version of MMPM: {version_number}')
-    env: str = mmpm.consts.MMPM_ENV_VARS[mmpm.consts.MMPM_MAGICMIRROR_ROOT]
-
-    write_changes_to_available_updates_db(env)
-
-    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
-        try:
-            upgrades = json.load(available_upgrades)
-        except json.JSONDecodeError:
-            upgrades: dict = {
-                mmpm.consts.MMPM: False,
-                env: {
-                    mmpm.consts.PACKAGES: [],
-                    mmpm.consts.MAGICMIRROR: False
-                }
-            },
+    env: str = mmpm.consts.MAGICMIRROR_ROOT
+    upgrades, _ = get_available_upgrades()
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
         upgrades[mmpm.consts.MMPM] = True
@@ -193,61 +177,60 @@ def upgrade_package(package: MagicMirrorPackage, assume_yes: bool = False) -> st
 
 
 def upgrade_available(assume_yes: bool = False) -> bool:
-    env: str = mmpm.consts.MMPM_ENV_VARS[mmpm.consts.MMPM_MAGICMIRROR_ROOT]
-
-    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
-        try:
-            upgrades: dict = json.load(available_upgrades)
-        except json.JSONDecodeError:
-            upgrades: dict = {
-                mmpm.consts.MMPM: False,
-                env: {
-                    mmpm.consts.PACKAGES: [],
-                    mmpm.consts.MAGICMIRROR: False
-                }
-            },
-
-            mmpm.utils.error_msg(f'Failed to read {mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE}. The file has been reset. Please re-run `mmpm update`')
-            return False
-
-    question: str = 'Would you like to upgrade now?'
-    upgraded: bool = False
-    green = lambda name : mmpm.utils.colored_text(mmpm.color.N_GREEN, name)
     confirmed: dict = {mmpm.consts.PACKAGES: [], mmpm.consts.MMPM: False, mmpm.consts.MAGICMIRROR: False}
+    env: str = mmpm.consts.MMPM_ENV_VARS[mmpm.consts.MMPM_MAGICMIRROR_ROOT]
+    green_text = lambda text : mmpm.utils.colored_text(mmpm.color.N_GREEN, text)
+    upgrades = get_available_upgrades()
+    upgraded: bool = False
+
+    has_upgrades: bool = False
+
+    for key in upgrades[env].keys():
+        if upgrades[env][key]:
+            has_upgrades = True
+            break
+
+    if not has_upgrades and not upgrades[mmpm.consts.MMPM]:
+        print(f'No upgrades available {mmpm.consts.YELLOW_X}')
 
     if upgrades[env][mmpm.consts.PACKAGES]:
-        for package in mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(upgrades[mmpm.consts.PACKAGES]):
-            if mmpm.utils.prompt_user(f'An upgrade is available for {green(package.title)} ({package.repository}). {question}?', assume_yes=assume_yes):
+        for package in upgrades[env][mmpm.consts.PACKAGES]:
+            if mmpm.utils.prompt_user(f'Upgrade {green_text(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
                 confirmed[mmpm.consts.PACKAGES].append(package)
 
     if upgrades[env][mmpm.consts.MAGICMIRROR]:
-        confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt_user(f"An upgrade is available for {green('MagicMirror')}. {question}", assume_yes=assume_yes)
+        confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt_user(f"Upgrade {green_text('MagicMirror')} now?", assume_yes=assume_yes)
 
     if upgrades[mmpm.consts.MMPM]:
-        confirmed[mmpm.consts.MMPM] = mmpm.utils.prompt_user(f"An upgrade is available for {green('MMPM')}. {question}", assume_yes=assume_yes)
+        confirmed[mmpm.consts.MMPM] = mmpm.utils.prompt_user(f"Upgrade {green_text('MMPM')} now?", assume_yes=assume_yes)
 
     for pkg in confirmed[mmpm.consts.PACKAGES]:
         error = upgrade_package(pkg)
 
         if error:
             mmpm.utils.error_msg(error)
-        else:
-            upgrades[env][mmpm.consts.PACKAGES].remove(package)
-            upgraded = True
+            continue
+
+        upgrades[env][mmpm.consts.PACKAGES].remove(pkg)
+        upgraded = True
+
+    warning: str = 'The above error requires user correction. Please fix this, and re-run `mmpm update` to sync the database'
 
     if confirmed[mmpm.consts.MMPM]:
         if not upgrade_mmpm():
-            mmpm.utils.warning_msg('The above error requires user correction. Please fix this, and re-run `mmpm update` to sync the database')
+            mmpm.utils.warning_msg(warning)
         else:
             upgrades[mmpm.consts.MMPM] = False
             upgraded = True
 
     if confirmed[mmpm.consts.MAGICMIRROR]:
         if not upgrade_magicmirror():
-            mmpm.utils.warning_msg('This above error requires user correction. Please fix this, and re-run `mmpm update` to sync the database')
+            mmpm.utils.warning_msg(warning)
         else:
             upgrades[env][mmpm.consts.MAGICMIRROR] = False
             upgraded = True
+
+    upgrades[env][mmpm.consts.PACKAGES] = [pkg.serialize_full() for pkg in upgrades[env][mmpm.consts.PACKAGES]]
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
         json.dump(upgrades, available_upgrades)
@@ -311,26 +294,16 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
                 mmpm.utils.error_msg('Unable to communicate with git server')
                 continue
 
-            if stdout:
-                upgradeable.append(package)
+            #if stdout:
+            #    upgradeable.append(package)
+            upgradeable.append(package)
 
             print(mmpm.consts.GREEN_CHECK_MARK)
 
     upgrades: dict = {}
+    env: str = mmpm.consts.MAGICMIRROR_ROOT
 
-    env: str = mmpm.consts.MMPM_ENV_VARS[mmpm.consts.MMPM_MAGICMIRROR_ROOT]
-
-    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
-        try:
-            upgrades = json.load(available_upgrades)
-        except json.JSONDecodeError:
-            upgrades: dict = {
-                mmpm.consts.MMPM: False,
-                env: {
-                    mmpm.consts.PACKAGES: [],
-                    mmpm.consts.MAGICMIRROR: False
-                }
-            }
+    upgrades = get_available_upgrades()
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
         if env not in upgrades:
@@ -598,6 +571,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
         return False
 
     is_git: bool = True
+
     if not os.path.exists(os.path.join(mmpm.consts.MAGICMIRROR_ROOT, '.git')):
         mmpm.utils.warning_msg('The MagicMirror root is not a git repo. If running MagicMirror as a Docker container, updates cannot be performed via mmpm.')
         is_git = False
@@ -609,7 +583,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
     # stdout and stderr are flipped for git command output, because that totally makes sense
     # except now stdout doesn't even contain error messages...thanks git
 
-    has_update: bool = False
+    update_available: bool = False
 
     if is_git:
         try:
@@ -624,10 +598,11 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
             mmpm.utils.error_msg('Unable to communicate with git server')
 
         if stdout:
-            has_update = True
+            update_available = True
 
     upgrades: dict = {}
-    env: str = mmpm.consts.MMPM_ENV_VARS[mmpm.consts.MMPM_MAGICMIRROR_ROOT]
+
+    env: str = mmpm.consts.MAGICMIRROR_ROOT
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
         try:
@@ -635,20 +610,21 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
         except json.JSONDecodeError:
             upgrades: dict = {
                 mmpm.consts.MMPM: False,
-                env: {
+                mmpm.consts.MAGICMIRROR_ROOT: {
                     mmpm.consts.PACKAGES: [],
-                    mmpm.consts.MAGICMIRROR: has_update
+                    mmpm.consts.MAGICMIRROR: update_available
                 }
             },
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
         if env not in upgrades:
-            upgrades[env] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: has_update}
+            upgrades[env] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: update_available}
         else:
-            upgrades[env][mmpm.consts.MAGICMIRROR] = has_update
+            upgrades[env][mmpm.consts.MAGICMIRROR] = update_available
+
         json.dump(upgrades, available_upgrades)
 
-    return True
+    return update_available
 
 
 def upgrade_magicmirror() -> bool:
@@ -1068,53 +1044,49 @@ def display_available_upgrades() -> None:
     decoded: bool = False
     cyan_application: str = f"{mmpm.utils.colored_text(mmpm.color.N_CYAN, 'application')}"
     cyan_package: str = f"{mmpm.utils.colored_text(mmpm.color.N_CYAN, 'package')}"
+    env: str = mmpm.consts.MAGICMIRROR_ROOT
+
+    upgrades_available: bool = False
+    upgrades = get_available_upgrades()
+
+    if upgrades[env][mmpm.consts.PACKAGES]:
+        for package in upgrades[env][mmpm.consts.PACKAGES]:
+            print(mmpm.utils.colored_text(mmpm.color.N_GREEN, package.title), f'[{cyan_package}]')
+            upgrades_available = True
+
+    if upgrades[mmpm.consts.MMPM]:
+        upgrades_available = True
+        print(f'{mmpm.utils.colored_text(mmpm.color.N_GREEN, mmpm.consts.MMPM)} [{cyan_application}]')
+
+    if upgrades[env][mmpm.consts.MAGICMIRROR]:
+        upgrades_available = True
+        print(f'{mmpm.utils.colored_text(mmpm.color.N_GREEN, mmpm.consts.MAGICMIRROR)} [{cyan_application}]')
+
+    if upgrades_available:
+        print('Run `mmpm upgrade` to upgrade available packages/applications')
+    else:
+        print(f'No upgrades available {mmpm.consts.YELLOW_X}')
+
+
+def get_available_upgrades() -> dict:
     env: str = mmpm.consts.MMPM_ENV_VARS[mmpm.consts.MMPM_MAGICMIRROR_ROOT]
+    reset_file: bool = False
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
         try:
             upgrades: dict = json.load(available_upgrades)
-            decoded = True
+            upgrades[env][mmpm.consts.PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(
+                upgrades[env][mmpm.consts.PACKAGES]
+            )
         except json.JSONDecodeError:
-            print(f'No upgrades available {mmpm.consts.YELLOW_X}')
+            reset_file = True
 
-        if env not in upgrades:
-            print(f'No upgrades found for current environment ({env}). Please run `mmpm update` first')
-            decoded = False
+    if reset_file:
+        with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
+            upgrades = {mmpm.consts.MMPM: False, env: {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False }}
+            json.dump(upgrades, available_upgrades)
 
-        if decoded:
-            upgrades_available: bool = False
-
-            if upgrades[env][mmpm.consts.PACKAGES]:
-                for package in mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(upgrades[mmpm.consts.PACKAGES]):
-                    print(mmpm.utils.colored_text(mmpm.color.N_GREEN, package.title), f'[{cyan_package}]')
-                    upgrades_available = True
-
-            if upgrades[mmpm.consts.MMPM]:
-                upgrades_available = True
-                print(f'{mmpm.utils.colored_text(mmpm.color.N_GREEN, mmpm.consts.MMPM)} [{cyan_application}]')
-
-            if upgrades[env][mmpm.consts.MAGICMIRROR]:
-                upgrades_available = True
-                print(f'{mmpm.utils.colored_text(mmpm.color.N_GREEN, mmpm.consts.MAGICMIRROR)} [{cyan_application}]')
-
-            if upgrades_available:
-                print('Run `mmpm upgrade` to upgrade available packages/applications')
-            else:
-                print(f'No upgrades available {mmpm.consts.YELLOW_X}')
-
-            return
-
-    # the decoding failed, populate the file with a default
-    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
-        json.dump({
-            mmpm.consts.MMPM: False,
-            mmpm.consts.MMPM_ENV_VARS[mmpm.consts.MMPM_MAGICMIRROR_ROOT]: {
-                mmpm.consts.PACKAGES: [],
-                mmpm.consts.MAGICMIRROR: False
-            }
-        },
-        available_upgrades
-    )
+    return upgrades
 
 
 def get_installed_packages(packages: Dict[str, List[MagicMirrorPackage]]) -> Dict[str, List[MagicMirrorPackage]]:

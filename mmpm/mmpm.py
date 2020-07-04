@@ -116,24 +116,25 @@ def main(argv):
         package_upgrades: List[MagicMirrorPackage] = mmpm.core.check_for_package_updates(packages)
         magicmirror_upgrade: bool = mmpm.core.check_for_magicmirror_updates()
         mmpm_upgrade: bool = mmpm.core.check_for_mmpm_updates()
+        total = len(package_upgrades) + int(mmpm_upgrade) + int(magicmirror_upgrade)
 
-        if package_upgrades or mmpm_upgrade or magicmirror_upgrade:
-            total = len(package_upgrades) + int(mmpm_upgrade) + int(magicmirror_upgrade)
+        if not total:
+            print('All packages are up to date')
+        else:
             message: str = f"{total} {'upgrade' if total == 1 else 'upgrades'} {'is' if total == 1 else 'are'} available"
             print(f'{message}. Run `mmpm list --upgradable` for details')
-        else:
-            print('All packages are up to date')
 
     elif args.subcmd == mmpm.opts.UPGRADE:
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
-        else:
-            mmpm.core.upgrade_available(args.assume_yes)
+
+        mmpm.core.upgrade_available(args.assume_yes)
 
     elif args.subcmd == mmpm.opts.INSTALL:
         if not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
-        elif args.magicmirror:
+
+        if args.magicmirror:
             mmpm.core.install_magicmirror()
         elif args.autocomplete:
             mmpm.core.install_autocompletion(assume_yes=args.assume_yes)
@@ -163,9 +164,9 @@ def main(argv):
     elif args.subcmd == mmpm.opts.SEARCH:
         if not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
-        elif len(additional_args) > 1:
-            mmpm.utils.fatal_msg(f'Too many arguments. `mmpm {args.subcmd}` only accepts one search argument')
 
+        if len(additional_args) > 1:
+            mmpm.utils.fatal_msg(f'Too many arguments. `mmpm {args.subcmd}` only accepts one search argument')
         else:
             if args.exclude_local:
                 packages = mmpm.utils.get_difference_of_packages(packages, mmpm.core.get_installed_packages(packages))

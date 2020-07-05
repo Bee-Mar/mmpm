@@ -79,7 +79,7 @@ export class MMPMExternalSourcesComponent implements OnInit {
     }).catch((error) => console.log(error));
   }
 
-  public onAddExternalSources(): void {
+  public onAddExternalPackage(): void {
     const dialogRef = this.dialog.open(ExternalSourceRegistrationDialogComponent, {
       minWidth: "60vw", disableClose: true
     });
@@ -105,12 +105,12 @@ export class MMPMExternalSourcesComponent implements OnInit {
     });
   }
 
-  public onRemoveExternalSource(): void {
+  public onRemoveExternalPackage(): void {
     if (this.selection.selected.length) {
       this.snackbar.notify("Executing ... ");
 
       console.log(this.selection.selected);
-      this.api.removeExternalModuleSource(this.selection.selected).then((unused) => {
+      this.api.removeExternalPackage(this.selection.selected).then((unused) => {
         this.snackbar.success("Process complete!");
         this.notifier.triggerTableUpdate();
       }).catch((error) => {

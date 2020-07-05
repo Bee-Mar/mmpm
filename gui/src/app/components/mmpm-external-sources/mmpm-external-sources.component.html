@@ -82,7 +82,7 @@
     style="margin-left: 3em;"
     matTooltip="Add external module source"
     [matTooltipPosition]="tableUtility?.tooltipPosition"
-    (click)="onAddExternalSources()"
+    (click)="onAddExternalPackage()"
   >
     <mat-icon>
       add
@@ -95,7 +95,7 @@
     style="margin-left: 3em;"
     matTooltip="{{ selection?.selected?.length === 1 ? 'Remove external module source' : 'Remove external module sources' }}"
     [matTooltipPosition]="tableUtility?.tooltipPosition"
-    (click)="onRemoveExternalSource()"
+    (click)="onRemoveExternalPackage()"
     [disabled]="!selection.selected.length || !packages.length"
   >
     <mat-icon>

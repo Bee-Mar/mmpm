@@ -28,14 +28,6 @@ export class RestApiService {
       }).pipe(retry(1), catchError(this.handleError)).toPromise();
   }
 
-  public refreshModules(): Promise<any> {
-    return this.http.get<any>(
-      this.route(URLS.GET.DATABASE.REFRESH),
-      {
-        headers: httpOptions()
-      }).pipe(retry(1), catchError(this.handleError)).toPromise();
-  }
-
   public getFile(url: string): Promise<any> {
     return this.http.get(
       this.route(url),
@@ -45,11 +37,11 @@ export class RestApiService {
       }).toPromise();
   }
 
-  private postWithSelectedPackages(url: string, selectedModules: MagicMirrorPackage[]): Promise<any> {
+  private postWithSelectedPackages(url: string, selectedPackages: MagicMirrorPackage[]): Promise<any> {
     return this.http.post(
       this.route(url),
       {
-        "selected-packages": selectedModules
+        "selected-packages": selectedPackages
       },
       {
         headers: httpOptions({
@@ -60,16 +52,16 @@ export class RestApiService {
       }).pipe(retry(1), catchError(this.handleError)).toPromise();
   }
 
-  public packagesInstall(selectedModules: MagicMirrorPackage[]): Promise<any> {
-    return this.postWithSelectedPackages(URLS.POST.PACKAGES.INSTALL, selectedModules);
+  public packagesInstall(selectedPackages: MagicMirrorPackage[]): Promise<any> {
+    return this.postWithSelectedPackages(URLS.POST.PACKAGES.INSTALL, selectedPackages);
   }
 
-  public packagesUpgrade(selectedModules: MagicMirrorPackage[]): Promise<any> {
-    return this.postWithSelectedPackages(URLS.POST.PACKAGES.UPGRADE, selectedModules);
+  public packagesUpgrade(selectedPackages: MagicMirrorPackage[]): Promise<any> {
+    return this.postWithSelectedPackages(URLS.POST.PACKAGES.UPGRADE, selectedPackages);
   }
 
-  public packagesRemove(selectedModules: MagicMirrorPackage[]): Promise<any> {
-    return this.postWithSelectedPackages(URLS.POST.PACKAGES.REMOVE, selectedModules);
+  public packagesRemove(selectedPackages: MagicMirrorPackage[]): Promise<any> {
+    return this.postWithSelectedPackages(URLS.POST.PACKAGES.REMOVE, selectedPackages);
   }
 
   public updateMagicMirrorConfig(url: string, code: string): Observable<Response> {
@@ -89,7 +81,7 @@ export class RestApiService {
     return this.http.post<any>(
       this.route(URLS.POST.EXTERNAL_PACKAGES.ADD),
       {
-        "external-source": externalSource
+        "external-package": externalSource
       },
       {
         headers: httpOptions({
@@ -98,13 +90,13 @@ export class RestApiService {
       }).pipe(retry(1), catchError(this.handleError)).toPromise();
   }
 
-  public removeExternalModuleSource(externalSources: MagicMirrorPackage[]): Promise<any> {
+  public removeExternalPackage(externalSources: MagicMirrorPackage[]): Promise<any> {
     return this.http.request(
       "DELETE",
       this.route(URLS.DELETE.EXTERNAL_PACKAGES.REMOVE),
       {
         body: {
-          "external-sources": externalSources
+          "external-packages": externalSources
         },
         headers: httpOptions({
           "Content-Type": "text/plain"

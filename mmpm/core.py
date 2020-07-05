@@ -957,9 +957,16 @@ def display_categories(packages: Dict[str, List[MagicMirrorPackage]], title_only
         } for key in packages.keys()
     ]
 
+    if title_only:
+        for category in categories:
+            print(category[mmpm.consts.CATEGORY])
+        return
+
     for category in categories:
-        print(mmpm.color.normal_green(category[mmpm.consts.CATEGORY]), f'\n  Packages: {category[mmpm.consts.PACKAGES]}\n')
-    return
+        print(
+            mmpm.color.normal_green(category[mmpm.consts.CATEGORY]),
+            f'\n  Packages: {category[mmpm.consts.PACKAGES]}\n'
+        )
 
 
 def display_packages(packages: Dict[str, List[MagicMirrorPackage]], title_only: bool = False, include_path: bool = False) -> None:

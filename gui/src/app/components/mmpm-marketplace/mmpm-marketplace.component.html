@@ -95,9 +95,9 @@
       mat-raised-button
       color="primary"
       [disabled]="!selection?.selected?.length || !allPackages?.length"
-      matTooltip="{{ selection?.selected?.length === 1 ? 'Install module' : 'Install Modules' }}"
+      matTooltip="{{ selection?.selected?.length === 1 ? 'Install package' : 'Install packages' }}"
       [matTooltipPosition]="tableUtility?.tooltipPosition"
-      (click)="onInstallModules()"
+      (click)="onInstallPackages()"
       >
       <mat-icon>
         get_app
@@ -110,7 +110,7 @@
       matTooltip="Refresh Marketplace"
       [matTooltipPosition]="tableUtility?.tooltipPosition"
       style="margin-left: 3em;"
-      (click)="onRefreshModules()"
+      (click)="onRefreshPackages()"
       >
       <mat-icon>
         refresh

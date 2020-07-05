@@ -142,7 +142,7 @@ export class MMPMMarketplaceComponent implements OnInit {
     return promise;
   }
 
-  private installModules(selected: MagicMirrorPackage[]) {
+  private installPackages(selected: MagicMirrorPackage[]) {
     let ids: Array<number> = this.tableUtility.saveProcessIds(selected, "[ Installation ]");
 
     this.api.packagesInstall(selected).then((failures: string) => {
@@ -164,7 +164,7 @@ export class MMPMMarketplaceComponent implements OnInit {
     }).catch((error) => console.log(error));
   }
 
-  public onInstallModules(): void {
+  public onInstallPackages(): void {
     if (!this.selection?.selected?.length) return;
 
     const numPackages: number = this.selection.selected.length;
@@ -185,7 +185,7 @@ export class MMPMMarketplaceComponent implements OnInit {
       this.checkForInstallationConflicts(selected).then((installationConflicts: InstallationConflict) => {
 
         if (!installationConflicts?.matchesSelectedTitles?.length && !installationConflicts?.matchesInstalledTitles?.length) {
-          this.installModules(selected);
+          this.installPackages(selected);
 
         } else {
           let dialogRef = this.dialog.open(
@@ -197,27 +197,27 @@ export class MMPMMarketplaceComponent implements OnInit {
             })
           );
 
-          dialogRef.afterClosed().subscribe((updatedModules: MagicMirrorPackage[]) => {
-            if (!updatedModules?.length) {
+          dialogRef.afterClosed().subscribe((updatedPackages: MagicMirrorPackage[]) => {
+            if (!updatedPackages?.length) {
               return;
             }
 
-            selected.forEach((selectedModule: MagicMirrorPackage) => {
-              updatedModules.forEach((updatedModule: MagicMirrorPackage) => {
-                if (selectedModule.title === updatedModule.title && updatedModule.directory.length) {
-                  selectedModule.directory = updatedModule.directory;
+            selected.forEach((selectedPackage: MagicMirrorPackage) => {
+              updatedPackages.forEach((updatedPackage: MagicMirrorPackage) => {
+                if (selectedPackage.title === updatedPackage.title && updatedPackage.directory.length) {
+                  selectedPackage.directory = updatedPackage.directory;
                 }
               });
             });
 
-            this.installModules(selected);
+            this.installPackages(selected);
           });
         }
       }).catch((error) => console.log(error));
     });
   }
 
-  public onRefreshModules(): void {
+  public onRefreshPackages(): void {
     this.snackbar.notify("Executing ... ");
     this.setupTableData(true);
     this.snackbar.notify("Refresh complete!");

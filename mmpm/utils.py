@@ -604,7 +604,7 @@ def fatal_too_many_options(args) -> None:
     Returns:
         None
     '''
-    print(args)
+
     if 'title_only' in args.__dict__:
         message: str = f'`mmpm {args.subcmd}` only accepts one optional argument in addition to `--title-only`. See `mmpm {args.subcmd} --help`'
     else:

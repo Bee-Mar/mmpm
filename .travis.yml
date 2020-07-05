@@ -48,12 +48,6 @@ matrix:
     script:
     - bash tests/travis-ci/mypy
     - bash tests/travis-ci/pylint
-  - language: c
-    before_install:
-      - cd lib
-      - make clean
-    script:
-      - make
   - language: nodejs
     node_js:
     - 10.19

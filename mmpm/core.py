@@ -977,7 +977,7 @@ def display_packages(packages: Dict[str, List[MagicMirrorPackage]], title_only: 
     MAX_LENGTH: int = 120
 
     if title_only:
-        _print_ = lambda package: print(mmpm.color.normal_green(f'{package.title}'))
+        _print_ = lambda package: print(package.title)
 
     elif include_path:
         _print_ = lambda package: print(

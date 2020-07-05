@@ -3,6 +3,7 @@ import eventlet
 eventlet.monkey_patch()
 
 import os
+import pathlib
 import json
 import shutil
 import datetime
@@ -40,7 +41,7 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 
 api = lambda path: f'/api/{path}'
 
-_modules_ = mmpm.core.load_packages()
+_packages_ = mmpm.core.load_packages()
 
 
 def __get_selected_packages__(rqst) -> List[MagicMirrorPackage]:
@@ -126,13 +127,13 @@ def server_error(error) -> Tuple[str, int]:
 @app.route(api('packages/marketplace'), methods=[mmpm.consts.GET])
 def packages_marketplace() -> str:
     mmpm.utils.log.info('Sending all marketplace packages')
-    return json.dumps(_modules_, default=lambda pkg: pkg.serialize_full())
+    return json.dumps(_packages_, default=lambda pkg: pkg.serialize_full())
 
 
 @app.route(api('packages/installed'), methods=[mmpm.consts.GET])
 def packages_installed() -> str:
     mmpm.utils.log.info('Sending all installed packages')
-    return json.dumps(mmpm.core.get_installed_packages(_modules_), default=lambda pkg: pkg.serialize_full())
+    return json.dumps(mmpm.core.get_installed_packages(_packages_), default=lambda pkg: pkg.serialize_full())
 
 
 @app.route(api('packages/external'), methods=[mmpm.consts.GET])
@@ -277,8 +278,8 @@ def external_packages_remove() -> str:
 @app.route(api('database/refresh'), methods=[mmpm.consts.GET])
 def database_refresh() -> dict:
     mmpm.utils.log.info(f'Received request to refresh modules')
-    _modules_ = mmpm.core.load_packages(force_refresh=True)
-    return _modules_
+    _packages_ = mmpm.core.load_packages(force_refresh=True)
+    return _packages_
 #  -- END: DATABASE --
 
 
@@ -292,10 +293,18 @@ def magicmirror_root_dir() -> str:
 @app.route(api('magicmirror/config'), methods=[mmpm.consts.GET, mmpm.consts.POST])
 def magicmirror_config():
     if request.method == mmpm.consts.GET:
-        result: str = send_file(
-            mmpm.consts.MAGICMIRROR_CONFIG_FILE,
-            attachment_filename='config.js'
-        ) if mmpm.consts.MAGICMIRROR_CONFIG_FILE else '// config.js not found. An empty file was created for you in its place'
+        if not os.path.exists(mmpm.consts.MAGICMIRROR_CONFIG_FILE):
+            try:
+                pathlib.Path(mmpm.consts.MAGICMIRROR_CONFIG_DIR).mkdir(parents=True, exist_ok=True)
+                pathlib.Path(mmpm.consts.MAGICMIRROR_CONFIG_FILE).touch(mode=0o664, exist_ok=True)
+                return f'// {mmpm.consts.MAGICMIRROR_CONFIG_FILE} not found. An empty file was created for you in its place'
+            except OSError:
+                pass
+        else:
+            result = send_file(
+                mmpm.consts.MAGICMIRROR_CONFIG_FILE,
+                attachment_filename='config.js'
+            )
 
         mmpm.utils.log.info('Retrieving MagicMirror config')
         return result
@@ -316,17 +325,23 @@ def magicmirror_config():
 @app.route(api('magicmirror/custom-css'), methods=[mmpm.consts.GET, mmpm.consts.POST])
 def magicmirror_custom_css():
     if request.method == mmpm.consts.GET:
-        result: str = send_file(
-            mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE,
-            attachment_filename='custom.css'
-        ) if mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE else '/* custom.css file not found. An empty file was created for you in its place */'
+        if not os.path.exists(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE):
+            try:
+                print('nada')
+                pathlib.Path(mmpm.consts.MAGICMIRROR_CUSTOM_DIR).mkdir(parents=True, exist_ok=True)
+                pathlib.Path(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE).touch(mode=0o664, exist_ok=True)
+                return f'/* {mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE} file not found. An empty file was created for you in its place */'
+            except OSError:
+                pass
+        else:
+            result: str = send_file(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE, attachment_filename='custom.css')
 
-        mmpm.utils.log.info('Retrieving MagicMirror custom/custom.css')
+        mmpm.utils.log.info(f'Retrieving MagicMirror {mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE}')
         return result
 
     elif request.method == mmpm.consts.POST:
         data: dict = request.get_json(force=True)
-        mmpm.utils.log.info('Saving MagicMirror custom/custom.css file')
+        mmpm.utils.log.info(f'Saving MagicMirror {mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE}')
 
         try:
             with open(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE, 'w') as custom_css:
@@ -349,11 +364,10 @@ def magicmirror_start() -> str:
     Returns:
         bool: True if the command was called, False it appears that MagicMirror is currently running
     '''
-    # there really isn't an easy way to capture return codes for the background process, so, for the first version, let's just be lazy for now
-    # need to find way to capturing return codes
+    # there really isn't an easy way to capture return codes for the background
+    # process
 
     # if these processes are all running, we assume MagicMirror is running currently
-    # TODO: Change this to include functionality for pm2
     if mmpm.utils.is_magicmirror_running():
         mmpm.utils.log.info('MagicMirror appears to be running already. Returning False.')
         return json.dumps(False)
@@ -403,7 +417,6 @@ def magicmirror_upgrade() -> str:
 
     mmpm.core.upgrade_magicmirror()
 
-    # TODO: Change this to include functionality for pm2
     if mmpm.utils.is_magicmirror_running():
         mmpm.core.restart_magicmirror()
 

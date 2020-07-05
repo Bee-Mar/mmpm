@@ -75,8 +75,10 @@ MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE: str = join(MMPM_CONFIG_DIR, 'Magic
 MAGICMIRROR_WIKI_URL: str = 'https://github.com/MichMich/MagicMirror/wiki'
 MAGICMIRROR_MODULES_URL: str = "https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules"
 MAGICMIRROR_MODULES_DIR: str = join(MMPM_MAGICMIRROR_ROOT, 'modules')
-MAGICMIRROR_CONFIG_FILE: str = join(MMPM_MAGICMIRROR_ROOT, 'config', 'config.js')
-MAGICMIRROR_CUSTOM_CSS_FILE: str = join(MMPM_MAGICMIRROR_ROOT, 'custom', 'custom.css')
+MAGICMIRROR_CONFIG_DIR: str = join(MMPM_MAGICMIRROR_ROOT, 'config')
+MAGICMIRROR_CUSTOM_DIR: str = join(MMPM_MAGICMIRROR_ROOT, 'custom')
+MAGICMIRROR_CONFIG_FILE: str = join(MAGICMIRROR_CONFIG_DIR, 'config.js')
+MAGICMIRROR_CUSTOM_CSS_FILE: str = join(MAGICMIRROR_CUSTOM_DIR, 'custom.css')
 
 MMPM_REQUIRED_DIRS: List[str] = [
     MMPM_MAGICMIRROR_ROOT,

@@ -6,6 +6,7 @@ import time
 import requests
 import datetime
 import json
+import pathlib
 
 from re import sub
 from logging import Logger
@@ -139,7 +140,7 @@ def env_variables_fatal_msg(preamble: str = '') -> None:
 def assert_snapshot_directory() -> bool:
     if not os.path.exists(mmpm.consts.MMPM_CONFIG_DIR):
         try:
-            os.mkdir(mmpm.consts.MMPM_CONFIG_DIR)
+            pathlib.Path(mmpm.consts.MMPM_CONFIG_DIR).mkdir(parents=True, exist_ok=True)
         except OSError:
             error_msg('Failed to create directory for snapshot')
             return False
@@ -147,7 +148,6 @@ def assert_snapshot_directory() -> bool:
 
 
 def assert_required_paths_exist() -> bool:
-
     for directory in mmpm.consts.MMPM_REQUIRED_DIRS:
         if not os.path.exists(directory):
             # it's likely the dirs dont exist because of a typo in an env var
@@ -263,7 +263,12 @@ def open_default_editor(path_to_file: str) -> Optional[None]:
     log.info(f'Attempting to open {path_to_file} in users default editor')
 
     if not os.path.exists(path_to_file):
-        fatal_msg(f'{path_to_file} not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
+        try:
+            mmpm.utils.warning_msg(f'{path_to_file} does not exist. Creating the directory and empty file')
+            pathlib.Path('/'.join(path_to_file.split('/')[:-1])).mkdir(parents=True, exist_ok=True)
+            pathlib.Path(path_to_file).touch(mode=0o664, exist_ok=True)
+        except OSError as error:
+            mmpm.utils.fatal_msg(f'Unable to create {path_to_file}: {str(error)}')
 
     editor = os.getenv('EDITOR') if os.getenv('EDITOR') else 'nano'
     error_code, _, _ = run_cmd(['which', editor], progress=False)

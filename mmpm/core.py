@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import re
 import os
+import pathlib
 import json
 import datetime
 import shutil
@@ -114,11 +115,10 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
 
 
 def upgrade_mmpm(assume_yes: bool = False) -> bool:
-    message = "Upgrading MMPM"
-    print(mmpm.color.normal_cyan(message))
 
     mmpm.utils.log.info(f'User chose to update MMPM')
 
+    print(f"{mmpm.consts.GREEN_DASHES} Upgrading {mmpm.color.normal_green('MMPM')}")
     os.system('rm -rf /tmp/mmpm')
     os.chdir(os.path.join('/', 'tmp'))
 
@@ -647,6 +647,7 @@ def upgrade_magicmirror() -> bool:
         success (bool): True if success, False if failure
 
     '''
+    print(f"{mmpm.consts.GREEN_DASHES} Upgrading {mmpm.color.normal_green('MagicMirror')}")
 
     os.chdir(mmpm.consts.MMPM_MAGICMIRROR_ROOT)
     error_code, _, stderr = mmpm.utils.run_cmd(['git', 'pull'], progress=False)
@@ -662,7 +663,7 @@ def upgrade_magicmirror() -> bool:
         mmpm.utils.error_msg(error)
         return False
 
-    print(f'Upgrade complete!\nRestart MagicMirror for the changes to take effect')
+    print(f'Restart MagicMirror for the changes to take effect')
     return True
 
 
@@ -1677,7 +1678,7 @@ def migrate() -> None:
                 mmpm.utils.fatal_msg(f'{legacy_ext_src_file} may be corrupted. Please examine the file')
 
         mmpm.utils.log.info(f'Renaming external packages file from {legacy_ext_src_file} to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
-        os.system(f'mv {legacy_ext_src_file} {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
+        pathlib.Path.rename(legacy_ext_src_file, mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE)
 
         with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as ext_pkgs:
             mmpm.utils.log.info(f'Saving updated external packages data')

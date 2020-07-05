@@ -36,19 +36,19 @@ NOT_AVAILABLE: str = 'N/A'
 GREEN_CHECK_MARK: str = mmpm.color.N_GREEN + u'\u2713' + mmpm.color.RESET
 YELLOW_X: str = mmpm.color.N_YELLOW + u'\u2718' + mmpm.color.RESET
 RED_X: str = mmpm.color.N_RED + u'\u2718' + mmpm.color.RESET
-GREEN_PLUS_SIGN: str = mmpm.color.RESET + '[' + mmpm.color.B_GREEN + '+' + mmpm.color.RESET + ']' # creates [+] symbol
-EXTERNAL_MODULE_SOURCES: str = 'External Module Sources'
+GREEN_ARROWS: str = mmpm.color.normal_green('--') # creates [+] symbol
+EXTERNAL_PACKAGES: str = 'External Packages'
 
 HOME_DIR: str = expanduser("~")
 
-MMPM_ENV: Dict[str, str] = {
+MMPM_ENV: dict = {
     'MMPM_MAGICMIRROR_ROOT': {
         'value': __get_or_set_env_var__('MMPM_MAGICMIRROR_ROOT', normpath(join(HOME_DIR, MAGICMIRROR))),
         'detail': 'the root directory of the MagicMirror application'
     },
     'MMPM_MAGICMIRROR_PM2_PROCESS_NAME': {
         'value': __get_or_set_env_var__('MMPM_MAGICMIRROR_PM2_PROCESS_NAME', MAGICMIRROR),
-        'detail': 'the name of the PM2 process associated with MagicMirror, if using PM2. If not using PM2, it can be ignored'
+        'detail': 'the name of the PM2 process associated with MagicMirror, Can be ignored if not using PM2'
     }
 }
 
@@ -63,9 +63,8 @@ MMPM_WIKI_URL: str = 'https://github.com/Bee-Mar/mmpm/wiki'
 MMPM_CONFIG_DIR: str = join(HOME_DIR, '.config', 'mmpm')
 MMPM_LOG_DIR: str = join(MMPM_CONFIG_DIR, 'log')
 
-MMPM_LIBMMPM_SHARED_OBJECT_FILE: str = '/usr/local/lib/mmpm/libmmpm.so'
 MMPM_NGINX_CONF_FILE: str = '/etc/nginx/sites-enabled/mmpm.conf'
-MMPM_EXTERNAL_SOURCES_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
+MMPM_EXTERNAL_PACKAGES_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-external-packages.json')
 
 MMPM_AVAILABLE_UPGRADES_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-available-upgrades.json')
 MMPM_CLI_LOG_FILE: str = join(MMPM_LOG_DIR, 'mmpm-cli-interface.log')
@@ -96,7 +95,7 @@ MMPM_DATA_FILES_NAMES: List[str] = [
     MMPM_CLI_LOG_FILE,
     MMPM_GUNICORN_ERROR_LOG_FILE,
     MMPM_GUNICORN_ACCESS_LOG_FILE,
-    MMPM_EXTERNAL_SOURCES_FILE,
+    MMPM_EXTERNAL_PACKAGES_FILE,
     MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE,
 ]
 

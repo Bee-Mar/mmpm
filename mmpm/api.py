@@ -248,7 +248,7 @@ def external_packages_remove() -> str:
 
     ext_modules: dict = {}
     marked_for_removal: list = []
-    external_packages: List[MagicMirrorPackage] = mmpm.core.load_external_packages()[mmpm.consts.EXTERNAL_MODULE_SOURCES]
+    external_packages: List[MagicMirrorPackage] = mmpm.core.load_external_packages()[mmpm.consts.EXTERNAL_PACKAGES]
 
     for selected_package in selected_packages:
         for external_package in external_packages:
@@ -261,14 +261,14 @@ def external_packages_remove() -> str:
         mmpm.utils.log.info(f'Removed {package.title}')
 
     try:
-        with open(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
+        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as mmpm_ext_srcs:
             json.dump(ext_modules, mmpm_ext_srcs)
-        mmpm.utils.log.info(f'Wrote updated external modules to {mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE}')
+        mmpm.utils.log.info(f'Wrote updated external modules to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
     except IOError as error:
         mmpm.utils.log.error(error)
         return json.dumps({'error': str(error)})
 
-    mmpm.utils.log.info(f'Wrote external modules to {mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE}')
+    mmpm.utils.log.info(f'Wrote external modules to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
     return json.dumps({'error': "no_error"})
 #  -- END: EXTERNAL PACKAGES --
 

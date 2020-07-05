@@ -287,7 +287,7 @@ def clone(title: str, repo: str, target_dir: str = '') -> Tuple[int, str, str]:
     # by using "repo.split()", it allows the user to bake in additional commands when making custom sources
     # ie. git clone [repo] -b [branch] [target]
     log.info(f'Cloning {repo} into {target_dir if target_dir else os.path.join(os.getcwd(), title)}')
-    plain_print(mmpm.consts.GREEN_PLUS_SIGN + f" Cloning {mmpm.color.normal_green(f'{title}')} repository" + mmpm.color.RESET)
+    plain_print(f"{mmpm.consts.GREEN_ARROWS} Cloning {mmpm.color.normal_green(f'{title}')} repository")
 
     command = ['git', 'clone'] + repo.split()
 
@@ -324,7 +324,7 @@ def cmake() -> Tuple[int, str, str]:
 
     '''
     log.info(f"Running 'cmake ..' in {os.getcwd()}")
-    plain_print(mmpm.consts.GREEN_PLUS_SIGN + " Found CMakeLists.txt. Attempting build with 'cmake'")
+    plain_print(f"{mmpm.consts.GREEN_ARROWS} Found CMakeLists.txt. Building with `cmake`")
 
     os.system('mkdir -p build')
     os.chdir('build')
@@ -343,7 +343,7 @@ def make() -> Tuple[int, str, str]:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
     log.info(f"Running 'make -j {cpu_count()}' in {os.getcwd()}")
-    plain_print(mmpm.consts.GREEN_PLUS_SIGN + f" Found Makefile. Attempting to run 'make -j {cpu_count()}'")
+    plain_print(f"{mmpm.consts.GREEN_ARROWS} Found Makefile. Running `make -j {cpu_count()}`")
     return run_cmd(['make', '-j', f'{cpu_count()}'])
 
 
@@ -358,7 +358,7 @@ def npm_install() -> Tuple[int, str, str]:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
     log.info(f"Running 'npm install' in {os.getcwd()}")
-    plain_print(mmpm.consts.GREEN_PLUS_SIGN + " Found package.json. Running 'npm install'")
+    plain_print(f"{mmpm.consts.GREEN_ARROWS} Found package.json. Running `npm install`")
     return run_cmd(['npm', 'install'])
 
 
@@ -373,7 +373,7 @@ def bundle_install() -> Tuple[int, str, str]:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
     log.info(f"Running 'bundle install' in {os.getcwd()}")
-    plain_print(mmpm.consts.GREEN_PLUS_SIGN + "Found Gemfile. Running 'bundle install'")
+    plain_print(f"{mmpm.consts.GREEN_ARROWS} Found Gemfile. Running `bundle install`")
     return run_cmd(['bundle', 'install'])
 
 
@@ -461,7 +461,7 @@ def install_dependencies(directory: str) -> str:
                 print(mmpm.consts.GREEN_CHECK_MARK)
 
     os.chdir(directory)
-    print(mmpm.consts.GREEN_PLUS_SIGN + f' Installation complete ' + mmpm.consts.GREEN_CHECK_MARK)
+    print(f'{mmpm.consts.GREEN_ARROWS} Installation complete ' + mmpm.consts.GREEN_CHECK_MARK)
     log.info(f'Exiting installation handler from {os.getcwd()}')
     return ''
 
@@ -520,63 +520,6 @@ def kill_magicmirror_processes() -> None:
     for process in processes:
         kill_pids_of_process(process)
         log.info(f'Killed pids of process {process}')
-
-
-def display_table(table, rows: int, columns: int) -> None:
-    '''
-    Calls the shared mmpm library to print the contents of a provided matrix
-
-    Parameters:
-        data: List[bytes]
-
-    Returns:
-        None
-    '''
-
-    libmmpm = cdll.LoadLibrary(mmpm.consts.MMPM_LIBMMPM_SHARED_OBJECT_FILE)
-
-    __display_table__ = libmmpm.display_table
-    __display_table__.argtypes = [POINTER(POINTER(c_char_p)), c_int, c_int]
-    __display_table__.restype = None
-    __display_table__(table, rows, columns)
-
-
-def allocate_table_memory(rows: int, columns: int):
-    '''
-    Calls the shared mmpm library to allocate memory for a matrix `rows` times
-    `columns` times `sizeof(char*)`, and returns a pointer to the memory
-
-    Parameters:
-        data: List[bytes]
-
-    Returns:
-        table (POINTER(POINTER(c_char_p))): the allocated memory
-    '''
-    if not rows or not columns:
-        fatal_msg('Positive integers must be provided as arguments')
-
-    libmmpm = cdll.LoadLibrary(mmpm.consts.MMPM_LIBMMPM_SHARED_OBJECT_FILE)
-
-    _allocate_table_memory = libmmpm.allocate_table_memory
-    _allocate_table_memory.argtypes = [c_int, c_int]
-    _allocate_table_memory.restype = POINTER(POINTER(c_char_p))
-
-    table = _allocate_table_memory(rows, columns)
-    return table
-
-
-def to_bytes(string: str) -> bytes:
-    '''
-    Wrapper method to convert a string to UTF-8 encoded bytes
-
-    Parameters:
-        string (str): text that will be UTF-8 encoded
-
-    Returns:
-        message (str): the UTF-8 encoded string
-
-    '''
-    return bytes(string, 'utf-8')
 
 
 def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: List[str] = ['no', 'n'], assume_yes: bool = False) -> bool:
@@ -656,9 +599,9 @@ def fatal_too_many_options(args) -> None:
     Returns:
         None
     '''
-
-    if 'table_formatted' in args.__dict__:
-        message: str = f'`mmpm {args.subcmd}` only accepts one optional argument in addition to `--table`. See `mmpm {args.subcmd} --help`'
+    print(args)
+    if 'title_only' in args.__dict__:
+        message: str = f'`mmpm {args.subcmd}` only accepts one optional argument in addition to `--title-only`. See `mmpm {args.subcmd} --help`'
     else:
         message = f'`mmpm {args.subcmd}` only accepts one optional argument. See `mmpm {args.subcmd} --help`'
     fatal_msg(message)
@@ -770,7 +713,7 @@ def assert_one_option_selected(args) -> bool:
         yes (bool): True if one option is selected, False if more than one is selected
     '''
     args = args.__dict__
-    return not len([args[option] for option in args if args[option] == True and option != 'table_formatted']) > 1
+    return not len([args[option] for option in args if args[option] == True and option != 'title_only']) > 1
 
 
 def safe_get_request(url: str) -> requests.Response:

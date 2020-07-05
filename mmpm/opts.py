@@ -55,8 +55,16 @@ def get_user_args() -> object:
     # SEARCH PARSER
     search_parser = subparsers.add_parser(
         SEARCH,
-        usage='\n  mmpm search <query> [--case-sensitive] [--exclude-local] [--table]',
+        usage='\n  mmpm search <query> [--case-sensitive] [--exclude-local]',
         help='search for MagicMirror packages'
+    )
+
+    search_parser.add_argument(
+        '-t',
+        '--title-only',
+        action='store_true',
+        help='only show the title of the packages matching the search results',
+        dest='title_only'
     )
 
     search_parser.add_argument(
@@ -73,13 +81,6 @@ def get_user_args() -> object:
         action='store_true',
         help='exclude locally installed packages from search results',
         dest='exclude_local'
-    )
-
-    search_parser.add_argument(
-        '--table',
-        action='store_true',
-        help='display output in table format',
-        dest='table_formatted'
     )
 
     # INSTALL PARSER
@@ -178,7 +179,7 @@ def get_user_args() -> object:
    # LIST SUBCOMMANDS
     list_parser = subparsers.add_parser(
         LIST,
-        usage='\n  mmpm list [--all] [--exclude-local] [--categories] [--gui-url] [--table]',
+        usage='\n  mmpm list [--all] [--exclude-local] [--categories] [--gui-url]',
         help='list items such as installed packages, packages available, available upgrades, etc'
     )
 
@@ -199,6 +200,14 @@ def get_user_args() -> object:
     )
 
     list_parser.add_argument(
+        '-i',
+        '--installed',
+        action='store_true',
+        help='list all locally installed packages',
+        dest='installed'
+    )
+
+    list_parser.add_argument(
         '-c',
         '--categories',
         action='store_true',
@@ -207,11 +216,11 @@ def get_user_args() -> object:
     )
 
     list_parser.add_argument(
-        '-i',
-        '--installed',
+        '-t',
+        '--title-only',
         action='store_true',
-        help='list all locally installed packages',
-        dest='installed'
+        help='display title only of packages (used with -c, -a, -e, or -i)',
+        dest='title_only'
     )
 
     list_parser.add_argument(
@@ -227,13 +236,6 @@ def get_user_args() -> object:
         action='store_true',
         help='list packages that have available upgrades',
         dest='upgradeable'
-    )
-
-    list_parser.add_argument(
-        '--table',
-        action='store_true',
-        help='display output in table format, where applicable',
-        dest='table_formatted'
     )
 
     # OPEN SUBCOMMANDS
@@ -382,15 +384,8 @@ def get_user_args() -> object:
     # MM_CTL SUBCOMMANDS
     mm_ctl_parser = subparsers.add_parser(
         MM_CTL,
-        usage='\n  mmpm mm-ctl [--status] [--restart] [--start] [--stop]\n  mmpm mm-ctl [--status] [--table]\n  mmpm mm-ctl [--rotate] {0, 90, 180, 270}',
+        usage='\n  mmpm mm-ctl [--status] [--restart] [--start] [--stop]\n  mmpm mm-ctl [--status]\n  mmpm mm-ctl [--rotate] {0, 90, 180, 270}',
         help='commands to control the MagicMirror'
-    )
-
-    mm_ctl_parser.add_argument(
-        '--table',
-        action='store_true',
-        help='display output in table format, used with --status',
-        dest='table_formatted'
     )
 
     mm_ctl_parser.add_argument(
@@ -453,6 +448,14 @@ def get_user_args() -> object:
         action='store_true',
         help='display MMPM version number',
         dest='version'
+    )
+
+    # adding this as an option in case the user doesn't install via 'make'
+    arg_parser.add_argument(
+        '--migrate',
+        action='store_true',
+        help='migrate legacy file names and database keys. Only required once if prior version of MMPM is < 1.25',
+        dest='migrate'
     )
 
     # hidden argument used for the GUI interface

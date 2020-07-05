@@ -27,6 +27,10 @@ def main(argv):
         print(f'{__version__}')
         sys.exit(0)
 
+    if args.migrate:
+        mmpm.core.migrate()
+        sys.exit(0)
+
     mmpm.utils.assert_required_paths_exist()
 
     if args.subcmd in mmpm.opts.SINGLE_OPTION_ARGS and not mmpm.utils.assert_one_option_selected(args):
@@ -52,15 +56,15 @@ def main(argv):
             if not installed_packages:
                 mmpm.utils.fatal_msg('No packages are currently installed')
 
-            mmpm.core.display_packages(installed_packages, table_formatted=args.table_formatted, include_path=True)
+            mmpm.core.display_packages(installed_packages, title_only=args.title_only, include_path=True)
 
         elif args.all:
-            mmpm.core.display_packages(packages, table_formatted=args.table_formatted)
+            mmpm.core.display_packages(packages, title_only=args.title_only)
         elif args.exclude_local:
             excluded = mmpm.utils.get_difference_of_packages(packages, mmpm.core.get_installed_packages(packages))
-            mmpm.core.display_packages(excluded, table_formatted=args.table_formatted)
+            mmpm.core.display_packages(excluded, title_only=args.title_only)
         elif args.categories:
-            mmpm.core.display_categories(packages, table_formatted=args.table_formatted)
+            mmpm.core.display_categories(packages, title_only=args.title_only)
         elif args.gui_url:
             print(f'{mmpm.core.get_web_interface_url()}')
         elif args.upgradeable:
@@ -171,14 +175,14 @@ def main(argv):
 
             mmpm.core.display_packages(
                 mmpm.core.search_packages(packages, additional_args[0], case_sensitive=args.case_sensitive),
-                table_formatted=args.table_formatted
+                title_only=args.title_only
             )
 
     elif args.subcmd == mmpm.opts.MM_CTL:
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.status:
-            mmpm.core.display_active_packages(table_formatted=args.table_formatted)
+            mmpm.core.display_active_packages()
         elif args.start:
             mmpm.core.start_magicmirror()
         elif args.stop:

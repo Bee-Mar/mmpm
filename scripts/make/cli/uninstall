@@ -13,10 +13,6 @@ printf " -- removing MMPM hidden config directory"
 log_and_eval "rm -rvf ~/.config/mmpm"
 _done_
 
-printf " -- removing MMPM shared object"
-log_and_eval "cd lib; make uninstall; cd -"
-_done_
-
 log_action "MMPM CLI Removed"
 
 printf "[+] \033[1;36mMMPM CLI Removed\e[0m\n"

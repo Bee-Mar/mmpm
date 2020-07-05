@@ -155,7 +155,7 @@ def upgrade_package(package: MagicMirrorPackage, assume_yes: bool = False) -> st
 
     os.chdir(package.directory)
 
-    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS_SIGN} Performing upgrade for {mmpm.color.normal_green(package.title)}')
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_ARROWS} Performing upgrade for {mmpm.color.normal_green(package.title)}')
     error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
 
     if error_code:
@@ -461,7 +461,7 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
     successes: int = 0
     match_count: int = len(installation_candidates)
 
-    print(mmpm.color.normal_cyan(f'Matched query to {match_count} package(s)\n'))
+    print(mmpm.color.normal_cyan(f"Matched query to {match_count} {'package' if match_count == 1 else 'packages'}"))
 
     for index, candidate in enumerate(installation_candidates):
         if not mmpm.utils.prompt_user(f'Install {mmpm.color.normal_green(candidate.title)} ({candidate.repository})?', assume_yes=assume_yes):
@@ -545,7 +545,7 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
         mmpm.utils.log.error(message)
 
         yes = mmpm.utils.prompt_user(
-            f"{mmpm.color.normal_red('ERROR:')} Failed to install {package.title} at '{package.directory}'. Remove the directory?",
+            f"{mmpm.color.bright_red('ERROR:')} Failed to install {package.title} at '{package.directory}'. Remove the directory?",
             assume_yes=assume_yes
         )
 
@@ -553,7 +553,7 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
             message = f"User chose to remove {package.title} at '{package.directory}'"
             # just to make sure there aren't any errors in removing the directory
             os.system(f"rm -rf '{package.directory}'")
-            print(f"{mmpm.consts.GREEN_PLUS_SIGN} Removed '{package.directory}' {mmpm.consts.GREEN_CHECK_MARK}")
+            print(f"{mmpm.consts.GREEN_ARROWS} Removing '{package.directory}' {mmpm.consts.GREEN_CHECK_MARK}")
         else:
             message = f"Keeping {package.title} at '{package.directory}'"
             print(f'\n{message}\n')
@@ -741,7 +741,7 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
 
     for dir_name in marked_for_removal:
         shutil.rmtree(dir_name)
-        print(f'{mmpm.consts.GREEN_PLUS_SIGN} Removed {mmpm.color.normal_green(dir_name)} {mmpm.consts.GREEN_CHECK_MARK}')
+        print(f'{mmpm.consts.GREEN_ARROWS} Removed {mmpm.color.normal_green(dir_name)} {mmpm.consts.GREEN_CHECK_MARK}')
         mmpm.utils.log.info(f'Removed {dir_name}')
 
     if marked_for_removal:
@@ -784,7 +784,7 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
     # if the snapshot has expired, or doesn't exist, get a new one
     if force_refresh or not db_exists:
         mmpm.utils.plain_print(
-            f"{mmpm.consts.GREEN_PLUS_SIGN} {'Refreshing' if db_exists else 'Initializing'} MagicMirror 3rd party packages database "
+            f"{mmpm.consts.GREEN_ARROWS} {'Refreshing' if db_exists else 'Initializing'} MagicMirror 3rd party packages database "
         )
 
         packages = retrieve_packages()
@@ -807,7 +807,7 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
             for category in packages.keys():
                 packages[category] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(packages[category])
 
-    if packages and os.path.exists(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE).st_size:
+    if packages and os.path.exists(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE) and os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size:
         packages.update(**load_external_packages())
 
     return packages
@@ -816,7 +816,7 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
 def load_external_packages() -> Dict[str, List[MagicMirrorPackage]]:
     '''
     Extracts the external packages from the JSON files stored in
-    ~/.config/mmpm/mmpm-external-sources.json
+    ~/.config/mmpm/mmpm-external-packages.json
 
     If no data is found, an empty list is returned
 
@@ -829,13 +829,13 @@ def load_external_packages() -> Dict[str, List[MagicMirrorPackage]]:
     external_packages: List[MagicMirrorPackage] = []
 
     try:
-        with open(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as f:
-            external_packages = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(f)[mmpm.consts.EXTERNAL_MODULE_SOURCES])
+        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r') as f:
+            external_packages = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(f)[mmpm.consts.EXTERNAL_PACKAGES])
     except Exception:
-        message = f'Failed to load data from {mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE}. Please examine the file, as it may be malformed and required manual corrective action.'
+        message = f'Failed to load data from {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}. Please examine the file, as it may be malformed and required manual corrective action.'
         mmpm.utils.warning_msg(message)
 
-    return {mmpm.consts.EXTERNAL_MODULE_SOURCES: external_packages}
+    return {mmpm.consts.EXTERNAL_PACKAGES: external_packages}
 
 def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
     '''
@@ -935,7 +935,7 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
     return packages
 
 
-def display_categories(packages: Dict[str, List[MagicMirrorPackage]], table_formatted: bool = False) -> None:
+def display_categories(packages: Dict[str, List[MagicMirrorPackage]], title_only: bool = False) -> None:
     '''
     Prints module category names and the total number of modules in one of two
     formats. The default is similar to the Debian apt package manager, and the
@@ -943,7 +943,6 @@ def display_categories(packages: Dict[str, List[MagicMirrorPackage]], table_form
 
     Parameters:
         packages (Dict[str, List[MagicMirrorPackage]]): list of dictionaries containing category names and module count
-        table_formatted (bool): if True, the output is printed as a prettified table
 
     Returns:
         None
@@ -956,27 +955,12 @@ def display_categories(packages: Dict[str, List[MagicMirrorPackage]], table_form
         } for key in packages.keys()
     ]
 
-    if not table_formatted:
-        for category in categories:
-            print(mmpm.color.normal_green(category[mmpm.consts.CATEGORY]), f'\n  Packages: {category[mmpm.consts.PACKAGES]}\n')
-        return
-
-    global_row: int = 1
-    columns: int = 2
-    rows = len(categories) + 1  # to include the header row
-
-    table = mmpm.utils.allocate_table_memory(rows, columns)
-    table[0][0], table[0][1] = mmpm.utils.to_bytes(mmpm.consts.CATEGORY.title()), mmpm.utils.to_bytes(mmpm.consts.PACKAGES.title())
-
     for category in categories:
-        table[global_row][0] = mmpm.utils.to_bytes(category[mmpm.consts.CATEGORY])
-        table[global_row][1] = mmpm.utils.to_bytes(str(category[mmpm.consts.PACKAGES]))
-        global_row += 1
-
-    mmpm.utils.display_table(table, rows, columns)
+        print(mmpm.color.normal_green(category[mmpm.consts.CATEGORY]), f'\n  Packages: {category[mmpm.consts.PACKAGES]}\n')
+    return
 
 
-def display_packages(packages: Dict[str, List[MagicMirrorPackage]], table_formatted: bool = False, include_path: bool = False) -> None:
+def display_packages(packages: Dict[str, List[MagicMirrorPackage]], title_only: bool = False, include_path: bool = False) -> None:
     '''
     Depending on the user flags passed in from the command line, either all
     existing packages may be displayed, or the names of all categories of
@@ -992,59 +976,25 @@ def display_packages(packages: Dict[str, List[MagicMirrorPackage]], table_format
     format_description = lambda desc: desc[:MAX_LENGTH] + '...' if len(desc) > MAX_LENGTH else desc
     MAX_LENGTH: int = 120
 
-    if table_formatted:
-        columns: int = 2
-        global_row: int = 1
-        rows: int = 1  # to include the header row
+    if title_only:
+        _print_ = lambda package: print(mmpm.color.normal_green(f'{package.title}'))
 
-        for row in packages.values():
-            rows += len(row)
-
-        if include_path:
-            columns += 1
-            MAX_LENGTH = 80
-
-        table = mmpm.utils.allocate_table_memory(rows, columns)
-
-        table[0][0] = mmpm.utils.to_bytes(mmpm.consts.TITLE.title())
-        table[0][1] = mmpm.utils.to_bytes(mmpm.consts.DESCRIPTION.title())
-
-        if include_path:
-            table[0][2] = mmpm.utils.to_bytes(mmpm.consts.DIRECTORY.title())
-
-            def __fill_row__(table, row, package: MagicMirrorPackage):
-                table[row][0] = mmpm.utils.to_bytes(package.title)
-                table[row][1] = mmpm.utils.to_bytes(format_description(package.description))
-                table[row][2] = mmpm.utils.to_bytes(os.path.basename(package.directory))
-        else:
-            def __fill_row__(table, row, package: MagicMirrorPackage):
-                table[row][0] = mmpm.utils.to_bytes(package.title)
-                table[row][1] = mmpm.utils.to_bytes(format_description(package.description))
-
-        for _, _packages in packages.items():
-            for _, package in enumerate(_packages):
-                __fill_row__(table, global_row, package)
-                global_row += 1
-
-        mmpm.utils.display_table(table, rows, columns)
+    elif include_path:
+        _print_ = lambda package: print(
+            mmpm.color.normal_green(f'{package.title}'),
+            (f'\n  Directory: {package.directory}'),
+            (f"\n  {format_description(package.description)}\n")
+        )
 
     else:
-        if include_path:
-            _print_ = lambda package: print(
-                mmpm.color.normal_green(f'{package.title}'),
-                (f'\n  Directory: {package.directory}'),
-                (f"\n  {format_description(package.description)}\n")
-            )
+        _print_ = lambda package: print(
+            mmpm.color.normal_green(f'{package.title}'),
+            (f"\n  {format_description(package.description)}\n")
+        )
 
-        else:
-            _print_ = lambda package: print(
-                mmpm.color.normal_green(f'{package.title}'),
-                (f"\n  {format_description(package.description)}\n")
-            )
-
-        for _, _packages in packages.items():
-            for _, package in enumerate(_packages):
-                _print_(package)
+    for _, _packages in packages.items():
+        for _, package in enumerate(_packages):
+            _print_(package)
 
 
 def display_available_upgrades() -> None:
@@ -1198,7 +1148,7 @@ def add_external_package(title: str = None, author: str = None, repo: str = None
     Adds an external source for user to install a module from. This may be a
     private git repo, or a specific branch of a public repo. All modules added
     in this manner will be added to the 'External Module Sources' category.
-    These sources are stored in ~/.config/mmpm/mmpm-external-sources.json
+    These sources are stored in ~/.config/mmpm/mmpm-external-packages.json
 
     Parameters:
         title (str): External source title
@@ -1236,21 +1186,21 @@ def add_external_package(title: str = None, author: str = None, repo: str = None
     external_package = MagicMirrorPackage(title=title, repository=repo, author=author, description=description)
 
     try:
-        if os.path.exists(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE) and os.stat(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE).st_size:
+        if os.path.exists(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE) and os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size:
             config: dict = {}
 
-            with open(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
-                config[mmpm.consts.EXTERNAL_MODULE_SOURCES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(mmpm_ext_srcs)[mmpm.consts.EXTERNAL_MODULE_SOURCES])
+            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r') as mmpm_ext_srcs:
+                config[mmpm.consts.EXTERNAL_PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(mmpm_ext_srcs)[mmpm.consts.EXTERNAL_PACKAGES])
 
-            with open(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
-                config[mmpm.consts.EXTERNAL_MODULE_SOURCES].append(external_package)
+            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as mmpm_ext_srcs:
+                config[mmpm.consts.EXTERNAL_PACKAGES].append(external_package)
                 json.dump(config, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
         else:
             # if file didn't exist previously, or it was empty, this is the first external package that's been added
-            with open(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
-                json.dump({mmpm.consts.EXTERNAL_MODULE_SOURCES: [external_package]}, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
+            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as mmpm_ext_srcs:
+                json.dump({mmpm.consts.EXTERNAL_PACKAGES: [external_package]}, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
 
-        print(mmpm.color.normal_green(f"\nSuccessfully added {title} to '{mmpm.consts.EXTERNAL_MODULE_SOURCES}'\n"))
+        print(mmpm.color.normal_green(f"\nSuccessfully added {title} to '{mmpm.consts.EXTERNAL_PACKAGES}'\n"))
 
     except IOError as error:
         mmpm.utils.error_msg('Failed to save external module')
@@ -1262,7 +1212,7 @@ def add_external_package(title: str = None, author: str = None, repo: str = None
 def remove_external_package_source(titles: List[str] = None, assume_yes: bool = False) -> bool:
     '''
     Allows user to remove an external source from the sources saved in
-    ~/.config/mmpm/mmpm-external-sources.json
+    ~/.config/mmpm/mmpm-external-packages.json
 
     Parameters:
         titles (List[str]): External source titles
@@ -1271,24 +1221,24 @@ def remove_external_package_source(titles: List[str] = None, assume_yes: bool = 
         success (bool): True on success, False on error
     '''
 
-    if not os.path.exists(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE):
-        mmpm.utils.fatal_msg(f'{mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE} does not appear to exist')
+    if not os.path.exists(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE):
+        mmpm.utils.fatal_msg(f'{mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE} does not appear to exist')
 
-    elif not os.stat(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE).st_size:
-        mmpm.utils.fatal_msg(f'{mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE} is empty')
+    elif not os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size:
+        mmpm.utils.fatal_msg(f'{mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE} is empty')
 
     ext_packages: Dict[str, List[MagicMirrorPackage]] = {}
     marked_for_removal: List[MagicMirrorPackage] = []
     cancelled_removal: List[MagicMirrorPackage] = []
 
-    with open(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE, 'r') as mmpm_ext_srcs:
-        ext_packages[mmpm.consts.EXTERNAL_MODULE_SOURCES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(mmpm_ext_srcs)[mmpm.consts.EXTERNAL_MODULE_SOURCES])
+    with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r') as mmpm_ext_srcs:
+        ext_packages[mmpm.consts.EXTERNAL_PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(mmpm_ext_srcs)[mmpm.consts.EXTERNAL_PACKAGES])
 
-    if not ext_packages[mmpm.consts.EXTERNAL_MODULE_SOURCES]:
+    if not ext_packages[mmpm.consts.EXTERNAL_PACKAGES]:
         mmpm.utils.fatal_msg('No external packages found in database')
 
     for title in titles:
-        for package in ext_packages[mmpm.consts.EXTERNAL_MODULE_SOURCES]:
+        for package in ext_packages[mmpm.consts.EXTERNAL_PACKAGES]:
             if package.title == title:
                 prompt: str = f'Would you like to remove {mmpm.color.normal_green(title)} ({package.repository}) from the MMPM/MagicMirror local database?'
                 if mmpm.utils.prompt_user(prompt, assume_yes=assume_yes):
@@ -1301,17 +1251,17 @@ def remove_external_package_source(titles: List[str] = None, assume_yes: bool = 
         return False
 
     for package in marked_for_removal:
-        ext_packages[mmpm.consts.EXTERNAL_MODULE_SOURCES].remove(package)
-        print(f'{mmpm.consts.GREEN_PLUS_SIGN} Removed {package.title} ({package.repository})')
+        ext_packages[mmpm.consts.EXTERNAL_PACKAGES].remove(package)
+        print(f'Removed {package.title} ({package.repository}) {mmpm.consts.GREEN_CHECK_MARK}')
 
     # if the error_msg was triggered, there's no need to even bother writing back to the file
-    with open(mmpm.consts.MMPM_EXTERNAL_SOURCES_FILE, 'w') as mmpm_ext_srcs:
+    with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as mmpm_ext_srcs:
         json.dump(ext_packages, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
 
     return True
 
 
-def display_active_packages(table_formatted: bool = False) -> None:
+def display_active_packages() -> None:
 
     '''
     Parses the MagicMirror config file for the modules listed, and reports
@@ -1320,7 +1270,7 @@ def display_active_packages(table_formatted: bool = False) -> None:
     the module is considered enabled.
 
     Parameters:
-        table_formatted (bool): if True, output is displayed in a table
+        None
 
     Returns:
         None
@@ -1344,31 +1294,11 @@ def display_active_packages(table_formatted: bool = False) -> None:
     if 'modules' not in config or not config['modules']:
         mmpm.utils.error_msg(f'No modules found in {mmpm.consts.MAGICMIRROR_CONFIG_FILE}')
 
-    if not table_formatted:
-        for module_config in config['modules']:
-            print(
-                mmpm.color.normal_green(module_config['module']),
-                f"\n  Status: {'disabled' if 'disabled' in module_config and module_config['disabled'] else 'enabled'}\n"
-            )
-        return
-
-    global_row: int = 1
-    columns: int = 2
-    rows: int = 1  # to include the header row
-
-    rows = len(config['modules']) + 1
-
-    table = mmpm.utils.allocate_table_memory(rows, columns)
-
-    table[0][0] = mmpm.utils.to_bytes('Module')
-    table[0][1] = mmpm.utils.to_bytes('Status')
-
     for module_config in config['modules']:
-        table[global_row][0] = mmpm.utils.to_bytes(module_config['module'])
-        table[global_row][1] = mmpm.utils.to_bytes('disabled') if 'disabled' in module_config and module_config['disabled'] else mmpm.utils.to_bytes('enabled')
-        global_row += 1
-
-    mmpm.utils.display_table(table, rows, columns)
+        print(
+            mmpm.color.normal_green(module_config['module']),
+            f"\n  Status: {'disabled' if 'disabled' in module_config and module_config['disabled'] else 'enabled'}\n"
+        )
 
 
 def get_web_interface_url() -> str:
@@ -1540,7 +1470,8 @@ def display_mmpm_env_vars(detailed: bool = False) -> None:
     shell configuration file
 
     Parameters:
-        None
+        detailed (bool): if True, comments displaying the usage of the
+                         environment variables are displayed
 
     Returns:
         None
@@ -1599,7 +1530,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
 
     def __echo_and_eval__(command: str) -> None:
         mmpm.utils.log.info(f'executing {command} to install autocompletion')
-        print(f'{mmpm.consts.GREEN_PLUS_SIGN} {mmpm.color.normal_green(command)}')
+        print(f'{mmpm.consts.GREEN_ARROWS} {mmpm.color.normal_green(command)}')
         os.system(command)
 
     if 'bash' in shell:
@@ -1672,38 +1603,87 @@ def rotate_raspberrypi_screen(degrees: int) -> bool:
         270: 1
     }
 
-    with open('/proc/device-tree/model', 'r') as model_info:
-        rpi_model = model_info.read()
+    if os.path.exists('/proc/device-tree/model'):
+        with open('/proc/device-tree/model', 'r') as model_info:
+            rpi_model = model_info.read()
 
-    if 'Raspberry Pi 3' in rpi_model:
-        desired_setting: str = f'display_rotate={rotation_map[degrees]}'
-        pattern: str = r'display_rotate=\d'
+        if 'Raspberry Pi 3' in rpi_model:
+            desired_setting: str = f'display_rotate={rotation_map[degrees]}'
+            pattern: str = r'display_rotate=\d'
 
-        # this really should exist anyway
-        if not os.path.exists(config):
-            os.system(f'touch {config}')
+            # this really should exist anyway
+            if not os.path.exists(config):
+                os.system(f'touch {config}')
 
-        with open(config, 'r+') as cfg:
-            contents: str = cfg.read()
-            setting: List[str] = re.findall(pattern, contents)
+            with open(config, 'r+') as cfg:
+                contents: str = cfg.read()
+                setting: List[str] = re.findall(pattern, contents)
 
-            if not setting:
-                # this file should not be empty, but just in case
-                contents += f'\n{desired_setting}\n'
-            else:
-                contents = re.sub(pattern, desired_setting, contents, count=1)
+                if not setting:
+                    # this file should not be empty, but just in case
+                    contents += f'\n{desired_setting}\n'
+                else:
+                    contents = re.sub(pattern, desired_setting, contents, count=1)
 
-            cfg.seek(0)
-            cfg.write(contents)
+                cfg.seek(0)
+                cfg.write(contents)
 
-    elif 'Raspberry Pi 4' in rpi_model:
-        # TODO: figure this out
-        pass
+        elif 'Raspberry Pi 4' in rpi_model:
+            # TODO: figure this out
+            pass
 
     else:
-        mmpm.utils.error_msg('Display rotation has not been implemented for this type of computing unit')
+        mmpm.utils.error_msg('Display rotation has not been implemented for this type of computing unit. Only Raspberry Pi 3 and 4 are supported')
         return False
 
     print('Please restart your RaspberryPi for the changes to take effect')
     return True
 
+
+def migrate() -> None:
+    '''
+    Migrates legacy External Module Sources to External Packages. The legacy
+    file name of ~/.config/mmpm/mmpm-external-sources.json is renamed to
+    ~/.config/mmpm/mmpm-external-packages.json. The key inside the dictionary
+    is also renamed from 'External Module Sources' to 'External Packages'
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+    legacy_ext_src_file: str = os.path.join(mmpm.consts.MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
+    legacy_key: str = 'External Module Sources'
+    data: dict = {}
+
+    if os.path.exists(legacy_ext_src_file):
+        with open(legacy_ext_src_file, 'r') as legacy_file:
+            mmpm.utils.log.info('Found existing legacy external modules sources file')
+            try:
+                data = json.load(legacy_file)
+
+                if legacy_key in data:
+                    mmpm.utils.log.info(f'Updating {legacy_key} in external modules dictionary to {mmpm.consts.EXTERNAL_PACKAGES}')
+                    data[mmpm.consts.EXTERNAL_PACKAGES] = data[legacy_key]
+                    data.pop(legacy_key)
+
+                else:
+                    mmpm.utils.log.info(f'No data found in the legacy key, resetting with empty list')
+                    data[mmpm.consts.EXTERNAL_PACKAGES] = []
+
+            except json.JSONDecodeError:
+                mmpm.utils.fatal_msg(f'{legacy_ext_src_file} may be corrupted. Please examine the file')
+
+        mmpm.utils.log.info(f'Renaming external packages file from {legacy_ext_src_file} to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
+        os.system(f'mv {legacy_ext_src_file} {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
+
+        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as ext_pkgs:
+            mmpm.utils.log.info(f'Saving updated external packages data')
+            json.dump(data, ext_pkgs)
+
+    else:
+        mmpm.utils.log.info(f'{legacy_ext_src_file} does not exist, nothing to migrate')
+
+    mmpm.utils.log.info('Completed migration of legacy External Module Sources migrated to External Packages')
+    print('Migration complete!')

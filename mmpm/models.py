@@ -5,7 +5,6 @@ import logging.handlers
 import mmpm.consts
 
 NA: str = mmpm.consts.NOT_AVAILABLE
-__NULL__: int = hash(('', '', '', '', '', ''))
 
 
 class MMPMLogger():
@@ -120,3 +119,5 @@ class MagicMirrorPackage():
             'description': self.description,
             'directory': self.directory
         }
+
+__NULL__: int = hash(MagicMirrorPackage())

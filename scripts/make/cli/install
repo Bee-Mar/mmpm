@@ -10,10 +10,6 @@ log_and_eval "mkdir -vp ~/.config/mmpm/log"
 log_and_eval "touch ~/.config/mmpm/log/{mmpm-gunicorn-{error,access}.log,mmpm-cli-interface.log}"
 _done_
 
-printf " -- installing MMPM shared object in '/usr/local/lib/mmpm'"
-log_and_eval "cd lib; make install; cd -"
-_done_
-
 printf " -- installing CLI using 'pip3 install --user' (this may take a while)"
 log_and_eval "pip3 install --user ."
 _done_
@@ -21,6 +17,9 @@ _done_
 printf " -- initializing MMPM/MagicMirror database"
 log_and_eval "$HOME/.local/bin/mmpm db --refresh"
 _done_
+
+printf " -- migrating legacy keys and external modules"
+log_and_eval "$HOME/.local/bin/mmpm --migrate"
 
 log_action "MMPM CLI Installed"
 

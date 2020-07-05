@@ -36,7 +36,7 @@ NOT_AVAILABLE: str = 'N/A'
 GREEN_CHECK_MARK: str = mmpm.color.N_GREEN + u'\u2713' + mmpm.color.RESET
 YELLOW_X: str = mmpm.color.N_YELLOW + u'\u2718' + mmpm.color.RESET
 RED_X: str = mmpm.color.N_RED + u'\u2718' + mmpm.color.RESET
-GREEN_ARROWS: str = mmpm.color.normal_green('--') # creates [+] symbol
+GREEN_DASHES: str = mmpm.color.normal_green('--') # creates [+] symbol
 EXTERNAL_PACKAGES: str = 'External Packages'
 
 HOME_DIR: str = expanduser("~")

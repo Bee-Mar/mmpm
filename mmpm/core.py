@@ -155,7 +155,7 @@ def upgrade_package(package: MagicMirrorPackage, assume_yes: bool = False) -> st
 
     os.chdir(package.directory)
 
-    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_ARROWS} Performing upgrade for {mmpm.color.normal_green(package.title)}')
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_DASHES} Performing upgrade for {mmpm.color.normal_green(package.title)}')
     error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
 
     if error_code:
@@ -519,6 +519,7 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
 
     os.chdir(mmpm.consts.MAGICMIRROR_MODULES_DIR)
 
+    print(f'{mmpm.consts.GREEN_DASHES} Installing {mmpm.color.normal_green(package.title)}')
     error_code, _, stderr = mmpm.utils.clone(
         package.title,
         package.repository,
@@ -553,7 +554,7 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
             message = f"User chose to remove {package.title} at '{package.directory}'"
             # just to make sure there aren't any errors in removing the directory
             os.system(f"rm -rf '{package.directory}'")
-            print(f"{mmpm.consts.GREEN_ARROWS} Removing '{package.directory}' {mmpm.consts.GREEN_CHECK_MARK}")
+            print(f"{mmpm.consts.GREEN_DASHES} Removing '{package.directory}' {mmpm.consts.GREEN_CHECK_MARK}")
         else:
             message = f"Keeping {package.title} at '{package.directory}'"
             print(f'\n{message}\n')
@@ -741,7 +742,7 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
 
     for dir_name in marked_for_removal:
         shutil.rmtree(dir_name)
-        print(f'{mmpm.consts.GREEN_ARROWS} Removed {mmpm.color.normal_green(dir_name)} {mmpm.consts.GREEN_CHECK_MARK}')
+        print(f'{mmpm.consts.GREEN_DASHES} Removed {mmpm.color.normal_green(dir_name)} {mmpm.consts.GREEN_CHECK_MARK}')
         mmpm.utils.log.info(f'Removed {dir_name}')
 
     if marked_for_removal:
@@ -784,7 +785,7 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
     # if the snapshot has expired, or doesn't exist, get a new one
     if force_refresh or not db_exists:
         mmpm.utils.plain_print(
-            f"{mmpm.consts.GREEN_ARROWS} {'Refreshing' if db_exists else 'Initializing'} MagicMirror 3rd party packages database "
+            f"{mmpm.consts.GREEN_DASHES} {'Refreshing' if db_exists else 'Initializing'} MagicMirror 3rd party packages database "
         )
 
         packages = retrieve_packages()
@@ -1530,7 +1531,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
 
     def __echo_and_eval__(command: str) -> None:
         mmpm.utils.log.info(f'executing {command} to install autocompletion')
-        print(f'{mmpm.consts.GREEN_ARROWS} {mmpm.color.normal_green(command)}')
+        print(f'{mmpm.consts.GREEN_DASHES} {mmpm.color.normal_green(command)}')
         os.system(command)
 
     if 'bash' in shell:

@@ -46,6 +46,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
   private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this.mSnackBar);
   private subscription: Subscription;
   private mmpmLocalPackagesPageSizeCookie: string = "MMPM-local-packages-page-size";
+  private magicmirrorRootDirectory: string;
 
   dataSource: MatTableDataSource<MagicMirrorPackage>;
   selection = new SelectionModel<MagicMirrorPackage>(true, []);
@@ -64,6 +65,10 @@ export class MMPMLocalPackagesComponent implements OnInit {
   }
 
   private setupTableData(refresh: boolean = false): void {
+    this.dataStore.getMagicMirrorRootDirectory(refresh).then((dir) => {
+      this.magicmirrorRootDirectory = dir;
+    }).catch((error) => console.log(error));
+
     this.dataStore.getAllInstalledPackages(refresh).then((pkgs) => {
       this.packages = pkgs;
       this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
@@ -78,6 +83,10 @@ export class MMPMLocalPackagesComponent implements OnInit {
         this.dialog,
         this.activeProcessService
       );
+    }).catch((error) => console.log(error));
+
+    this.dataStore.getAvailableUpgrades().then((upgradeable) => {
+      console.log(upgradeable);
     }).catch((error) => console.log(error));
   }
 

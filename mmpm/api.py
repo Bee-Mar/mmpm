@@ -193,6 +193,12 @@ def packages_upgrade() -> str:
     return json.dumps(failures)
 
 
+@app.route(api('packages/upgradeable'), methods=[mmpm.consts.GET])
+def packages_upgradeable() -> str:
+    mmpm.utils.log.info(f'Request to get upgradeable packages')
+    return json.dumps(mmpm.core.get_available_upgrades())
+
+
 @app.route(api('packages/details'), methods=[mmpm.consts.POST])
 def packages_details() -> str:
     selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
@@ -280,7 +286,7 @@ def database_refresh() -> dict:
 @app.route(api('magicmirror/root-dir'), methods=[mmpm.consts.GET])
 def magicmirror_root_dir() -> str:
     mmpm.utils.log.info(f'Request to get MagicMirror root directory')
-    return json.dumps({"magicmirror_root": mmpm.consts.MAGICMIRROR_ROOT})
+    return json.dumps({'MMPM_MAGICMIRROR_ROOT': mmpm.consts.MMPM_MAGICMIRROR_ROOT})
 
 
 @app.route(api('magicmirror/config'), methods=[mmpm.consts.GET, mmpm.consts.POST])

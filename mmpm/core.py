@@ -98,7 +98,7 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
         return False
 
     mmpm.utils.log.info(f'Found newer version of MMPM: {version_number}')
-    env: str = mmpm.consts.MAGICMIRROR_ROOT
+    env: str = mmpm.consts.MMPM_MAGICMIRROR_ROOT
     upgrades, _ = get_available_upgrades()
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
@@ -176,9 +176,9 @@ def upgrade_package(package: MagicMirrorPackage, assume_yes: bool = False) -> st
     return ''
 
 
-def upgrade_available(assume_yes: bool = False) -> bool:
+def upgrade_available(assume_yes: bool = False, selection: List[str] = []) -> bool:
     confirmed: dict = {mmpm.consts.PACKAGES: [], mmpm.consts.MMPM: False, mmpm.consts.MAGICMIRROR: False}
-    env: str = mmpm.consts.MMPM_ENV_VARS[mmpm.consts.MMPM_MAGICMIRROR_ROOT]
+    env: str = mmpm.consts.MMPM_MAGICMIRROR_ROOT
     upgrades = get_available_upgrades()
     upgraded: bool = False
 
@@ -193,14 +193,24 @@ def upgrade_available(assume_yes: bool = False) -> bool:
         print(f'No upgrades available {mmpm.consts.YELLOW_X}')
 
     if upgrades[env][mmpm.consts.PACKAGES]:
-        for package in upgrades[env][mmpm.consts.PACKAGES]:
-            if mmpm.utils.prompt_user(f'Upgrade {mmpm.color.normal_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
-                confirmed[mmpm.consts.PACKAGES].append(package)
+        if selection:
+            valid_pkgs: List[MagicMirrorPackage] = [pkg for pkg in upgrades[env][mmpm.consts.PACKAGES] if pkg.title in selection]
 
-    if upgrades[env][mmpm.consts.MAGICMIRROR]:
+            if not valid_pkgs and not mmpm.consts.MMPM in selection or not mmpm.consts.MAGICMIRROR not in selection:
+                mmpm.utils.error_msg(f'Unable to match {selection} to a package/application with available upgrades')
+
+            for package in valid_pkgs:
+                if package.title in selection and mmpm.utils.prompt_user(f'Upgrade {mmpm.color.normal_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
+                    confirmed[mmpm.consts.PACKAGES].append(package)
+        else:
+            for package in upgrades[env][mmpm.consts.PACKAGES]:
+                if mmpm.utils.prompt_user(f'Upgrade {mmpm.color.normal_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
+                    confirmed[mmpm.consts.PACKAGES].append(package)
+
+    if mmpm.consts.MAGICMIRROR in selection or not selection and upgrades[env][mmpm.consts.MAGICMIRROR]:
         confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt_user(f"Upgrade {mmpm.color.normal_green('MagicMirror')} now?", assume_yes=assume_yes)
 
-    if upgrades[mmpm.consts.MMPM]:
+    if mmpm.consts.MMPM in selection or not selection and upgrades[mmpm.consts.MMPM]:
         confirmed[mmpm.consts.MMPM] = mmpm.utils.prompt_user(f"Upgrade {mmpm.color.normal_green('MMPM')} now?", assume_yes=assume_yes)
 
     for pkg in confirmed[mmpm.consts.PACKAGES]:
@@ -299,7 +309,7 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
             print(mmpm.consts.GREEN_CHECK_MARK)
 
     upgrades: dict = {}
-    env: str = mmpm.consts.MAGICMIRROR_ROOT
+    env: str = mmpm.consts.MMPM_MAGICMIRROR_ROOT
 
     upgrades = get_available_upgrades()
 
@@ -437,7 +447,7 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
     errors: List[dict] = []
 
     if not os.path.exists(mmpm.consts.MAGICMIRROR_MODULES_DIR):
-        mmpm.utils.error_msg(f'MagicMirror directory not found in {mmpm.consts.MAGICMIRROR_ROOT}. Is the MMPM_MAGICMIRROR_ROOT env variable set properly?')
+        mmpm.utils.error_msg(f'MagicMirror directory not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
         return False
 
     if not installation_candidates:
@@ -564,20 +574,20 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
     Returns:
         bool: True upon success, False upon failure
     '''
-    if not os.path.exists(mmpm.consts.MAGICMIRROR_ROOT):
-        mmpm.utils.error_msg(f'{mmpm.consts.MAGICMIRROR_ROOT} not found. Is the MMPM_MAGICMIRROR_ROOT env variable set properly?')
+    if not os.path.exists(mmpm.consts.MMPM_MAGICMIRROR_ROOT):
+        mmpm.utils.error_msg(f'MagicMirror application directory not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
         return False
 
     is_git: bool = True
 
-    if not os.path.exists(os.path.join(mmpm.consts.MAGICMIRROR_ROOT, '.git')):
+    if not os.path.exists(os.path.join(mmpm.consts.MMPM_MAGICMIRROR_ROOT, '.git')):
         mmpm.utils.warning_msg('The MagicMirror root is not a git repo. If running MagicMirror as a Docker container, updates cannot be performed via mmpm.')
         is_git = False
 
     update_available: bool = False
 
     if is_git:
-        os.chdir(mmpm.consts.MAGICMIRROR_ROOT)
+        os.chdir(mmpm.consts.MMPM_MAGICMIRROR_ROOT)
         cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
         mmpm.utils.plain_print(f"Checking {mmpm.color.normal_green('MagicMirror')} [{cyan_application}] for updates")
 
@@ -599,7 +609,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
 
     upgrades: dict = {}
 
-    env: str = mmpm.consts.MAGICMIRROR_ROOT
+    env: str = mmpm.consts.MMPM_MAGICMIRROR_ROOT
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
         try:
@@ -607,7 +617,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
         except json.JSONDecodeError:
             upgrades = {
                 mmpm.consts.MMPM: False,
-                mmpm.consts.MAGICMIRROR_ROOT: {
+                mmpm.consts.MMPM_MAGICMIRROR_ROOT: {
                     mmpm.consts.PACKAGES: [],
                     mmpm.consts.MAGICMIRROR: update_available
                 }
@@ -637,7 +647,7 @@ def upgrade_magicmirror() -> bool:
 
     '''
 
-    os.chdir(mmpm.consts.MAGICMIRROR_ROOT)
+    os.chdir(mmpm.consts.MMPM_MAGICMIRROR_ROOT)
     error_code, _, stderr = mmpm.utils.run_cmd(['git', 'pull'], progress=False)
 
     if error_code:
@@ -645,7 +655,7 @@ def upgrade_magicmirror() -> bool:
         mmpm.utils.error_msg(stderr)
         return False
 
-    error: str = mmpm.utils.install_dependencies(mmpm.consts.MAGICMIRROR_ROOT)
+    error: str = mmpm.utils.install_dependencies(mmpm.consts.MMPM_MAGICMIRROR_ROOT)
 
     if error:
         mmpm.utils.error_msg(error)
@@ -670,7 +680,7 @@ def install_magicmirror() -> bool:
         bool: True upon succcess, False upon failure
     '''
 
-    if os.path.exists(mmpm.consts.MAGICMIRROR_ROOT):
+    if os.path.exists(mmpm.consts.MMPM_MAGICMIRROR_ROOT):
         mmpm.utils.fatal_msg('MagicMirror is installed already')
 
     if mmpm.utils.prompt_user(f"Use '{mmpm.consts.HOME_DIR}' as the parent directory of the MagicMirror installation?"):
@@ -1053,7 +1063,7 @@ def display_available_upgrades() -> None:
     '''
     cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
     cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
-    env: str = mmpm.consts.MAGICMIRROR_ROOT
+    env: str = mmpm.consts.MMPM_MAGICMIRROR_ROOT
 
     upgrades_available: bool = False
     upgrades = get_available_upgrades()
@@ -1081,8 +1091,9 @@ def get_available_upgrades() -> dict:
     '''
 
     '''
-    env: str = mmpm.consts.MMPM_ENV_VARS[mmpm.consts.MMPM_MAGICMIRROR_ROOT]
+    env: str = mmpm.consts.MMPM_MAGICMIRROR_ROOT
     reset_file: bool = False
+    add_key: bool = False
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
         try:
@@ -1092,10 +1103,17 @@ def get_available_upgrades() -> dict:
             )
         except json.JSONDecodeError:
             reset_file = True
+        except KeyError:
+            add_key = True
 
     if reset_file:
         with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
             upgrades = {mmpm.consts.MMPM: False, env: {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False }}
+            json.dump(upgrades, available_upgrades)
+
+    elif add_key:
+        with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
+            upgrades[env] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}
             json.dump(upgrades, available_upgrades)
 
     return upgrades
@@ -1117,9 +1135,7 @@ def get_installed_packages(packages: Dict[str, List[MagicMirrorPackage]]) -> Dic
     package_dirs: List[str] = mmpm.utils.get_existing_package_directories()
 
     if not package_dirs:
-        msg = "Failed to find MagicMirror root. Have you installed MagicMirror properly? "
-        msg += "You may also set the env variable 'MMPM_MAGICMIRROR_ROOT' to the MagicMirror root directory."
-        mmpm.utils.error_msg(msg)
+        mmpm.utils.env_variables_error_msg('Failed to find MagicMirror root directory.')
         return {}
 
     os.chdir(mmpm.consts.MAGICMIRROR_MODULES_DIR)
@@ -1311,9 +1327,9 @@ def display_active_packages(table_formatted: bool = False) -> None:
     '''
 
     if not os.path.exists(mmpm.consts.MAGICMIRROR_CONFIG_FILE):
-        mmpm.utils.fatal_msg('MagicMirror config file not found. Is the MMPM_MAGICMIRROR_ROOT env variable set properly?')
+        mmpm.utils.env_variables_fatal_msg('MagicMirror config file not found.')
 
-    temp_config: str = f'{mmpm.consts.MAGICMIRROR_ROOT}/config/temp_config.js'
+    temp_config: str = f'{mmpm.consts.MMPM_MAGICMIRROR_ROOT}/config/temp_config.js'
     shutil.copyfile(mmpm.consts.MAGICMIRROR_CONFIG_FILE, temp_config)
 
     with open(temp_config, 'a') as temp:
@@ -1395,12 +1411,12 @@ def stop_magicmirror() -> bool:
     Returns:
         None
     '''
-    if shutil.which('pm2'):
+    if shutil.which('pm2') and mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
         mmpm.utils.log.info("Using 'pm2' to stop MagicMirror")
-        _, _, stderr = mmpm.utils.run_cmd(['pm2', 'stop', mmpm.consts.MMPM_ENV_VARS[mmpm.consts.MAGICMIRROR_PM2_PROC]], progress=False)
+        _, _, stderr = mmpm.utils.run_cmd(['pm2', 'stop', mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME], progress=False)
 
         if stderr:
-            mmpm.utils.error_msg(f'{stderr.strip()}. Is the MAGICMIRROR_PM2_PROC env variable set correctly?')
+            mmpm.utils.env_variables_error_msg(stderr.strip())
             return False
 
         mmpm.utils.log.info('stopped MagicMirror using PM2')
@@ -1422,19 +1438,19 @@ def start_magicmirror() -> bool:
         None
     '''
     mmpm.utils.log.info('Starting MagicMirror')
-    os.chdir(mmpm.consts.MAGICMIRROR_ROOT)
+    os.chdir(mmpm.consts.MMPM_MAGICMIRROR_ROOT)
 
     mmpm.utils.log.info("Running 'npm start' in the background")
 
-    if shutil.which('pm2'):
+    if shutil.which('pm2') and mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
         mmpm.utils.log.info("Using 'pm2' to start MagicMirror")
         error_code, _, stderr = mmpm.utils.run_cmd(
-            ['pm2', 'start', mmpm.consts.MMPM_ENV_VARS[mmpm.consts.MAGICMIRROR_PM2_PROC]],
+            ['pm2', 'start', mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME],
             background=True
         )
 
         if error_code:
-            mmpm.utils.error_msg(f'{stderr.strip()}. Is the MAGICMIRROR_PM2_PROC env variable set correctly?')
+            mmpm.utils.env_variables_error_msg(stderr.strip())
             return False
 
         mmpm.utils.log.info('started MagicMirror using PM2')
@@ -1456,15 +1472,15 @@ def restart_magicmirror() -> bool:
     Returns:
         None
     '''
-    if shutil.which('pm2'):
+    if shutil.which('pm2') and mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
         mmpm.utils.log.info("Using 'pm2' to restart MagicMirror")
         _, _, stderr = mmpm.utils.run_cmd(
-            ['pm2', 'restart', mmpm.consts.MMPM_ENV_VARS[mmpm.consts.MAGICMIRROR_PM2_PROC]],
+            ['pm2', 'restart', mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME],
             progress=False
         )
 
         if stderr:
-            mmpm.utils.error_msg(f'{stderr.strip()}. Is the MAGICMIRROR_PM2_PROC env variable set correctly?')
+            mmpm.utils.env_variables_error_msg(stderr.strip())
             return False
 
         mmpm.utils.log.info('restarted MagicMirror using PM2')
@@ -1498,8 +1514,8 @@ def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool
     logs: List[str] = []
 
     if cli_logs:
-        if os.path.exists(mmpm.consts.MMPM_LOG_FILE):
-            logs.append(mmpm.consts.MMPM_LOG_FILE)
+        if os.path.exists(mmpm.consts.MMPM_CLI_LOG_FILE):
+            logs.append(mmpm.consts.MMPM_CLI_LOG_FILE)
         else:
             mmpm.utils.error_msg('MMPM log file not found')
 
@@ -1517,7 +1533,7 @@ def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool
         os.system(f"{'tail -F' if tail else 'cat'} {' '.join(logs)}")
 
 
-def display_mmpm_env_vars() -> None:
+def display_mmpm_env_vars(detailed: bool = False) -> None:
     '''
     Displays the environment variables associated with MMPM, as well as their
     current value. A user may modify these values by setting them in their
@@ -1530,11 +1546,19 @@ def display_mmpm_env_vars() -> None:
         None
     '''
 
-    mmpm.utils.log.info(f'User displaying environment variables')
+    mmpm.utils.log.info(f'User listing environment variables, set with the following values')
 
-    for key, value in mmpm.consts.MMPM_ENV_VARS.items():
-        mmpm.utils.log.info(f'env var {key}={value}')
-        print(f'{key}={value}')
+    if detailed:
+        for var, info in mmpm.consts.MMPM_ENV.items():
+            output: str = f"{var}={info['value']} # {info['detail']}"
+            mmpm.utils.log.info(output)
+            print(output)
+
+    else:
+        for var, info in mmpm.consts.MMPM_ENV.items():
+            output = f"{var}={info['value']}"
+            mmpm.utils.log.info(output)
+            print(output)
 
 
 def install_autocompletion(assume_yes: bool = False) -> None:
@@ -1664,7 +1688,7 @@ def rotate_raspberrypi_screen(degrees: int) -> bool:
             setting: List[str] = re.findall(pattern, contents)
 
             if not setting:
-                # who knows why this file would be empty, but just in case
+                # this file should not be empty, but just in case
                 contents += f'\n{desired_setting}\n'
             else:
                 contents = re.sub(pattern, desired_setting, contents, count=1)
@@ -1677,11 +1701,9 @@ def rotate_raspberrypi_screen(degrees: int) -> bool:
         pass
 
     else:
-        # TODO: figure this out
-        pass
+        mmpm.utils.error_msg('Display rotation has not been implemented for this type of computing unit')
+        return False
 
     print('Please restart your RaspberryPi for the changes to take effect')
     return True
 
-
-mmpm.utils.assert_mmpm_data_files_exist()

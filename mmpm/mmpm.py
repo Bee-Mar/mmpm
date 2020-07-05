@@ -27,6 +27,8 @@ def main(argv):
         print(f'{__version__}')
         sys.exit(0)
 
+    mmpm.utils.assert_required_paths_exist()
+
     if args.subcmd in mmpm.opts.SINGLE_OPTION_ARGS and not mmpm.utils.assert_one_option_selected(args):
         mmpm.utils.fatal_too_many_options(args)
 
@@ -125,10 +127,7 @@ def main(argv):
             print(f'{message}. Run `mmpm list --upgradable` for details')
 
     elif args.subcmd == mmpm.opts.UPGRADE:
-        if additional_args:
-            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
-
-        mmpm.core.upgrade_available(args.assume_yes)
+        mmpm.core.upgrade_available(args.assume_yes, additional_args)
 
     elif args.subcmd == mmpm.opts.INSTALL:
         if args.magicmirror:
@@ -214,7 +213,7 @@ def main(argv):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         else:
-            mmpm.core.display_mmpm_env_vars()
+            mmpm.core.display_mmpm_env_vars(args.detailed)
 
     else:
         mmpm.utils.error_msg('Unknown argument\n')

@@ -139,7 +139,7 @@ def get_user_args() -> object:
     # UPGRADE SUBCOMMANDS
     upgrade_parser = subparsers.add_parser(
         UPGRADE,
-        usage='\n  mmpm upgrade [--yes]',
+        usage='\n  mmpm upgrade [--yes]\n  mmpm upgrade <package(s)> <application(s)> [--yes]',
         help='upgrade packages, MMPM, and/or MagicMirror, if available'
     )
 
@@ -431,11 +431,20 @@ def get_user_args() -> object:
 
 
     # ENV SUBCOMMANDS
-    subparsers.add_parser(
+    env_parser = subparsers.add_parser(
         ENV,
         usage='\n  mmpm env',
         help='display the MMPM environment variables and their value(s)'
     )
+
+    env_parser.add_argument(
+        '-d',
+        '--detailed',
+        action='store_true',
+        help='display detailed usage for each environment variable',
+        dest='detailed'
+    )
+
 
     # MMPM AND GLOBAL OPTIONS
     arg_parser.add_argument(

@@ -17,7 +17,6 @@ import { ActiveProcessCountService } from "src/app/services/active-process-count
 import { InstallationConflict, MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 import { InstallationConflictResolutionDialogComponent } from "src/app/components/installation-conflict-resolution-dialog/installation-conflict-resolution-dialog.component";
-import { URLS } from "src/app/utils/urls";
 
 @Component({
   selector: "app-mmpm-marketplace",
@@ -56,10 +55,6 @@ export class MMPMMarketplaceComponent implements OnInit {
   public ngOnInit(): void {
     this.setupTableData();
 
-    this.api.retrieve(URLS.GET.MAGICMIRROR.ROOT_DIR).then((url: object) => {
-      this.magicmirrorRootDirectory = url["magicmirror_root"];
-    }).catch((error) => console.log(error));
-
     this.subscription = this.notifier.getNotification().subscribe((_) => this.setupTableData(true));
 
     if (!this.mmpmUtility.getCookie(this.mmpmMarketplacePaginatorCookieSize)) {
@@ -70,6 +65,11 @@ export class MMPMMarketplaceComponent implements OnInit {
   }
 
   private setupTableData(refresh: boolean = false): void {
+
+    this.dataStore.getMagicMirrorRootDirectory(refresh).then((dir) => {
+      this.magicmirrorRootDirectory = dir;
+    }).catch((error) => console.log(error));
+
     this.dataStore.getAllAvailablePackages(refresh).then((allPackages: MagicMirrorPackage[]) => {
       this.dataStore.getAllInstalledPackages(refresh).then((installedPackages: MagicMirrorPackage[]) => {
         this.installedPackages = installedPackages;

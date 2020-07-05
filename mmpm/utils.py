@@ -39,20 +39,6 @@ def plain_print(msg: str) -> None:
     sys.stdout.flush()
 
 
-def error_msg(msg: str) -> None:
-    '''
-    Logs error message, displays error message to user, and continues program execution
-
-    Parameters:
-        msg (str): The error message to be printed to stdout
-
-    Returns:
-        None
-    '''
-    log.error(msg)
-    print(mmpm.color.bright_red('ERROR:'), msg)
-
-
 def keyboard_interrupt_log() -> None:
     '''
     Logs info message stating user killed a process with a keyboard interrupt,
@@ -67,6 +53,20 @@ def keyboard_interrupt_log() -> None:
     print()
     log.info('User killed process with keyboard interrupt')
     sys.exit(127)
+
+
+def error_msg(msg: str) -> None:
+    '''
+    Logs error message, displays error message to user, and continues program execution
+
+    Parameters:
+        msg (str): The error message to be printed to stdout
+
+    Returns:
+        None
+    '''
+    log.error(msg)
+    print(mmpm.color.bright_red('ERROR:'), msg)
 
 
 def warning_msg(msg: str) -> None:
@@ -98,6 +98,44 @@ def fatal_msg(msg: str) -> None:
     sys.exit(127)
 
 
+def env_variables_error_msg(preamble: str = '') -> None:
+    '''
+    Helper method to log and display an error relating to a common issue of not
+    setting environment variables properly
+
+    Parameters:
+        preamble (str): an optional argument to provide more specific error messaging
+
+    Returns:
+        None
+    '''
+    msg: str = 'Please ensure the MMPM environment variables are set properly in your shell configuration. See `mmpm env` to reference the variable names'
+
+    if preamble:
+        msg = f'{preamble} {msg}'
+
+    error_msg(msg)
+
+
+def env_variables_fatal_msg(preamble: str = '') -> None:
+    '''
+    Helper method to log and display a fatal error relating to a common issue of not
+    setting environment variables properly
+
+    Parameters:
+        preamble (str): an optional argument to provide more specific error messaging
+
+    Returns:
+        None
+    '''
+    msg: str = 'Please ensure the MMPM environment variables are set properly in your shell configuration. See `mmpm env` to reference the variable names'
+
+    if preamble:
+        msg = f'{preamble} {msg}'
+
+    fatal_msg(msg)
+
+
 def assert_snapshot_directory() -> bool:
     if not os.path.exists(mmpm.consts.MMPM_CONFIG_DIR):
         try:
@@ -108,15 +146,14 @@ def assert_snapshot_directory() -> bool:
     return True
 
 
-def assert_mmpm_data_files_exist() -> bool:
-    if not os.path.exists(mmpm.consts.MMPM_CONFIG_DIR):
-        try:
-            os.mkdir(mmpm.consts.MMPM_CONFIG_DIR)
-        except OSError:
-            error_msg(f'Failed to create {mmpm.consts.MMPM_CONFIG_DIR}')
-            return False
+def assert_required_paths_exist() -> bool:
 
-    for data_file in mmpm.consts.MMPM_DATA_FILES:
+    for directory in mmpm.consts.MMPM_REQUIRED_DIRS:
+        if not os.path.exists(directory):
+            # it's likely the dirs dont exist because of a typo in an env var
+            env_variables_error_msg(f'The required path {directory} does not exist.')
+
+    for data_file in mmpm.consts.MMPM_DATA_FILES_NAMES:
         os.system(f'touch {data_file}')
 
 
@@ -226,7 +263,7 @@ def open_default_editor(path_to_file: str) -> Optional[None]:
     log.info(f'Attempting to open {path_to_file} in users default editor')
 
     if not os.path.exists(path_to_file):
-        fatal_msg(f'{path_to_file} not found. Please ensure the env variable {mmpm.consts.MMPM_MAGICMIRROR_ROOT} is set properly.')
+        fatal_msg(f'{path_to_file} not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
 
     editor = os.getenv('EDITOR') if os.getenv('EDITOR') else 'nano'
     error_code, _, _ = run_cmd(['which', editor], progress=False)

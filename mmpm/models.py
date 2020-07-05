@@ -5,8 +5,7 @@ import logging.handlers
 import mmpm.consts
 
 NA: str = mmpm.consts.NOT_AVAILABLE
-
-__NULL__ = hash(('', '', '', '', '', ''))
+__NULL__: int = hash(('', '', '', '', '', ''))
 
 
 class MMPMLogger():
@@ -16,12 +15,12 @@ class MMPMLogger():
     '''
 
     def __init__(self):
-        self.log_file: str = mmpm.consts.MMPM_LOG_FILE
+        self.log_file: str = mmpm.consts.MMPM_CLI_LOG_FILE
 
         if not os.path.exists(mmpm.consts.MMPM_LOG_DIR):
             os.system(f'mkdir -p {mmpm.consts.MMPM_LOG_DIR}')
 
-        for log_file in [mmpm.consts.MMPM_LOG_FILE, mmpm.consts.MMPM_GUNICORN_ERROR_LOG_FILE, mmpm.consts.MMPM_GUNICORN_ACCESS_LOG_FILE]:
+        for log_file in mmpm.consts.MMPM_LOG_FILES:
             if not os.path.exists(log_file):
                 os.system(f'touch {log_file}')
 
@@ -45,11 +44,11 @@ class MMPMLogger():
 
 class MagicMirrorPackage():
     '''
-    A container object used to simplify the represenation of a
-    given MagicMirror package's metadata
+    A container object used to simplify the represenation of a given
+    MagicMirror package's metadata
     '''
 
-    def __init__(self: object, title: str = NA, author: str = NA, repository: str = NA, description: str = NA, directory: str = ''):
+    def __init__(self: object, title: str = NA, author: str = NA, repository: str = NA, description: str = NA, directory: str = '') -> None:
         self.title = title
         self.author = author
         self.repository = repository
@@ -62,7 +61,7 @@ class MagicMirrorPackage():
     def __repr__(self) -> str:
         return str(self.__dict__)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.title, self.author, self.repository, self.description))
 
     def __eq__(self, other) -> bool:
@@ -72,7 +71,7 @@ class MagicMirrorPackage():
         else:
             return hash(self) == hash(other)
 
-    def __ne__(self, other):
+    def __ne__(self, other) -> bool:
         return not self.__eq__(other)
 
     def serialize(self) -> dict:

@@ -1,7 +1,7 @@
 #!/bin/bash
 source ./scripts/make/constants
 
-printf "[+] \e[92mCleaning MMPM Lib Directory\e[0m\n"
+printf "+ \e[92mCleaning MMPM Lib Directory\e[0m\n"
 
 log_action "Cleaning MMPM Lib Directory" >> $MMPM_INSTALLATION_LOG
 

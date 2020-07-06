@@ -118,7 +118,7 @@ def upgrade_mmpm(assume_yes: bool = False) -> bool:
 
     mmpm.utils.log.info(f'User chose to update MMPM')
 
-    print(f"{mmpm.consts.GREEN_DASHES} Upgrading {mmpm.color.normal_green('MMPM')}")
+    print(f"{mmpm.consts.GREEN_PLUS} Upgrading {mmpm.color.normal_green('MMPM')}")
     os.system('rm -rf /tmp/mmpm')
     os.chdir(os.path.join('/', 'tmp'))
 
@@ -155,7 +155,7 @@ def upgrade_package(package: MagicMirrorPackage, assume_yes: bool = False) -> st
 
     os.chdir(package.directory)
 
-    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_DASHES} Performing upgrade for {mmpm.color.normal_green(package.title)}')
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Performing upgrade for {mmpm.color.normal_green(package.title)}')
     error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
 
     if error_code:
@@ -519,7 +519,7 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
 
     os.chdir(mmpm.consts.MAGICMIRROR_MODULES_DIR)
 
-    print(f'{mmpm.consts.GREEN_DASHES} Installing {mmpm.color.normal_green(package.title)}')
+    print(f'{mmpm.consts.GREEN_PLUS} Installing {mmpm.color.normal_green(package.title)}')
     error_code, _, stderr = mmpm.utils.clone(
         package.title,
         package.repository,
@@ -551,7 +551,7 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
             message = f"User chose to remove {package.title} at '{package.directory}'"
             # just to make sure there aren't any errors in removing the directory
             os.system(f"rm -rf '{package.directory}'")
-            print(f"{mmpm.consts.GREEN_DASHES} Removing '{package.directory}' {mmpm.consts.GREEN_CHECK_MARK}")
+            print(f"{mmpm.consts.GREEN_PLUS} Removing '{package.directory}' {mmpm.consts.GREEN_CHECK_MARK}")
         else:
             message = f"Keeping {package.title} at '{package.directory}'"
             print(f'\n{message}\n')
@@ -644,7 +644,7 @@ def upgrade_magicmirror() -> bool:
         success (bool): True if success, False if failure
 
     '''
-    print(f"{mmpm.consts.GREEN_DASHES} Upgrading {mmpm.color.normal_green('MagicMirror')}")
+    print(f"{mmpm.consts.GREEN_PLUS} Upgrading {mmpm.color.normal_green('MagicMirror')}")
 
     os.chdir(mmpm.consts.MMPM_MAGICMIRROR_ROOT)
     error_code, _, stderr = mmpm.utils.run_cmd(['git', 'pull'], progress=False)
@@ -678,15 +678,29 @@ def install_magicmirror() -> bool:
     Returns:
         bool: True upon succcess, False upon failure
     '''
+    known_envs: dict = [env for env in get_available_upgrades().keys() if env != 'mmpm']
+    parent: str = mmpm.consts.HOME_DIR
 
     if os.path.exists(mmpm.consts.MMPM_MAGICMIRROR_ROOT):
-        mmpm.utils.fatal_msg('MagicMirror is installed already')
-
-    if mmpm.utils.prompt_user(f"Use '{mmpm.consts.HOME_DIR}' as the parent directory of the MagicMirror installation?"):
-        parent = mmpm.consts.HOME_DIR
+        mmpm.utils.warning_msg(f'MagicMirror appears to be installed already in {os.getcwd()}. Please provide a new destination for the MagicMirror installation')
+        try:
+            parent = os.path.abspath(
+                os.path.normpath(
+                    mmpm.utils.assert_valid_input("Absolute path to new installation location: ",
+                                                forbidden_responses=known_envs,
+                                                reason='matches a known MagicMirror environment')
+                )
+            )
+        except KeyboardInterrupt:
+            print()
+            sys.exit(0)
     else:
-        parent = os.path.abspath(input('Absolute path to MagicMirror parent directory: '))
-        print(f'Please set the MMPM_MAGICMIRROR_ROOT env variable in your bashrc to {parent}/MagicMirror')
+        print(f'{mmpm.consts.GREEN_PLUS} Installing MagicMirror')
+    if mmpm.utils.prompt_user(f"Use '{parent}' as the parent directory of the new MagicMirror installation?"):
+        pathlib.Path(parent).mkdir(parents=True, exist_ok=True)
+        os.chdir(parent)
+    else:
+        sys.exit(0)
 
     if not shutil.which('curl'):
         mmpm.utils.fatal_msg("'curl' command not found. Please install 'curl', then re-run mmpm install --magicmirror")
@@ -740,7 +754,7 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
 
     for dir_name in marked_for_removal:
         shutil.rmtree(dir_name)
-        print(f'{mmpm.consts.GREEN_DASHES} Removed {mmpm.color.normal_green(dir_name)} {mmpm.consts.GREEN_CHECK_MARK}')
+        print(f'{mmpm.consts.GREEN_PLUS} Removed {mmpm.color.normal_green(dir_name)} {mmpm.consts.GREEN_CHECK_MARK}')
         mmpm.utils.log.info(f'Removed {dir_name}')
 
     if marked_for_removal:
@@ -783,7 +797,7 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
     # if the snapshot has expired, or doesn't exist, get a new one
     if force_refresh or not db_exists:
         mmpm.utils.plain_print(
-            f"{mmpm.consts.GREEN_DASHES} {'Refreshing' if db_exists else 'Initializing'} MagicMirror 3rd party packages database "
+            f"{mmpm.consts.GREEN_PLUS} {'Refreshing' if db_exists else 'Initializing'} MagicMirror 3rd party packages database "
         )
 
         packages = retrieve_packages()
@@ -1536,7 +1550,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
 
     def __echo_and_eval__(command: str) -> None:
         mmpm.utils.log.info(f'executing {command} to install autocompletion')
-        print(f'{mmpm.consts.GREEN_DASHES} {mmpm.color.normal_green(command)}')
+        print(f'{mmpm.consts.GREEN_PLUS} {mmpm.color.normal_green(command)}')
         os.system(command)
 
     if 'bash' in shell:

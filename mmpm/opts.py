@@ -291,7 +291,7 @@ def get_user_args() -> object:
         '-v',
         '--verbose',
         action='store_true',
-        help='display extra detail from the GitHub/GitLab/Bitbucket API about the package(s) (takes longer)',
+        help='display extra detail for each package from the GitHub/GitLab/Bitbucket API',
         dest='verbose'
     )
 

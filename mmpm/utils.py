@@ -292,7 +292,7 @@ def clone(title: str, repo: str, target_dir: str = '') -> Tuple[int, str, str]:
     # by using "repo.split()", it allows the user to bake in additional commands when making custom sources
     # ie. git clone [repo] -b [branch] [target]
     log.info(f'Cloning {repo} into {target_dir if target_dir else os.path.join(os.getcwd(), title)}')
-    plain_print(f"{mmpm.consts.GREEN_DASHES}{mmpm.consts.GREEN_DASHES} Cloning repository")
+    plain_print(f"{mmpm.consts.GREEN_DASHES} Cloning repository")
 
     command = ['git', 'clone'] + repo.split()
 
@@ -329,7 +329,7 @@ def cmake() -> Tuple[int, str, str]:
 
     '''
     log.info(f"Running 'cmake ..' in {os.getcwd()}")
-    plain_print(f"{mmpm.consts.GREEN_DASHES}{mmpm.consts.GREEN_DASHES} Found CMakeLists.txt. Building with `cmake`")
+    plain_print(f"{mmpm.consts.GREEN_DASHES} Found CMakeLists.txt. Building with `cmake`")
 
     os.system('mkdir -p build')
     os.chdir('build')
@@ -348,7 +348,7 @@ def make() -> Tuple[int, str, str]:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
     log.info(f"Running 'make -j {cpu_count()}' in {os.getcwd()}")
-    plain_print(f"{mmpm.consts.GREEN_DASHES}{mmpm.consts.GREEN_DASHES} Found Makefile. Running `make -j {cpu_count()}`")
+    plain_print(f"{mmpm.consts.GREEN_DASHES} Found Makefile. Running `make -j {cpu_count()}`")
     return run_cmd(['make', '-j', f'{cpu_count()}'])
 
 
@@ -363,7 +363,7 @@ def npm_install() -> Tuple[int, str, str]:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
     log.info(f"Running 'npm install' in {os.getcwd()}")
-    plain_print(f"{mmpm.consts.GREEN_DASHES}{mmpm.consts.GREEN_DASHES} Found package.json. Running `npm install`")
+    plain_print(f"{mmpm.consts.GREEN_DASHES} Found package.json. Running `npm install`")
     return run_cmd(['npm', 'install'])
 
 
@@ -378,7 +378,7 @@ def bundle_install() -> Tuple[int, str, str]:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
     log.info(f"Running 'bundle install' in {os.getcwd()}")
-    plain_print(f"{mmpm.consts.GREEN_DASHES}{mmpm.consts.GREEN_DASHES} Found Gemfile. Running `bundle install`")
+    plain_print(f"{mmpm.consts.GREEN_DASHES} Found Gemfile. Running `bundle install`")
     return run_cmd(['bundle', 'install'])
 
 
@@ -466,7 +466,7 @@ def install_dependencies(directory: str) -> str:
                 print(mmpm.consts.GREEN_CHECK_MARK)
 
     os.chdir(directory)
-    print(f'{mmpm.consts.GREEN_DASHES}{mmpm.consts.GREEN_DASHES} Installation complete ' + mmpm.consts.GREEN_CHECK_MARK)
+    print(f'{mmpm.consts.GREEN_DASHES} Installation complete ' + mmpm.consts.GREEN_CHECK_MARK)
     log.info(f'Exiting installation handler from {os.getcwd()}')
     return ''
 

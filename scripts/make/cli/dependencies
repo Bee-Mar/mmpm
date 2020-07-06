@@ -2,10 +2,25 @@
 source ./scripts/make/constants
 source /etc/os-release
 
-printf "[+] \e[92mInstalling MMPM CLI Dependencies\e[0m\n"
+printf "\e[92mInstalling MMPM CLI Dependencies\e[0m\n"
 
-log_action "Installing MMPM CLI Dependencies"
-log_action "Attempting to install python3 dependencies"
+log_action "Checking Python3 version"
+printf " -- checking Python3 version"
+
+PYTHON3_VERSION=$(python3 -c "import sys; print(float(f'{sys.version_info.major}.{sys.version_info.minor}'))")
+log_and_eval "echo 'Detected Python3 version $PYTHON3_VERSION' is installed"
+
+if [[ $PYTHON3_VERSION < 3.6 ]]; then
+  log_and_eval "echo 'Installed version of Python3 $PYTHON3_VERSION is not suitable. Must be >= 3.6'"
+  printf "\nERROR: Python3 version must be >= to 3.6, but found $PYTHON3_VERSION. Please install a compatible version of Python3\n"
+  exit 1
+fi
+
+printf ". Found suitable version ($PYTHON3_VERSION)"
+log_action "found suitable Python3 version ($PYTHON3_VERSION)"
+_done_
+
+log_action "Attempting to installing MMPM CLI Dependencies"
 
 if [[ $NAME == *Arch* ]]; then
   log_action "User appears to be running Arch Linux"

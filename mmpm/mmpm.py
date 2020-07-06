@@ -111,7 +111,10 @@ def main(argv):
 
     elif args.subcmd == mmpm.opts.ADD_EXT_PKG:
         if args.remove:
-            mmpm.core.remove_external_package_source( [mmpm.utils.sanitize_name(package) for package in args.remove], assume_yes=args.assume_yes)
+            mmpm.core.remove_external_package_source(
+                [mmpm.utils.sanitize_name(package) for package in args.remove],
+                assume_yes=args.assume_yes
+            )
         else:
             mmpm.core.add_external_package(args.title, args.author, args.repo, args.desc)
 

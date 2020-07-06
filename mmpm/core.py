@@ -384,7 +384,7 @@ def show_package_details(packages: Dict[str, List[MagicMirrorPackage]], verbose:
             for category, _packages  in packages.items():
                 for package in _packages:
                     __show_package__(category, package)
-                    print(indent(fill(f'Description: {package.description}\n', width=80), prefix='  '),'\n')
+                    print(indent(fill(f'Description: {package.description}\n', width=80), prefix='  '), '\n')
 
     else:
         def __show_details__(packages: dict) -> None:
@@ -393,7 +393,7 @@ def show_package_details(packages: Dict[str, List[MagicMirrorPackage]], verbose:
                     __show_package__(category, package)
                     for key, value in mmpm.utils.get_remote_package_details(package).items():
                         print(f"  {key}: {value}")
-                    print(indent(fill(f'Description: {package.description}\n', width=80), prefix='  '),'\n')
+                    print(indent(fill(f'Description: {package.description}\n', width=80), prefix='  '), '\n')
 
     __show_details__(packages)
 
@@ -523,10 +523,7 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
     error_code, _, stderr = mmpm.utils.clone(
         package.title,
         package.repository,
-        os.path.normpath(package.directory if package.directory else os.path.join(
-                mmpm.consts.MAGICMIRROR_MODULES_DIR, package.title
-            )
-        )
+        os.path.normpath(package.directory if package.directory else os.path.join(mmpm.consts.MAGICMIRROR_MODULES_DIR, package.title))
     )
 
     if error_code:
@@ -1067,7 +1064,7 @@ def get_available_upgrades() -> dict:
 
     if reset_file:
         with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
-            upgrades = {mmpm.consts.MMPM: False, env: {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False }}
+            upgrades = {mmpm.consts.MMPM: False, env: {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}}
             json.dump(upgrades, available_upgrades)
 
     elif add_key:
@@ -1685,7 +1682,7 @@ def migrate() -> None:
                 mmpm.utils.fatal_msg(f'{legacy_ext_src_file} may be corrupted. Please examine the file')
 
         mmpm.utils.log.info(f'Renaming external packages file from {legacy_ext_src_file} to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
-        pathlib.Path.rename(legacy_ext_src_file, mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE)
+        pathlib.Path(legacy_ext_src_file).rename(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE)
 
         with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as ext_pkgs:
             mmpm.utils.log.info(f'Saving updated external packages data')

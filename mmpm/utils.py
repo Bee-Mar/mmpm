@@ -934,4 +934,4 @@ def is_magicmirror_running() -> bool:
                 mmpm.utils.get_pids('npm') and
                 mmpm.utils.get_pids('electron') or
                 mmpm.utils.get_pids('pm2')
-            )
+                )

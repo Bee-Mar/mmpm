@@ -14,15 +14,14 @@
 
     <div *ngIf="data?.matchesSelectedTitles?.length">
       <h4>
-        The following selected packages have conflicting titles:
+        The following selected packages have conflicting titles. Please select only one of each of the following:
       </h4>
       <div *ngFor="let pkg of data.matchesSelectedTitles | keyvalue">
         <mat-checkbox
           color="primary"
           (click)="$event.stopPropagation()"
-          (change)="$event ? onSelection(pkg) : null"
+          (change)="$event ? selection.toggle(pkg) : null"
           [checked]="selection.isSelected(pkg)"
-          [disabled]="disable[pkg.key]"
           >
         </mat-checkbox>
           {{ pkg.value.title }} ({{ pkg.value.repository }})

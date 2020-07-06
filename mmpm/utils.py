@@ -919,5 +919,19 @@ def get_remote_package_details(package: MagicMirrorPackage) -> dict:
 
 
 def is_magicmirror_running() -> bool:
-    return bool(mmpm.utils.get_pids('node') and mmpm.utils.get_pids('npm') and mmpm.utils.get_pids('electron') or mmpm.utils.get_pids('pm2'))
+    '''
+    The status of MagicMirror running is determined by the presence of certain
+    types of processes running. If those are found, it's assumed to be running,
+    otherwise, not
 
+    Parameters:
+        None
+
+    Returns:
+        running (bool): True if running, False if not
+    '''
+    return bool(mmpm.utils.get_pids('node') and
+                mmpm.utils.get_pids('npm') and
+                mmpm.utils.get_pids('electron') or
+                mmpm.utils.get_pids('pm2')
+            )

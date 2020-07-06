@@ -189,26 +189,26 @@ export class MMPMMarketplaceComponent implements OnInit {
 
         } else {
           let dialogRef = this.dialog.open(
-            InstallationConflictResolutionDialogComponent,
-            this.mmpmUtility.basicDialogSettings({
-              matchesSelectedTitles: installationConflicts.matchesSelectedTitles,
-              matchesInstalledTitles: installationConflicts.matchesInstalledTitles,
-              magicmirrorRootDirectory: this.magicmirrorRootDirectory
-            })
-          );
+            InstallationConflictResolutionDialogComponent, {
+              height: "50vh",
+              width: "50vw",
+              data: {
+                matchesSelectedTitles: installationConflicts.matchesSelectedTitles,
+                matchesInstalledTitles: installationConflicts.matchesInstalledTitles,
+                magicmirrorRootDirectory: this.magicmirrorRootDirectory
+              }
+            });
 
-          dialogRef.afterClosed().subscribe((updatedPackages: MagicMirrorPackage[]) => {
-            if (!updatedPackages?.length) {
+          dialogRef.afterClosed().subscribe((toRemove: MagicMirrorPackage[]) => {
+            if (!toRemove?.length) {
               return;
             }
 
-            selected.forEach((selectedPackage: MagicMirrorPackage) => {
-              updatedPackages.forEach((updatedPackage: MagicMirrorPackage) => {
-                if (selectedPackage.title === updatedPackage.title && updatedPackage.directory.length) {
-                  selectedPackage.directory = updatedPackage.directory;
-                }
-              });
-            });
+            toRemove = [...toRemove, ...installationConflicts.matchesInstalledTitles];
+
+            for (const remove of toRemove) {
+              selected.splice(selected.findIndex((pkg: MagicMirrorPackage) => pkg.title === remove.title && pkg.repository === remove.repository && pkg.author === remove.author), 1);
+            }
 
             this.installPackages(selected);
           });

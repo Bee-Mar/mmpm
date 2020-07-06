@@ -23,6 +23,4 @@ export class MMPMUtility {
       disableClose: true
     };
   }
-
-
 }

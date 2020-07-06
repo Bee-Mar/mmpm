@@ -424,7 +424,6 @@ def get_user_args() -> object:
         dest='rotate'
     )
 
-
     # ENV SUBCOMMANDS
     env_parser = subparsers.add_parser(
         ENV,
@@ -439,7 +438,6 @@ def get_user_args() -> object:
         help='display detailed usage for each environment variable',
         dest='detailed'
     )
-
 
     # MMPM AND GLOBAL OPTIONS
     arg_parser.add_argument(

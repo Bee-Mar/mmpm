@@ -54,14 +54,14 @@ MMPM_ENV: dict = {
 
 # at runtime they're constants, so they can stay here
 MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = MMPM_ENV['MMPM_MAGICMIRROR_PM2_PROCESS_NAME']['value']
-MMPM_MAGICMIRROR_ROOT: str = MMPM_ENV['MMPM_MAGICMIRROR_ROOT']['value']
+MMPM_MAGICMIRROR_ROOT: str = normpath(MMPM_ENV['MMPM_MAGICMIRROR_ROOT']['value'])
 
 MMPM_REPO_URL: str = "https://github.com/Bee-Mar/mmpm.git"
 MMPM_FILE_URL: str = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
 MMPM_WIKI_URL: str = 'https://github.com/Bee-Mar/mmpm/wiki'
 
-MMPM_CONFIG_DIR: str = join(HOME_DIR, '.config', 'mmpm')
-MMPM_LOG_DIR: str = join(MMPM_CONFIG_DIR, 'log')
+MMPM_CONFIG_DIR: str = normpath(join(HOME_DIR, '.config', 'mmpm'))
+MMPM_LOG_DIR: str = normpath(join(MMPM_CONFIG_DIR, 'log'))
 
 MMPM_NGINX_CONF_FILE: str = '/etc/nginx/sites-enabled/mmpm.conf'
 MMPM_EXTERNAL_PACKAGES_FILE: str = join(MMPM_CONFIG_DIR, 'mmpm-external-packages.json')

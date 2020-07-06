@@ -678,7 +678,7 @@ def install_magicmirror() -> bool:
     Returns:
         bool: True upon succcess, False upon failure
     '''
-    known_envs: dict = [env for env in get_available_upgrades().keys() if env != 'mmpm']
+    known_envs: List[str] = [env for env in get_available_upgrades().keys() if env != 'mmpm']
     parent: str = mmpm.consts.HOME_DIR
 
     if os.path.exists(mmpm.consts.MMPM_MAGICMIRROR_ROOT):

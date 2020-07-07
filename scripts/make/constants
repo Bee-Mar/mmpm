@@ -25,9 +25,9 @@ function log_action() {
 }
 
 function _done_() {
-  printf " -> done\n"
+  printf " -> \e[92mdone\e[0m\n"
 }
 
 function log_notice() {
-  printf " -- [[ logging all execution to $MMPM_INSTALLATION_LOG ]]\n"
+  printf " -- \e[96mlogging all execution to $MMPM_INSTALLATION_LOG\e[0m\n"
 }

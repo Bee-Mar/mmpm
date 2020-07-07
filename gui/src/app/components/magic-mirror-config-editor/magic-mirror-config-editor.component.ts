@@ -1,6 +1,8 @@
 import { Component, OnInit } from "@angular/core";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { MatSnackBar } from "@angular/material/snack-bar";
+import { MatDialog } from "@angular/material/dialog";
+import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 import { URLS } from "src/app/utils/urls";
 import * as Cookie from "js-cookie";
 
@@ -10,7 +12,11 @@ import * as Cookie from "js-cookie";
   styleUrls: ["./magic-mirror-config-editor.component.scss"]
 })
 export class MagicMirrorConfigEditorComponent implements OnInit {
-  constructor(private api: RestApiService, private snackbar: MatSnackBar) {}
+  constructor(
+    private dialog: MatDialog,
+    private api: RestApiService,
+    private snackbar: MatSnackBar
+  ) {}
 
   private mmpmEditorThemeCookie = "MMPM-editor-theme";
   private mmpmEditorCurrentFileCookie = "MMPM-editor-current-file";
@@ -52,17 +58,25 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
     this.editor = editor;
   }
 
-  public onSaveMagicMirrorConfig(): void {
-    const url = this.fileIndex == this.CONFIG_JS ? URLS.POST.MAGICMIRROR.CONFIG : URLS.POST.MAGICMIRROR.CUSTOM_CSS;
-    console.log(this.code[this.fileIndex]);
-    console.log(url);
+  public onSaveConfig(): void {
+    const file: string = this.fileIndex === this.CONFIG_JS ? "config.js" : "custom.css";
 
-    this.api.updateMagicMirrorConfig(url, this.code[this.fileIndex]).subscribe((success) => {
-      const message: any = success
-        ? "Successfully saved MagicMirror config"
-        : "Failed to save MagicMirror config";
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: `Your local version of ${file} will be overwritten`
+      },
+      disableClose: true
+    });
 
-      this.snackbar.open(message, "Close", { duration: 3000 });
+    dialogRef.afterClosed().subscribe((yes) => {
+      if (!yes) return;
+
+      const url = this.fileIndex == this.CONFIG_JS ? URLS.POST.MAGICMIRROR.CONFIG : URLS.POST.MAGICMIRROR.CUSTOM_CSS;
+
+      this.api.updateMagicMirrorConfig(url, this.code[this.fileIndex]).subscribe((success) => {
+        const message: any = success ? "Successfully saved MagicMirror config" : "Failed to save MagicMirror config";
+        this.snackbar.open(message, "Close", { duration: 3000 });
+      });
     });
   }
 

@@ -1,6 +1,5 @@
 import { Component, OnInit, Inject } from "@angular/core";
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from "@angular/material/dialog";
-//import { FormControl, Validators } from "@angular/forms";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 import { SelectionModel } from "@angular/cdk/collections";
 import { MagicMirrorPackage } from "src/app/interfaces/interfaces";

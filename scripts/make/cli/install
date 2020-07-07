@@ -12,7 +12,7 @@ log_and_eval "mkdir -vp ~/.config/mmpm/log"
 log_and_eval "touch ~/.config/mmpm/log/{mmpm-gunicorn-{error,access}.log,mmpm-cli-interface.log}"
 _done_
 
-printf " -- installing CLI using 'pip3 install --user' (this may take a while)"
+printf " -- installing CLI using 'pip3 install --user' (this may take some time)"
 log_and_eval "pip3 install --user ."
 _done_
 

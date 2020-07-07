@@ -16,6 +16,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatGridListModule } from "@angular/material/grid-list";
 import { MatMenuModule } from "@angular/material/menu";
+import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 
 @NgModule({
   declarations: [],
@@ -36,7 +37,8 @@ import { MatMenuModule } from "@angular/material/menu";
     MatTooltipModule,
     MatSnackBarModule,
     MatGridListModule,
-    MatMenuModule
+    MatMenuModule,
+    MatSlideToggleModule
   ],
   exports: [
     CommonModule,
@@ -55,7 +57,8 @@ import { MatMenuModule } from "@angular/material/menu";
     MatTooltipModule,
     MatSnackBarModule,
     MatGridListModule,
-    MatMenuModule
+    MatMenuModule,
+    MatSlideToggleModule
   ]
 })
 export class MaterialModule {}

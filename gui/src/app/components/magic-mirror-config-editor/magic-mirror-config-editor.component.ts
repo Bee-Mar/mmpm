@@ -74,7 +74,7 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
       const url = this.fileIndex == this.CONFIG_JS ? URLS.POST.MAGICMIRROR.CONFIG : URLS.POST.MAGICMIRROR.CUSTOM_CSS;
 
       this.api.updateMagicMirrorConfig(url, this.code[this.fileIndex]).subscribe((success) => {
-        const message: any = success ? "Successfully saved MagicMirror config" : "Failed to save MagicMirror config";
+        const message: any = success ? `Successfully saved ${file}` : `Failed to save ${file}`;
         this.snackbar.open(message, "Close", { duration: 3000 });
       });
     });

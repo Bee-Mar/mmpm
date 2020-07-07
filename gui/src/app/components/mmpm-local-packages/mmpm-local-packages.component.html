@@ -96,9 +96,9 @@
     mat-raised-button
     color="accent"
     style="margin-left: 3em;"
-    matTooltip="{{ selection?.selected?.length === 1 ? 'Uninstall module' : 'Uninstall modules' }}"
+    matTooltip="{{ selection?.selected?.length === 1 ? 'Uninstall package' : 'Uninstall packages' }}"
     [matTooltipPosition]="tableUtility?.tooltipPosition"
-    (click)="onUninstallModules()"
+    (click)="onUninstallPackages()"
     [disabled]="!selection?.selected?.length || !packages?.length"
   >
     <mat-icon>

@@ -112,7 +112,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
     this.subscription.unsubscribe();
   }
 
-  public onUninstallModules(): void {
+  public onUninstallPackages(): void {
     if (!this.selection?.selected?.length) return;
 
     const numPackages: number = this.selection.selected.length;
@@ -134,7 +134,6 @@ export class MMPMLocalPackagesComponent implements OnInit {
       this.selection.clear();
 
       this.api.packagesRemove(selected).then((result: string) => {
-        this.selection.clear();
         const failures: Array<object> = JSON.parse(result);
 
         if (failures.length) {

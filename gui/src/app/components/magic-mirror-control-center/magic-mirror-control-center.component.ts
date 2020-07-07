@@ -4,7 +4,11 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 import { LiveTerminalFeedDialogComponent } from "src/app/components/live-terminal-feed-dialog/live-terminal-feed-dialog.component";
+import { DataStoreService } from "src/app/services/data-store.service";
+import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
 import { URLS } from "src/app/utils/urls";
+import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
+import io from "socket.io-client";
 
 interface Tile {
   icon: string;
@@ -13,6 +17,7 @@ interface Tile {
   tooltip: string;
   message: string;
   url: string;
+  disabled: boolean;
 }
 
 @Component({
@@ -24,8 +29,41 @@ export class MagicMirrorControlCenterComponent implements OnInit {
   constructor(
     private api: RestApiService,
     private snackbar: MatSnackBar,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private dataStore: DataStoreService,
+    private tableUpdateNotifier: TableUpdateNotifierService,
   ) {}
+
+  public socket: any;
+  public outputStream: string = "";
+  public magicMirrorIsUpgrable: boolean = false;
+  public installedPackages: Array<MagicMirrorPackage>;
+
+
+  ngOnInit(): void {
+    this.socket = io("http://localhost:8080/mmpm", {reconnection: true});
+    this.socket.on("connect", () => {
+      this.socket.emit("GET_ACTIVE_MODULES");
+    });
+    this.socket.on("notification", (data: any) => console.log(data));
+    this.socket.on("disconnect", (data: any) => console.log(data));
+    this.socket.on("MMPM", (data: any) => console.log(data));
+    this.socket.on("error", (data: any) => console.log(data));
+
+    this.api.retrieve(URLS.GET.PACKAGES.UPGRADEABLE).then((upgradeable: object) => {
+      this.magicMirrorIsUpgrable = upgradeable["MagicMirror"];
+    }).catch((error) => console.log(error));
+
+    this.getInstalledPackages();
+
+    this.tableUpdateNotifier.getNotification().subscribe((_) => this.getInstalledPackages(true));
+  }
+
+  private getInstalledPackages(refresh: boolean = false): void {
+    this.dataStore.getAllInstalledPackages(refresh).then((packages: Array<MagicMirrorPackage>) => {
+      this.installedPackages = packages;
+    }).catch((error) => console.log(error));
+  }
 
   private liveTerminalFeedDialogSettings: object = {
     width: "75vw",
@@ -39,7 +77,8 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       cols: 1,
       rows: 1,
       url: URLS.GET.MAGICMIRROR.START,
-      message: "MagicMirror will be started."
+      message: "MagicMirror will be started.",
+      disabled: false,
     },
     {
       icon: "tv_off",
@@ -47,7 +86,8 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       cols: 1,
       rows: 1,
       url: URLS.GET.MAGICMIRROR.STOP,
-      message: "MagicMirror will be stopped."
+      message: "MagicMirror will be stopped.",
+      disabled: false,
     },
     {
       icon: "refresh",
@@ -55,15 +95,17 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       cols: 1,
       rows: 1,
       url: URLS.GET.MAGICMIRROR.RESTART,
-      message: "MagicMirror will be restarted."
+      message: "MagicMirror will be restarted.",
+      disabled: false,
     },
     {
       icon: "system_update",
-      tooltip: "Upgrade MagicMirror",
+      tooltip: this.magicMirrorIsUpgrable ? "Upgrade MagicMirror" : "No MagicMirror upgrades available",
       cols: 1,
       rows: 1,
       url: URLS.GET.MAGICMIRROR.UPGRADE,
-      message: "MagicMirror will be upgraded and restarted, if running."
+      message: "MagicMirror will be upgraded and restarted, if running.",
+      disabled: !this.magicMirrorIsUpgrable,
     },
     {
       icon: "power_settings_new",
@@ -71,7 +113,8 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       cols: 1,
       rows: 1,
       url: URLS.GET.RASPBERRYPI.RESTART,
-      message: "Your RaspberryPi will be rebooted."
+      message: "Your RaspberryPi will be rebooted.",
+      disabled: false,
     },
     {
       icon: "power_off",
@@ -79,7 +122,8 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       cols: 1,
       rows: 1,
       url: URLS.GET.RASPBERRYPI.STOP,
-      message: "Your RaspberryPi will be powered off."
+      message: "Your RaspberryPi will be powered off.",
+      disabled: false,
     },
   ];
 
@@ -109,7 +153,6 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     );
   };
 
-  ngOnInit(): void {}
 
   public sendControlSignal(url: string, message: string): void {
 

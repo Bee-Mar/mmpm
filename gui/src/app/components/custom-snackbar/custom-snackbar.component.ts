@@ -11,12 +11,9 @@ export class CustomSnackbarComponent implements OnInit {
   constructor(private snackbar: MatSnackBar) { }
 
   private CLOSE: string = "Close";
-  private config: MatSnackBarConfig = new MatSnackBarConfig();
+  private config: MatSnackBarConfig = {duration: 3000};
 
-  ngOnInit(): void {
-    this.config.duration = 3000;
-    this.config.panelClass = "error";
-  }
+  ngOnInit(): void {}
 
   public notify(message: string): void {
     this.config.panelClass = "notify";
@@ -29,7 +26,7 @@ export class CustomSnackbarComponent implements OnInit {
   }
 
   public error(message: string): void {
-    this.config.panelClass = ["error"];
+    this.config.panelClass = "error";
     this.snackbar.open(message, this.CLOSE, this.config);
   }
 }

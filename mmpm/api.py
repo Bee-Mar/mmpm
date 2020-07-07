@@ -37,7 +37,7 @@ resources: dict = {
 }
 
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins='*')
+flask_sio = SocketIO(app, cors_allowed_origins='*', logger=mmpm.utils.log)
 
 api = lambda path: f'/api/{path}'
 
@@ -67,7 +67,14 @@ def __get_selected_packages__(rqst, key: str = 'selected-packages') -> List[Magi
     return [MagicMirrorPackage(**pkg) for pkg in pkgs]
 
 
-@socketio.on_error()
+
+@flask_sio.on('notification')
+def handle_notification(data):
+    mmpm.utils.log.info(data)
+    print(data)
+
+
+@flask_sio.on_error()
 def error_handler(error) -> Tuple[str, int]:
     '''
     Socket.io error handler
@@ -83,18 +90,18 @@ def error_handler(error) -> Tuple[str, int]:
     return message, 500
 
 
-@socketio.on('connect')
+@flask_sio.on('connect')
 def on_connect() -> None:
     message: str = 'Server connected'
     mmpm.utils.log.info(message)
-    socketio.emit('connected', {'data': message})
+    flask_sio.emit('connected', {'data': message})
 
 
-@socketio.on('disconnect')
+@flask_sio.on('disconnect')
 def on_disconnect() -> None:
     message: str = 'Server disconnected'
     mmpm.utils.log.info(message)
-    socketio.emit(message, {'data': message})
+    flask_sio.emit(message, {'data': message})
 
 
 @app.after_request

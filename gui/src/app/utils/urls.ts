@@ -5,6 +5,7 @@ export const URLS = {
       get MARKETPLACE() { return `${this.ROOT}/marketplace`; },
       get INSTALLED() { return `${this.ROOT}/installed`; },
       get EXTERNAL() { return `${this.ROOT}/external`; },
+      get UPDATE() { return `${this.ROOT}/update`; },
       get UPGRADEABLE() { return `${this.ROOT}/upgradeable`; },
     },
 

@@ -17,6 +17,7 @@ import { ActiveProcessCountService } from "src/app/services/active-process-count
 import { InstallationConflict, MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 import { InstallationConflictResolutionDialogComponent } from "src/app/components/installation-conflict-resolution-dialog/installation-conflict-resolution-dialog.component";
+import { URLS } from "src/app/utils/urls";
 
 @Component({
   selector: "app-mmpm-marketplace",
@@ -66,7 +67,8 @@ export class MMPMMarketplaceComponent implements OnInit {
 
   private setupTableData(refresh: boolean = false): void {
 
-    this.dataStore.getMagicMirrorRootDirectory(refresh).then((dir) => {
+    this.api.retrieve(URLS.GET.MAGICMIRROR.ROOT_DIR).then((dir) => {
+
       this.magicmirrorRootDirectory = dir;
     }).catch((error) => console.log(error));
 
@@ -77,13 +79,7 @@ export class MMPMMarketplaceComponent implements OnInit {
         // removing all the packages that are currently installed from the list of available packages
         for (const installedPackage of installedPackages) {
           let index: number = allPackages.findIndex(
-            (availablePackage: MagicMirrorPackage) =>
-            availablePackage.repository === installedPackage.repository &&
-            availablePackage.title === installedPackage.title &&
-            availablePackage.author === installedPackage.author &&
-            availablePackage.category === installedPackage.category
-          );
-
+            (availablePackage: MagicMirrorPackage) => this.mmpmUtility?.isSamePackage(availablePackage, installedPackage, true));
           if (index > -1) allPackages.splice(index, 1);
         }
 
@@ -207,7 +203,7 @@ export class MMPMMarketplaceComponent implements OnInit {
             toRemove = [...toRemove, ...installationConflicts.matchesInstalledTitles];
 
             for (const remove of toRemove) {
-              selected.splice(selected.findIndex((pkg: MagicMirrorPackage) => pkg.title === remove.title && pkg.repository === remove.repository && pkg.author === remove.author), 1);
+              selected.splice(selected.findIndex((pkg: MagicMirrorPackage) => this.mmpmUtility.isSamePackage(pkg, remove)), 1);
             }
 
             this.installPackages(selected);

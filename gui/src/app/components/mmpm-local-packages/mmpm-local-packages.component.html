@@ -38,12 +38,15 @@
 
     <ng-container matColumnDef="category">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
-      <td mat-cell *matCellDef="let package">{{ package.category }}</td>
+      <td mat-cell *matCellDef="let package; let i = index;">{{ package.category }}</td>
     </ng-container>
 
     <ng-container matColumnDef="title">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>Title</th>
-      <td mat-cell *matCellDef="let package">{{ package.title }}
+      <td mat-cell *matCellDef="let package; let i = index;">{{ package.title }}
+      <mat-icon *ngIf="isUpgradeable[i]" matTooltip="Upgrade available">
+        upgrade
+      </mat-icon>
     </ng-container>
 
     <ng-container matColumnDef="description">
@@ -79,8 +82,8 @@
   <button
     mat-raised-button
     color="primary"
-    [disabled]="!selection?.selected?.length || !packages?.length"
-    matTooltip="{{ selection?.selected?.length === 1 ? 'Upgrade module' : 'Upgrade modules' }}"
+    [disabled]="!upgradeablePackages?.length && !selection?.selected?.length"
+    matTooltip="{{ selection?.selected?.length === 1 ? 'Upgrade package' : 'Upgrade packages' }}"
     [matTooltipPosition]="tableUtility?.tooltipPosition"
     (click)="onUpgradeModules()"
   >

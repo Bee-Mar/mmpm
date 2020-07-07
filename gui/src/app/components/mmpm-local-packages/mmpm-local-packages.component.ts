@@ -16,6 +16,7 @@ import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/cust
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
+import { URLS } from "src/app/utils/urls";
 
 @Component({
   selector: "app-mmpm-local-packages",
@@ -27,9 +28,6 @@ import { ConfirmationDialogComponent } from "src/app/components/confirmation-dia
 })
 export class MMPMLocalPackagesComponent implements OnInit {
 
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild(MatSort) sort: MatSort;
-
   constructor(
     public dialog: MatDialog,
     private api: RestApiService,
@@ -40,21 +38,24 @@ export class MMPMLocalPackagesComponent implements OnInit {
     private activeProcessService: ActiveProcessCountService
   ) {}
 
-  public packages: MagicMirrorPackage[];
-  public tableUtility: MagicMirrorTableUtility;
+  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatSort) sort: MatSort;
 
   private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this.mSnackBar);
   private subscription: Subscription;
   private mmpmLocalPackagesPageSizeCookie: string = "MMPM-local-packages-page-size";
-  private magicmirrorRootDirectory: string;
 
-  dataSource: MatTableDataSource<MagicMirrorPackage>;
-  selection = new SelectionModel<MagicMirrorPackage>(true, []);
-
-  snackbarSettings: object = { duration: 5000 };
+  public packages: MagicMirrorPackage[];
+  public tableUtility: MagicMirrorTableUtility;
+  public dataSource: MatTableDataSource<MagicMirrorPackage>;
+  public selection = new SelectionModel<MagicMirrorPackage>(true, []);
+  public snackbarSettings: object = { duration: 5000 };
+  public isUpgradeable: Array<boolean>;
+  public upgradeablePackages: Array<MagicMirrorPackage>;
 
   public ngOnInit(): void {
     this.setupTableData();
+
     this.subscription = this.tableUpdateNotifier.getNotification().subscribe((_) => this.setupTableData(true));
 
     if (!this.mmpmUtility.getCookie(this.mmpmLocalPackagesPageSizeCookie)) {
@@ -65,11 +66,32 @@ export class MMPMLocalPackagesComponent implements OnInit {
   }
 
   private setupTableData(refresh: boolean = false): void {
-    this.dataStore.getMagicMirrorRootDirectory(refresh).then((dir) => {
-      this.magicmirrorRootDirectory = dir;
-    }).catch((error) => console.log(error));
-
     this.dataStore.getAllInstalledPackages(refresh).then((pkgs) => {
+      this.isUpgradeable = new Array<boolean>(pkgs.length);
+      this.upgradeablePackages = new Array<MagicMirrorPackage>();
+      this.isUpgradeable.fill(false);
+
+      this.api.retrieve(URLS.GET.PACKAGES.UPDATE).then((success: boolean) => {
+        if (success) {
+          this.api.retrieve(URLS.GET.PACKAGES.UPGRADEABLE).then((upgradeable) => {
+
+            this.upgradeablePackages = upgradeable["packages"];
+
+            this.upgradeablePackages.forEach((upgradeablePackage: MagicMirrorPackage) => {
+              pkgs.forEach((installedPkg: MagicMirrorPackage, index: number) => {
+                if (this.mmpmUtility.isSamePackage(upgradeablePackage, installedPkg)) {
+                  this.isUpgradeable[index] = true;
+                }
+              });
+            });
+
+          }).catch((error) => console.log(error));
+
+        } else {
+          this.snackbar.error("Unable to check for package updates. Please see log files for details");
+        }
+      }).catch((error) => console.log(error));
+
       this.packages = pkgs;
       this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
       this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.packages);
@@ -83,10 +105,6 @@ export class MMPMLocalPackagesComponent implements OnInit {
         this.dialog,
         this.activeProcessService
       );
-    }).catch((error) => console.log(error));
-
-    this.dataStore.getAvailableUpgrades().then((upgradeable) => {
-      console.log(upgradeable);
     }).catch((error) => console.log(error));
   }
 

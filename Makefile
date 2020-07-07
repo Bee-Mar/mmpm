@@ -2,25 +2,21 @@
 
 SHELL=/bin/bash
 MAKE_SCRIPTS=scripts/make
-CLEAN=$(MAKE_SCRIPTS)/clean
 GUI=$(MAKE_SCRIPTS)/gui
 CLI=$(MAKE_SCRIPTS)/cli
 DAEMONS=$(MAKE_SCRIPTS)/daemons
 
-all: clean cli gui daemons
+all: cli gui daemons
 
 cli: dependencies-cli build-cli install-cli
 
 gui: dependencies-gui build-gui install-gui
 
-from-src: clean cli-from-src gui-from-src daemons
+from-src: cli-from-src gui-from-src daemons
 
 cli-from-src: build-cli-from-src install-cli-from-src
 
 gui-from-src: build-gui-from-src install-gui-from-src
-
-clean:
-	@$(SHELL) $(CLEAN)/all
 
 dependencies: dependencies-cli dependencies-gui
 

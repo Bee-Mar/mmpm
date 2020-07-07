@@ -2,6 +2,9 @@
 source ./scripts/make/constants
 
 printf "\e[92mGathering MMPM GUI Static Files\e[0m\n"
+
+log_notice
+
 log_action "Gathering MMPM GUI Static Files"
 
 log_and_eval "wget --verbose https://github.com/Bee-Mar/mmpm/releases/download/$MMPM_LATEST_VERSION/mmpm-gui-$MMPM_LATEST_VERSION.tar.gz"

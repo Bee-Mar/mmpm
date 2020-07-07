@@ -3,6 +3,8 @@ source ./scripts/make/constants
 
 printf "\e[92mInstalling MMPM CLI \e[0m\n"
 
+log_notice
+
 log_action "Installing MMPM CLI"
 
 printf " -- creating directories and files"

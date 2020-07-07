@@ -36,11 +36,11 @@ export class InstallationConflictResolutionDialogComponent implements OnInit {
       });
 
       confirmationDialogRef.afterClosed().subscribe((yes) => {
-        if (yes) this.dialogRef.close();
+        if (yes) {
+          this.dialogRef.close();
+        }
       });
     }
-
-    this.dialogRef.close();
   }
 
   public onSubmit(): void {
@@ -55,9 +55,9 @@ export class InstallationConflictResolutionDialogComponent implements OnInit {
       if (!yes) this.dialogRef.close();
 
       for (const selected of this.selection.selected) {
-        let index = this.data?.matchesSelectedTitles?.findIndex((pkg: MagicMirrorPackage) => {
-          return pkg.title === selected.value.title && pkg.author === selected.value.author && pkg.repository === selected.value.repository;
-        });
+        let index = this.data?.matchesSelectedTitles?.findIndex((pkg: MagicMirrorPackage) =>
+          pkg.title === selected.value.title && pkg.author === selected.value.author && pkg.repository === selected.value.repository
+        );
 
         this.data?.matchesSelectedTitles?.splice(index, 1);
       }

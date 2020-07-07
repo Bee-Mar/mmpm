@@ -7,24 +7,21 @@ import { URLS } from "src/app/utils/urls";
   providedIn: "root"
 })
 export class DataStoreService {
+  constructor(private api: RestApiService) {}
+
   private availablePackages: MagicMirrorPackage[];
   private installedPackages: MagicMirrorPackage[];
   private externalPackages: MagicMirrorPackage[];
   private availableUpgrades: Object;
-  private magicmirrorRootDirectory: string = "";
-
-  constructor(private api: RestApiService) {}
 
   public ngOnInit(): void {
     this.availablePackages = new Array<MagicMirrorPackage>();
     this.installedPackages = new Array<MagicMirrorPackage>();
     this.externalPackages = new Array<MagicMirrorPackage>();
-    this.availableUpgrades = new Object();
 
     this.getAllAvailablePackages(true);
     this.getAllInstalledPackages(true);
     this.getAllExternalPackages(true);
-    this.getMagicMirrorRootDirectory(true);
   }
 
   private fillArray(data: any): Array<MagicMirrorPackage> {
@@ -131,25 +128,4 @@ export class DataStoreService {
 
     return promise;
   }
-
-  public getMagicMirrorRootDirectory(refresh: boolean = false): Promise<string> {
-    let promise = new Promise<string>((resolve, reject) => {
-      if (this.magicmirrorRootDirectory.length && !refresh) {
-        resolve(this.magicmirrorRootDirectory);
-
-      } else {
-        this.api.retrieve(URLS.GET.MAGICMIRROR.ROOT_DIR).then((url: object) => {
-          this.magicmirrorRootDirectory = url["magicmirror_root"];
-
-        }).catch((error) => {
-          console.log(error);
-          reject("");
-
-        });
-      }
-    });
-
-    return promise;
-  }
-
 }

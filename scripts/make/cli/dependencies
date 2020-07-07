@@ -4,6 +4,8 @@ source /etc/os-release
 
 printf "\e[92mInstalling MMPM CLI Dependencies\e[0m\n"
 
+log_notice
+
 log_action "Checking Python3 version"
 printf " -- checking Python3 version"
 
@@ -24,10 +26,10 @@ log_action "Attempting to installing MMPM CLI Dependencies"
 
 if [[ $NAME == *Arch* ]]; then
   log_action "User appears to be running Arch Linux"
-  log_and_eval "sudo pacman -Sy python-pip make gcc libsodium libffi --noconfirm"
+  log_and_eval "sudo pacman -Sy python-pip make --noconfirm"
 else
   log_action "Installing python3-pip under the assumption the user is running a Debian based OS"
-  log_and_eval "sudo apt install python3-pip build-essential libffi-dev python3-pysodium make gcc -y 2>/dev/null"
+  log_and_eval "sudo apt install python3-pip make -y 2>/dev/null"
 fi
 
 printf " -- installing python3 packages (this may take a while)"

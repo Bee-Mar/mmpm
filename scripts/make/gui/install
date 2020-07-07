@@ -3,6 +3,8 @@ source ./scripts/make/constants
 
 printf "\e[92mInstalling GUI Static Files\e[0m\n"
 
+log_notice
+
 log_action "Installing MMPM GUI Static Files"
 
 printf " -- extracting and copying files to installation destination"

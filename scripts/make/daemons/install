@@ -3,6 +3,8 @@ source ./scripts/make/constants
 
 printf "\e[92mInstalling MMPM Daemons \e[0m\n"
 
+log_notice
+
 log_action "Installing MMPM Daemons"
 
 printf " -- creating MMPM service directories and files"

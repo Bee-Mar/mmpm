@@ -263,10 +263,9 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
 
     Parameters:
         packages (Dict[str, List[MagicMirrorPackage]]): Dictionary of MagicMirror modules
-        assume_yes (bool): if True, assume yes for user response, and do not display prompt
 
     Returns:
-        None
+        upgradeable (List[MagicMirrorPackage]): the list of packages that have available upgrades
     '''
 
     os.chdir(mmpm.consts.MAGICMIRROR_MODULES_DIR)
@@ -279,10 +278,10 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
             break
 
     if not any_installed:
-        mmpm.utils.fatal_msg('No packages installed')
+        mmpm.utils.error_msg('No packages installed')
+        return []
 
     upgradeable: List[MagicMirrorPackage] = []
-    upgraded: bool = True
     cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
 
     for _, _packages in installed_packages.items():

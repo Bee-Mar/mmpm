@@ -3,6 +3,8 @@ source ./scripts/make/constants
 
 printf "\e[92mRemoving MMPM CLI \e[0m\n"
 
+log_notice
+
 log_action "Removing MMPM CLI"
 
 printf " -- removing MMPM python3 package"

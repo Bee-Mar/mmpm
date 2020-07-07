@@ -2,6 +2,9 @@
 source ./scripts/make/constants
 
 printf "\e[92mRemoving MMPM Daemons \e[0m\n"
+
+log_notice
+
 log_action "Removing MMPM Daemons"
 
 printf " -- stopping and disabling MMPM service"

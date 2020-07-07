@@ -3,6 +3,8 @@ source ./scripts/make/constants
 
 printf "\e[92mRemoving MMPM GUI \e[0m\n"
 
+log_notice
+
 log_action "Removing MMPM GUI"
 
 printf " -- removing MMPM GUI configs"

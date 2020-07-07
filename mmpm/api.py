@@ -44,7 +44,7 @@ api = lambda path: f'/api/{path}'
 _packages_ = mmpm.core.load_packages()
 
 
-def __get_selected_packages__(rqst) -> List[MagicMirrorPackage]:
+def __get_selected_packages__(rqst, key: str = 'selected-packages') -> List[MagicMirrorPackage]:
     '''
     Helper method to extract a list of MagicMirrorPackage objects from Flask
     request object
@@ -55,7 +55,7 @@ def __get_selected_packages__(rqst) -> List[MagicMirrorPackage]:
     Returns:
         selected_packages (List[MagicMirrorPackage]): extracted list of MagicMirrorPackage objects
     '''
-    pkgs: dict = rqst.get_json(force=True)['selected-packages']
+    pkgs: dict = rqst.get_json(force=True)[key]
     # more-or-less a bandaid to the larger problem of aligning the data structure in angular
     for pkg in pkgs:
         del pkg['category']
@@ -194,10 +194,30 @@ def packages_upgrade() -> str:
     return json.dumps(failures)
 
 
+@app.route(api('packages/update'), methods=[mmpm.consts.GET])
+def packages_update() -> str:
+    try:
+        mmpm.core.check_for_package_updates(_packages_)
+        mmpm.core.check_for_mmpm_updates()
+        mmpm.core.check_for_magicmirror_updates()
+    except Exception as error:
+        mmpm.utils.log.error(str(error))
+        return json.dumps(False)
+
+    return json.dumps(True)
+
 @app.route(api('packages/upgradeable'), methods=[mmpm.consts.GET])
 def packages_upgradeable() -> str:
     mmpm.utils.log.info(f'Request to get upgradeable packages')
-    return json.dumps(mmpm.core.get_available_upgrades())
+    available_upgrades: dict = mmpm.core.get_available_upgrades()
+
+    for key in available_upgrades.keys():
+        if key != mmpm.consts.MMPM:
+            available_upgrades[key][mmpm.consts.PACKAGES] = [
+                pkg.serialize_full() for pkg in available_upgrades[key][mmpm.consts.PACKAGES]
+            ]
+
+    return json.dumps(available_upgrades[mmpm.consts.MMPM_MAGICMIRROR_ROOT])
 
 
 @app.route(api('packages/details'), methods=[mmpm.consts.POST])
@@ -244,10 +264,10 @@ def external_packages_add() -> str:
 
 @app.route(api('external-packages/remove'), methods=[mmpm.consts.DELETE])
 def external_packages_remove() -> str:
-    selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
+    selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request, 'external-packages')
     mmpm.utils.log.info(f'Request to remove external sources')
 
-    ext_modules: dict = {}
+    ext_packages: dict = {mmpm.consts.EXTERNAL_PACKAGES: []}
     marked_for_removal: list = []
     external_packages: List[MagicMirrorPackage] = mmpm.core.load_external_packages()[mmpm.consts.EXTERNAL_PACKAGES]
 
@@ -263,7 +283,7 @@ def external_packages_remove() -> str:
 
     try:
         with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as mmpm_ext_srcs:
-            json.dump(ext_modules, mmpm_ext_srcs)
+            json.dump(ext_packages, mmpm_ext_srcs)
         mmpm.utils.log.info(f'Wrote updated external modules to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
     except IOError as error:
         mmpm.utils.log.error(error)
@@ -291,7 +311,7 @@ def magicmirror_root_dir() -> str:
 
 
 @app.route(api('magicmirror/config'), methods=[mmpm.consts.GET, mmpm.consts.POST])
-def magicmirror_config():
+def magicmirror_config() -> str:
     if request.method == mmpm.consts.GET:
         if not os.path.exists(mmpm.consts.MAGICMIRROR_CONFIG_FILE):
             try:
@@ -301,7 +321,7 @@ def magicmirror_config():
             except OSError:
                 pass
         else:
-            result = send_file(
+            result: str = send_file(
                 mmpm.consts.MAGICMIRROR_CONFIG_FILE,
                 attachment_filename='config.js'
             )

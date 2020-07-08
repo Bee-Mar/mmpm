@@ -41,22 +41,29 @@ export class MagicMirrorControlCenterComponent implements OnInit {
 
 
   ngOnInit(): void {
-    this.socket = io("http://localhost:8080/mmpm", {reconnection: true});
-    this.socket.on("connect", () => {
-      this.socket.emit("GET_ACTIVE_MODULES");
-    });
-    this.socket.on("notification", (data: any) => console.log(data));
-    this.socket.on("disconnect", (data: any) => console.log(data));
-    this.socket.on("MMPM", (data: any) => console.log(data));
-    this.socket.on("error", (data: any) => console.log(data));
+    this.api.retrieve(URLS.GET.MAGICMIRROR.URI).then((uri: object) => {
 
-    this.api.retrieve(URLS.GET.PACKAGES.UPGRADEABLE).then((upgradeable: object) => {
-      this.magicMirrorIsUpgrable = upgradeable["MagicMirror"];
+      this.socket = io(`${uri["MMPM_MAGICMIRROR_URI"]}/mmpm`, {reconnection: true});
+
+      this.socket.on("connect", () => { this.socket.emit("FROM_MMPM_GUI_get_active_modules"); });
+      this.socket.on("notification", (data: any) => console.log(data));
+      this.socket.on("disconnect", (data: any) => console.log(data));
+      this.socket.on("ACTIVE_MODULES", (data: any) => console.log(data));
+      this.socket.on("error", (data: any) => console.log(data));
+
+      this.api.retrieve(URLS.GET.PACKAGES.UPGRADEABLE).then((upgradeable: object) => {
+        this.magicMirrorIsUpgrable = upgradeable["MagicMirror"];
+      }).catch((error) => console.log(error));
+
+      this.getInstalledPackages();
+
+      this.tableUpdateNotifier.getNotification().subscribe((_) => this.getInstalledPackages(true));
+
     }).catch((error) => console.log(error));
+  }
 
-    this.getInstalledPackages();
-
-    this.tableUpdateNotifier.getNotification().subscribe((_) => this.getInstalledPackages(true));
+  ngOnDestroy(): void {
+    this.socket.disconnect();
   }
 
   private getInstalledPackages(refresh: boolean = false): void {

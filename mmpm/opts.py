@@ -433,9 +433,9 @@ def get_user_args() -> object:
 
     env_parser.add_argument(
         '-d',
-        '--detailed',
+        '--describe',
         action='store_true',
-        help='display detailed usage for each environment variable',
+        help='display description for each environment variable',
         dest='detailed'
     )
 

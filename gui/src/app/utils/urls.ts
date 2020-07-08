@@ -1,76 +1,77 @@
 export const URLS = {
   GET: {
     PACKAGES: {
-      ROOT: "/packages",
-      get MARKETPLACE() { return `${this.ROOT}/marketplace`; },
-      get INSTALLED() { return `${this.ROOT}/installed`; },
-      get EXTERNAL() { return `${this.ROOT}/external`; },
-      get UPDATE() { return `${this.ROOT}/update`; },
-      get UPGRADEABLE() { return `${this.ROOT}/upgradeable`; },
+      _ROOT: "/packages",
+      get MARKETPLACE() { return `${this._ROOT}/marketplace`; },
+      get INSTALLED() { return `${this._ROOT}/installed`; },
+      get EXTERNAL() { return `${this._ROOT}/external`; },
+      get UPDATE() { return `${this._ROOT}/update`; },
+      get UPGRADEABLE() { return `${this._ROOT}/upgradeable`; },
     },
 
     DATABASE: {
-      ROOT: "/database",
-      get REFRESH() { return `${this.ROOT}/refresh`; },
+      _ROOT: "/database",
+      get REFRESH() { return `${this._ROOT}/refresh`; },
     },
 
     MAGICMIRROR: {
-      ROOT: "/magicmirror",
-      get START() { return `${this.ROOT}/start`; },
-      get STOP() { return `${this.ROOT}/stop`; },
-      get RESTART() { return `${this.ROOT}/restart`; },
-      get UPGRADE() { return `${this.ROOT}/upgrade`; },
-      get CONFIG() { return `${this.ROOT}/config`; },
-      get CUSTOM_CSS() { return `${this.ROOT}/custom-css`; },
-      get ROOT_DIR() { return `${this.ROOT}/root-dir`; }
+      _ROOT: "/magicmirror",
+      get START() { return `${this._ROOT}/start`; },
+      get STOP() { return `${this._ROOT}/stop`; },
+      get RESTART() { return `${this._ROOT}/restart`; },
+      get UPGRADE() { return `${this._ROOT}/upgrade`; },
+      get CONFIG() { return `${this._ROOT}/config`; },
+      get CUSTOM_CSS() { return `${this._ROOT}/custom-css`; },
+      get ROOT_DIR() { return `${this._ROOT}/root-dir`; },
+      get URI() { return `${this._ROOT}/uri`; },
     },
 
     // EXTERNAL_PACKAGES: {
     // },
 
     RASPBERRYPI: {
-      ROOT: "/rasperrypi",
-      get STOP() { return `${this.ROOT}/stop`; },
-      get RESTART() { return `${this.ROOT}/restart`; },
+      _ROOT: "/rasperrypi",
+      get STOP() { return `${this._ROOT}/stop`; },
+      get RESTART() { return `${this._ROOT}/restart`; },
     },
   },
 
   POST: {
     PACKAGES: {
-      ROOT: "/packages",
-      get REMOVE() { return `${this.ROOT}/remove`; },
-      get INSTALL() { return `${this.ROOT}/install`; },
-      get UPGRADE() { return `${this.ROOT}/upgrade`; },
-      get DETAILS() { return `${this.ROOT}/details`; },
+      _ROOT: "/packages",
+      get REMOVE() { return `${this._ROOT}/remove`; },
+      get INSTALL() { return `${this._ROOT}/install`; },
+      get UPGRADE() { return `${this._ROOT}/upgrade`; },
+      get DETAILS() { return `${this._ROOT}/details`; },
     },
 
     EXTERNAL_PACKAGES: {
-      ROOT: "/external-packages",
-      get ADD() { return `${this.ROOT}/add`; },
+      _ROOT: "/external-packages",
+      get ADD() { return `${this._ROOT}/add`; },
     },
 
     UPGRADE: {
-      ROOT: "/upgrade",
-      get PACKAGES() { return `${this.ROOT}/packages`; },
-      get EXTERNAL_PACKAGE() { return `${this.ROOT}/magicmirror`; },
+      _ROOT: "/upgrade",
+      get PACKAGES() { return `${this._ROOT}/packages`; },
+      get EXTERNAL_PACKAGE() { return `${this._ROOT}/magicmirror`; },
     },
 
     MAGICMIRROR: {
-      ROOT: "/magicmirror",
-      get CONFIG() { return `${this.ROOT}/config`; },
-      get CUSTOM_CSS() { return `${this.ROOT}/custom-css`; },
+      _ROOT: "/magicmirror",
+      get CONFIG() { return `${this._ROOT}/config`; },
+      get CUSTOM_CSS() { return `${this._ROOT}/custom-css`; },
     },
 
     MMPM: {
-      ROOT: "/mmpm",
-      get LOGS() { return `${this.ROOT}/logs`; },
+      _ROOT: "/mmpm",
+      get LOGS() { return `${this._ROOT}/logs`; },
     }
   },
 
   DELETE: {
     EXTERNAL_PACKAGES: {
-      ROOT: "/external-packages",
-      get REMOVE() { return `${this.ROOT}/remove`; },
+      _ROOT: "/external-packages",
+      get REMOVE() { return `${this._ROOT}/remove`; },
     },
   }
 };

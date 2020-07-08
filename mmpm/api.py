@@ -317,6 +317,12 @@ def magicmirror_root_dir() -> str:
     return json.dumps({'MMPM_MAGICMIRROR_ROOT': mmpm.consts.MMPM_MAGICMIRROR_ROOT})
 
 
+@app.route(api('magicmirror/uri'), methods=[mmpm.consts.GET])
+def magicmirror_uri() -> str:
+    mmpm.utils.log.info(f'Request to get MagicMirror root directory')
+    return json.dumps({'MMPM_MAGICMIRROR_URI': mmpm.consts.MMPM_MAGICMIRROR_URI})
+
+
 @app.route(api('magicmirror/config'), methods=[mmpm.consts.GET, mmpm.consts.POST])
 def magicmirror_config() -> str:
     if request.method == mmpm.consts.GET:

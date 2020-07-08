@@ -2,6 +2,7 @@
 from os.path import join, expanduser, normpath
 from os import environ
 from typing import Dict, List
+from socket import gethostname, gethostbyname
 import mmpm.color
 
 def __get_or_set_env_var__(var: str, value: str) -> str:
@@ -47,15 +48,22 @@ MMPM_ENV: dict = {
         'value': __get_or_set_env_var__('MMPM_MAGICMIRROR_ROOT', normpath(join(HOME_DIR, MAGICMIRROR))),
         'detail': 'the root directory of the MagicMirror application'
     },
+
+    'MMPM_MAGICMIRROR_URI': {
+        'value': __get_or_set_env_var__('MMPM_MAGICMIRROR_URI', f'http://{gethostbyname(gethostname())}:8080'),
+        'detail': 'the URI used to access MagicMirror via browser (including the port number)'
+    },
     'MMPM_MAGICMIRROR_PM2_PROCESS_NAME': {
         'value': __get_or_set_env_var__('MMPM_MAGICMIRROR_PM2_PROCESS_NAME', MAGICMIRROR),
         'detail': 'the name of the PM2 process associated with MagicMirror, Can be ignored if not using PM2'
-    }
+    },
+
 }
 
 # at runtime they're constants, so they can stay here
 MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = MMPM_ENV['MMPM_MAGICMIRROR_PM2_PROCESS_NAME']['value']
 MMPM_MAGICMIRROR_ROOT: str = normpath(MMPM_ENV['MMPM_MAGICMIRROR_ROOT']['value'])
+MMPM_MAGICMIRROR_URI: str = MMPM_ENV['MMPM_MAGICMIRROR_URI']['value']
 
 MMPM_REPO_URL: str = "https://github.com/Bee-Mar/mmpm.git"
 MMPM_FILE_URL: str = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"

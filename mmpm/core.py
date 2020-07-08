@@ -777,7 +777,7 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
     packages: dict = {}
 
     db_file: str = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE
-    db_exists: bool = os.path.exists(db_file) and os.stat(db_file).st_size
+    db_exists: bool = os.path.exists(db_file) and bool(os.stat(db_file).st_size)
     ext_pkgs_file: str = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
 
     if not mmpm.utils.assert_snapshot_directory():
@@ -820,7 +820,7 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
             for category in packages.keys():
                 packages[category] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(packages[category])
 
-    if packages and os.path.exists(ext_pkgs_file) and os.stat(ext_pkgs_file).st_size:
+    if packages and os.path.exists(ext_pkgs_file) and bool(os.stat(ext_pkgs_file).st_size):
         packages.update(**load_external_packages())
 
     return packages

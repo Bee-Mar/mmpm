@@ -185,7 +185,11 @@ def main(argv):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.status:
-            mmpm.core.display_active_packages()
+            mmpm.core.display_magicmirror_modules_status()
+        elif args.hide:
+            mmpm.core.hide_magicmirror_modules(args.hide)
+        elif args.show:
+            mmpm.core.show_magicmirror_modules(args.show)
         elif args.start:
             mmpm.core.start_magicmirror()
         elif args.stop:

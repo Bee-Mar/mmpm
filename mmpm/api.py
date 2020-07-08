@@ -11,7 +11,7 @@ import datetime
 from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
 from flask_socketio import SocketIO
-from typing import Tuple, List, Dict
+from typing import Tuple, List
 
 import mmpm.utils
 import mmpm.consts

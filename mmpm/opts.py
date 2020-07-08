@@ -22,7 +22,7 @@ UPGRADE: str = 'upgrade'
 ENV: str = 'env'
 SHOW: str = 'show'
 
-SINGLE_OPTION_ARGS: List[str] = [INSTALL, DATABASE, LIST, OPEN, MM_CTL]
+SINGLE_OPTION_ARGS: List[str] = [INSTALL, DATABASE, LIST, OPEN]
 
 
 def get_user_args() -> object:
@@ -384,15 +384,29 @@ def get_user_args() -> object:
     # MM_CTL SUBCOMMANDS
     mm_ctl_parser = subparsers.add_parser(
         MM_CTL,
-        usage='\n  mmpm mm-ctl [--status] [--restart] [--start] [--stop]\n  mmpm mm-ctl [--status]\n  mmpm mm-ctl [--rotate] {0, 90, 180, 270}',
+        usage='\n  mmpm mm-ctl [--status] [--restart] [--start] [--stop]\n  mmpm mm-ctl [--rotate] {0, 90, 180, 270}',
         help='commands to control the MagicMirror'
     )
 
     mm_ctl_parser.add_argument(
         '--status',
         action='store_true',
-        help='show the status of packages on your MagicMirror',
+        help='show the hidden/visible status of modules on your MagicMirror',
         dest='status'
+    )
+
+    mm_ctl_parser.add_argument(
+        '--hide',
+        nargs='+',
+        help='hide modules on your MagicMirror',
+        dest='hide'
+    )
+
+    mm_ctl_parser.add_argument(
+        '--show',
+        nargs='+',
+        help='show modules on your MagicMirror',
+        dest='show'
     )
 
     mm_ctl_parser.add_argument(

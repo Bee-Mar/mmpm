@@ -7,6 +7,7 @@ import requests
 import datetime
 import json
 import pathlib
+import socketio
 
 from re import sub
 from logging import Logger
@@ -935,3 +936,25 @@ def is_magicmirror_running() -> bool:
                 mmpm.utils.get_pids('electron') or
                 mmpm.utils.get_pids('pm2')
                 )
+
+
+def socketio_client_factory() -> socketio.Client:
+    '''
+    Wrapper method to return a consistent paramaterized socketio.Client object
+
+    Parameters:
+        None
+
+    Returns:
+        client (socketio.Client): the socketio Client object
+    '''
+    return socketio.Client(logger=mmpm.utils.log, reconnection=True, request_timeout=3000)
+
+
+def socketio_client_disconnect(client: socketio.Client) -> bool:
+    try:
+        mmpm.utils.log.info('attempting to disconnect from MagicMirror websocket')
+        client.disconnect()
+    except OSError:
+        mmpm.utils.log.info('encountered OSError when disconnecting from websocket, ignoring')
+    return True

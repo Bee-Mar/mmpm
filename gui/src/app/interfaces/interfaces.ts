@@ -16,3 +16,8 @@ export interface ActiveProcess {
   name: string;
   startTime: string;
 }
+
+export interface ActiveModule {
+  name: string;
+  hidden: boolean;
+}

@@ -6,7 +6,6 @@ import json
 import datetime
 import shutil
 import sys
-import requests
 
 from socket import gethostname, gethostbyname
 from textwrap import fill, indent
@@ -777,7 +776,9 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
 
     packages: dict = {}
 
-    db_exists: bool = os.path.exists(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE)
+    db_file: str = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE
+    db_exists: bool = os.path.exists(db_file) and os.stat(db_file).st_size
+    ext_pkgs_file: str = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
 
     if not mmpm.utils.assert_snapshot_directory():
         message: str = 'Failed to create directory for MagicMirror snapshot'
@@ -807,19 +808,19 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
 
         # save the new snapshot
         else:
-            with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE, 'w') as snapshot:
+            with open(db_file, 'w') as snapshot:
                 json.dump(packages, snapshot, default=lambda pkg: pkg.serialize())
 
             print(mmpm.consts.GREEN_CHECK_MARK)
 
     if not packages and db_exists:
-        with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE, 'r') as snapshot_file:
+        with open(db_file, 'r') as snapshot_file:
             packages = json.load(snapshot_file)
 
             for category in packages.keys():
                 packages[category] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(packages[category])
 
-    if packages and os.path.exists(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE) and os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size:
+    if packages and os.path.exists(ext_pkgs_file) and os.stat(ext_pkgs_file).st_size:
         packages.update(**load_external_packages())
 
     return packages
@@ -1280,8 +1281,7 @@ def remove_external_package_source(titles: List[str] = None, assume_yes: bool = 
     return True
 
 
-def display_active_packages() -> None:
-
+def display_magicmirror_modules_status() -> None:
     '''
     Parses the MagicMirror config file for the modules listed, and reports
     which modules are currently enabled. A module is considered disabled if the
@@ -1295,29 +1295,134 @@ def display_active_packages() -> None:
         None
     '''
 
-    if not os.path.exists(mmpm.consts.MAGICMIRROR_CONFIG_FILE):
-        mmpm.utils.env_variables_fatal_msg('MagicMirror config file not found.')
+    client = mmpm.utils.socketio_client_factory()
 
-    temp_config: str = f'{mmpm.consts.MMPM_MAGICMIRROR_ROOT}/config/temp_config.js'
-    shutil.copyfile(mmpm.consts.MAGICMIRROR_CONFIG_FILE, temp_config)
+    @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
+    def connect():
+        mmpm.utils.log.info('connected to MagicMirror websocket')
+        client.emit('FROM_MMPM_APP_get_active_modules', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE, data=None)
+        mmpm.utils.log.info('emitted request for active modules to MMPM module')
 
-    with open(temp_config, 'a') as temp:
-        temp.write('console.log(JSON.stringify(config))')
 
-    _, stdout, _ = mmpm.utils.run_cmd(['node', temp_config], progress=False)
-    config: dict = json.loads(stdout.split('\n')[0])
+    @client.event
+    def connect_error():
+        mmpm.utils.error_msg('Failed to connect to MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set properly?')
 
-    # using -f so any errors can be ignored
-    mmpm.utils.run_cmd(['rm', '-f', temp_config], progress=False)
 
-    if 'modules' not in config or not config['modules']:
-        mmpm.utils.error_msg(f'No modules found in {mmpm.consts.MAGICMIRROR_CONFIG_FILE}')
+    @client.on('disconnect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
+    def disconnect():
+        mmpm.utils.log.info('disconnected from MagicMirror websocket')
 
-    for module_config in config['modules']:
-        print(
-            mmpm.color.normal_green(module_config['module']),
-            f"\n  Status: {'disabled' if 'disabled' in module_config and module_config['disabled'] else 'enabled'}\n"
-        )
+
+    @client.on('ACTIVE_MODULES', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
+    def active_modules(data):
+        mmpm.utils.log.info('received active modules from MMPM MagicMirror module')
+
+        if not data:
+            mmpm.utils.error_msg('No data was received from the MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set properly?')
+
+        for module in data:
+            print(f"{mmpm.color.normal_green(module['name'])}\n  hidden: {'true' if module['hidden'] else 'false'}\n")
+
+        mmpm.utils.socketio_client_disconnect(client)
+
+    mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
+    client.connect(mmpm.consts.MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
+
+
+
+def hide_magicmirror_modules(modules_to_hide: List[str]):
+    '''
+    Creates a connection to the websocket opened by MagicMirror, and through
+    the MMPM module, the provided module names are looked up, and hidden.
+    If the module is already hidden, the display doesn't change.
+
+    Parameters:
+        modules_to_hide (List[str]): the names of the modules to make visible
+
+    Returns:
+        None
+    '''
+
+    client = mmpm.utils.socketio_client_factory()
+
+    @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
+    def connect():
+        mmpm.utils.log.info('connected to MagicMirror websocket')
+        client.emit('FROM_MMPM_APP_hide_modules', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE, data=modules_to_hide)
+        mmpm.utils.log.info('emitted request to hide modules to MMPM module')
+
+
+    @client.event
+    def connect_error():
+        mmpm.utils.error_msg('Failed to connect to MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set properly?')
+
+
+    @client.on('disconnect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
+    def disconnect():
+        mmpm.utils.log.info('disconnected from MagicMirror websocket')
+
+
+    @client.on('MODULES_HIDDEN', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
+    def active_modules(data):
+        mmpm.utils.log.info('received active modules from MMPM MagicMirror module')
+
+        if not data:
+            mmpm.utils.error_msg('Unable to find provided module')
+        elif data['fails']:
+            mmpm.utils.error_msg(f"Failed to hide {data['fails']}. Is the name of the each module spelled correctly?")
+
+        mmpm.utils.socketio_client_disconnect(client)
+
+    mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
+    client.connect(mmpm.consts.MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
+
+
+def show_magicmirror_modules(modules_to_show: List[str]) -> None:
+    '''
+    Creates a connection to the websocket opened by MagicMirror, and through
+    the MMPM module, the provided module names are looked up, and made visible.
+    If the module is already visible, the display doesn't change.
+
+    Parameters:
+        modules_to_show (List[str]): the names of the modules to make visible
+
+    Returns:
+        None
+    '''
+
+    client = mmpm.utils.socketio_client_factory()
+
+    @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
+    def connect():
+        mmpm.utils.log.info('connected to MagicMirror websocket')
+        client.emit('FROM_MMPM_APP_show_modules', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE, data=modules_to_show)
+        mmpm.utils.log.info('emitted request for show modules to MMPM module')
+
+
+    @client.event
+    def connect_error():
+        mmpm.utils.error_msg('Failed to connect to MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set properly?')
+
+
+    @client.on('disconnect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
+    def disconnect():
+        mmpm.utils.log.info('disconnected from MagicMirror websocket')
+
+
+    @client.on('MODULES_SHOWN', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
+    def active_modules(data):
+        mmpm.utils.log.info('received active modules from MMPM MagicMirror module')
+
+        if not data:
+            mmpm.utils.error_msg('No data was received from the MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set?')
+        elif data['fails']:
+            mmpm.utils.error_msg(f"Failed to show: {data['fails']}. Is the name of the each module spelled correctly?")
+
+        mmpm.utils.socketio_client_disconnect(client)
+
+    mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
+    client.connect(mmpm.consts.MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
 
 
 def get_web_interface_url() -> str:
@@ -1346,7 +1451,6 @@ def get_web_interface_url() -> str:
         mmpm.utils.fatal_msg('Unable to retrieve the port number of the MMPM web interface')
 
     return f'http://{gethostbyname(gethostname())}:{port}'
-
 
 
 def stop_magicmirror() -> bool:
@@ -1549,7 +1653,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
 
     def __echo_and_eval__(command: str) -> None:
         mmpm.utils.log.info(f'executing {command} to install autocompletion')
-        print(f'{mmpm.consts.GREEN_PLUS} {mmpm.color.normal_green(command)}')
+        print(f'{mmpm.consts.GREEN_PLUS} {command}')
         os.system(command)
 
     if 'bash' in shell:

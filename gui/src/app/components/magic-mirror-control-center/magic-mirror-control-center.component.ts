@@ -7,7 +7,8 @@ import { LiveTerminalFeedDialogComponent } from "src/app/components/live-termina
 import { DataStoreService } from "src/app/services/data-store.service";
 import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
 import { URLS } from "src/app/utils/urls";
-import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
+import { ActiveModule } from "src/app/interfaces/interfaces";
+import { MatSlideToggleChange } from "@angular/material/slide-toggle";
 import io from "socket.io-client";
 
 interface Tile {
@@ -37,39 +38,66 @@ export class MagicMirrorControlCenterComponent implements OnInit {
   public socket: any;
   public outputStream: string = "";
   public magicMirrorIsUpgrable: boolean = false;
-  public installedPackages: Array<MagicMirrorPackage>;
-
+  public activeModules: Array<ActiveModule>;
+  public magicMirrorStream: string = "";
 
   ngOnInit(): void {
+    this.activeModules = new Array<ActiveModule>();
+
     this.api.retrieve(URLS.GET.MAGICMIRROR.URI).then((uri: object) => {
-
       this.socket = io(`${uri["MMPM_MAGICMIRROR_URI"]}/mmpm`, {reconnection: true});
-
-      this.socket.on("connect", () => { this.socket.emit("FROM_MMPM_GUI_get_active_modules"); });
+      this.socket.on("connect", () => { this.socket.emit("FROM_MMPM_APP_get_active_modules"); });
       this.socket.on("notification", (data: any) => console.log(data));
       this.socket.on("disconnect", (data: any) => console.log(data));
-      this.socket.on("ACTIVE_MODULES", (data: any) => console.log(data));
+
+      this.socket.on("MODULES_VISIBLE", (result: any) => {
+        console.log(result);
+      });
+
+      this.socket.on("MODULES_HIDDEN", (result: any) => {
+        if (result.fails.length) {
+          console.log(result);
+        }
+      });
+
+      this.socket.on("ACTIVE_MODULES", (active: any) => {
+        if (active) {
+          this.activeModules = new Array<ActiveModule>();
+          for (const activeModule of active) {
+            this.activeModules.push({
+              name: activeModule["name"],
+              hidden: activeModule["hidden"]
+            });
+          }
+        }
+      });
+
+      this.socket.on("MAGICMIRROR_LOGS", (data: any) => {
+        this.magicMirrorStream += data.notification + "\n";
+        console.log(data)
+      });
+
       this.socket.on("error", (data: any) => console.log(data));
 
       this.api.retrieve(URLS.GET.PACKAGES.UPGRADEABLE).then((upgradeable: object) => {
         this.magicMirrorIsUpgrable = upgradeable["MagicMirror"];
       }).catch((error) => console.log(error));
 
-      this.getInstalledPackages();
-
-      this.tableUpdateNotifier.getNotification().subscribe((_) => this.getInstalledPackages(true));
-
     }).catch((error) => console.log(error));
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this.socket.disconnect();
   }
 
-  private getInstalledPackages(refresh: boolean = false): void {
-    this.dataStore.getAllInstalledPackages(refresh).then((packages: Array<MagicMirrorPackage>) => {
-      this.installedPackages = packages;
-    }).catch((error) => console.log(error));
+  public toggle(event: MatSlideToggleChange, active: ActiveModule) {
+    if (event.checked) {
+
+      this.socket.emit("FROM_MMPM_APP_show_modules", [active.name]);
+    } else {
+      this.socket.emit("FROM_MMPM_APP_hide_modules", [active.name]);
+    }
+    console.log(active);
   }
 
   private liveTerminalFeedDialogSettings: object = {

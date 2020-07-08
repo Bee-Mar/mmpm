@@ -44,7 +44,7 @@ export class MMPMMarketplaceComponent implements OnInit {
 
   public allPackages: MagicMirrorPackage[];
   public installedPackages: MagicMirrorPackage[];
-  public tableUtility: MagicMirrorTableUtility;
+  public externalPackages: MagicMirrorPackage[];  public tableUtility: MagicMirrorTableUtility;
   public dataSource: MatTableDataSource<MagicMirrorPackage>;
   public selection = new SelectionModel<MagicMirrorPackage>(true, []);
 
@@ -74,28 +74,37 @@ export class MMPMMarketplaceComponent implements OnInit {
 
     this.dataStore.getAllAvailablePackages(refresh).then((allPackages: MagicMirrorPackage[]) => {
       this.dataStore.getAllInstalledPackages(refresh).then((installedPackages: MagicMirrorPackage[]) => {
-        this.installedPackages = installedPackages;
+        this.dataStore.getAllExternalPackages(refresh).then((externalPackages: Array<MagicMirrorPackage>) => {
 
-        // removing all the packages that are currently installed from the list of available packages
-        for (const installedPackage of installedPackages) {
-          let index: number = allPackages.findIndex(
-            (availablePackage: MagicMirrorPackage) => this.mmpmUtility?.isSamePackage(availablePackage, installedPackage, true));
-          if (index > -1) allPackages.splice(index, 1);
-        }
+          allPackages = [...allPackages, ...externalPackages];
 
-        this.allPackages = allPackages;
-        this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
-        this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.allPackages);
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
+          this.installedPackages = installedPackages;
 
-        this.tableUtility = new MagicMirrorTableUtility(
-          this.selection,
-          this.dataSource,
-          this.sort,
-          this.dialog,
-          this.activeProcessService
-        );
+          // removing all the packages that are currently installed from the list of available packages
+          for (const installedPackage of installedPackages) {
+            let index: number = allPackages.findIndex((availablePackage: MagicMirrorPackage) => {
+              return this.mmpmUtility?.isSamePackage(availablePackage, installedPackage, true)
+            });
+
+            if (index > -1) {
+              allPackages.splice(index, 1);
+            }
+          }
+
+          this.allPackages = allPackages;
+          this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
+          this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.allPackages);
+          this.dataSource.paginator = this.paginator;
+          this.dataSource.sort = this.sort;
+
+          this.tableUtility = new MagicMirrorTableUtility(
+            this.selection,
+            this.dataSource,
+            this.sort,
+            this.dialog,
+            this.activeProcessService
+          );
+        }).catch((error) => console.log(error));
       }).catch((error) => console.log(error));
     }).catch((error) => console.log(error));
   }

@@ -40,6 +40,7 @@ RED_X: str = mmpm.color.N_RED + u'\u2718' + mmpm.color.RESET
 GREEN_DASHES: str = mmpm.color.normal_green('----') # creates [+] symbol
 GREEN_PLUS: str = mmpm.color.normal_green('+') # creates [+] symbol
 EXTERNAL_PACKAGES: str = 'External Packages'
+MMPM_SOCKETIO_NAMESPACE: str = '/mmpm'
 
 HOME_DIR: str = expanduser("~")
 
@@ -54,10 +55,13 @@ MMPM_ENV: dict = {
         'detail': 'the URI used to access MagicMirror via browser (including the port number)'
     },
     'MMPM_MAGICMIRROR_PM2_PROCESS_NAME': {
-        'value': __get_or_set_env_var__('MMPM_MAGICMIRROR_PM2_PROCESS_NAME', MAGICMIRROR),
-        'detail': 'the name of the PM2 process associated with MagicMirror, Can be ignored if not using PM2'
+        'value': __get_or_set_env_var__('MMPM_MAGICMIRROR_PM2_PROCESS_NAME', ''),
+        'detail': 'the name of the PM2 process associated with MagicMirror. set this as an empty string if not using PM2'
     },
-
+    'MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE': {
+        'value': __get_or_set_env_var__('MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE', ''),
+        'detail': 'the path to the docker-compose.yml file, if using MagicMirror with docker-compose'
+    }
 }
 
 # at runtime they're constants, so they can stay here
@@ -109,4 +113,3 @@ MMPM_DATA_FILES_NAMES: List[str] = [
     MMPM_EXTERNAL_PACKAGES_FILE,
     MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE,
 ]
-

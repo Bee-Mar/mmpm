@@ -26,33 +26,41 @@
   <div style="height: 100%; width: 20%; margin-left: 7.5%; background-color: #303030; float: left; overflow-y: scroll;">
     <mat-grid-list cols="1" rowHeight="10%">
       <mat-grid-tile
-        *ngFor="let pkg of installedPackages"
+        *ngFor="let active of activeModules | keyvalue"
         [colspan]="1"
         [rowspan]="1"
         color="#FFFFFF"
         >
-        <mat-slide-toggle>{{ pkg.title }}</mat-slide-toggle>
+
+        <mat-slide-toggle [checked]="!active.value.hidden" (change)="toggle($event, active.value)">{{ active.value.name }}</mat-slide-toggle>
       </mat-grid-tile>
     </mat-grid-list>
   </div>
 
+  <!-- mat-tab-body-wrapper  needs to be 100% height -->
+
   <div style="height: 100%; width: 47.5%; background-color: #303030; float: right;">
-    <mat-tab-group color="primary" mat-align-tabs="center">
-      <mat-tab label="mmpm-cli-interface.log" color="secondary">
-        <mat-card class="card-container" style="text-align: center;">
-        </mat-card>
+    <mat-tab-group color="primary" mat-align-tabs="center" style="height: 100%;">
+      <mat-tab label="CLI Log" color="secondary" style="height: 100%;">
+        <div style="height: 100%; background-color: black; color: white;">
+          <code>
+          </code>
+        </div>
       </mat-tab>
-      <mat-tab label="mmpm-gunicorn-access.log">
-        <mat-card class="card-container" style="text-align: center;">
-        </mat-card>
+      <mat-tab label="GUI Access Log" style="height: 100%;">
+        <div style="height: 100%; background-color: black; color: white;">
+          <code>
+          </code>
+        </div>
       </mat-tab>
-      <mat-tab label="mmpm-gunicorn-error.log" color="secondary">
-        <mat-card class="card-container" style="text-align: center;">
-        </mat-card>
+      <mat-tab label="GUI Error Log" color="secondary" style="height: 100%;">
       </mat-tab>
-      <mat-tab label="MagicMirror Logs" color="secondary">
-        <mat-card class="card-container" style="text-align: center;">
-        </mat-card>
+      <mat-tab label="MagicMirror Notification Stream" color="secondary" style="height: 100%;">
+        <div style="height: 100%; background-color: black; color: white;">
+          <code>
+          {{ magicMirrorStream }}
+          </code>
+        </div>
       </mat-tab>
     </mat-tab-group>
   </div>

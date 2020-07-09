@@ -29,6 +29,11 @@ export const URLS = {
     // EXTERNAL_PACKAGES: {
     // },
 
+    MMPM: {
+      _ROOT: "/mmpm",
+      get LOGS() { return `${this._ROOT}/logs`; },
+    },
+
     RASPBERRYPI: {
       _ROOT: "/rasperrypi",
       get STOP() { return `${this._ROOT}/stop`; },
@@ -62,10 +67,6 @@ export const URLS = {
       get CUSTOM_CSS() { return `${this._ROOT}/custom-css`; },
     },
 
-    MMPM: {
-      _ROOT: "/mmpm",
-      get LOGS() { return `${this._ROOT}/logs`; },
-    }
   },
 
   DELETE: {

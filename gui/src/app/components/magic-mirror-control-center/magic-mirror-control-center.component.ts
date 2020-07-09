@@ -10,6 +10,7 @@ import { URLS } from "src/app/utils/urls";
 import { ActiveModule } from "src/app/interfaces/interfaces";
 import { MatSlideToggleChange } from "@angular/material/slide-toggle";
 import io from "socket.io-client";
+import * as Cookie from "js-cookie";
 
 interface Tile {
   icon: string;
@@ -34,6 +35,8 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     private dataStore: DataStoreService,
     private tableUpdateNotifier: TableUpdateNotifierService,
   ) {}
+
+  private mmpmEditorThemeCookie = "MMPM-editor-theme";
 
   public socket: any;
   public outputStream: string = "";
@@ -215,4 +218,33 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       }).catch((error) => { console.log(error); });
     });
   }
+
+  public downloadLogs(): void {
+    this.api.getLogFiles().then((file) => {
+
+      const blob = new Blob([file], {type: 'application/zip'});
+      const date = new Date();
+
+      const fileName: string = `mmpm-logs-${date.getFullYear()}-${date.getMonth()}-${date.getDay()}.zip`;
+      const objectUrl: string = URL.createObjectURL(blob);
+      const a: HTMLAnchorElement = document.createElement('a') as HTMLAnchorElement;
+
+      a.href = objectUrl;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+
+      document.body.removeChild(a);
+      URL.revokeObjectURL(objectUrl);
+    }).catch((error) => console.log(error));
+  }
+
+  public onToggleTheme() {
+    let theme = Cookie.get(this.mmpmEditorThemeCookie) ?? "vs-dark"
+    theme = theme === "vs-dark" ? "vs-light" : "vs-dark";
+    monaco.editor.setTheme(theme);
+    Cookie.set(this.mmpmEditorThemeCookie, theme, {expires: 7, path: ""});
+  }
+
+
 }

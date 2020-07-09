@@ -34,7 +34,7 @@ export class RestApiService {
       {
         headers: httpOptions(),
         responseType: "text"
-      }).toPromise();
+      }).pipe(retry(1), catchError(this.handleError)).toPromise();
   }
 
   private postWithSelectedPackages(url: string, selectedPackages: MagicMirrorPackage[]): Promise<any> {
@@ -62,6 +62,16 @@ export class RestApiService {
 
   public packagesRemove(selectedPackages: MagicMirrorPackage[]): Promise<any> {
     return this.postWithSelectedPackages(URLS.POST.PACKAGES.REMOVE, selectedPackages);
+  }
+
+  public getLogFiles(): Promise<any> {
+    return this.http.get(this.route(URLS.GET.MMPM.LOGS), {
+      headers: httpOptions({
+        "Content-Type": "application/zip",
+      }),
+      reportProgress: true,
+      responseType: "arraybuffer"
+    }).pipe(retry(1), catchError(this.handleError)).toPromise();
   }
 
   public updateMagicMirrorConfig(url: string, code: string): Observable<Response> {

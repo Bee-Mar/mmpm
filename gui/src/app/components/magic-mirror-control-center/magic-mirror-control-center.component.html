@@ -39,30 +39,48 @@
 
   <!-- mat-tab-body-wrapper  needs to be 100% height -->
 
-  <div style="height: 100%; width: 47.5%; background-color: #303030; float: right;">
+  <div style="height: 95%; width: 47.5%; background-color: #303030; float: right;">
     <mat-tab-group color="primary" mat-align-tabs="center" style="height: 100%;">
       <mat-tab label="CLI Log" color="secondary" style="height: 100%;">
-        <div style="height: 100%; background-color: black; color: white;">
-          <code>
-          </code>
+        <div>
+        <app-log-stream-display-editor logStream="magicMirrorStream"></app-log-stream-display-editor>
         </div>
       </mat-tab>
       <mat-tab label="GUI Access Log" style="height: 100%;">
-        <div style="height: 100%; background-color: black; color: white;">
-          <code>
-          </code>
+        <div style="height: 100%;">
+        <app-log-stream-display-editor logStream="magicMirrorStream"></app-log-stream-display-editor>
         </div>
       </mat-tab>
       <mat-tab label="GUI Error Log" color="secondary" style="height: 100%;">
+        <app-log-stream-display-editor logStream="MAGICMIRROR_LOGS"></app-log-stream-display-editor>
       </mat-tab>
-      <mat-tab label="MagicMirror Notification Stream" color="secondary" style="height: 100%;">
-        <div style="height: 100%; background-color: black; color: white;">
-          <code>
-          {{ magicMirrorStream }}
-          </code>
-        </div>
+      <mat-tab label="MagicMirror Notification Stream" color="secondary">
+        <app-log-stream-display-editor logStream="MAGICMIRROR_LOGS"></app-log-stream-display-editor>
       </mat-tab>
     </mat-tab-group>
+
+    <div style="margin: 0 auto; width: 15%; justify-content: space-evenly; display: flex;">
+      <button
+        mat-raised-button
+        color="primary"
+        matTooltip="Download logs"
+        [matTooltipPosition]="'below'"
+        (click)="downloadLogs()"
+        >
+        <mat-icon>get_app</mat-icon>
+      </button>
+
+      <button
+        mat-raised-button
+        style="background-color: #959595;"
+        matTooltip="Toggle theme"
+        [matTooltipPosition]="'below'"
+        (click)="onToggleTheme()"
+        >
+        <mat-icon>palette</mat-icon>
+      </button>
+    </div>
+
   </div>
 
 </div>

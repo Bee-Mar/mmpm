@@ -84,11 +84,11 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
     const newTheme = this.editorOptions.theme === "vs-dark" ? "vs-light" : "vs-dark";
     monaco.editor.setTheme(newTheme);
     this.editorOptions.theme = newTheme;
-    Cookie.set(this.mmpmEditorThemeCookie, newTheme, { expires: 7, path: ""});
+    Cookie.set(this.mmpmEditorThemeCookie, newTheme, {expires: 7, path: ""});
   }
 
   private setFileIndexCookie(): void {
-    Cookie.set(this.mmpmEditorCurrentFileCookie, String(this.fileIndex), { expires: 7, path: ""});
+    Cookie.set(this.mmpmEditorCurrentFileCookie, String(this.fileIndex), {expires: 7, path: ""});
   }
 
   public loadConfigJs() {

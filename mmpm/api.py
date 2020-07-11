@@ -10,7 +10,6 @@ import datetime
 
 from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
-import flask_monitoringdashboard as dashboard
 from flask_socketio import SocketIO
 from typing import Tuple, List
 from shelljob.proc import Group
@@ -29,8 +28,6 @@ app = Flask(
     root_path='/var/www/mmpm',
     static_folder="/var/www/mmpm/static",
 )
-
-dashboard.bind(app)
 
 app.config['CORS_HEADERS'] = 'Content-Type'
 

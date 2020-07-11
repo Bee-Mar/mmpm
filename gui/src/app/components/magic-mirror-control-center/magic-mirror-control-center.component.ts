@@ -49,10 +49,6 @@ export class MagicMirrorControlCenterComponent implements OnInit {
   ngOnInit(): void {
     this.activeModules = new Array<ActiveModule>();
 
-    interval(3000).subscribe(_ => {
-      this.api.retrieve(URLS.GET.MMPM.MMPM_CLI_LOG).then(logs => console.log())
-    });
-
     this.api.retrieve(URLS.GET.MAGICMIRROR.URI).then((uri: object) => {
       this.magicmirrorUri = uri["MMPM_MAGICMIRROR_URI"];
       this.socket = io(`${this.magicmirrorUri}/mmpm`, {reconnection: true});
@@ -184,10 +180,6 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     this.snackbar.open("Process executed", "Close", this.snackbarSettings);
   };
 
-  private executing = () => {
-    this.snackbar.open("Process executing ...", "Close", this.snackbarSettings);
-  };
-
   private magicMirrorRunningAlready = () => {
     this.snackbar.open(
       "MagicMirror appears to be running already. If this is a mistake, stop, then start MagicMirror.",
@@ -195,7 +187,6 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       this.snackbarSettings
     );
   };
-
 
   public sendControlSignal(url: string, message: string): void {
 

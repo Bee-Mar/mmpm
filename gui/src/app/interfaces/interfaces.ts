@@ -19,5 +19,5 @@ export interface ActiveProcess {
 
 export interface ActiveModule {
   name: string;
-  hidden: boolean;
+  visible: boolean;
 }

@@ -419,21 +419,21 @@ def get_user_args() -> object:
     mm_ctl_parser.add_argument(
         '--start',
         action='store_true',
-        help='start the MagicMirror (works with pm2)',
+        help='start the MagicMirror (works with pm2 and docker-compose)',
         dest='start'
     )
 
     mm_ctl_parser.add_argument(
         '--stop',
         action='store_true',
-        help='stop the MagicMirror (works with pm2)',
+        help='stop the MagicMirror (works with pm2 and docker-compose)',
         dest='stop'
     )
 
     mm_ctl_parser.add_argument(
         '--restart',
         action='store_true',
-        help='restart the MagicMirror (works with pm2)',
+        help='restart the MagicMirror (works with pm2 and docker-compose)',
         dest='restart'
     )
 

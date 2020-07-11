@@ -965,4 +965,3 @@ def socketio_client_disconnect(client: socketio.Client) -> bool:
     except (OSError, BrokenPipeError, Exception):
         mmpm.utils.log.info('encountered OSError when disconnecting from websocket, ignoring')
     return True
-

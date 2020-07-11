@@ -1484,15 +1484,27 @@ def stop_magicmirror() -> bool:
     Returns:
         None
     '''
+
+    process: str = ''
+    command: List[str] = []
+
     if shutil.which('pm2') and mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
-        mmpm.utils.log.info("Using 'pm2' to stop MagicMirror")
-        _, _, stderr = mmpm.utils.run_cmd(['pm2', 'stop', mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME], progress=False)
+        command = ['pm2', 'stop', mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
+        process = 'pm2'
+
+    elif shutil.which('docker-compose') and mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
+        command = ['docker-compose', '-f', mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, 'stop']
+        process = 'docker-compose'
+
+    if command and process:
+        mmpm.utils.log.info(f"Using '{process}' to stop MagicMirror")
+        _, _, stderr = mmpm.utils.run_cmd(command, progress=False)
 
         if stderr:
             mmpm.utils.env_variables_error_msg(stderr.strip())
             return False
 
-        mmpm.utils.log.info('stopped MagicMirror using PM2')
+        mmpm.utils.log.info(f"stopped MagicMirror using '{process}'")
         return True
 
     mmpm.utils.kill_magicmirror_processes()
@@ -1511,23 +1523,31 @@ def start_magicmirror() -> bool:
         None
     '''
     mmpm.utils.log.info('Starting MagicMirror')
-    os.chdir(mmpm.consts.MMPM_MAGICMIRROR_ROOT)
 
-    mmpm.utils.log.info("Running 'npm start' in the background")
+    process: str = ''
+    command: List[str] = []
 
     if shutil.which('pm2') and mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
-        mmpm.utils.log.info("Using 'pm2' to start MagicMirror")
-        error_code, _, stderr = mmpm.utils.run_cmd(
-            ['pm2', 'start', mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME],
-            background=True
-        )
+        command = ['pm2', 'start', mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
+        process = 'pm2'
+
+    elif shutil.which('docker-compose') and mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
+        command = ['docker-compose', '-f', mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, 'start']
+        process = 'docker-compose'
+
+    if command and process:
+        mmpm.utils.log.info(f"Using '{process}' to start MagicMirror")
+        error_code, _, stderr = mmpm.utils.run_cmd(command, background=True)
 
         if error_code:
             mmpm.utils.env_variables_error_msg(stderr.strip())
             return False
 
-        mmpm.utils.log.info('started MagicMirror using PM2')
+        mmpm.utils.log.info(f"started MagicMirror using '{process}'")
         return True
+
+    os.chdir(mmpm.consts.MMPM_MAGICMIRROR_ROOT)
+    mmpm.utils.log.info("Running 'npm start' in the background")
 
     os.system('npm start &')
     mmpm.utils.log.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
@@ -1545,18 +1565,27 @@ def restart_magicmirror() -> bool:
     Returns:
         None
     '''
+
+    process: str = ''
+    command: List[str] = []
+
     if shutil.which('pm2') and mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
-        mmpm.utils.log.info("Using 'pm2' to restart MagicMirror")
-        _, _, stderr = mmpm.utils.run_cmd(
-            ['pm2', 'restart', mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME],
-            progress=False
-        )
+        command = ['pm2', 'restart', mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
+        process = 'pm2'
+
+    elif shutil.which('docker-compose') and mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
+        command = ['docker-compose', '-f', mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, 'restart']
+        process = 'docker-compose'
+
+    if command and process:
+        mmpm.utils.log.info(f"Using '{process}' to restart MagicMirror")
+        _, _, stderr = mmpm.utils.run_cmd(command, progress=False)
 
         if stderr:
             mmpm.utils.env_variables_error_msg(stderr.strip())
             return False
 
-        mmpm.utils.log.info('restarted MagicMirror using PM2')
+        mmpm.utils.log.info(f"restarted MagicMirror using '{process}'")
         return True
 
     if not stop_magicmirror():
@@ -1773,7 +1802,7 @@ def rotate_raspberrypi_screen(degrees: int) -> bool:
 
         elif 'Raspberry Pi 4' in rpi_model:
             # TODO: figure this out
-            pass
+            mmpm.utils.warning_msg('Sorry, this has not been implemented yet')
 
     else:
         mmpm.utils.error_msg('Display rotation has not been implemented for this type of computing unit. Only Raspberry Pi 3 and 4 are supported')
@@ -1830,4 +1859,3 @@ def migrate() -> None:
 
     mmpm.utils.log.info('Completed migration of legacy External Module Sources migrated to External Packages')
     print('Migration complete!')
-

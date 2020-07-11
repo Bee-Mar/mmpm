@@ -2,19 +2,8 @@
 
   <div style="height: 100%; width: 20%; background-color: #303030; float: left;">
     <mat-grid-list cols="2" rowHeight="33%">
-      <mat-grid-tile
-        *ngFor="let tile of tiles"
-        [colspan]="tile.cols"
-        [rowspan]="tile.rows"
-        matTooltip="{{ tile.tooltip }}"
-        color="#FFFFFF"
-        >
-        <button
-          mat-fab
-          style="background-color: #6600cc;"
-          [disabled]="tile.disabled"
-          (click)="sendControlSignal(tile.url, tile.message)"
-          >
+      <mat-grid-tile *ngFor="let tile of tiles" [colspan]="tile.cols" [rowspan]="tile.rows" matTooltip="{{ tile.tooltip }}" color="#FFFFFF">
+        <button mat-fab style="background-color: #6600cc;" [disabled]="tile.disabled" (click)="sendControlSignal(tile.url, tile.message)">
           <mat-icon>
             {{ tile.icon }}
           </mat-icon>
@@ -25,14 +14,15 @@
 
   <div style="height: 100%; width: 20%; margin-left: 7.5%; background-color: #303030; float: left; overflow-y: scroll;">
     <mat-grid-list cols="1" rowHeight="10%">
-      <mat-grid-tile
-        *ngFor="let active of activeModules | keyvalue"
-        [colspan]="1"
-        [rowspan]="1"
-        color="#FFFFFF"
-        >
+      <mat-grid-tile *ngFor="let active of activeModules | keyvalue" [colspan]="1" [rowspan]="1" color="#FFFFFF">
 
-        <mat-slide-toggle [checked]="!active.value.hidden" (change)="toggle($event, active.value)">{{ active.value.name }}</mat-slide-toggle>
+        <mat-slide-toggle [(ngModel)]="active.value.visible" (change)="toggle($event, active.value)">
+          {{ active.value.name }}
+          <mat-icon *ngIf="active.value.visible; else not_visible">visibility</mat-icon>
+          <ng-template #not_visible>
+            <mat-icon>visibility_off</mat-icon>
+          </ng-template>
+        </mat-slide-toggle>
       </mat-grid-tile>
     </mat-grid-list>
   </div>
@@ -43,12 +33,12 @@
     <mat-tab-group color="primary" mat-align-tabs="center" style="height: 100%;">
       <mat-tab label="CLI Log" color="secondary" style="height: 100%;">
         <div>
-        <app-log-stream-display-editor logStream="mmpm-cli-log" [magicmirrorSocket]="false"></app-log-stream-display-editor>
+          <app-log-stream-display-editor logStream="mmpm-cli-log" [magicmirrorSocket]="false"></app-log-stream-display-editor>
         </div>
       </mat-tab>
       <mat-tab label="GUI Access Log" style="height: 100%;">
         <div style="height: 100%;">
-        <app-log-stream-display-editor logStream="gunicorn-access-log" [magicmirrorSocket]="false"></app-log-stream-display-editor>
+          <app-log-stream-display-editor logStream="gunicorn-access-log" [magicmirrorSocket]="false"></app-log-stream-display-editor>
         </div>
       </mat-tab>
       <mat-tab label="GUI Error Log" color="secondary" style="height: 100%;">
@@ -60,23 +50,11 @@
     </mat-tab-group>
 
     <div style="margin: 0 auto; width: 15%; justify-content: space-evenly; display: flex;">
-      <button
-        mat-raised-button
-        color="primary"
-        matTooltip="Download logs"
-        [matTooltipPosition]="'below'"
-        (click)="downloadLogs()"
-        >
+      <button mat-raised-button color="primary" matTooltip="Download logs" [matTooltipPosition]="'below'" (click)="downloadLogs()">
         <mat-icon>get_app</mat-icon>
       </button>
 
-      <button
-        mat-raised-button
-        style="background-color: #959595;"
-        matTooltip="Toggle theme"
-        [matTooltipPosition]="'below'"
-        (click)="onToggleTheme()"
-        >
+      <button mat-raised-button style="background-color: #959595;" matTooltip="Toggle theme" [matTooltipPosition]="'below'" (click)="onToggleTheme()">
         <mat-icon>palette</mat-icon>
       </button>
     </div>
@@ -84,4 +62,3 @@
   </div>
 
 </div>
-

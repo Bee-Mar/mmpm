@@ -71,7 +71,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
           for (const activeModule of active) {
             this.activeModules.push({
               name: activeModule["name"],
-              hidden: activeModule["hidden"]
+              visible: !activeModule["hidden"]
             });
           }
         }
@@ -97,12 +97,10 @@ export class MagicMirrorControlCenterComponent implements OnInit {
 
   public toggle(event: MatSlideToggleChange, active: ActiveModule) {
     if (event.checked) {
-
       this.socket.emit("FROM_MMPM_APP_show_modules", [active.name]);
     } else {
       this.socket.emit("FROM_MMPM_APP_hide_modules", [active.name]);
     }
-    console.log(active);
   }
 
   private liveTerminalFeedDialogSettings: object = {

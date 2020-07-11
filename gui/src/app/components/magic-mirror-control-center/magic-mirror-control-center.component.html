@@ -43,19 +43,19 @@
     <mat-tab-group color="primary" mat-align-tabs="center" style="height: 100%;">
       <mat-tab label="CLI Log" color="secondary" style="height: 100%;">
         <div>
-        <app-log-stream-display-editor logStream="magicMirrorStream"></app-log-stream-display-editor>
+        <app-log-stream-display-editor logStream="mmpm-cli-log" [magicmirrorSocket]="false"></app-log-stream-display-editor>
         </div>
       </mat-tab>
       <mat-tab label="GUI Access Log" style="height: 100%;">
         <div style="height: 100%;">
-        <app-log-stream-display-editor logStream="magicMirrorStream"></app-log-stream-display-editor>
+        <app-log-stream-display-editor logStream="gunicorn-access-log" [magicmirrorSocket]="false"></app-log-stream-display-editor>
         </div>
       </mat-tab>
       <mat-tab label="GUI Error Log" color="secondary" style="height: 100%;">
-        <app-log-stream-display-editor logStream="MAGICMIRROR_LOGS"></app-log-stream-display-editor>
+        <app-log-stream-display-editor logStream="guincorn-error-log" [magicmirrorSocket]="false"></app-log-stream-display-editor>
       </mat-tab>
       <mat-tab label="MagicMirror Notification Stream" color="secondary">
-        <app-log-stream-display-editor logStream="MAGICMIRROR_LOGS"></app-log-stream-display-editor>
+        <app-log-stream-display-editor logStream="MAGICMIRROR_LOGS" [magicmirrorSocket]="true"></app-log-stream-display-editor>
       </mat-tab>
     </mat-tab-group>
 

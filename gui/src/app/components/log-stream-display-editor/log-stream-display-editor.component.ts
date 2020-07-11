@@ -16,6 +16,8 @@ export class LogStreamDisplayEditorComponent implements OnInit {
   ) { }
 
   @Input() logStream: string;
+  @Input() magicmirrorSocket: boolean = false;
+  @Input() nameSpace: string = "";
 
   private mmpmEditorThemeCookie = "MMPM-editor-theme";
 
@@ -28,17 +30,29 @@ export class LogStreamDisplayEditorComponent implements OnInit {
   };
 
   public ngOnInit(): void {
-    this.api.retrieve(URLS.GET.MAGICMIRROR.URI).then((uri: object) => {
-      this.socket = io(`${uri["MMPM_MAGICMIRROR_URI"]}/mmpm`, {reconnection: true});
-      this.socket.on(this.logStream, (data: any) => {
-        this.code += `${data.notification}\n`;
-        console.log(data)
+    if (this.magicmirrorSocket) {
+      this.api.retrieve(URLS.GET.MAGICMIRROR.URI).then((uri: object) => {
+        this.socket = io(`${uri["MMPM_MAGICMIRROR_URI"]}/mmpm`, {reconnection: true});
+        this.socket.on(this.logStream, (data: any) => {
+          this.code += `${data.notification}\n`;
+        });
+      }).catch((error) => console.log(error));
+
+    } else {
+      this.socket = io(`http://${window.location.hostname}:7890`, {reconnection: true});
+      this.socket.on(this.logStream, (contents: any) => {
+        console.log(contents);
+        this.code += contents;
       });
-    }).catch((error) => console.log(error));
+    }
   }
 
   public onEditorInit(editor: any): void {
     this.editor = editor;
+  }
+
+  public onNgDestory(): void {
+    this.socket.disconnect();
   }
 
 }

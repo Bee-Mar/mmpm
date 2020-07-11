@@ -242,7 +242,7 @@ def get_user_args() -> object:
     open_parser = subparsers.add_parser(
         OPEN,
         usage='\n  mmpm open [--config] [--css] [--gui] [--mm-wiki] [--mmpm-wiki]',
-        help='open MagicMirror config.js, custom.css, MMPM GUI, or wiki URLs'
+        help='open MagicMirror config.js, custom.css, the MMPM wiki, the MagicMirror wiki, or MagicMirror itself'
     )
 
     open_parser.add_argument(
@@ -264,6 +264,13 @@ def get_user_args() -> object:
         action='store_true',
         help='open the MMPM GUI in your default browser',
         dest='gui'
+    )
+
+    open_parser.add_argument(
+        '--magicmirror',
+        action='store_true',
+        help='open MagicMirror in your default browser (uses the MMPM_MAGICMIRROR_URI address)',
+        dest='magicmirror'
     )
 
     open_parser.add_argument(

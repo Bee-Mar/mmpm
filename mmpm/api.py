@@ -9,9 +9,10 @@ import shutil
 import datetime
 
 from flask_cors import CORS
-from flask import Flask, request, send_file, render_template, send_from_directory, Response
+from flask import Flask, request, send_file, render_template, send_from_directory, Response, stream_with_context
 from flask_socketio import SocketIO
 from typing import Tuple, List
+from shelljob.proc import Group
 
 import mmpm.utils
 import mmpm.consts
@@ -67,11 +68,28 @@ def __get_selected_packages__(rqst, key: str = 'selected-packages') -> List[Magi
     return [MagicMirrorPackage(**pkg) for pkg in pkgs]
 
 
+def __stream_log_file__(log_file: str, stream_name: str):
+    '''
+    Streams command output to socket.io client on frontend.
 
-@flask_sio.on('notification')
-def handle_notification(data):
-    mmpm.utils.log.info(data)
-    print(data)
+    Parameters:
+        process (Group): the process object responsible for running the command
+        cmd (List[str]): list of command arguments
+
+    Returns:
+        None
+    '''
+
+    process: Group = Group()
+    process.run(f'tail -F {log_file}')
+
+    try:
+        with open(log_file, 'r') as f:
+            for line in f.readlines():
+                mmpm.utils.log.info('streaming')
+                flask_sio.emit(stream_name, {'data': str(line.decode('utf-8'))})
+    except Exception:
+        pass
 
 
 @flask_sio.on_error()
@@ -92,16 +110,16 @@ def error_handler(error) -> Tuple[str, int]:
 
 @flask_sio.on('connect')
 def on_connect() -> None:
-    message: str = 'Server connected'
-    mmpm.utils.log.info(message)
-    flask_sio.emit('connected', {'data': message})
+    __stream_log_file__(mmpm.consts.MMPM_CLI_LOG_FILE, 'mmpm-cli-log')
+    __stream_log_file__(mmpm.consts.MMPM_GUNICORN_ACCESS_LOG_FILE, 'gunicorn-access-log')
+    __stream_log_file__(mmpm.consts.MMPM_GUNICORN_ERROR_LOG_FILE, 'gunicorn-error-log')
+    mmpm.utils.log.info('connected to socketio')
 
 
 @flask_sio.on('disconnect')
 def on_disconnect() -> None:
     message: str = 'Server disconnected'
     mmpm.utils.log.info(message)
-    flask_sio.emit(message, {'data': message})
 
 
 @app.after_request
@@ -218,7 +236,7 @@ def packages_upgradeable() -> str:
     mmpm.utils.log.info(f'Request to get upgradeable packages')
     available_upgrades: dict = mmpm.core.get_available_upgrades()
 
-    for key in available_upgrades.keys():
+    for key in available_upgrades:
         if key != mmpm.consts.MMPM:
             available_upgrades[key][mmpm.consts.PACKAGES] = [
                 pkg.serialize_full() for pkg in available_upgrades[key][mmpm.consts.PACKAGES]
@@ -498,11 +516,33 @@ def raspberrypi_stop() -> str:
 
 
 #  -- START: MMPM --
-@app.route(api('mmpm/logs'), methods=[mmpm.consts.GET])
+@app.route(api('mmpm/download-logs'), methods=[mmpm.consts.GET])
 def download_log_files():
     os.chdir('/tmp')
     today = datetime.datetime.now()
     zip_file_name = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
     shutil.make_archive(zip_file_name, 'zip', mmpm.consts.MMPM_LOG_DIR)
     return send_file(f'/tmp/{zip_file_name}.zip', attachment_filename='{}.zip'.format(zip_file_name), as_attachment=True)
+
+
+@app.route(api('mmpm/gunicorn-access-log'), methods=[mmpm.consts.GET])
+def stream_gunicorn_access_log():
+    return {"data": "stuff"}
+    #return Response(__stream_log_file__(
+    #    mmpm.consts.MMPM_GUNICORN_ACCESS_LOG_FILE, 'mmpm-gunicorn-access-log')
+    #)
+
+
+@app.route(api('mmpm/gunicorn-error-log'), methods=[mmpm.consts.GET])
+def stream_gunicorn_error_log() -> None:
+    return {"data": "stuff"}
+
+    #return Response(__stream_log_file__(
+    #    mmpm.consts.MMPM_GUNICORN_ACCESS_LOG_FILE, 'mmpm-gunicorn-error-log')
+    #)
+
+
+@app.route(api('mmpm/mmpm-cli-log'), methods=[mmpm.consts.GET])
+def stream_mmpm_cli_log():
+    return {"data": "stuff"}
 #  -- END: MMPM --

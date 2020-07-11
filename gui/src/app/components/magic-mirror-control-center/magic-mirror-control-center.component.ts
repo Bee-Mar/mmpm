@@ -43,12 +43,14 @@ export class MagicMirrorControlCenterComponent implements OnInit {
   public magicMirrorIsUpgrable: boolean = false;
   public activeModules: Array<ActiveModule>;
   public magicMirrorStream: string = "";
+  public magicmirrorUri: string = "";
 
   ngOnInit(): void {
     this.activeModules = new Array<ActiveModule>();
 
     this.api.retrieve(URLS.GET.MAGICMIRROR.URI).then((uri: object) => {
-      this.socket = io(`${uri["MMPM_MAGICMIRROR_URI"]}/mmpm`, {reconnection: true});
+      this.magicmirrorUri = uri["MMPM_MAGICMIRROR_URI"];
+      this.socket = io(`${this.magicmirrorUri}/mmpm`, {reconnection: true});
       this.socket.on("connect", () => { this.socket.emit("FROM_MMPM_APP_get_active_modules"); });
       this.socket.on("notification", (data: any) => console.log(data));
       this.socket.on("disconnect", (data: any) => console.log(data));
@@ -226,16 +228,16 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       const date = new Date();
 
       const fileName: string = `mmpm-logs-${date.getFullYear()}-${date.getMonth()}-${date.getDay()}.zip`;
-      const objectUrl: string = URL.createObjectURL(blob);
+      const url: string = URL.createObjectURL(blob);
       const a: HTMLAnchorElement = document.createElement('a') as HTMLAnchorElement;
 
-      a.href = objectUrl;
+      a.href = url;
       a.download = fileName;
       document.body.appendChild(a);
       a.click();
 
       document.body.removeChild(a);
-      URL.revokeObjectURL(objectUrl);
+      URL.revokeObjectURL(url);
     }).catch((error) => console.log(error));
   }
 

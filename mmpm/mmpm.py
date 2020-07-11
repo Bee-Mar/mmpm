@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # pylint: disable=unused-argument
 import sys
-import os
 import webbrowser
 
 from typing import List, Dict
@@ -42,9 +41,8 @@ def main(argv):
 
     packages: Dict[str, List[MagicMirrorPackage]] = mmpm.core.load_packages(force_refresh=should_refresh)
 
-    # only check if the snapshot expired, not in the case of a user forcibly refreshing the database
-    if (snapshot_expired and args.subcmd != mmpm.opts.DATABASE) or (snapshot_expired and args.subcmd == mmpm.opts.DATABASE and not args.refresh):
-        mmpm.core.check_for_mmpm_updates() # automated check for updates to MMPM
+    if snapshot_expired and args.subcmd != mmpm.opts.UPDATE and mmpm.core.check_for_mmpm_updates(automated=True):
+        print('Upgrade available for MMPM. Execute `mmpm upgrade` to perform the upgrade now')
 
     if not packages:
         mmpm.utils.fatal_msg('Unable to retrieve packages. Please check your internet connection.')
@@ -79,7 +77,7 @@ def main(argv):
         if args.verbose:
             health: dict = mmpm.utils.get_remote_repo_api_health()
 
-            for api in health.keys():
+            for api in health:
                 if health[api][mmpm.consts.ERROR]:
                     mmpm.utils.fatal_msg(health[api][mmpm.consts.ERROR])
                 elif health[api][mmpm.consts.WARNING]:
@@ -100,6 +98,8 @@ def main(argv):
             mmpm.utils.open_default_editor(mmpm.consts.MAGICMIRROR_CONFIG_FILE)
         elif args.custom_css:
             mmpm.utils.open_default_editor(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE)
+        elif args.magicmirror:
+            webbrowser.open(mmpm.consts.MMPM_MAGICMIRROR_URI)
         elif args.gui:
             webbrowser.open(mmpm.core.get_web_interface_url())
         elif args.mm_wiki:

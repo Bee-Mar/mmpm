@@ -38,7 +38,7 @@ def snapshot_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
         None
     '''
 
-    num_categories: int = len(packages.keys())
+    num_categories: int = len(packages)
     num_packages: int = 0
 
     current_snapshot, next_snapshot = mmpm.utils.calc_snapshot_timestamps()
@@ -54,7 +54,7 @@ def snapshot_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     print(mmpm.color.normal_green('Packages available:'), f'{num_packages}')
 
 
-def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
+def check_for_mmpm_updates(assume_yes=False, gui=False, automated=False) -> bool:
     '''
     Scrapes the main file of MMPM off the github repo, and compares the current
     version, versus the one available in the master branch. If there is a newer
@@ -71,7 +71,11 @@ def check_for_mmpm_updates(assume_yes=False, gui=False) -> bool:
     try:
         cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
         mmpm.utils.log.info(f'Checking for newer version of MMPM. Current version: {mmpm.mmpm.__version__}')
-        mmpm.utils.plain_print(f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] for updates")
+        if automated:
+            message: str = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] ({mmpm.color.normal_magenta('automated')}) for updates"
+        else:
+            message: str = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] for updates"
+        mmpm.utils.plain_print(message)
 
         try:
             # just to keep the console output the same as all other update commands
@@ -183,7 +187,7 @@ def upgrade_available(assume_yes: bool = False, selection: List[str] = []) -> bo
 
     has_upgrades: bool = False
 
-    for key in upgrades[env].keys():
+    for key in upgrades[env]:
         if upgrades[env][key]:
             has_upgrades = True
             break
@@ -271,7 +275,7 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
     installed_packages: Dict[str, List[MagicMirrorPackage]] = get_installed_packages(packages)
     any_installed: bool = False
 
-    for category in installed_packages.keys():
+    for category in installed_packages:
         if installed_packages[category]:
             any_installed = True
             break
@@ -676,7 +680,7 @@ def install_magicmirror() -> bool:
     Returns:
         bool: True upon succcess, False upon failure
     '''
-    known_envs: List[str] = [env for env in get_available_upgrades().keys() if env != 'mmpm']
+    known_envs: List[str] = [env for env in get_available_upgrades() if env != 'mmpm']
     parent: str = mmpm.consts.HOME_DIR
 
     if os.path.exists(mmpm.consts.MMPM_MAGICMIRROR_ROOT):
@@ -817,7 +821,7 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
         with open(db_file, 'r') as snapshot_file:
             packages = json.load(snapshot_file)
 
-            for category in packages.keys():
+            for category in packages:
                 packages[category] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(packages[category])
 
     if packages and os.path.exists(ext_pkgs_file) and bool(os.stat(ext_pkgs_file).st_size):
@@ -965,7 +969,7 @@ def display_categories(packages: Dict[str, List[MagicMirrorPackage]], title_only
         {
             mmpm.consts.CATEGORY: key,
             mmpm.consts.PACKAGES: len(packages[key])
-        } for key in packages.keys()
+        } for key in packages
     ]
 
     if title_only:
@@ -1321,13 +1325,20 @@ def display_magicmirror_modules_status() -> None:
         if not data:
             mmpm.utils.error_msg('No data was received from the MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set properly?')
 
-        for module in data:
+        # on rare occasions, the result is sent back twice, I suppose due to timing issues
+        unique_data = [json_data for index, json_data in enumerate(data) if json_data not in data[index + 1:]]
+
+        for module in unique_data:
             print(f"{mmpm.color.normal_green(module['name'])}\n  hidden: {'true' if module['hidden'] else 'false'}\n")
 
         mmpm.utils.socketio_client_disconnect(client)
 
     mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
-    client.connect(mmpm.consts.MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
+
+    try:
+        client.connect(mmpm.consts.MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
+    except (OSError, BrokenPipeError) as error:
+        mmpm.utils.log.warn(str(error))
 
 
 
@@ -1365,18 +1376,22 @@ def hide_magicmirror_modules(modules_to_hide: List[str]):
 
     @client.on('MODULES_HIDDEN', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def active_modules(data):
-        mmpm.utils.log.info('received active modules from MMPM MagicMirror module')
+        mmpm.utils.log.info('received hidden modules from MMPM MagicMirror module')
 
         if not data:
             mmpm.utils.error_msg('Unable to find provided module')
         elif data['fails']:
-            mmpm.utils.error_msg(f"Failed to hide {data['fails']}. Is the name of the each module spelled correctly?")
+            # on rare occasions, the result is sent back twice, I suppose due to timing issues
+            fails: set = set(data['fails'])
+            mmpm.utils.error_msg(f"Failed to hide {fails}. Is the name of the each module spelled correctly?")
 
         mmpm.utils.socketio_client_disconnect(client)
 
     mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
-    client.connect(mmpm.consts.MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
-
+    try:
+        client.connect(mmpm.consts.MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
+    except (OSError, BrokenPipeError) as error:
+        mmpm.utils.log.warn(str(error))
 
 def show_magicmirror_modules(modules_to_show: List[str]) -> None:
     '''
@@ -1417,12 +1432,17 @@ def show_magicmirror_modules(modules_to_show: List[str]) -> None:
         if not data:
             mmpm.utils.error_msg('No data was received from the MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set?')
         elif data['fails']:
-            mmpm.utils.error_msg(f"Failed to show: {data['fails']}. Is the name of the each module spelled correctly?")
+            fails: set = set(data['fails'])
+            mmpm.utils.error_msg(f"Failed to show: {fails}. Is the name of the each module spelled correctly?")
 
         mmpm.utils.socketio_client_disconnect(client)
 
     mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
-    client.connect(mmpm.consts.MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
+
+    try:
+        client.connect(mmpm.consts.MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
+    except (OSError, BrokenPipeError) as error:
+        mmpm.utils.log.warn(str(error))
 
 
 def get_web_interface_url() -> str:
@@ -1511,7 +1531,7 @@ def start_magicmirror() -> bool:
 
     os.system('npm start &')
     mmpm.utils.log.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
-    return False if error_code else True
+    return True
 
 
 def restart_magicmirror() -> bool:
@@ -1810,3 +1830,4 @@ def migrate() -> None:
 
     mmpm.utils.log.info('Completed migration of legacy External Module Sources migrated to External Packages')
     print('Migration complete!')
+

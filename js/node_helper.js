@@ -23,8 +23,8 @@ module.exports = NodeHelper.create({
     } else if (notification === "FROM_MMPM_MODULE_modules_hidden") {
       this.sendSocketNotification("MODULES_HIDDEN", payload);
 
-    } else if (notification === "FROM_MMPM_MODULE_modules_visible") {
-      this.sendSocketNotification("MODULES_VISIBLE", payload);
+    } else if (notification === "FROM_MMPM_MODULE_modules_shown") {
+      this.sendSocketNotification("MODULES_SHOWN", payload);
     }
   },
 })

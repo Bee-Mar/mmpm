@@ -190,7 +190,7 @@ def should_refresh_packages(current_snapshot: float, next_snapshot: float) -> bo
     '''
     if not current_snapshot and not next_snapshot:
         return True
-    return not os.path.exists(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE) or next_snapshot - time.time() <= 0.0
+    return not bool(os.stat(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE).st_size) or next_snapshot - time.time() <= 0.0
 
 
 def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, str, str]:
@@ -696,7 +696,7 @@ def get_difference_of_packages(original: Dict[str, List[MagicMirrorPackage]], ex
 
     difference: Dict[str, List[MagicMirrorPackage]] = defaultdict(list)
 
-    for category in original.keys():
+    for category in original:
         if not exclude[category]:
             difference[category] = original[category]
             continue
@@ -719,6 +719,7 @@ def assert_one_option_selected(args) -> bool:
         yes (bool): True if one option is selected, False if more than one is selected
     '''
     args = args.__dict__
+    # comparing to True, because some of arguments are not booleans
     return not len([args[option] for option in args if args[option] == True and option != 'title_only']) > 1
 
 
@@ -948,13 +949,20 @@ def socketio_client_factory() -> socketio.Client:
     Returns:
         client (socketio.Client): the socketio Client object
     '''
-    return socketio.Client(logger=mmpm.utils.log, reconnection=True, request_timeout=3000)
+    client = socketio.Client()
+
+    try:
+        client = socketio.Client(logger=mmpm.utils.log, reconnection=True, request_timeout=3000)
+    except Exception:
+        error_msg('Failed to connect to MagicMirror websocket. Is MagicMirror running?')
+    return client
 
 
 def socketio_client_disconnect(client: socketio.Client) -> bool:
     try:
         mmpm.utils.log.info('attempting to disconnect from MagicMirror websocket')
         client.disconnect()
-    except OSError:
+    except (OSError, BrokenPipeError, Exception):
         mmpm.utils.log.info('encountered OSError when disconnecting from websocket, ignoring')
     return True
+

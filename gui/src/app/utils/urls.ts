@@ -31,7 +31,10 @@ export const URLS = {
 
     MMPM: {
       _ROOT: "/mmpm",
-      get LOGS() { return `${this._ROOT}/logs`; },
+      get DOWNLOAD_LOGS() { return `${this._ROOT}/download-logs`; },
+      get GUNICORN_ACCESS_LOG() { return `${this._ROOT}/gunicorn-access-log`; },
+      get GUNICORN_ERROR_LOG() { return `${this._ROOT}/gunicorn-error-log`; },
+      get MMPM_CLI_LOG() { return `${this._ROOT}/mmpm-cli-log`; },
     },
 
     RASPBERRYPI: {

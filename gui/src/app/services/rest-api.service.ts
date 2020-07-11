@@ -65,7 +65,7 @@ export class RestApiService {
   }
 
   public getLogFiles(): Promise<any> {
-    return this.http.get(this.route(URLS.GET.MMPM.LOGS), {
+    return this.http.get(this.route(URLS.GET.MMPM.DOWNLOAD_LOGS), {
       headers: httpOptions({
         "Content-Type": "application/zip",
       }),

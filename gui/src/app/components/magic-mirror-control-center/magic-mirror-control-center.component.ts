@@ -9,6 +9,7 @@ import { TableUpdateNotifierService } from "src/app/services/table-update-notifi
 import { URLS } from "src/app/utils/urls";
 import { ActiveModule } from "src/app/interfaces/interfaces";
 import { MatSlideToggleChange } from "@angular/material/slide-toggle";
+import { interval } from "rxjs";
 import io from "socket.io-client";
 import * as Cookie from "js-cookie";
 
@@ -47,6 +48,10 @@ export class MagicMirrorControlCenterComponent implements OnInit {
 
   ngOnInit(): void {
     this.activeModules = new Array<ActiveModule>();
+
+    interval(3000).subscribe(_ => {
+      this.api.retrieve(URLS.GET.MMPM.MMPM_CLI_LOG).then(logs => console.log())
+    });
 
     this.api.retrieve(URLS.GET.MAGICMIRROR.URI).then((uri: object) => {
       this.magicmirrorUri = uri["MMPM_MAGICMIRROR_URI"];
@@ -238,13 +243,4 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       URL.revokeObjectURL(url);
     }).catch((error) => console.log(error));
   }
-
-  public onToggleTheme() {
-    let theme = Cookie.get(this.mmpmEditorThemeCookie) ?? "vs-dark"
-    theme = theme === "vs-dark" ? "vs-light" : "vs-dark";
-    monaco.editor.setTheme(theme);
-    Cookie.set(this.mmpmEditorThemeCookie, theme, {expires: 7, path: ""});
-  }
-
-
 }

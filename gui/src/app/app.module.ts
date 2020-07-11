@@ -28,7 +28,6 @@ import { ActiveProcessCountTickerComponent } from "./components/active-process-c
 import { ActiveProcessesModalComponent } from "./components/active-processes-modal/active-processes-modal.component";
 import { MMPMTableContainerComponent } from "./components/mmpm-table-container/mmpm-table-container.component";
 import { InstallationConflictResolutionDialogComponent } from "./components/installation-conflict-resolution-dialog/installation-conflict-resolution-dialog.component";
-import { LogStreamDisplayEditorComponent } from './components/log-stream-display-editor/log-stream-display-editor.component';
 
 @NgModule({
   declarations: [
@@ -48,8 +47,7 @@ import { LogStreamDisplayEditorComponent } from './components/log-stream-display
     ActiveProcessCountTickerComponent,
     ActiveProcessesModalComponent,
     MMPMTableContainerComponent,
-    InstallationConflictResolutionDialogComponent,
-    LogStreamDisplayEditorComponent
+    InstallationConflictResolutionDialogComponent
   ],
   imports: [
     BrowserModule,

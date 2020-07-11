@@ -74,7 +74,7 @@ def check_for_mmpm_updates(assume_yes=False, gui=False, automated=False) -> bool
         if automated:
             message: str = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] ({mmpm.color.normal_magenta('automated')}) for updates"
         else:
-            message: str = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] for updates"
+            message = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] for updates"
         mmpm.utils.plain_print(message)
 
         try:

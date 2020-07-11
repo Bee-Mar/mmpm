@@ -1,6 +1,6 @@
 <div style="width: 100%; height: 100%;">
 
-  <div style="height: 100%; width: 20%; background-color: #303030; float: left;">
+  <div style="height: 100%; width: 20%; background-color: #303030; float: left; margin-left: 10%;">
     <mat-grid-list cols="2" rowHeight="33%">
       <mat-grid-tile *ngFor="let tile of tiles" [colspan]="tile.cols" [rowspan]="tile.rows" matTooltip="{{ tile.tooltip }}" color="#FFFFFF">
         <button mat-fab style="background-color: #6600cc;" [disabled]="tile.disabled" (click)="sendControlSignal(tile.url, tile.message)">
@@ -12,53 +12,28 @@
     </mat-grid-list>
   </div>
 
-  <div style="height: 100%; width: 20%; margin-left: 7.5%; background-color: #303030; float: left; overflow-y: scroll;">
+  <button mat-raised-button color="primary" matTooltip="Download log files" [matTooltipPosition]="'below'" (click)="downloadLogs()">
+    <mat-icon>get_app</mat-icon>
+  </button>
+  <div style="height: 100%; width: 33%; margin-right: 10%; background-color: #303030; float: right; overflow-y: scroll;">
     <mat-grid-list cols="1" rowHeight="10%">
-      <mat-grid-tile *ngFor="let active of activeModules | keyvalue" [colspan]="1" [rowspan]="1" color="#FFFFFF">
+      <div *ngIf="activeModules?.length; else activeModulesNotFound">
+        <mat-grid-tile *ngFor="let active of activeModules | keyvalue" [colspan]="1" [rowspan]="1" color="#FFFFFF">
 
-        <mat-slide-toggle [(ngModel)]="active.value.visible" (change)="toggle($event, active.value)">
-          {{ active.value.name }}
-          <mat-icon *ngIf="active.value.visible; else not_visible">visibility</mat-icon>
-          <ng-template #not_visible>
-            <mat-icon>visibility_off</mat-icon>
-          </ng-template>
-        </mat-slide-toggle>
-      </mat-grid-tile>
+          <mat-slide-toggle [(ngModel)]="active.value.visible" (change)="toggle($event, active.value)">
+            {{ active.value.name }}
+            <mat-icon *ngIf="active.value.visible; else not_visible">visibility</mat-icon>
+            <ng-template #not_visible>
+              <mat-icon>visibility_off</mat-icon>
+            </ng-template>
+          </mat-slide-toggle>
+        </mat-grid-tile>
+      </div>
+      <ng-template #activeModulesNotFound>
+        <div style="vertical-align: middle">
+          Unable to retrieve active modules
+        </div>
+      </ng-template>
     </mat-grid-list>
   </div>
-
-  <!-- mat-tab-body-wrapper  needs to be 100% height -->
-
-  <div style="height: 95%; width: 47.5%; background-color: #303030; float: right;">
-    <mat-tab-group color="primary" mat-align-tabs="center" style="height: 100%;">
-      <mat-tab label="CLI Log" color="secondary" style="height: 100%;">
-        <div>
-          <app-log-stream-display-editor logStream="mmpm-cli-log" [magicmirrorSocket]="false"></app-log-stream-display-editor>
-        </div>
-      </mat-tab>
-      <mat-tab label="GUI Access Log" style="height: 100%;">
-        <div style="height: 100%;">
-          <app-log-stream-display-editor logStream="gunicorn-access-log" [magicmirrorSocket]="false"></app-log-stream-display-editor>
-        </div>
-      </mat-tab>
-      <mat-tab label="GUI Error Log" color="secondary" style="height: 100%;">
-        <app-log-stream-display-editor logStream="guincorn-error-log" [magicmirrorSocket]="false"></app-log-stream-display-editor>
-      </mat-tab>
-      <mat-tab label="MagicMirror Notification Stream" color="secondary">
-        <app-log-stream-display-editor logStream="MAGICMIRROR_LOGS" [magicmirrorSocket]="true"></app-log-stream-display-editor>
-      </mat-tab>
-    </mat-tab-group>
-
-    <div style="margin: 0 auto; width: 15%; justify-content: space-evenly; display: flex;">
-      <button mat-raised-button color="primary" matTooltip="Download logs" [matTooltipPosition]="'below'" (click)="downloadLogs()">
-        <mat-icon>get_app</mat-icon>
-      </button>
-
-      <button mat-raised-button style="background-color: #959595;" matTooltip="Toggle theme" [matTooltipPosition]="'below'" (click)="onToggleTheme()">
-        <mat-icon>palette</mat-icon>
-      </button>
-    </div>
-
-  </div>
-
 </div>

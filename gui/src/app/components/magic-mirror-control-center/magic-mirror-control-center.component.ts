@@ -36,12 +36,20 @@ export class MagicMirrorControlCenterComponent implements OnInit {
   public socket: any;
   public magicMirrorIsUpgrable: boolean = false;
   public activeModules: Array<ActiveModule>;
+  public mmpmEnvVars: Map<string, object>;
 
   ngOnInit(): void {
     this.activeModules = new Array<ActiveModule>();
 
     this.api.retrieve(URLS.GET.MMPM.ENVIRONMENT_VARS).then((envVars: any) => {
-      this.socket = io(`${envVars.MMPM_MAGICMIRROR_URI.value}/mmpm`, {reconnection: true});
+      this.mmpmEnvVars = new Map<string, object>();
+
+      Object.keys(envVars).forEach((key) => this.mmpmEnvVars.set(key, {
+        value: envVars[key]['value'],
+        description: envVars[key]['description']
+      }));
+
+      this.socket = io(`${this.mmpmEnvVars.get("MMPM_MAGICMIRROR_URI")["value"]}/mmpm`, {reconnection: true});
       this.socket.on("connect", () => this.socket.emit("FROM_MMPM_APP_get_active_modules"));
       this.socket.on("notification", (data: any) => console.log(data));
       this.socket.on("disconnect", (data: any) => console.log(data));

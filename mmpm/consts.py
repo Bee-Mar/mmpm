@@ -47,20 +47,20 @@ HOME_DIR: str = expanduser("~")
 MMPM_ENV: dict = {
     'MMPM_MAGICMIRROR_ROOT': {
         'value': __get_or_set_env_var__('MMPM_MAGICMIRROR_ROOT', normpath(join(HOME_DIR, MAGICMIRROR))),
-        'description': 'the root directory of the MagicMirror application'
+        'description': 'The root directory of the MagicMirror application'
     },
 
     'MMPM_MAGICMIRROR_URI': {
         'value': __get_or_set_env_var__('MMPM_MAGICMIRROR_URI', f'http://{gethostbyname(gethostname())}:8080'),
-        'description': 'the URI used to access MagicMirror via browser (including the port number)'
+        'description': 'The URI used to access MagicMirror via browser (including the port number)'
     },
     'MMPM_MAGICMIRROR_PM2_PROCESS_NAME': {
         'value': __get_or_set_env_var__('MMPM_MAGICMIRROR_PM2_PROCESS_NAME', ''),
-        'description': 'the name of the PM2 process associated with MagicMirror. set this as an empty string if not using PM2'
+        'description': 'The name of the PM2 process associated with MagicMirror. Leave unset if not using PM2'
     },
     'MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE': {
         'value': __get_or_set_env_var__('MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE', ''),
-        'description': 'the path to the docker-compose.yml file, if using MagicMirror with docker-compose'
+        'description': 'The path to the docker-compose.yml file if using MagicMirror with docker-compose. Leave unset if not using docker-compose'
     }
 }
 

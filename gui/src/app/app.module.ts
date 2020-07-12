@@ -5,7 +5,7 @@ import { AppComponent } from "./app.component";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { MaterialModule } from "./modules/material/material.module";
 import { HttpClientModule } from "@angular/common/http";
-import { ExternalSourceRegistrationDialogComponent } from "./components/external-source-registration-dialog/external-source-registration-dialog.component";
+import { ExternalPackageRegistrationDialogComponent } from "./components/external-package-registration-dialog/external-package-registration-dialog.component";
 import { ReactiveFormsModule, FormsModule } from "@angular/forms";
 import { MonacoEditorModule } from "ngx-monaco-editor";
 import { MagicMirrorConfigEditorComponent } from "./components/magic-mirror-config-editor/magic-mirror-config-editor.component";
@@ -22,7 +22,7 @@ import { ActiveProcessCountService } from "src/app/services/active-process-count
 import { CustomSnackbarComponent } from "./components/custom-snackbar/custom-snackbar.component";
 import { MMPMMarketplaceComponent } from "./components/mmpm-marketplace/mmpm-marketplace.component";
 import { MMPMLocalPackagesComponent } from "./components/mmpm-local-packages/mmpm-local-packages.component";
-import { MMPMExternalSourcesComponent } from "./components/mmpm-external-sources/mmpm-external-sources.component";
+import { MMPMExternalPackagesComponent } from "./components/mmpm-external-packages/mmpm-external-packages.component";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountTickerComponent } from "./components/active-process-count-ticker/active-process-count-ticker.component";
 import { ActiveProcessesModalComponent } from "./components/active-processes-modal/active-processes-modal.component";
@@ -36,7 +36,7 @@ export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
 @NgModule({
   declarations: [
     AppComponent,
-    ExternalSourceRegistrationDialogComponent,
+    ExternalPackageRegistrationDialogComponent,
     MagicMirrorConfigEditorComponent,
     LiveTerminalFeedDialogComponent,
     SafePipe,
@@ -47,7 +47,7 @@ export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
     CustomSnackbarComponent,
     MMPMMarketplaceComponent,
     MMPMLocalPackagesComponent,
-    MMPMExternalSourcesComponent,
+    MMPMExternalPackagesComponent,
     ActiveProcessCountTickerComponent,
     ActiveProcessesModalComponent,
     MMPMTableContainerComponent,

@@ -1,6 +1,5 @@
 <div style="width: 100%; height: 100%;">
-
-  <div style="height: 100%; width: 20%; background-color: #303030; float: left; margin-left: 10%;">
+  <div style="height: 100%; width: 20%; margin-left: 5%; background-color: #303030; float: left">
     <mat-grid-list cols="2" rowHeight="33%">
       <mat-grid-tile *ngFor="let tile of tiles" [colspan]="tile.cols" [rowspan]="tile.rows" matTooltip="{{ tile.tooltip }}" color="#FFFFFF">
         <button mat-fab style="background-color: #6600cc;" [disabled]="tile.disabled" (click)="sendControlSignal(tile.url, tile.message)">
@@ -12,14 +11,11 @@
     </mat-grid-list>
   </div>
 
-  <button mat-raised-button color="primary" matTooltip="Download log files" [matTooltipPosition]="'below'" (click)="downloadLogs()" style="background-color: #6600cc">
-    <mat-icon>get_app</mat-icon>
-  </button>
-  <div style="height: 100%; width: 33%; margin-right: 30%; background-color: #303030; float: right; overflow-y: scroll;">
+  <div style="height: 100%; width: 40%; margin-left: 5%; background-color: #303030; overflow-y: scroll; float: left;">
+    <h1 style="text-align: center;">Active Modules</h1>
     <mat-grid-list cols="1" rowHeight="10%">
       <div>
         <mat-grid-tile *ngFor="let active of activeModules | keyvalue" [colspan]="1" [rowspan]="1" color="#FFFFFF">
-
           <mat-slide-toggle [(ngModel)]="active.value.visible" (change)="toggle($event, active.value)">
             {{ active.value.name }}
             <mat-icon *ngIf="active.value.visible; else not_visible">visibility</mat-icon>
@@ -35,5 +31,25 @@
         </div>
       </ng-template>
     </mat-grid-list>
+  </div>
+
+  <div style="height: 100%; width: 20%; margin-right: 5%; float: right; background-color: #303030;">
+    <div style="margin-left: 5%;">
+      <button mat-raised-button color="primary" matTooltip="Download log files" [matTooltipPosition]="'below'" (click)="downloadLogs()" style="background-color: #6600cc">
+        <mat-icon>get_app</mat-icon>
+      </button>
+      <li>
+        <a href="https://github.com/Bee-Mar/mmpm/wiki" target="_blank">MMPM Wiki</a>
+      </li>
+      <li>
+        <a href="https://github.com/Bee-Mar/mmpm/issues/new" target="_blank">Create an Issue</a>
+      </li>
+      <li>
+        <a href="https://github.com/MichMich/MagicMirror" target="_blank">MagicMirror GitHub</a>
+      </li>
+      <li>
+        <a href="https://docs.magicmirror.builders/" target="_blank">MagicMirror Documentation</a>
+      </li>
+    </div>
   </div>
 </div>

@@ -11,19 +11,19 @@ import { Subscription } from "rxjs";
 import { DataStoreService } from "src/app/services/data-store.service";
 import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity";
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
-import { ExternalSourceRegistrationDialogComponent } from "src/app/components/external-source-registration-dialog/external-source-registration-dialog.component";
+import { ExternalPackageRegistrationDialogComponent } from "src/app/components/external-package-registration-dialog/external-package-registration-dialog.component";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 
 @Component({
-  selector: "app-mmpm-external-sources",
-  templateUrl: "./mmpm-external-sources.component.html",
+  selector: "app-mmpm-external-packages",
+  templateUrl: "./mmpm-external-packages.component.html",
   styleUrls: [
-    "./mmpm-external-sources.component.scss",
+    "./mmpm-external-packages.component.scss",
     "../../shared-styles/shared-table-styles.scss"
   ],
 })
-export class MMPMExternalSourcesComponent implements OnInit {
+export class MMPMExternalPackagesComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
 
@@ -77,7 +77,7 @@ export class MMPMExternalSourcesComponent implements OnInit {
   }
 
   public onAddExternalPackage(): void {
-    const dialogRef = this.dialog.open(ExternalSourceRegistrationDialogComponent, {
+    const dialogRef = this.dialog.open(ExternalPackageRegistrationDialogComponent, {
       minWidth: "60vw", disableClose: true
     });
 

@@ -124,7 +124,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     },
     {
       icon: "system_update",
-      tooltip: this.magicMirrorIsUpgrable ? "Upgrade MagicMirror" : "No MagicMirror upgrades available",
+      tooltip: "Upgrade MagicMirror",
       cols: 1,
       rows: 1,
       url: URLS.GET.MAGICMIRROR.UPGRADE,

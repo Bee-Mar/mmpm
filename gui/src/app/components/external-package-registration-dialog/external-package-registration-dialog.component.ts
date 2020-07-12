@@ -4,11 +4,11 @@ import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { FormControl, Validators } from "@angular/forms";
 
 @Component({
-  selector: "app-external-source-registration-dialog",
-  templateUrl: "./external-source-registration-dialog.component.html",
-  styleUrls: ["./external-source-registration-dialog.component.scss"]
+  selector: "app-external-package-registration-dialog",
+  templateUrl: "./external-package-registration-dialog.component.html",
+  styleUrls: ["./external-package-registration-dialog.component.scss"]
 })
-export class ExternalSourceRegistrationDialogComponent implements OnInit {
+export class ExternalPackageRegistrationDialogComponent implements OnInit {
   public title: string = "";
   public repository: string = "";
   public author: string = "";
@@ -20,7 +20,7 @@ export class ExternalSourceRegistrationDialogComponent implements OnInit {
   public descriptionFormControl = new FormControl("", [Validators.required]);
 
   constructor(
-    private dialogRef: MatDialogRef<ExternalSourceRegistrationDialogComponent>,
+    private dialogRef: MatDialogRef<ExternalPackageRegistrationDialogComponent>,
   ) {}
 
   ngOnInit(): void {}

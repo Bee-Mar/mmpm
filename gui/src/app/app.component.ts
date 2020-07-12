@@ -7,7 +7,9 @@ import { Component } from "@angular/core";
   providers: []
 })
 export class AppComponent {
-  constructor() {}
+  constructor() {
+  }
+
   public webSSHLocation = `http://${window.location.hostname}:7892`;
   public title = "gui";
 }

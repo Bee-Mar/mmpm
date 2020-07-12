@@ -58,7 +58,6 @@ export class MagicMirrorControlCenterComponent implements OnInit {
 
       this.socket.on("ACTIVE_MODULES", (active: any) => {
         if (active) {
-          console.log(active);
           this.activeModules = new Array<ActiveModule>();
           for (const activeModule of active) {
             this.activeModules.push({

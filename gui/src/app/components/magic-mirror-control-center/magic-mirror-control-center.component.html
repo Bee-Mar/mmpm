@@ -12,17 +12,17 @@
     </mat-grid-list>
   </div>
 
-  <button mat-raised-button color="primary" matTooltip="Download log files" [matTooltipPosition]="'below'" (click)="downloadLogs()">
+  <button mat-raised-button color="primary" matTooltip="Download log files" [matTooltipPosition]="'below'" (click)="downloadLogs()" style="background-color: #6600cc">
     <mat-icon>get_app</mat-icon>
   </button>
-  <div style="height: 100%; width: 33%; margin-right: 10%; background-color: #303030; float: right; overflow-y: scroll;">
+  <div style="height: 100%; width: 33%; margin-right: 30%; background-color: #303030; float: right; overflow-y: scroll;">
     <mat-grid-list cols="1" rowHeight="10%">
       <div>
         <mat-grid-tile *ngFor="let active of activeModules | keyvalue" [colspan]="1" [rowspan]="1" color="#FFFFFF">
 
           <mat-slide-toggle [(ngModel)]="active.value.visible" (change)="toggle($event, active.value)">
             {{ active.value.name }}
-            <mat-icon *ngIf="activeModules; else not_visible">visibility</mat-icon>
+            <mat-icon *ngIf="active.value.visible; else not_visible">visibility</mat-icon>
             <ng-template #not_visible>
               <mat-icon>visibility_off</mat-icon>
             </ng-template>

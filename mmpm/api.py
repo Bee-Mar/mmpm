@@ -12,7 +12,6 @@ from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
 from flask_socketio import SocketIO
 from typing import Tuple, List
-from shelljob.proc import Group
 
 import mmpm.utils
 import mmpm.consts
@@ -57,13 +56,14 @@ def __get_selected_packages__(rqst, key: str = 'selected-packages') -> List[Magi
         selected_packages (List[MagicMirrorPackage]): extracted list of MagicMirrorPackage objects
     '''
     pkgs: dict = rqst.get_json(force=True)[key]
+
     # more-or-less a bandaid to the larger problem of aligning the data structure in angular
     for pkg in pkgs:
         del pkg['category']
 
         if not pkg['directory']:
             mmpm.utils.log.info(pkg)
-            pkg['directory'] = os.path.join(mmpm.consts.MAGICMIRROR_MODULES_DIR, pkg['title'])
+            pkg['directory'] = os.path.normpath(os.path.join(mmpm.consts.MAGICMIRROR_MODULES_DIR, pkg['title']))
 
     return [MagicMirrorPackage(**pkg) for pkg in pkgs]
 
@@ -301,18 +301,6 @@ def database_refresh() -> dict:
 
 
 #  -- START: MAGICMIRROR --
-@app.route(api('magicmirror/root-dir'), methods=[mmpm.consts.GET])
-def magicmirror_root_dir() -> str:
-    mmpm.utils.log.info(f'Request to get MagicMirror root directory')
-    return json.dumps({'MMPM_MAGICMIRROR_ROOT': mmpm.consts.MMPM_MAGICMIRROR_ROOT})
-
-
-@app.route(api('magicmirror/uri'), methods=[mmpm.consts.GET])
-def magicmirror_uri() -> str:
-    mmpm.utils.log.info(f'Request to get MagicMirror root directory')
-    return json.dumps({'MMPM_MAGICMIRROR_URI': mmpm.consts.MMPM_MAGICMIRROR_URI})
-
-
 @app.route(api('magicmirror/config'), methods=[mmpm.consts.GET, mmpm.consts.POST])
 def magicmirror_config() -> str:
     if request.method == mmpm.consts.GET:
@@ -495,3 +483,13 @@ def download_log_files():
     zip_file_name = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
     shutil.make_archive(zip_file_name, 'zip', mmpm.consts.MMPM_LOG_DIR)
     return send_file(f'/tmp/{zip_file_name}.zip', attachment_filename='{}.zip'.format(zip_file_name), as_attachment=True)
+
+
+@app.route(api('mmpm/environment-vars'), methods=[mmpm.consts.GET, mmpm.consts.POST])
+def mmpm_environment_vars() -> str:
+    if request.method == mmpm.consts.GET:
+        return json.dumps(mmpm.consts.MMPM_ENV)
+
+    # set env var value here, but it's only temporary
+    return json.dumps(mmpm.consts.MMPM_ENV)
+

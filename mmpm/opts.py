@@ -457,7 +457,7 @@ def get_user_args() -> object:
         '--describe',
         action='store_true',
         help='display description for each environment variable',
-        dest='detailed'
+        dest='describe'
     )
 
     # MMPM AND GLOBAL OPTIONS

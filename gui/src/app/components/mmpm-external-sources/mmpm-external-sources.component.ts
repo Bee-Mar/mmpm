@@ -7,7 +7,6 @@ import { MatPaginator, PageEvent } from "@angular/material/paginator";
 import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
-import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
 import { Subscription } from "rxjs";
 import { DataStoreService } from "src/app/services/data-store.service";
 import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity";
@@ -22,7 +21,7 @@ import { ActiveProcessCountService } from "src/app/services/active-process-count
   styleUrls: [
     "./mmpm-external-sources.component.scss",
     "../../shared-styles/shared-table-styles.scss"
-  ]
+  ],
 })
 export class MMPMExternalSourcesComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
@@ -30,9 +29,8 @@ export class MMPMExternalSourcesComponent implements OnInit {
 
   constructor(
     public dialog: MatDialog,
-    private api: RestApiService,
     private dataStore: DataStoreService,
-    private notifier: TableUpdateNotifierService,
+    private api: RestApiService,
     private mSnackBar: MatSnackBar,
     private mmpmUtility: MMPMUtility,
     private activeProcessService: ActiveProcessCountService,
@@ -51,7 +49,6 @@ export class MMPMExternalSourcesComponent implements OnInit {
 
   public ngOnInit(): void {
     this.setupTableData();
-    this.subscription = this.notifier.getNotification().subscribe((_) => { this.setupTableData(true); });
 
     if (!this.mmpmUtility.getCookie(this.mmpmExternalPackagesPageSizeCookie)) {
       this.mmpmUtility.setCookie(this.mmpmExternalPackagesPageSizeCookie, "10");
@@ -60,8 +57,8 @@ export class MMPMExternalSourcesComponent implements OnInit {
     this.paginator.pageSize = Number(this.mmpmUtility.getCookie(this.mmpmExternalPackagesPageSizeCookie));
   }
 
-  private setupTableData(refresh: boolean = false): void {
-    this.dataStore.getAllExternalPackages(refresh).then((pkgs) => {
+  private setupTableData(): void {
+    this.dataStore.externalPackages.subscribe((pkgs) => {
       this.packages = pkgs;
       this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
       this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.packages);
@@ -76,7 +73,7 @@ export class MMPMExternalSourcesComponent implements OnInit {
         this.activeProcessService
       );
 
-    }).catch((error) => console.log(error));
+    });
   }
 
   public onAddExternalPackage(): void {
@@ -97,8 +94,7 @@ export class MMPMExternalSourcesComponent implements OnInit {
             "Failed to add new source";
 
           this.tableUtility.deleteProcessIds(ids);
-
-          this.notifier.triggerTableUpdate();
+          this.dataStore.loadData();
           this.snackbar.success(message);
         }).catch((error) => console.log(error));
       }
@@ -109,10 +105,9 @@ export class MMPMExternalSourcesComponent implements OnInit {
     if (this.selection.selected.length) {
       this.snackbar.notify("Executing ... ");
 
-      console.log(this.selection.selected);
-      this.api.removeExternalPackage(this.selection.selected).then((unused) => {
+      this.api.removeExternalPackage(this.selection.selected).then((_) => {
+        this.dataStore.loadData();
         this.snackbar.success("Process complete!");
-        this.notifier.triggerTableUpdate();
       }).catch((error) => {
         console.log(error);
       });

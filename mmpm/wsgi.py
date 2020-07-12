@@ -7,7 +7,7 @@ import mmpm.consts
 if __name__ == '__main__':
     flask_sio.run(
         flask_sio,
-        threaded=True,
+        #threaded=True,
         keepalive=True,
         log=mmpm.utils.log,
         extra_files=[

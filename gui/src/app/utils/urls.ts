@@ -22,16 +22,12 @@ export const URLS = {
       get UPGRADE() { return `${this._ROOT}/upgrade`; },
       get CONFIG() { return `${this._ROOT}/config`; },
       get CUSTOM_CSS() { return `${this._ROOT}/custom-css`; },
-      get ROOT_DIR() { return `${this._ROOT}/root-dir`; },
-      get URI() { return `${this._ROOT}/uri`; },
     },
-
-    // EXTERNAL_PACKAGES: {
-    // },
 
     MMPM: {
       _ROOT: "/mmpm",
       get DOWNLOAD_LOGS() { return `${this._ROOT}/download-logs`; },
+      get ENVIRONMENT_VARS() { return `${this._ROOT}/environment-vars`}
     },
 
     RASPBERRYPI: {
@@ -67,6 +63,10 @@ export const URLS = {
       get CUSTOM_CSS() { return `${this._ROOT}/custom-css`; },
     },
 
+    MMPM: {
+      _ROOT: "/mmpm",
+      get ENVIRONMENT_VARS() { return `${this._ROOT}/environment-vars`}
+    },
   },
 
   DELETE: {

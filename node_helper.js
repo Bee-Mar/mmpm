@@ -3,11 +3,6 @@ var NodeHelper = require("node_helper")
 module.exports = NodeHelper.create({
   socketNotificationReceived: function(notification, payload) {
 
-    // the pseudo log stream from magicmirror
-    if (notification === "FROM_MMPM_MODULE_magicmirror_logs") {
-      this.sendSocketNotification("MAGICMIRROR_LOGS", payload);
-    }
-
     if (notification === "FROM_MMPM_APP_get_active_modules") {
       this.sendSocketNotification("FROM_MMPM_NODE_HELPER_get_active_modules");
 

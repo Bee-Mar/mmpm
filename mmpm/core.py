@@ -1635,7 +1635,7 @@ def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool
         os.system(f"{'tail -F' if tail else 'cat'} {' '.join(logs)}")
 
 
-def display_mmpm_env_vars(detailed: bool = False) -> None:
+def display_mmpm_env_vars(describe: bool = False) -> None:
     '''
     Displays the environment variables associated with MMPM, as well as their
     current value. A user may modify these values by setting them in their
@@ -1651,9 +1651,9 @@ def display_mmpm_env_vars(detailed: bool = False) -> None:
 
     mmpm.utils.log.info(f'User listing environment variables, set with the following values')
 
-    if detailed:
+    if describe:
         for var, info in mmpm.consts.MMPM_ENV.items():
-            output: str = f"{var}={info['value']} # {info['detail']}"
+            output: str = f"{var}={info['value']} # {info['description']}"
             mmpm.utils.log.info(output)
             print(output)
 

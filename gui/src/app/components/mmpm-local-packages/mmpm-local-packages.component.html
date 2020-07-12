@@ -82,7 +82,7 @@
   <button
     mat-raised-button
     color="primary"
-    [disabled]="!upgradeablePackages?.length || !selection?.selected?.length"
+    [disabled]="(!upgradeablePackages?.length || !selection?.selected?.length)"
     matTooltip="{{ selection?.selected?.length === 1 ? 'Upgrade package' : 'Upgrade packages' }}"
     [matTooltipPosition]="tableUtility?.tooltipPosition"
     (click)="onUpgradeModules()"

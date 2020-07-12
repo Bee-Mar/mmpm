@@ -7,7 +7,6 @@ import { MatPaginator, PageEvent } from "@angular/material/paginator";
 import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
-import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
 import { Subscription } from "rxjs";
 import { TerminalStyledPopUpWindowComponent } from "src/app/components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
 import { DataStoreService } from "src/app/services/data-store.service";
@@ -24,15 +23,14 @@ import { URLS } from "src/app/utils/urls";
   styleUrls: [
     "./mmpm-local-packages.component.scss",
     "../../shared-styles/shared-table-styles.scss"
-  ]
+  ],
 })
 export class MMPMLocalPackagesComponent implements OnInit {
 
   constructor(
     public dialog: MatDialog,
-    private api: RestApiService,
     private dataStore: DataStoreService,
-    private tableUpdateNotifier: TableUpdateNotifierService,
+    private api: RestApiService,
     private mSnackBar: MatSnackBar,
     private mmpmUtility: MMPMUtility,
     private activeProcessService: ActiveProcessCountService
@@ -42,7 +40,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
   @ViewChild(MatSort) sort: MatSort;
 
   private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this.mSnackBar);
-  private subscription: Subscription;
+  private installedPackagesSubscription: Subscription;
   private mmpmLocalPackagesPageSizeCookie: string = "MMPM-local-packages-page-size";
 
   public packages: MagicMirrorPackage[];
@@ -56,41 +54,31 @@ export class MMPMLocalPackagesComponent implements OnInit {
   public ngOnInit(): void {
     this.setupTableData();
 
-    this.subscription = this.tableUpdateNotifier.getNotification().subscribe((_) => this.setupTableData(true));
-
     if (!this.mmpmUtility.getCookie(this.mmpmLocalPackagesPageSizeCookie)) {
       this.mmpmUtility.setCookie(this.mmpmLocalPackagesPageSizeCookie, "10");
     }
 
+
     this.paginator.pageSize = Number(this.mmpmUtility.getCookie(this.mmpmLocalPackagesPageSizeCookie));
   }
 
-  private setupTableData(refresh: boolean = false): void {
-    this.dataStore.getAllInstalledPackages(refresh).then((pkgs) => {
+  private setupTableData(): void {
+    this.installedPackagesSubscription = this.dataStore.installedPackages.subscribe((pkgs) => {
       this.isUpgradeable = new Array<boolean>(pkgs.length);
       this.upgradeablePackages = new Array<MagicMirrorPackage>();
       this.isUpgradeable.fill(false);
 
-      this.api.retrieve(URLS.GET.PACKAGES.UPDATE).then((success: boolean) => {
-        if (success) {
-          this.api.retrieve(URLS.GET.PACKAGES.UPGRADEABLE).then((upgradeable) => {
+      this.dataStore.upgradeablePackages.subscribe((upgradeable) => {
+        this.upgradeablePackages = upgradeable;
 
-            this.upgradeablePackages = upgradeable["packages"];
-
-            this.upgradeablePackages.forEach((upgradeablePackage: MagicMirrorPackage) => {
-              pkgs.forEach((installedPkg: MagicMirrorPackage, index: number) => {
-                if (this.mmpmUtility.isSamePackage(upgradeablePackage, installedPkg)) {
-                  this.isUpgradeable[index] = true;
-                }
-              });
-            });
-
-          }).catch((error) => console.log(error));
-
-        } else {
-          this.snackbar.error("Unable to check for package updates. Please see log files for details");
-        }
-      }).catch((error) => console.log(error));
+        this.upgradeablePackages.forEach((upgradeablePackage: MagicMirrorPackage) => {
+          pkgs.forEach((installedPkg: MagicMirrorPackage, index: number) => {
+            if (this.mmpmUtility.isSamePackage(upgradeablePackage, installedPkg)) {
+              this.isUpgradeable[index] = true;
+            }
+          });
+        });
+      });
 
       this.packages = pkgs;
       this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
@@ -105,11 +93,11 @@ export class MMPMLocalPackagesComponent implements OnInit {
         this.dialog,
         this.activeProcessService
       );
-    }).catch((error) => console.log(error));
+    });
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    this.installedPackagesSubscription.unsubscribe();
   }
 
   public onUninstallPackages(): void {
@@ -146,8 +134,8 @@ export class MMPMLocalPackagesComponent implements OnInit {
         }
 
         this.tableUtility.deleteProcessIds(ids);
+        this.dataStore.loadData();
 
-        this.tableUpdateNotifier.triggerTableUpdate();
       }).catch((error) => console.log(error));
     });
   }
@@ -179,7 +167,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
         } else {
           this.snackbar.success("Upgraded selected modules successfully!");
         }
-        this.tableUpdateNotifier.triggerTableUpdate();
+
       }).catch((error) => console.log(error));
     });
   }

@@ -224,7 +224,7 @@ def main(argv):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         else:
-            mmpm.core.display_mmpm_env_vars(args.detailed)
+            mmpm.core.display_mmpm_env_vars(args.describe)
 
     else:
         mmpm.utils.error_msg('Unknown argument\n')

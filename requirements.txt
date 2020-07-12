@@ -13,3 +13,4 @@ shelljob==0.5.6
 eventlet>=0.25.1
 argcomplete>=1.11.1
 python-socketio[client]>=4.6.0
+requests==2.23.0

@@ -1,5 +1,5 @@
 import { BrowserModule } from "@angular/platform-browser";
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA, APP_INITIALIZER } from "@angular/core";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
@@ -28,6 +28,10 @@ import { ActiveProcessCountTickerComponent } from "./components/active-process-c
 import { ActiveProcessesModalComponent } from "./components/active-processes-modal/active-processes-modal.component";
 import { MMPMTableContainerComponent } from "./components/mmpm-table-container/mmpm-table-container.component";
 import { InstallationConflictResolutionDialogComponent } from "./components/installation-conflict-resolution-dialog/installation-conflict-resolution-dialog.component";
+
+export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
+  return () => dataStore.loadData();
+}
 
 @NgModule({
   declarations: [
@@ -83,8 +87,13 @@ import { InstallationConflictResolutionDialogComponent } from "./components/inst
     RestApiService,
     TableUpdateNotifierService,
     ActiveProcessCountService,
-    DataStoreService,
-    MMPMUtility
+    MMPMUtility,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeMagicMirrorPacakageData,
+      deps: [DataStoreService],
+      multi: true
+    }
   ],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

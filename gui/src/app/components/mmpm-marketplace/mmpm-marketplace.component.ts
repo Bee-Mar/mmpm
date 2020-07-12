@@ -6,7 +6,6 @@ import { MatSort } from "@angular/material/sort";
 import { MatPaginator, PageEvent } from "@angular/material/paginator";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
-import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
 import { Subscription } from "rxjs";
 import { TerminalStyledPopUpWindowComponent } from "src/app/components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
 import { DataStoreService } from "src/app/services/data-store.service";
@@ -17,7 +16,6 @@ import { ActiveProcessCountService } from "src/app/services/active-process-count
 import { InstallationConflict, MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 import { InstallationConflictResolutionDialogComponent } from "src/app/components/installation-conflict-resolution-dialog/installation-conflict-resolution-dialog.component";
-import { URLS } from "src/app/utils/urls";
 
 @Component({
   selector: "app-mmpm-marketplace",
@@ -26,7 +24,7 @@ import { URLS } from "src/app/utils/urls";
     "./mmpm-marketplace.component.scss",
     "../../shared-styles/shared-table-styles.scss"
   ],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class MMPMMarketplaceComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
@@ -34,9 +32,8 @@ export class MMPMMarketplaceComponent implements OnInit {
 
   constructor(
     public dialog: MatDialog,
-    private api: RestApiService,
     private dataStore: DataStoreService,
-    private notifier: TableUpdateNotifierService,
+    private api: RestApiService,
     private mSnackBar: MatSnackBar,
     private mmpmUtility: MMPMUtility,
     private activeProcessService: ActiveProcessCountService
@@ -51,12 +48,10 @@ export class MMPMMarketplaceComponent implements OnInit {
   private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this.mSnackBar);
   private subscription: Subscription;
   private mmpmMarketplacePaginatorCookieSize: string = "MMPM-marketplace-packages-page-size";
-  private magicmirrorRootDirectory: string;
+  private mmpmEnvVars: Map<string, object>;
 
   public ngOnInit(): void {
     this.setupTableData();
-
-    this.subscription = this.notifier.getNotification().subscribe((_) => this.setupTableData(true));
 
     if (!this.mmpmUtility.getCookie(this.mmpmMarketplacePaginatorCookieSize)) {
       this.mmpmUtility.setCookie(this.mmpmMarketplacePaginatorCookieSize, 10);
@@ -65,48 +60,28 @@ export class MMPMMarketplaceComponent implements OnInit {
     this.paginator.pageSize = Number(this.mmpmUtility.getCookie(this.mmpmMarketplacePaginatorCookieSize));
   }
 
-  private setupTableData(refresh: boolean = false): void {
+  private setupTableData(): void {
+    this.dataStore.mmpmEnvironmentVariables.subscribe((envVars: Map<string, object>) => this.mmpmEnvVars = envVars);
 
-    this.api.retrieve(URLS.GET.MAGICMIRROR.ROOT_DIR).then((dir) => {
+    this.dataStore.marketplacePackages.subscribe((allPackages: MagicMirrorPackage[]) => {
+      this.dataStore.installedPackages.subscribe((installedPackages: MagicMirrorPackage[]) => {
+        this.installedPackages = installedPackages;
 
-      this.magicmirrorRootDirectory = dir;
-    }).catch((error) => console.log(error));
+        this.allPackages = allPackages;
+        this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
+        this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.allPackages);
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
 
-    this.dataStore.getAllAvailablePackages(refresh).then((allPackages: MagicMirrorPackage[]) => {
-      this.dataStore.getAllInstalledPackages(refresh).then((installedPackages: MagicMirrorPackage[]) => {
-        this.dataStore.getAllExternalPackages(refresh).then((externalPackages: Array<MagicMirrorPackage>) => {
-
-          allPackages = [...allPackages, ...externalPackages];
-
-          this.installedPackages = installedPackages;
-
-          // removing all the packages that are currently installed from the list of available packages
-          for (const installedPackage of installedPackages) {
-            let index: number = allPackages.findIndex((availablePackage: MagicMirrorPackage) => {
-              return this.mmpmUtility?.isSamePackage(availablePackage, installedPackage, true)
-            });
-
-            if (index > -1) {
-              allPackages.splice(index, 1);
-            }
-          }
-
-          this.allPackages = allPackages;
-          this.selection = new SelectionModel<MagicMirrorPackage>(true, []);
-          this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.allPackages);
-          this.dataSource.paginator = this.paginator;
-          this.dataSource.sort = this.sort;
-
-          this.tableUtility = new MagicMirrorTableUtility(
-            this.selection,
-            this.dataSource,
-            this.sort,
-            this.dialog,
-            this.activeProcessService
-          );
-        }).catch((error) => console.log(error));
-      }).catch((error) => console.log(error));
-    }).catch((error) => console.log(error));
+        this.tableUtility = new MagicMirrorTableUtility(
+          this.selection,
+          this.dataSource,
+          this.sort,
+          this.dialog,
+          this.activeProcessService
+        );
+      });
+    });
   }
 
   private checkForInstallationConflicts(selectedPackages: MagicMirrorPackage[]): Promise<InstallationConflict> {
@@ -117,7 +92,7 @@ export class MMPMMarketplaceComponent implements OnInit {
         matchesInstalledTitles: new Array<MagicMirrorPackage>()
       };
 
-      this.dataStore.getAllInstalledPackages().then((installedPackages: MagicMirrorPackage[]) => {
+      this.dataStore.installedPackages.subscribe((installedPackages: MagicMirrorPackage[]) => {
 
         selectedPackages.forEach((selectedPackage: MagicMirrorPackage, index: number) => {
           const existing: MagicMirrorPackage = installedPackages.find((pkg: MagicMirrorPackage) => pkg.title === selectedPackage.title);
@@ -138,9 +113,6 @@ export class MMPMMarketplaceComponent implements OnInit {
 
         resolve(installationConflict);
 
-      }).catch((error) => {
-        console.log(error);
-        reject(installationConflict);
       });
     });
 
@@ -164,7 +136,6 @@ export class MMPMMarketplaceComponent implements OnInit {
       }
 
       this.tableUtility.deleteProcessIds(ids);
-      this.notifier.triggerTableUpdate();
 
     }).catch((error) => console.log(error));
   }
@@ -191,6 +162,7 @@ export class MMPMMarketplaceComponent implements OnInit {
 
         if (!installationConflicts?.matchesSelectedTitles?.length && !installationConflicts?.matchesInstalledTitles?.length) {
           this.installPackages(selected);
+          this.dataStore.loadData();
 
         } else {
           let dialogRef = this.dialog.open(
@@ -200,7 +172,7 @@ export class MMPMMarketplaceComponent implements OnInit {
               data: {
                 matchesSelectedTitles: installationConflicts.matchesSelectedTitles,
                 matchesInstalledTitles: installationConflicts.matchesInstalledTitles,
-                magicmirrorRootDirectory: this.magicmirrorRootDirectory
+                magicmirrorRootDirectory: this.mmpmEnvVars.get('MMPM_MAGICMIRROR_ROOT')['value']
               }
             });
 
@@ -216,6 +188,8 @@ export class MMPMMarketplaceComponent implements OnInit {
             }
 
             this.installPackages(selected);
+            this.dataStore.loadData();
+            console.log('here')
           });
         }
       }).catch((error) => console.log(error));
@@ -224,7 +198,7 @@ export class MMPMMarketplaceComponent implements OnInit {
 
   public onRefreshPackages(): void {
     this.snackbar.notify("Executing ... ");
-    this.setupTableData(true);
+    this.setupTableData();
     this.snackbar.notify("Refresh complete!");
   }
 

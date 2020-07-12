@@ -33,69 +33,53 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     public dialog: MatDialog,
   ) {}
 
-  private mmpmEnvVars: Map<string, object>;
-
   public socket: any;
-  public outputStream: string = "";
   public magicMirrorIsUpgrable: boolean = false;
   public activeModules: Array<ActiveModule>;
-  public magicMirrorStream: string = "";
-  public magicmirrorUri: string = "";
 
   ngOnInit(): void {
     this.activeModules = new Array<ActiveModule>();
 
-    this.dataStore.mmpmEnvironmentVariables.subscribe((envVars: Map<string, object>) => {
-      this.mmpmEnvVars = new Map<string, object>();
-      this.mmpmEnvVars = envVars;
-      this.initWebSocket(this.mmpmEnvVars?.get("MMPM_MAGICMIRROR_URI")["value"]);
-    });
+    this.api.retrieve(URLS.GET.MMPM.ENVIRONMENT_VARS).then((envVars: any) => {
+      this.socket = io(`${envVars.MMPM_MAGICMIRROR_URI.value}/mmpm`, {reconnection: true});
+      this.socket.on("connect", () => this.socket.emit("FROM_MMPM_APP_get_active_modules"));
+      this.socket.on("notification", (data: any) => console.log(data));
+      this.socket.on("disconnect", (data: any) => console.log(data));
+
+      this.socket.on("MODULES_VISIBLE", (result: any) => {
+        console.log(result);
+      });
+
+      this.socket.on("MODULES_HIDDEN", (result: any) => {
+        if (result.fails.length) {
+          console.log(result);
+        }
+      });
+
+      this.socket.on("ACTIVE_MODULES", (active: any) => {
+        if (active) {
+          console.log(active);
+          this.activeModules = new Array<ActiveModule>();
+          for (const activeModule of active) {
+            this.activeModules.push({
+              name: activeModule["name"],
+              visible: !activeModule["hidden"]
+            });
+          }
+        }
+      });
+
+      this.socket.on("error", (data: any) => console.log(data));
+
+      this.dataStore.upgradeablePackages.subscribe((upgradeable: object) => {
+        this.magicMirrorIsUpgrable = upgradeable["MagicMirror"];
+      });
+
+    }).catch((error) => console.log(error));
   }
 
   public ngOnDestroy(): void {
     this.socket.disconnect();
-  }
-
-  public initWebSocket(uri: string): void {
-    this.socket = io(`${uri}/mmpm`, {reconnection: true});
-    this.socket.on("connect", () => this.socket.emit("FROM_MMPM_APP_get_active_modules"));
-    this.socket.on("notification", (data: any) => console.log(data));
-    this.socket.on("disconnect", (data: any) => console.log(data));
-
-    this.socket.on("MODULES_VISIBLE", (result: any) => {
-      console.log(result);
-    });
-
-    this.socket.on("MODULES_HIDDEN", (result: any) => {
-      if (result.fails.length) {
-        console.log(result);
-      }
-    });
-
-    this.socket.on("ACTIVE_MODULES", (active: any) => {
-      if (active) {
-        console.log(active);
-        this.activeModules = new Array<ActiveModule>();
-        for (const activeModule of active) {
-          this.activeModules.push({
-            name: activeModule["name"],
-            visible: !activeModule["hidden"]
-          });
-        }
-      }
-    });
-
-    this.socket.on("MAGICMIRROR_LOGS", (data: any) => {
-      this.magicMirrorStream += data.notification + "\n";
-      console.log(data)
-    });
-
-    this.socket.on("error", (data: any) => console.log(data));
-
-    this.api.retrieve(URLS.GET.PACKAGES.UPGRADEABLE).then((upgradeable: object) => {
-      this.magicMirrorIsUpgrable = upgradeable["MagicMirror"];
-    }).catch((error) => console.log(error));
-
   }
 
   public toggle(event: MatSlideToggleChange, active: ActiveModule) {

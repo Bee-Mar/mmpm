@@ -38,16 +38,19 @@
     <h1 style="text-align: center; margin-top: 5%;">Resources</h1>
     <div>
       <ul style="list-style-type: none;">
-        <li style="margin-bottom: 5%;">
+        <li style="margin-bottom: 3%;">
+          <a href="{{ mmpmEnvVars.get('MMPM_MAGICMIRROR_URI')['value'] }}" target="_blank">MagicMirror</a>
+        </li>
+        <li style="margin-bottom: 3%;">
           <a href="https://github.com/Bee-Mar/mmpm/wiki" target="_blank">MMPM Wiki</a>
         </li>
-        <li style="margin-bottom: 5%;">
+        <li style="margin-bottom: 3%;">
           <a href="https://github.com/Bee-Mar/mmpm/issues/new" target="_blank">Create an Issue</a>
         </li>
-        <li style="margin-bottom: 5%;">
+        <li style="margin-bottom: 3%;">
           <a href="https://github.com/MichMich/MagicMirror" target="_blank">MagicMirror GitHub</a>
         </li>
-        <li style="margin-bottom: 5%;">
+        <li style="margin-bottom: 3%;">
           <a href="https://docs.magicmirror.builders/" target="_blank">MagicMirror Documentation</a>
         </li>
       </ul>
@@ -60,7 +63,7 @@
     </h1>
     <div>
       <ul style="list-style-type: none;">
-        <li *ngFor="let envVar of mmpmEnvVars | keyvalue" style="margin-bottom: 5%;">
+        <li *ngFor="let envVar of mmpmEnvVars | keyvalue" style="margin-bottom: 3%;">
           <code matTooltip="{{ envVar.value.description }}">{{ envVar.key }}={{ envVar.value.value }}</code>
         </li>
       </ul>

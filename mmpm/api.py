@@ -492,4 +492,3 @@ def mmpm_environment_vars() -> str:
 
     # set env var value here, but it's only temporary
     return json.dumps(mmpm.consts.MMPM_ENV)
-

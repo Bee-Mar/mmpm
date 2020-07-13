@@ -1,24 +1,18 @@
 #!/usr/bin/env python3
-import re
 import os
-import pathlib
 import json
-import datetime
 import shutil
 import sys
-
-from socket import gethostname, gethostbyname
-from textwrap import fill, indent
-from urllib.error import HTTPError, URLError
-from urllib.request import urlopen
-from collections import defaultdict
-from bs4 import BeautifulSoup
-from typing import List, Dict, Tuple
 
 import mmpm.color
 import mmpm.utils
 import mmpm.consts
 import mmpm.models
+
+from urllib.error import HTTPError, URLError
+from urllib.request import urlopen
+from collections import defaultdict
+from typing import List, Dict, Tuple
 
 
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
@@ -37,6 +31,8 @@ def database_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     Returns:
         None
     '''
+
+    import datetime
 
     num_categories: int = len(packages)
     num_packages: int = 0
@@ -91,7 +87,8 @@ def check_for_mmpm_updates(assume_yes=False, gui=False, automated=False) -> bool
         mmpm.utils.error_msg(str(error))
         return False
 
-    version_number: float = float(re.findall(r"\d+\.\d+", re.findall(r"__version__ = \d+\.\d+", contents)[0])[0])
+    from re import findall
+    version_number: float = float(findall(r"\d+\.\d+", findall(r"__version__ = \d+\.\d+", contents)[0])[0])
     print(mmpm.consts.GREEN_CHECK_MARK)
 
     if not version_number:
@@ -380,6 +377,8 @@ def show_package_details(packages: Dict[str, List[MagicMirrorPackage]], verbose:
         print(f'  Category: {category}')
         print(f'  Repository: {package.repository}')
         print(f'  Author: {package.author}')
+
+    from textwrap import fill, indent
 
     if not verbose:
         def __show_details__(packages: dict) -> None:
@@ -683,6 +682,8 @@ def install_magicmirror() -> bool:
     known_envs: List[str] = [env for env in get_available_upgrades() if env != 'mmpm']
     parent: str = mmpm.consts.HOME_DIR
 
+    import pathlib
+
     if os.path.exists(mmpm.consts.MMPM_MAGICMIRROR_ROOT):
         mmpm.utils.warning_msg(f'MagicMirror appears to be installed already in {os.getcwd()}. Please provide a new destination for the MagicMirror installation')
         try:
@@ -784,9 +785,6 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
     db_exists: bool = os.path.exists(db_file) and bool(os.stat(db_file).st_size)
     ext_pkgs_file: str = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
 
-    if not mmpm.utils.assert_mmpm_config_directory():
-        mmpm.utils.fatal_msg('Failed to create directory for MagicMirror database')
-
     if db_exists:
         mmpm.utils.log.info(f'Backing up database file as {mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE}.bak')
 
@@ -873,6 +871,8 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
         print(mmpm.consts.RED_X)
         mmpm.utils.fatal_msg('Unable to retrieve MagicMirror modules. Is your internet connection up?')
         return {}
+
+    from bs4 import BeautifulSoup
 
     soup = BeautifulSoup(web_page, 'html.parser')
     table_soup: list = soup.find_all('table')
@@ -1465,10 +1465,12 @@ def get_web_interface_url() -> str:
         mmpm_conf = conf.read()
 
     try:
-        port: str = re.findall(r"listen\s?\d+", mmpm_conf)[0].split()[1]
+        from re import findall
+        port: str = findall(r"listen\s?\d+", mmpm_conf)[0].split()[1]
     except IndexError:
         mmpm.utils.fatal_msg('Unable to retrieve the port number of the MMPM web interface')
 
+    from socket import gethostname, gethostbyname
     return f'http://{gethostbyname(gethostname())}:{port}'
 
 
@@ -1634,7 +1636,7 @@ def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool
         os.system(f"{'tail -F' if tail else 'cat'} {' '.join(logs)}")
 
 
-def display_mmpm_env_vars(describe: bool = False) -> None:
+def display_mmpm_env_vars() -> None:
     '''
     Displays the environment variables associated with MMPM, as well as their
     current value. A user may modify these values by setting them in their
@@ -1650,17 +1652,12 @@ def display_mmpm_env_vars(describe: bool = False) -> None:
 
     mmpm.utils.log.info(f'User listing environment variables, set with the following values')
 
-    if describe:
-        for var, info in mmpm.consts.MMPM_ENV.items():
-            output: str = f"{var}={info['value']} # {info['description']}"
-            mmpm.utils.log.info(output)
-            print(output)
+    from pygments import highlight, formatters
+    from pygments.lexers.data import JsonLexer
 
-    else:
-        for var, info in mmpm.consts.MMPM_ENV.items():
-            output = f"{var}={info['value']}"
-            mmpm.utils.log.info(output)
-            print(output)
+
+    with open(mmpm.consts.MMPM_ENV_FILE, 'r') as env:
+        print(highlight(json.dumps(json.load(env), indent=2), JsonLexer(), formatters.TerminalFormatter()))
 
 
 def install_autocompletion(assume_yes: bool = False) -> None:
@@ -1788,7 +1785,7 @@ def rotate_raspberrypi_screen(degrees: int) -> bool:
 
             with open(config, 'r+') as cfg:
                 contents: str = cfg.read()
-                setting: List[str] = re.findall(pattern, contents)
+                setting: List[str] = findall(pattern, contents)
 
                 if not setting:
                     # this file should not be empty, but just in case
@@ -1824,6 +1821,8 @@ def migrate() -> None:
     Returns:
         None
     '''
+    import pathlib
+
     legacy_ext_src_file: str = os.path.join(mmpm.consts.MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
     legacy_key: str = 'External Module Sources'
     data: dict = {}
@@ -1885,4 +1884,7 @@ def dump_database() -> None:
             except json.JSONDecodeError:
                 pass
 
-    print(json.dumps(contents, indent=2))
+    from pygments import highlight, formatters
+    from pygments.lexers.data import JsonLexer
+
+    print(highlight(json.dumps(contents, indent=2), JsonLexer(), formatters.TerminalFormatter()))

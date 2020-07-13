@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # pylint: disable=unused-argument
 import sys
-import webbrowser
-
-from typing import List, Dict
 
 import mmpm.utils
 import mmpm.core
 import mmpm.opts
 import mmpm.consts
 import mmpm.models
+
+from typing import List, Dict
+
 
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 
@@ -92,6 +92,8 @@ def main(argv):
             mmpm.core.show_package_details(result, args.verbose)
 
     elif args.subcmd == mmpm.opts.OPEN:
+        import webbrowser
+
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.config:
@@ -104,8 +106,12 @@ def main(argv):
             webbrowser.open(mmpm.core.get_web_interface_url())
         elif args.mm_wiki:
             webbrowser.open(mmpm.consts.MAGICMIRROR_WIKI_URL)
+        elif args.mm_docs:
+            webbrowser.open(mmpm.consts.MAGICMIRROR_DOCUMENTATION_URL)
         elif args.mmpm_wiki:
             webbrowser.open(mmpm.consts.MMPM_WIKI_URL)
+        elif args.mmpm_env:
+            mmpm.utils.open_default_editor(mmpm.consts.MMPM_ENV_FILE)
         else:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
@@ -228,7 +234,7 @@ def main(argv):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         else:
-            mmpm.core.display_mmpm_env_vars(args.describe)
+            mmpm.core.display_mmpm_env_vars()
 
     else:
         mmpm.utils.error_msg('Unknown argument\n')

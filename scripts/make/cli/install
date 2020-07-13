@@ -7,13 +7,8 @@ log_notice
 
 log_action "Installing MMPM CLI"
 
-printf " -- creating directories and files"
-log_and_eval "mkdir -vp ~/.config/mmpm/log"
-log_and_eval "touch ~/.config/mmpm/log/{mmpm-gunicorn-{error,access}.log,mmpm-cli-interface.log}"
-_done_
-
-printf " -- installing CLI using 'pip3 install --user' (this may take some time)"
-log_and_eval "pip3 install --user ."
+printf " -- installing CLI using 'python3 setup.py requirements init_files install --user' (this may take some time)"
+log_and_eval "python3 setup.py requirements init_files install --user"
 _done_
 
 printf " -- initializing MMPM/MagicMirror database"

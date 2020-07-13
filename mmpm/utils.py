@@ -7,14 +7,9 @@ import requests
 import datetime
 import json
 import pathlib
-import socketio
 
-from re import sub
 from logging import Logger
-from multiprocessing import cpu_count
 from typing import List, Optional, Tuple, Dict
-from ctypes import cdll, c_char_p, c_int, POINTER
-from collections import defaultdict
 
 import mmpm.color
 import mmpm.consts
@@ -138,23 +133,17 @@ def env_variables_fatal_msg(preamble: str = '') -> None:
     fatal_msg(msg)
 
 
-def assert_mmpm_config_directory() -> bool:
-    if not os.path.exists(mmpm.consts.MMPM_CONFIG_DIR):
-        try:
-            pathlib.Path(mmpm.consts.MMPM_CONFIG_DIR).mkdir(parents=True, exist_ok=True)
-        except OSError:
-            return False
-    return True
-
-
 def assert_required_paths_exist() -> bool:
+
     for directory in mmpm.consts.MMPM_REQUIRED_DIRS:
-        if not os.path.exists(directory):
-            # it's likely the dirs dont exist because of a typo in an env var
-            env_variables_error_msg(f'The required path {directory} does not exist.')
+        os.system(f'mkdir -p {directory}')
 
     for data_file in mmpm.consts.MMPM_DATA_FILES_NAMES:
         os.system(f'touch {data_file}')
+
+    if not bool(os.stat(mmpm.consts.MMPM_ENV_FILE).st_size):
+        with open(mmpm.consts.MMPM_ENV_FILE, 'w') as env:
+            json.dump({key: mmpm.consts.MMPM_ENV[key]['value'] for key in mmpm.consts.MMPM_ENV}, env)
 
 
 def calculation_expiration_date_of_database() -> Tuple[float, float]:
@@ -245,6 +234,7 @@ def sanitize_name(orig_name: str) -> str:
     Returns:
         a cleaned version of the file- or foldername
     '''
+    from re import sub
     return sub('[//]', '', orig_name)
 
 
@@ -347,6 +337,8 @@ def make() -> Tuple[int, str, str]:
     Returns:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
+    from multiprocessing import cpu_count
+
     log.info(f"Running 'make -j {cpu_count()}' in {os.getcwd()}")
     plain_print(f"{mmpm.consts.GREEN_DASHES} Found Makefile. Running `make -j {cpu_count()}`")
     return run_cmd(['make', '-j', f'{cpu_count()}'])
@@ -693,6 +685,7 @@ def get_difference_of_packages(original: Dict[str, List[MagicMirrorPackage]], ex
         difference (Dict[str, List[MagicMirrorPackage]]]): the reduced set of packages
     '''
 
+    from collections import defaultdict
     difference: Dict[str, List[MagicMirrorPackage]] = defaultdict(list)
 
     for category in original:
@@ -885,7 +878,7 @@ def get_remote_package_details(package: MagicMirrorPackage) -> dict:
     user: str = spliced[-2]
     project: str = spliced[-1]
 
-    if '.git' == project[-4:]:
+    if project[-4:] == '.git':
         mmpm.utils.log.info(f"Found '.git' in repository url, trimmed project name from {project} to {project[:-4]}")
         project = project[:-4]
 
@@ -938,7 +931,7 @@ def is_magicmirror_running() -> bool:
                 )
 
 
-def socketio_client_factory() -> socketio.Client:
+def socketio_client_factory():
     '''
     Wrapper method to return a consistent paramaterized socketio.Client object
 
@@ -948,6 +941,8 @@ def socketio_client_factory() -> socketio.Client:
     Returns:
         client (socketio.Client): the socketio Client object
     '''
+
+    import socketio # socketio is a slow import, so only doing it when absolutely necessary
     client = socketio.Client()
 
     try:
@@ -957,7 +952,9 @@ def socketio_client_factory() -> socketio.Client:
     return client
 
 
-def socketio_client_disconnect(client: socketio.Client) -> bool:
+def socketio_client_disconnect(client) -> bool:
+    import socketio # socketio is a slow import, so only doing it when absolutely necessary
+
     try:
         mmpm.utils.log.info('attempting to disconnect from MagicMirror websocket')
         client.disconnect()

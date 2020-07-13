@@ -249,7 +249,7 @@ def get_user_args() -> object:
     open_parser = subparsers.add_parser(
         OPEN,
         usage='\n  mmpm open [--config] [--css] [--gui] [--mm-wiki] [--mmpm-wiki]',
-        help='open MagicMirror config.js, custom.css, the MMPM wiki, the MagicMirror wiki, or MagicMirror itself'
+        help='quickly open config files, documentation, wikis, and MagicMirror itself'
     )
 
     open_parser.add_argument(
@@ -288,17 +288,31 @@ def get_user_args() -> object:
     )
 
     open_parser.add_argument(
+        '--mm-docs',
+        action='store_true',
+        help='open the MagicMirror documentation in your default browser',
+        dest='mm_docs'
+    )
+
+    open_parser.add_argument(
         '--mmpm-wiki',
         action='store_true',
         help='open the MMPM GitHub wiki in your default browser',
         dest='mmpm_wiki'
     )
 
+    open_parser.add_argument(
+        '--env',
+        action='store_true',
+        help='open the MMPM run-time environment variables JSON configuration file in your $EDITOR',
+        dest='mmpm_env'
+    )
+
     # show_parser
     show_parser = subparsers.add_parser(
         SHOW,
         usage='\n  mmpm show <package(s)> [--verbose]',
-        help='show details about one or more packages listed in the MagicMirror 3rd party database'
+        help='show details about one or more packages'
     )
 
     show_parser.add_argument(
@@ -457,14 +471,6 @@ def get_user_args() -> object:
         ENV,
         usage='\n  mmpm env',
         help='display the MMPM environment variables and their value(s)'
-    )
-
-    env_parser.add_argument(
-        '-d',
-        '--describe',
-        action='store_true',
-        help='display description for each environment variable',
-        dest='describe'
     )
 
     # MMPM AND GLOBAL OPTIONS

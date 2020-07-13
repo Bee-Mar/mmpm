@@ -24,12 +24,12 @@ import mmpm.models
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 
 
-def snapshot_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
+def database_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     '''
-    Displays information regarding the most recent 'snapshot_file', ie. when it
-    was taken, when the next scheduled snapshot will be taken, how many module
+    Displays information regarding the most recent database file, ie. when it
+    was taken, when the next scheduled database retrieval will be taken, how many module
     categories exist, and the total number of modules available. Additionally,
-    tells user how to forcibly request a new snapshot be taken.
+    tells user how to forcibly request the database be updated.
 
     Parameters:
         packages (Dict[str, List[MagicMirrorPackage]]): Dictionary of MagicMirror modules
@@ -41,15 +41,15 @@ def snapshot_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     num_categories: int = len(packages)
     num_packages: int = 0
 
-    current_snapshot, next_snapshot = mmpm.utils.calc_snapshot_timestamps()
-    curr_snap_date = datetime.datetime.fromtimestamp(int(current_snapshot))
-    next_snap_date = datetime.datetime.fromtimestamp(int(next_snapshot))
+    creation_unix_timestamp, expiration_unix_timestamp = mmpm.utils.calculation_expiration_date_of_database()
+    creation_date = datetime.datetime.fromtimestamp(int(creation_unix_timestamp))
+    expiration_date = datetime.datetime.fromtimestamp(int(expiration_unix_timestamp))
 
     for category in packages.values():
         num_packages += len(category)
 
-    print(mmpm.color.normal_green('Last updated:'), f'{curr_snap_date}')
-    print(mmpm.color.normal_green('Next scheduled update:'), f'{next_snap_date}')
+    print(mmpm.color.normal_green('Last updated:'), f'{creation_date}')
+    print(mmpm.color.normal_green('Next scheduled update:'), f'{expiration_date}')
     print(mmpm.color.normal_green('Package categories:'), f'{num_categories}')
     print(mmpm.color.normal_green('Packages available:'), f'{num_packages}')
 
@@ -405,7 +405,7 @@ def get_installation_candidates(packages: Dict[str, List[MagicMirrorPackage]], p
     Used to display more detailed information that presented in normal search results
 
     Parameters:
-        packages (Dict[str, List[MagicMirrorPackage]]): MagicMirror modules database snapshot
+        packages (Dict[str, List[MagicMirrorPackage]]): MagicMirror modules database
         packages_to_install (List[str]): list of modules provided by user through command line arguments
 
     Returns:
@@ -767,12 +767,12 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
 
 def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPackage]]:
     '''
-    Reads in modules from the hidden 'snapshot_file'  and checks if the file is
+    Reads in modules from the hidden database file  and checks if the file is
     out of date. If so, the modules are gathered again from the MagicMirror 3rd
     Party Modules wiki.
 
     Parameters:
-        force_refresh (bool): Boolean flag to force refresh of snapshot
+        force_refresh (bool): Boolean flag to force refresh of the database
 
     Returns:
         packages (Dict[str, List[MagicMirrorPackage]]): dictionary of MagicMirror 3rd party modules
@@ -780,25 +780,24 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
 
     packages: dict = {}
 
-    db_file: str = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE
+    db_file: str = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
     db_exists: bool = os.path.exists(db_file) and bool(os.stat(db_file).st_size)
     ext_pkgs_file: str = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
 
-    if not mmpm.utils.assert_snapshot_directory():
-        message: str = 'Failed to create directory for MagicMirror snapshot'
-        mmpm.utils.fatal_msg(message)
+    if not mmpm.utils.assert_mmpm_config_directory():
+        mmpm.utils.fatal_msg('Failed to create directory for MagicMirror database')
 
     if db_exists:
-        mmpm.utils.log.info(f'Backing up database file as {mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE}.bak')
+        mmpm.utils.log.info(f'Backing up database file as {mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE}.bak')
 
         shutil.copyfile(
-            mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE,
-            f'{mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE}.bak'
+            mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE,
+            f'{mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE}.bak'
         )
 
         mmpm.utils.log.info(f'Back up of database complete')
 
-    # if the snapshot has expired, or doesn't exist, get a new one
+    # if the database has expired, or doesn't exist, get a new one
     if force_refresh or not db_exists:
         mmpm.utils.plain_print(
             f"{mmpm.consts.GREEN_PLUS} {'Refreshing' if db_exists else 'Initializing'} MagicMirror 3rd party packages database "
@@ -810,16 +809,16 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
             print(mmpm.consts.RED_X)
             mmpm.utils.error_msg(f'Failed to retrieve packages from {mmpm.consts.MAGICMIRROR_MODULES_URL}. Please check your internet connection.')
 
-        # save the new snapshot
+        # save the new database
         else:
-            with open(db_file, 'w') as snapshot:
-                json.dump(packages, snapshot, default=lambda pkg: pkg.serialize())
+            with open(db_file, 'w') as db:
+                json.dump(packages, db, default=lambda pkg: pkg.serialize())
 
             print(mmpm.consts.GREEN_CHECK_MARK)
 
     if not packages and db_exists:
-        with open(db_file, 'r') as snapshot_file:
-            packages = json.load(snapshot_file)
+        with open(db_file, 'r') as db:
+            packages = json.load(db)
 
             for category in packages:
                 packages[category] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(packages[category])
@@ -1859,3 +1858,31 @@ def migrate() -> None:
 
     mmpm.utils.log.info('Completed migration of legacy External Module Sources migrated to External Packages')
     print('Migration complete!')
+
+
+def dump_database() -> None:
+    '''
+    Prints contents of database to stdout
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+    contents: dict = {}
+
+    with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE, 'r') as db:
+        try:
+            contents.update(json.load(db))
+        except json.JSONDecodeError:
+            pass
+
+    if os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size:
+        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r') as db:
+            try:
+                contents.update(json.load(db))
+            except json.JSONDecodeError:
+                pass
+
+    print(json.dumps(contents, indent=2))

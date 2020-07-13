@@ -85,7 +85,7 @@ MMPM_CLI_LOG_FILE: str = join(MMPM_LOG_DIR, 'mmpm-cli-interface.log')
 MMPM_GUNICORN_ACCESS_LOG_FILE: str = join(MMPM_LOG_DIR, 'mmpm-gunicorn-access.log')
 MMPM_GUNICORN_ERROR_LOG_FILE: str = join(MMPM_LOG_DIR, 'mmpm-gunicorn-error.log')
 
-MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE: str = join(MMPM_CONFIG_DIR, 'MagicMirror-3rd-party-packages-snapshot.json')
+MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE: str = join(MMPM_CONFIG_DIR, 'MagicMirror-3rd-party-packages-db.json')
 MAGICMIRROR_WIKI_URL: str = 'https://github.com/MichMich/MagicMirror/wiki'
 MAGICMIRROR_MODULES_URL: str = "https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules"
 MAGICMIRROR_MODULES_DIR: str = join(MMPM_MAGICMIRROR_ROOT, 'modules')
@@ -112,5 +112,5 @@ MMPM_DATA_FILES_NAMES: List[str] = [
     MMPM_GUNICORN_ERROR_LOG_FILE,
     MMPM_GUNICORN_ACCESS_LOG_FILE,
     MMPM_EXTERNAL_PACKAGES_FILE,
-    MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE,
+    MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE,
 ]

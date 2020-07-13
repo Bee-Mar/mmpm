@@ -138,12 +138,11 @@ def env_variables_fatal_msg(preamble: str = '') -> None:
     fatal_msg(msg)
 
 
-def assert_snapshot_directory() -> bool:
+def assert_mmpm_config_directory() -> bool:
     if not os.path.exists(mmpm.consts.MMPM_CONFIG_DIR):
         try:
             pathlib.Path(mmpm.consts.MMPM_CONFIG_DIR).mkdir(parents=True, exist_ok=True)
         except OSError:
-            error_msg('Failed to create directory for snapshot')
             return False
     return True
 
@@ -158,39 +157,39 @@ def assert_required_paths_exist() -> bool:
         os.system(f'touch {data_file}')
 
 
-def calc_snapshot_timestamps() -> Tuple[float, float]:
+def calculation_expiration_date_of_database() -> Tuple[float, float]:
     '''
-    Calculates the expiration timestamp of the MagicMirror snapshot file
+    Calculates the expiration timestamp of the MagicMirror database file
 
     Parameters:
         None
 
     Returns:
-        Tuple[curr_snap (float), next_snap (float)]: The current timestamp and the exipration timestamp of the MagicMirror snapshot
+        Tuple[creation_date (float), expiration_date (float)]: The current timestamp and the exipration timestamp of the MagicMirror database
     '''
-    curr_snap = next_snap = None
+    creation_date = expiration_date = None
 
-    if os.path.exists(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE):
-        curr_snap = os.path.getmtime(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE)
-        next_snap = curr_snap + 12 * 60 * 60
+    if os.path.exists(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE):
+        creation_date = os.path.getmtime(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE)
+        expiration_date = creation_date + 12 * 60 * 60
 
-    return curr_snap, next_snap
+    return creation_date, expiration_date
 
 
-def should_refresh_packages(current_snapshot: float, next_snapshot: float) -> bool:
+def should_refresh_database(creation_date: float, expiration_date: float) -> bool:
     '''
-    Determines if the MagicMirror snapshot is expired
+    Determines if the MagicMirror database is expired
 
     Parameters:
-        current_snapshot (float): The 'last modified' timestamp from os.path.getmtime
-        next_snapshot (float): When the file should 'expire' based on a one day interval
+        creation_date (float): The 'last modified' timestamp from os.path.getmtime
+        expiration_date (float): When the file should 'expire' based on a 12 hour interval
 
     Returns:
         should_update (bool): If the file is expired and the data needs to be refreshed
     '''
-    if not current_snapshot and not next_snapshot:
+    if not creation_date and not expiration_date:
         return True
-    return not bool(os.stat(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_SNAPSHOT_FILE).st_size) or next_snapshot - time.time() <= 0.0
+    return not bool(os.stat(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE).st_size) or expiration_date - time.time() <= 0.0
 
 
 def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, str, str]:

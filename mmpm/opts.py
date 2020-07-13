@@ -176,6 +176,13 @@ def get_user_args() -> object:
         dest='details'
     )
 
+    database_parser.add_argument(
+        '--dump',
+        action='store_true',
+        help='dump the database JSON contents to stdout',
+        dest='dump'
+    )
+
    # LIST SUBCOMMANDS
     list_parser = subparsers.add_parser(
         LIST,

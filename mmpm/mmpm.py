@@ -35,13 +35,13 @@ def main(argv):
     if args.subcmd in mmpm.opts.SINGLE_OPTION_ARGS and not mmpm.utils.assert_one_option_selected(args):
         mmpm.utils.fatal_too_many_options(args)
 
-    current_snapshot, next_snapshot = mmpm.utils.calc_snapshot_timestamps()
-    snapshot_expired: bool = mmpm.utils.should_refresh_packages(current_snapshot, next_snapshot)
-    should_refresh: bool = True if args.subcmd == mmpm.opts.DATABASE and args.refresh else snapshot_expired
+    creation_date, expiration_date = mmpm.utils.calculation_expiration_date_of_database()
+    databased_expired: bool = mmpm.utils.should_refresh_database(creation_date, expiration_date)
+    should_refresh: bool = True if args.subcmd == mmpm.opts.DATABASE and args.refresh else databased_expired
 
     packages: Dict[str, List[MagicMirrorPackage]] = mmpm.core.load_packages(force_refresh=should_refresh)
 
-    if snapshot_expired and args.subcmd != mmpm.opts.UPDATE and mmpm.core.check_for_mmpm_updates(automated=True):
+    if databased_expired and args.subcmd != mmpm.opts.UPDATE and mmpm.core.check_for_mmpm_updates(automated=True):
         print('Upgrade available for MMPM. Execute `mmpm upgrade` to perform the upgrade now')
 
     if not packages:
@@ -207,7 +207,9 @@ def main(argv):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.details:
-            mmpm.core.snapshot_details(packages)
+            mmpm.core.database_details(packages)
+        elif args.dump:
+            mmpm.core.dump_database()
         else:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 

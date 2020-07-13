@@ -12,8 +12,8 @@
   </div>
 
   <div style="height: 100%; width: 30%; margin-left: 5%; background-color: #303030; overflow-y: scroll; float: left;">
-    <h1 style="text-align: center;">Active Modules</h1>
-    <div>
+    <h1 style="text-align: center; margin-top: 5%;">Active Modules</h1>
+    <div *ngIf="activeModules?.length; else activeModulesNotFound" style="margin-left: 20%; margin-top: 10%;">
       <ul style="list-style-type: none;">
         <li *ngFor="let active of activeModules | keyvalue" style="margin-top: 5%;">
           <mat-slide-toggle [(ngModel)]="active.value.visible" (change)="toggle($event, active.value)">
@@ -27,14 +27,15 @@
       </ul>
     </div>
     <ng-template #activeModulesNotFound>
-      <div style="vertical-align: middle">
-        Unable to retrieve active modules
+      <div style="text-align: center; margin-top: 50%;">
+        Unable to retrieve active modules. Please make sure MagicMirror is
+        running, and the <code>MMPM_MAGICMIRROR_URI</code> is correct
       </div>
     </ng-template>
   </div>
 
   <div style="height: 100%; width: 40%; float: right; background-color: #303030;">
-    <h1 style="text-align: center;">Resources</h1>
+    <h1 style="text-align: center; margin-top: 5%;">Resources</h1>
     <div>
       <ul style="list-style-type: none;">
         <li style="margin-bottom: 5%;">
@@ -51,7 +52,12 @@
         </li>
       </ul>
     </div>
-    <h1 style="text-align: center;">Environment Variables</h1>
+    <h1 style="text-align: center;">
+      Environment Variables
+      <span matTooltip="To update below environment variables, set each with desired the value in your shell configuration file. Then, source your shell configuration file, and refresh the MMPM webpage">
+        <mat-icon>help</mat-icon>
+      </span>
+    </h1>
     <div>
       <ul style="list-style-type: none;">
         <li *ngFor="let envVar of mmpmEnvVars | keyvalue" style="margin-bottom: 5%;">

@@ -197,6 +197,8 @@ def main(argv):
         elif args.restart:
             mmpm.core.restart_magicmirror()
         elif args.rotate:
+            if mmpm.consts.MMPM_IS_DOCKER_IMAGE:
+                mmpm.utils.fatal_msg('Cannot execute this command within a docker image')
             mmpm.core.rotate_raspberrypi_screen(args.rotate)
         else:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)

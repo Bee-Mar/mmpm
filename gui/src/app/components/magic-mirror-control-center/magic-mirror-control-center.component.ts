@@ -38,6 +38,9 @@ export class MagicMirrorControlCenterComponent implements OnInit {
   public activeModules: Array<ActiveModule>;
   public mmpmEnvVars: Map<string, object>;
 
+  private mmpmIsDockerImage: boolean = false;
+  private MMPM_IS_DOCKER_IMAGE: string = "MMPM_IS_DOCKER_IMAGE";
+
   ngOnInit(): void {
     this.activeModules = new Array<ActiveModule>();
 
@@ -48,6 +51,8 @@ export class MagicMirrorControlCenterComponent implements OnInit {
         value: envVars[key]['value'],
         description: envVars[key]['description']
       }));
+
+      this.mmpmIsDockerImage = Boolean(this.mmpmEnvVars?.get(this.MMPM_IS_DOCKER_IMAGE)['value'].length);
 
       this.socket = io(`${this.mmpmEnvVars.get("MMPM_MAGICMIRROR_URI")["value"]}/mmpm`, {reconnection: true});
       this.socket.on("connect", () => this.socket.emit("FROM_MMPM_APP_get_active_modules"));
@@ -110,7 +115,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       rows: 1,
       url: URLS.GET.MAGICMIRROR.START,
       message: "MagicMirror will be started.",
-      disabled: false,
+      disabled: this.mmpmIsDockerImage,
     },
     {
       icon: "tv_off",
@@ -119,7 +124,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       rows: 1,
       url: URLS.GET.MAGICMIRROR.STOP,
       message: "MagicMirror will be stopped.",
-      disabled: false,
+      disabled: this.mmpmIsDockerImage,
     },
     {
       icon: "refresh",
@@ -128,7 +133,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       rows: 1,
       url: URLS.GET.MAGICMIRROR.RESTART,
       message: "MagicMirror will be restarted.",
-      disabled: false,
+      disabled: this.mmpmIsDockerImage,
     },
     {
       icon: "system_update",
@@ -146,7 +151,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       rows: 1,
       url: URLS.GET.RASPBERRYPI.RESTART,
       message: "Your RaspberryPi will be rebooted.",
-      disabled: false,
+      disabled: this.mmpmIsDockerImage,
     },
     {
       icon: "power_off",
@@ -155,7 +160,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       rows: 1,
       url: URLS.GET.RASPBERRYPI.STOP,
       message: "Your RaspberryPi will be powered off.",
-      disabled: false,
+      disabled: this.mmpmIsDockerImage,
     },
   ];
 
@@ -206,6 +211,10 @@ export class MagicMirrorControlCenterComponent implements OnInit {
         }
       }).catch((error) => { console.log(error); });
     });
+  }
+
+  public openHelp(): void {
+    console.log('here')
   }
 
   public downloadLogs(): void {

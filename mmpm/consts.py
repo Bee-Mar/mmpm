@@ -61,6 +61,10 @@ MMPM_ENV: dict = {
     'MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE': {
         'value': __get_or_set_env_var__('MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE', ''),
         'description': 'The path to the docker-compose.yml file if using MagicMirror with docker-compose. Leave unset if not using docker-compose'
+    },
+    'MMPM_IS_DOCKER_IMAGE': {
+        'value': __get_or_set_env_var__('MMPM_IS_DOCKER_IMAGE', ''),
+        'description': "Leave unset if MMPM is not a docker image, and set to any value if it is. This dictates behavior and functionality of the CLI's 'mm-ctl' and GUI 'Control Center' "
     }
 }
 
@@ -69,6 +73,7 @@ MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = MMPM_ENV['MMPM_MAGICMIRROR_PM2_PROCESS_
 MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = MMPM_ENV['MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE']['value']
 MMPM_MAGICMIRROR_ROOT: str = normpath(MMPM_ENV['MMPM_MAGICMIRROR_ROOT']['value'])
 MMPM_MAGICMIRROR_URI: str = MMPM_ENV['MMPM_MAGICMIRROR_URI']['value']
+MMPM_IS_DOCKER_IMAGE: str = MMPM_ENV['MMPM_IS_DOCKER_IMAGE']['value']
 
 MMPM_REPO_URL: str = "https://github.com/Bee-Mar/mmpm.git"
 MMPM_FILE_URL: str = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"

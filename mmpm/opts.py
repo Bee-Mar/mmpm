@@ -398,7 +398,7 @@ def get_user_args() -> object:
     # MM_CTL SUBCOMMANDS
     mm_ctl_parser = subparsers.add_parser(
         MM_CTL,
-        usage='\n  mmpm mm-ctl [--status] [--restart] [--start] [--stop]\n  mmpm mm-ctl [--rotate] {0, 90, 180, 270}',
+        usage='\n  mmpm mm-ctl [--status] [--restart] [--start] [--stop]\n  mmpm mm-ctl [--rotate] {0, 90, 180, 270}\n  mmpm mm-ctl [--hide] [--show] <module(s)>',
         help='commands to control the MagicMirror'
     )
 

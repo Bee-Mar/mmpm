@@ -2,7 +2,13 @@
   <div style="height: 100%; width: 20%; background-color: #303030; float: left">
     <mat-grid-list cols="2" rowHeight="33%">
       <mat-grid-tile *ngFor="let tile of tiles" [colspan]="tile.cols" [rowspan]="tile.rows" matTooltip="{{ tile.tooltip }}" color="#FFFFFF">
-        <button mat-fab style="background-color: #6600cc;" [disabled]="tile.disabled" (click)="sendControlSignal(tile.url, tile.message)">
+        <button
+            mat-fab
+            matTooltip="{{ tile.disabled ? 'Unable to perform this action as a Docker image' : tile.tooltip }}"
+            style="background-color: #6600cc;"
+            [disabled]="tile.disabled"
+            (click)="sendControlSignal(tile.url, tile.message)"
+          >
           <mat-icon>
             {{ tile.icon }}
           </mat-icon>
@@ -18,9 +24,9 @@
         <li *ngFor="let active of activeModules | keyvalue" style="margin-top: 5%;">
           <mat-slide-toggle [(ngModel)]="active.value.visible" (change)="toggle($event, active.value)">
             {{ active.value.name }}
-            <mat-icon *ngIf="active.value.visible; else not_visible">visibility</mat-icon>
+            <mat-icon *ngIf="active.value.visible; else not_visible" matTooltip="visible">visibility</mat-icon>
             <ng-template #not_visible>
-              <mat-icon>visibility_off</mat-icon>
+              <mat-icon matTooltip="hidden">visibility_off</mat-icon>
             </ng-template>
           </mat-slide-toggle>
         </li>
@@ -39,7 +45,7 @@
     <div>
       <ul style="list-style-type: none;">
         <li style="margin-bottom: 3%;">
-          <a href="{{ mmpmEnvVars.get('MMPM_MAGICMIRROR_URI')['value'] }}" target="_blank">MagicMirror</a>
+          <a href="{{ mmpmEnvVars?.get('MMPM_MAGICMIRROR_URI') }}" target="_blank">MagicMirror</a>
         </li>
         <li style="margin-bottom: 3%;">
           <a href="https://github.com/Bee-Mar/mmpm/wiki" target="_blank">MMPM Wiki</a>
@@ -57,14 +63,14 @@
     </div>
     <h1 style="text-align: center;">
       Environment Variables
-      <span matTooltip="To update below environment variables, set each with desired the value in your shell configuration file. Then, source your shell configuration file, and refresh the MMPM webpage">
+      <span matTooltip="To update below environment variables, set each with desired the value in ~/.config/mmpm/mmpm-env.json. Or, edit the file directly in the 'Config Editor' tab">
         <mat-icon>help</mat-icon>
       </span>
     </h1>
     <div>
       <ul style="list-style-type: none;">
         <li *ngFor="let envVar of mmpmEnvVars | keyvalue" style="margin-bottom: 3%;">
-          <code matTooltip="{{ envVar.value.description }}">{{ envVar.key }}={{ envVar.value.value }}</code>
+          <code>{{ envVar.key }}={{ envVar.value }}</code>
         </li>
       </ul>
     </div>

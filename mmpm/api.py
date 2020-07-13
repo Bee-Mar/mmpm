@@ -485,10 +485,33 @@ def download_log_files():
     return send_file(f'/tmp/{zip_file_name}.zip', attachment_filename='{}.zip'.format(zip_file_name), as_attachment=True)
 
 
-@app.route(api('mmpm/environment-vars'), methods=[mmpm.consts.GET, mmpm.consts.POST])
+@app.route(api('mmpm/environment-vars'), methods=[mmpm.consts.GET])
 def mmpm_environment_vars() -> str:
-    if request.method == mmpm.consts.GET:
-        return json.dumps(mmpm.consts.MMPM_ENV)
+    env_vars: dict = {}
 
-    # set env var value here, but it's only temporary
-    return json.dumps(mmpm.consts.MMPM_ENV)
+    with open(mmpm.consts.MMPM_ENV_FILE, 'r') as env:
+        try:
+            env_vars = json.load(env)
+        except json.JSONDecodeError:
+            pass
+
+    return json.dumps(env_vars)
+
+
+@app.route(api('mmpm/environment-vars-file'), methods=[mmpm.consts.GET, mmpm.consts.POST])
+def mmpm_environment_vars_file() -> str:
+    if request.method == mmpm.consts.GET:
+        result: str = send_file(mmpm.consts.MMPM_ENV_FILE, attachment_filename='mmpm-env.json')
+        return result
+
+    elif request.method == mmpm.consts.POST:
+        data: dict = request.get_json(force=True)
+        mmpm.utils.log.info('Saving MMPM environment variables file')
+
+        try:
+            with open(mmpm.consts.MMPM_ENV_FILE, 'w') as config:
+                config.write(data.get('code'))
+        except IOError:
+            return json.dumps(False)
+
+        return json.dumps(True)

@@ -48,7 +48,7 @@ export class MMPMMarketplaceComponent implements OnInit {
   private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this.mSnackBar);
   private subscription: Subscription;
   private mmpmMarketplacePaginatorCookieSize: string = "MMPM-marketplace-packages-page-size";
-  private mmpmEnvVars: Map<string, object>;
+  private mmpmEnvVars: Map<string, string>;
 
   public ngOnInit(): void {
     this.setupTableData();
@@ -61,7 +61,7 @@ export class MMPMMarketplaceComponent implements OnInit {
   }
 
   private setupTableData(): void {
-    this.dataStore.mmpmEnvironmentVariables.subscribe((envVars: Map<string, object>) => this.mmpmEnvVars = envVars);
+    this.dataStore.mmpmEnvironmentVariables.subscribe((envVars: Map<string, string>) => this.mmpmEnvVars = envVars);
 
     this.dataStore.marketplacePackages.subscribe((allPackages: MagicMirrorPackage[]) => {
       this.dataStore.installedPackages.subscribe((installedPackages: MagicMirrorPackage[]) => {
@@ -172,7 +172,7 @@ export class MMPMMarketplaceComponent implements OnInit {
               data: {
                 matchesSelectedTitles: installationConflicts.matchesSelectedTitles,
                 matchesInstalledTitles: installationConflicts.matchesInstalledTitles,
-                magicmirrorRootDirectory: this.mmpmEnvVars.get('MMPM_MAGICMIRROR_ROOT')['value']
+                magicmirrorRootDirectory: this.mmpmEnvVars.get('MMPM_MAGICMIRROR_ROOT')
               }
             });
 

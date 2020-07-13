@@ -9,11 +9,9 @@ import { ExternalPackageRegistrationDialogComponent } from "./components/externa
 import { ReactiveFormsModule, FormsModule } from "@angular/forms";
 import { MonacoEditorModule } from "ngx-monaco-editor";
 import { MagicMirrorConfigEditorComponent } from "./components/magic-mirror-config-editor/magic-mirror-config-editor.component";
-import { LiveTerminalFeedDialogComponent } from "src/app/components/live-terminal-feed-dialog/live-terminal-feed-dialog.component";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { DataStoreService } from "src/app/services/data-store.service";
 import { SafePipe } from "./pipes/safe.pipe";
-import { TableUpdateNotifierService } from "src/app/services/table-update-notifier.service";
 import { MagicMirrorControlCenterComponent } from "./components/magic-mirror-control-center/magic-mirror-control-center.component";
 import { ConfirmationDialogComponent } from "./components/confirmation-dialog/confirmation-dialog.component";
 import { TerminalStyledPopUpWindowComponent } from "./components/terminal-styled-pop-up-window/terminal-styled-pop-up-window.component";
@@ -38,7 +36,6 @@ export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
     AppComponent,
     ExternalPackageRegistrationDialogComponent,
     MagicMirrorConfigEditorComponent,
-    LiveTerminalFeedDialogComponent,
     SafePipe,
     MagicMirrorControlCenterComponent,
     ConfirmationDialogComponent,
@@ -85,7 +82,6 @@ export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
   ],
   providers: [
     RestApiService,
-    TableUpdateNotifierService,
     ActiveProcessCountService,
     MMPMUtility,
     {

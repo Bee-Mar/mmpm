@@ -14,14 +14,14 @@ export class DataStoreService {
   private _installedPackages: BehaviorSubject<MagicMirrorPackage[]> = new BehaviorSubject<Array<MagicMirrorPackage>>([]);
   private _externalPackages: BehaviorSubject<MagicMirrorPackage[]> = new BehaviorSubject<Array<MagicMirrorPackage>>([]);
   private _availableUpgrades: BehaviorSubject<Object> = new BehaviorSubject<Object>({});
-  private _mmpmEnvironmentVariables: BehaviorSubject<Map<string, object>> = new BehaviorSubject<Map<string, object>>(new Map<string,object>());
+  private _mmpmEnvironmentVariables: BehaviorSubject<Map<string, string>> = new BehaviorSubject<Map<string, string>>(new Map<string, string>());
   private _upgradablePackages: BehaviorSubject<Array<MagicMirrorPackage>> = new BehaviorSubject<Array<MagicMirrorPackage>>([]);
 
   public readonly marketplacePackages: Observable<MagicMirrorPackage[]> = this._marketplacePackages.asObservable();
   public readonly installedPackages: Observable<MagicMirrorPackage[]> = this._installedPackages.asObservable();
   public readonly externalPackages: Observable<MagicMirrorPackage[]> = this._externalPackages.asObservable();
   public readonly availableUpgrades: Observable<Object> = this._availableUpgrades.asObservable();
-  public readonly mmpmEnvironmentVariables: Observable<Map<string, object>> = this._mmpmEnvironmentVariables.asObservable();
+  public readonly mmpmEnvironmentVariables: Observable<Map<string, string>> = this._mmpmEnvironmentVariables.asObservable();
   public readonly upgradeablePackages: Observable<Array<MagicMirrorPackage>> = this._upgradablePackages.asObservable();
 
   public ngOnInit() {}
@@ -53,8 +53,8 @@ export class DataStoreService {
 
   public loadData(): void {
     this.api.retrieve(URLS.GET.MMPM.ENVIRONMENT_VARS).then((envVars: any) => {
-      let tempMap = new Map<string, object>();
-      Object.keys(envVars).forEach((key) => tempMap.set(key, {value: envVars[key]['value'], description: envVars[key]['description']}));
+      let tempMap = new Map<string, string>();
+      Object.keys(envVars).forEach((key) => tempMap.set(key, envVars[key]));
       this._mmpmEnvironmentVariables.next(tempMap);
     }).catch((error) => console.log(error));
 

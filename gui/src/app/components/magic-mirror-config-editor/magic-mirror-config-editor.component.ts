@@ -6,6 +6,13 @@ import { ConfirmationDialogComponent } from "src/app/components/confirmation-dia
 import { URLS } from "src/app/utils/urls";
 import * as Cookie from "js-cookie";
 
+interface FileCharacteristics {
+  name: string;
+  syntax: string;
+  url: string;
+  code: string;
+}
+
 @Component({
   selector: "app-magic-mirror-config-editor",
   templateUrl: "./magic-mirror-config-editor.component.html",
@@ -20,29 +27,43 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
 
   private mmpmEditorThemeCookie = "MMPM-editor-theme";
   private mmpmEditorCurrentFileCookie = "MMPM-editor-current-file";
-  private CONFIG_JS: number = 0;
-  private CUSTOM_CSS: number = 1;
+
+  public CONFIG_JS: number = 0;
+  public CUSTOM_CSS: number = 1;
+  public MMPM_ENV_VARS_JSON: number = 2;
 
   public editor: any;
-  public code: Array<string>;
   public fileIndex: number;
+
+  public fileSelection: Array<FileCharacteristics>;
 
   public editorOptions = {
     theme: Cookie.get(this.mmpmEditorThemeCookie) ?? "vs-dark"
   };
 
   public ngOnInit(): void {
+    this.fileSelection = [
+      {name: "config.js", syntax: "javascript", url: URLS.GET.MAGICMIRROR.CONFIG, code: ""},
+      {name: "custom.css", syntax: "css", url: URLS.GET.MAGICMIRROR.CUSTOM_CSS, code: ""},
+      {name: "mmpm-env.json", syntax: "json", url: URLS.GET.MMPM.ENVIRONMENT_VARS_FILE, code: ""},
+    ];
+
     this.fileIndex = Number(Cookie.get(this.mmpmEditorCurrentFileCookie)) ?? this.CONFIG_JS;
-    this.code = new Array<string>();
 
     this.api.getFile(URLS.GET.MAGICMIRROR.CONFIG).then((fileContents) => {
-      this.code[this.CONFIG_JS] = fileContents ?? "";
+      this.fileSelection[this.CONFIG_JS].code = fileContents;
     }).catch((error) => {
       console.log(error);
     });
 
     this.api.getFile(URLS.GET.MAGICMIRROR.CUSTOM_CSS).then((fileContents) => {
-      this.code[this.CUSTOM_CSS] = fileContents ?? "";
+      this.fileSelection[this.CUSTOM_CSS].code = fileContents;
+    }).catch((error) => {
+      console.log(error);
+    });
+
+    this.api.getFile(URLS.GET.MMPM.ENVIRONMENT_VARS_FILE).then((fileContents) => {
+      this.fileSelection[this.MMPM_ENV_VARS_JSON].code = fileContents;
     }).catch((error) => {
       console.log(error);
     });
@@ -56,14 +77,15 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
 
   public onEditorInit(editor: any): void {
     this.editor = editor;
+    monaco.editor.setModelLanguage(this.editor.getModel(), this.fileSelection[this.fileIndex]?.syntax);
   }
 
   public onSaveConfig(): void {
-    const file: string = this.fileIndex === this.CONFIG_JS ? "config.js" : "custom.css";
+    const file: string = this.fileSelection[this.fileIndex].name;
 
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
-        message: `Your local version of ${file} will be overwritten`
+        message: `The local version of ${file} will be overwritten`
       },
       disableClose: true
     });
@@ -71,9 +93,9 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
     dialogRef.afterClosed().subscribe((yes) => {
       if (!yes) return;
 
-      const url = this.fileIndex == this.CONFIG_JS ? URLS.POST.MAGICMIRROR.CONFIG : URLS.POST.MAGICMIRROR.CUSTOM_CSS;
+      let url: string = this.fileSelection[this.fileIndex]?.url;
 
-      this.api.updateMagicMirrorConfig(url, this.code[this.fileIndex]).subscribe((success) => {
+      this.api.updateMagicMirrorConfig(url, this.fileSelection[this.fileIndex]?.code).subscribe((success) => {
         const message: any = success ? `Successfully saved ${file}` : `Failed to save ${file}`;
         this.snackbar.open(message, "Close", { duration: 3000 });
       });
@@ -87,19 +109,9 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
     Cookie.set(this.mmpmEditorThemeCookie, newTheme, {expires: 7, path: ""});
   }
 
-  private setFileIndexCookie(): void {
+  public setFileIndexAndCookie(index: number = 0): void {
+    this.fileIndex = index;
+    monaco.editor.setModelLanguage(this.editor.getModel(), this.fileSelection[this.fileIndex]?.syntax);
     Cookie.set(this.mmpmEditorCurrentFileCookie, String(this.fileIndex), {expires: 7, path: ""});
-  }
-
-  public loadConfigJs() {
-    this.fileIndex = this.CONFIG_JS;
-    monaco.editor.setModelLanguage(this.editor.getModel(), "javascript");
-    this.setFileIndexCookie();
-  }
-
-  public loadCustomCss() {
-    this.fileIndex = this.CUSTOM_CSS;
-    monaco.editor.setModelLanguage(this.editor.getModel(), "css");
-    this.setFileIndexCookie();
   }
 }

@@ -18,12 +18,13 @@ Module.register("mmpm", {
     for (const userProvidedModuleName of payload) {
       // returns an array of matches
       let found = MM.getModules().filter((module) => module.name === userProvidedModuleName);
+      console.log(found);
 
       if (found.length) {
         method(found[0]);
-        result.successes.push(m);
+        result.successes.push(userProvidedModuleName);
       } else {
-        result.fails.push(m)
+        result.fails.push(userProvidedModuleName)
       }
     }
     return result

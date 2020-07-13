@@ -3,7 +3,6 @@ import { RestApiService } from "src/app/services/rest-api.service";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
-import { LiveTerminalFeedDialogComponent } from "src/app/components/live-terminal-feed-dialog/live-terminal-feed-dialog.component";
 import { DataStoreService } from "src/app/services/data-store.service";
 import { URLS } from "src/app/utils/urls";
 import { ActiveModule } from "src/app/interfaces/interfaces";
@@ -36,30 +35,25 @@ export class MagicMirrorControlCenterComponent implements OnInit {
   public socket: any;
   public magicMirrorIsUpgrable: boolean = false;
   public activeModules: Array<ActiveModule>;
-  public mmpmEnvVars: Map<string, object>;
-
-  private mmpmIsDockerImage: boolean = false;
-  private MMPM_IS_DOCKER_IMAGE: string = "MMPM_IS_DOCKER_IMAGE";
+  public mmpmEnvVars: Map<string, string>;
 
   ngOnInit(): void {
     this.activeModules = new Array<ActiveModule>();
 
     this.api.retrieve(URLS.GET.MMPM.ENVIRONMENT_VARS).then((envVars: any) => {
-      this.mmpmEnvVars = new Map<string, object>();
+      this.mmpmEnvVars = new Map<string, string>();
 
-      Object.keys(envVars).forEach((key) => this.mmpmEnvVars.set(key, {
-        value: envVars[key]['value'],
-        description: envVars[key]['description']
-      }));
+      Object.keys(envVars).forEach((key) => this.mmpmEnvVars.set(key, envVars[key]));
 
-      this.mmpmIsDockerImage = Boolean(this.mmpmEnvVars?.get(this.MMPM_IS_DOCKER_IMAGE)['value'].length);
+      const mmpmIsDockerImage: boolean = Boolean(this.mmpmEnvVars?.get("MMPM_IS_DOCKER_IMAGE"));
+      this.tiles.forEach((t) => t.disabled = mmpmIsDockerImage);
 
-      this.socket = io(`${this.mmpmEnvVars.get("MMPM_MAGICMIRROR_URI")["value"]}/mmpm`, {reconnection: true});
+      this.socket = io(`${this.mmpmEnvVars?.get("MMPM_MAGICMIRROR_URI")}/mmpm`, {reconnection: true});
       this.socket.on("connect", () => this.socket.emit("FROM_MMPM_APP_get_active_modules"));
       this.socket.on("notification", (data: any) => console.log(data));
       this.socket.on("disconnect", (data: any) => console.log(data));
 
-      this.socket.on("MODULES_VISIBLE", (result: any) => {
+      this.socket.on("MODULES_SHOWN", (result: any) => {
         console.log(result);
       });
 
@@ -115,7 +109,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       rows: 1,
       url: URLS.GET.MAGICMIRROR.START,
       message: "MagicMirror will be started.",
-      disabled: this.mmpmIsDockerImage,
+      disabled: false,
     },
     {
       icon: "tv_off",
@@ -124,7 +118,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       rows: 1,
       url: URLS.GET.MAGICMIRROR.STOP,
       message: "MagicMirror will be stopped.",
-      disabled: this.mmpmIsDockerImage,
+      disabled: false,
     },
     {
       icon: "refresh",
@@ -133,7 +127,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       rows: 1,
       url: URLS.GET.MAGICMIRROR.RESTART,
       message: "MagicMirror will be restarted.",
-      disabled: this.mmpmIsDockerImage,
+      disabled: false,
     },
     {
       icon: "system_update",
@@ -151,7 +145,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       rows: 1,
       url: URLS.GET.RASPBERRYPI.RESTART,
       message: "Your RaspberryPi will be rebooted.",
-      disabled: this.mmpmIsDockerImage,
+      disabled: false,
     },
     {
       icon: "power_off",
@@ -160,7 +154,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       rows: 1,
       url: URLS.GET.RASPBERRYPI.STOP,
       message: "Your RaspberryPi will be powered off.",
-      disabled: this.mmpmIsDockerImage,
+      disabled: false,
     },
   ];
 
@@ -200,7 +194,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       if (!response) return;
 
       if (url === URLS.GET.MAGICMIRROR.UPGRADE) {
-        this.dialog.open(LiveTerminalFeedDialogComponent, this.liveTerminalFeedDialogSettings);
+        console.log("FIXME");
       }
 
       this.api.retrieve(url).then((success) => {
@@ -211,10 +205,6 @@ export class MagicMirrorControlCenterComponent implements OnInit {
         }
       }).catch((error) => { console.log(error); });
     });
-  }
-
-  public openHelp(): void {
-    console.log('here')
   }
 
   public downloadLogs(): void {

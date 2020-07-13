@@ -2,11 +2,9 @@
 import json
 import mmpm.color
 import mmpm.utils
-import os
 
 from os.path import join, expanduser, normpath
 from typing import List
-from socket import gethostname, gethostbyname
 
 TITLE: str = 'title'
 REPOSITORY: str = 'repository'
@@ -57,35 +55,19 @@ with open(MMPM_ENV_FILE, 'r') as env:
         pass
 
 MMPM_ENV: dict = {
-    'MMPM_MAGICMIRROR_ROOT': {
-        'value': __ENV__['MMPM_MAGICMIRROR_ROOT'] if 'MMPM_MAGICMIRROR_ROOT' in __ENV__ else normpath(join(HOME_DIR, MAGICMIRROR)),
-        'description': 'The root directory of the MagicMirror application'
-    },
-
-    'MMPM_MAGICMIRROR_URI': {
-        'value': __ENV__['MMPM_MAGICMIRROR_ROOT'] if 'MMPM_MAGICMIRROR_ROOT' in __ENV__ else f'http://{gethostbyname(gethostname())}:8080',
-        'description': 'The URI used to access MagicMirror via browser (including the port number)'
-    },
-    'MMPM_MAGICMIRROR_PM2_PROCESS_NAME': {
-        'value': __ENV__['MMPM_MAGICMIRROR_PM2_PROCESS_NAME'] if 'MMPM_MAGICMIRROR_PM2_PROCESS_NAME' in __ENV__ else MAGICMIRROR,
-        'description': 'The name of the PM2 process associated with MagicMirror. Leave unset if not using PM2'
-    },
-    'MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE': {
-        'value': __ENV__['MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE'] if 'MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE' in __ENV__ else '',
-        'description': 'The path to the docker-compose.yml file if using MagicMirror with docker-compose. Leave unset if not using docker-compose'
-    },
-    'MMPM_IS_DOCKER_IMAGE': {
-        'value': __ENV__['MMPM_IS_DOCKER_IMAGE'] if 'MMPM_IS_DOCKER_IMAGE' in __ENV__ else False,
-        'description': "Leave unset if MMPM is not a docker image, and set to any value if it is. This dictates behavior and functionality of the CLI's 'mm-ctl' and GUI 'Control Center' "
-    }
+    'MMPM_MAGICMIRROR_ROOT': __ENV__['MMPM_MAGICMIRROR_ROOT'] if 'MMPM_MAGICMIRROR_ROOT' in __ENV__ else normpath(join(HOME_DIR, MAGICMIRROR)),
+    'MMPM_MAGICMIRROR_URI': __ENV__['MMPM_MAGICMIRROR_URI'] if 'MMPM_MAGICMIRROR_URI' in __ENV__ else 'http://localhost:8080',
+    'MMPM_MAGICMIRROR_PM2_PROCESS_NAME': __ENV__['MMPM_MAGICMIRROR_PM2_PROCESS_NAME'] if 'MMPM_MAGICMIRROR_PM2_PROCESS_NAME' in __ENV__ else MAGICMIRROR,
+    'MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE': __ENV__['MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE'] if 'MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE' in __ENV__ else '',
+    'MMPM_IS_DOCKER_IMAGE': __ENV__['MMPM_IS_DOCKER_IMAGE'] if 'MMPM_IS_DOCKER_IMAGE' in __ENV__ else False,
 }
 
 # at runtime they're constants, so they can stay here
-MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = MMPM_ENV['MMPM_MAGICMIRROR_PM2_PROCESS_NAME']['value']
-MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = MMPM_ENV['MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE']['value']
-MMPM_MAGICMIRROR_ROOT: str = normpath(MMPM_ENV['MMPM_MAGICMIRROR_ROOT']['value'])
-MMPM_MAGICMIRROR_URI: str = MMPM_ENV['MMPM_MAGICMIRROR_URI']['value']
-MMPM_IS_DOCKER_IMAGE: str = MMPM_ENV['MMPM_IS_DOCKER_IMAGE']['value']
+MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = MMPM_ENV.get('MMPM_MAGICMIRROR_PM2_PROCESS_NAME')
+MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = MMPM_ENV.get('MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE')
+MMPM_MAGICMIRROR_ROOT: str = normpath(MMPM_ENV.get('MMPM_MAGICMIRROR_ROOT'))
+MMPM_MAGICMIRROR_URI: str = MMPM_ENV.get('MMPM_MAGICMIRROR_URI')
+MMPM_IS_DOCKER_IMAGE: str = MMPM_ENV.get('MMPM_IS_DOCKER_IMAGE')
 
 MMPM_REPO_URL: str = "https://github.com/Bee-Mar/mmpm.git"
 MMPM_FILE_URL: str = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"

@@ -2,7 +2,7 @@
     style="height: 92%;"
     [options]="editorOptions"
     (onInit)="onEditorInit($event)"
-    [(ngModel)]="code[fileIndex]"
+    [(ngModel)]="fileSelection[fileIndex].code"
 >
 </ngx-monaco-editor>
 
@@ -36,11 +36,14 @@
       >
       <mat-icon>folder_open</mat-icon>
       <mat-menu #menu="matMenu" yPosition="below">
-        <button mat-menu-item (click)="loadConfigJs()">
+        <button mat-menu-item (click)="setFileIndexAndCookie(CONFIG_JS)">
           <code>config.js</code>
         </button>
-        <button mat-menu-item (click)="loadCustomCss()">
+        <button mat-menu-item (click)="setFileIndexAndCookie(CUSTOM_CSS)">
           <code>custom.css</code>
+        </button>
+        <button mat-menu-item (click)="setFileIndexAndCookie(MMPM_ENV_VARS_JSON)">
+          <code>mmpm-env.json</code>
         </button>
       </mat-menu>
     </button>

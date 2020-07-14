@@ -227,4 +227,8 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       URL.revokeObjectURL(url);
     }).catch((error) => console.log(error));
   }
+
+  public openUrl(url: string) {
+    window.open(url, '_blank');
+  }
 }

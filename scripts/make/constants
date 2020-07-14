@@ -2,7 +2,7 @@
 
 # this is going to be at the root of the project, since the make scripts are called from the root
 MMPM_LATEST_VERSION=$(git describe --tags --abbrev=0)
-MMPM_INSTALLATION_LOG="$(pwd)/mmpm-$MMPM_LATEST_VERSION-installation.log"
+MMPM_INSTALLATION_LOG=$(pwd)/mmpm-$MMPM_LATEST_VERSION-installation-$(date +"%Y-%m-%d").log
 
 # localhost ports for the server
 MMPM_LOCALHOST_PORT=7891

@@ -33,31 +33,48 @@
       </ul>
     </div>
     <ng-template #activeModulesNotFound>
-      <div style="text-align: center; margin-top: 50%;">
-        Unable to retrieve active modules. Please make sure MagicMirror is
-        running, and the <code>MMPM_MAGICMIRROR_URI</code> is correct
+      <div style="text-align: center; margin-top: 50%; margin-left: 3em; margin-right: 3em;">
+        <span style="font-size: 18px;">
+          Unable to retrieve active modules
+          <mat-icon style="color: yellow; font-size: 25px;">error</mat-icon>
+        </span>
+        <br>
+        <br>
+        <span style="font-size: 18px;">
+          Please make sure MagicMirror is running, and the <code>MMPM_MAGICMIRROR_URI</code> is correct
+        </span>
       </div>
     </ng-template>
   </div>
 
   <div style="height: 100%; width: 30%; float: right; background-color: #303030;">
     <h1 style="text-align: center; margin-top: 5%;">Resources</h1>
-    <div>
+    <div style="margin-left: 5em;">
       <ul style="list-style-type: none;">
         <li style="margin-bottom: 3%;">
-          <a href="{{ mmpmEnvVars?.get('MMPM_MAGICMIRROR_URI') }}" target="_blank">MagicMirror</a>
+          <button mat-button (click)="openUrl(mmpmEnvVars?.get('MMPM_MAGICMIRROR_URI'))">
+            <mat-icon>exit_to_app</mat-icon> MagicMirror
+          </button>
         </li>
         <li style="margin-bottom: 3%;">
-          <a href="https://github.com/Bee-Mar/mmpm/wiki" target="_blank">MMPM Wiki</a>
+          <button mat-button (click)="openUrl('https://github.com/Bee-Mar/mmpm/wiki')">
+            <mat-icon>exit_to_app</mat-icon> MMPM Wiki
+          </button>
         </li>
         <li style="margin-bottom: 3%;">
-          <a href="https://github.com/Bee-Mar/mmpm/issues/new" target="_blank">Create an Issue</a>
+          <button mat-button (click)="openUrl('https://github.com/Bee-Mar/mmpm/issues/new')">
+            <mat-icon style="top: 5px;">error_outline</mat-icon> Create an Issue
+          </button>
         </li>
         <li style="margin-bottom: 3%;">
-          <a href="https://github.com/MichMich/MagicMirror" target="_blank">MagicMirror GitHub</a>
+          <button mat-button (click)="openUrl('https://github.com/MichMich/MagicMirror')">
+            <mat-icon>exit_to_app</mat-icon> MagicMirror GitHub
+          </button>
         </li>
         <li style="margin-bottom: 3%;">
-          <a href="https://docs.magicmirror.builders/" target="_blank">MagicMirror Documentation</a>
+          <button mat-button (click)="openUrl('https://docs.magicmirror.builders/')">
+            <mat-icon>exit_to_app</mat-icon> MagicMirror Documentation
+          </button>
         </li>
       </ul>
     </div>
@@ -69,7 +86,7 @@
     </h1>
     <div>
       <ul style="list-style-type: none;">
-        <li *ngFor="let envVar of mmpmEnvVars | keyvalue" style="margin-bottom: 3%;">
+        <li *ngFor="let envVar of mmpmEnvVars | keyvalue" style="margin-bottom: 3%; margin-left: 1em; font-size: 13px;">
           <code>{{ envVar.key }}={{ envVar.value }}</code>
         </li>
       </ul>

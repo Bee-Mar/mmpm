@@ -1498,14 +1498,18 @@ def stop_magicmirror() -> bool:
         process = 'docker-compose'
 
     if command and process:
+        mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} {' '.join(command)} ")
         mmpm.utils.log.info(f"Using '{process}' to stop MagicMirror")
-        _, _, stderr = mmpm.utils.run_cmd(command, progress=False)
+        # pm2 and docker-compose cause the output to flip
+        error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False)
 
-        if stderr:
+        if error_code:
             mmpm.utils.env_variables_error_msg(stderr.strip())
+            print(mmpm.consts.RED_X)
             return False
 
         mmpm.utils.log.info(f"stopped MagicMirror using '{process}'")
+        print(mmpm.consts.GREEN_CHECK_MARK)
         return True
 
     mmpm.utils.kill_magicmirror_processes()
@@ -1537,14 +1541,17 @@ def start_magicmirror() -> bool:
         process = 'docker-compose'
 
     if command and process:
+        mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} {' '.join(command)} ")
         mmpm.utils.log.info(f"Using '{process}' to start MagicMirror")
-        error_code, _, stderr = mmpm.utils.run_cmd(command, background=True)
+        error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False)
 
         if error_code:
             mmpm.utils.env_variables_error_msg(stderr.strip())
+            print(mmpm.consts.RED_X)
             return False
 
         mmpm.utils.log.info(f"started MagicMirror using '{process}'")
+        print(mmpm.consts.GREEN_CHECK_MARK)
         return True
 
     os.chdir(mmpm.consts.MMPM_MAGICMIRROR_ROOT)
@@ -1579,14 +1586,18 @@ def restart_magicmirror() -> bool:
         process = 'docker-compose'
 
     if command and process:
+        mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} {' '.join(command)} ")
         mmpm.utils.log.info(f"Using '{process}' to restart MagicMirror")
-        _, _, stderr = mmpm.utils.run_cmd(command, progress=False)
+        # pm2 and docker-compose cause the output to flip
+        error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False)
 
-        if stderr:
+        if error_code:
             mmpm.utils.env_variables_error_msg(stderr.strip())
+            print(mmpm.consts.RED_X)
             return False
 
         mmpm.utils.log.info(f"restarted MagicMirror using '{process}'")
+        print(mmpm.consts.GREEN_CHECK_MARK)
         return True
 
     if not stop_magicmirror():

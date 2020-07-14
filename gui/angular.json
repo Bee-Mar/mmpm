@@ -25,6 +25,7 @@
             "aot": true,
             "assets": [
               "src/favicon.ico",
+              "src/assets/icons/paypal.svg",
               "src/assets",
               {
                 "glob": "**/*",
@@ -32,7 +33,7 @@
                 "output": "./assets/monaco/"
               }
             ],
-            "styles": ["src/styles.scss", "src/custom-theme.scss", "src/assets/icons/paypal.svg"],
+            "styles": ["src/styles.scss", "src/custom-theme.scss"],
             "scripts": []
           },
           "configurations": {

@@ -48,7 +48,7 @@ export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
     ActiveProcessCountTickerComponent,
     ActiveProcessesModalComponent,
     MMPMTableContainerComponent,
-    InstallationConflictResolutionDialogComponent
+    InstallationConflictResolutionDialogComponent,
   ],
   imports: [
     BrowserModule,

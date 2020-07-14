@@ -1533,7 +1533,7 @@ def start_magicmirror() -> bool:
         process = 'pm2'
 
     elif shutil.which('docker-compose') and mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
-        command = ['docker-compose', '-f', mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, 'start']
+        command = ['docker-compose', '-f', mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, 'up', '-d']
         process = 'docker-compose'
 
     if command and process:

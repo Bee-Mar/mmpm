@@ -338,15 +338,14 @@ def magicmirror_custom_css():
     if request.method == mmpm.consts.GET:
         if not os.path.exists(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE):
             try:
-                print('nada')
                 pathlib.Path(mmpm.consts.MAGICMIRROR_CUSTOM_DIR).mkdir(parents=True, exist_ok=True)
                 pathlib.Path(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE).touch(mode=0o664, exist_ok=True)
-                return f'/* {mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE} file not found. An empty file was created for you in its place */'
             except OSError:
-                pass
-        else:
-            result: str = send_file(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE, attachment_filename='custom.css')
+                message: str = f'/* File not found. Unable to create {mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE}. Is the MagicMirror directory owned by root? */'
+                mmpm.utils.log.error(message)
+                return message
 
+        result: str = send_file(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE, attachment_filename='custom.css')
         mmpm.utils.log.info(f'Retrieving MagicMirror {mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE}')
         return result
 

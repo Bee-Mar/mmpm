@@ -1498,14 +1498,14 @@ def stop_magicmirror() -> bool:
         process = 'docker-compose'
 
     if command and process:
-        mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} {' '.join(command)} ")
+        mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} stopping MagicMirror using {command[0]} ")
         mmpm.utils.log.info(f"Using '{process}' to stop MagicMirror")
         # pm2 and docker-compose cause the output to flip
         error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False)
 
         if error_code:
-            mmpm.utils.env_variables_error_msg(stderr.strip())
             print(mmpm.consts.RED_X)
+            mmpm.utils.env_variables_error_msg(stderr.strip())
             return False
 
         mmpm.utils.log.info(f"stopped MagicMirror using '{process}'")
@@ -1541,13 +1541,13 @@ def start_magicmirror() -> bool:
         process = 'docker-compose'
 
     if command and process:
-        mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} {' '.join(command)} ")
+        mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} starting MagicMirror using {command[0]} ")
         mmpm.utils.log.info(f"Using '{process}' to start MagicMirror")
         error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False)
 
         if error_code:
-            mmpm.utils.env_variables_error_msg(stderr.strip())
             print(mmpm.consts.RED_X)
+            mmpm.utils.env_variables_error_msg(stderr.strip())
             return False
 
         mmpm.utils.log.info(f"started MagicMirror using '{process}'")
@@ -1557,7 +1557,10 @@ def start_magicmirror() -> bool:
     os.chdir(mmpm.consts.MMPM_MAGICMIRROR_ROOT)
     mmpm.utils.log.info("Running 'npm start' in the background")
 
-    os.system('npm start &')
+    command: str = 'npm start &'
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} {command} ')
+    os.system(command)
+    print(mmpm.consts.GREEN_CHECK_MARK)
     mmpm.utils.log.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
     return True
 
@@ -1586,14 +1589,14 @@ def restart_magicmirror() -> bool:
         process = 'docker-compose'
 
     if command and process:
-        mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} {' '.join(command)} ")
+        mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} restarting MagicMirror using {command[0]} ")
         mmpm.utils.log.info(f"Using '{process}' to restart MagicMirror")
         # pm2 and docker-compose cause the output to flip
         error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False)
 
         if error_code:
-            mmpm.utils.env_variables_error_msg(stderr.strip())
             print(mmpm.consts.RED_X)
+            mmpm.utils.env_variables_error_msg(stderr.strip())
             return False
 
         mmpm.utils.log.info(f"restarted MagicMirror using '{process}'")

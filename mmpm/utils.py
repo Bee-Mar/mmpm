@@ -496,7 +496,9 @@ def kill_pids_of_process(process: str):
         processes (str): the processes IDs found
     '''
     log.info(f'Killing all processes of type {process}')
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} stopping MagicMirror electron processes ')
     os.system(f'for process in $(pgrep {process}); do kill -9 $process; done')
+    print(f'{mmpm.consts.GREEN_CHECK_MARK}')
 
 
 def kill_magicmirror_processes() -> None:

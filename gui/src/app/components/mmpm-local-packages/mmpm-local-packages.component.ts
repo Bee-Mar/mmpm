@@ -15,7 +15,6 @@ import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/cust
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
-import { URLS } from "src/app/utils/urls";
 
 @Component({
   selector: "app-mmpm-local-packages",
@@ -100,7 +99,9 @@ export class MMPMLocalPackagesComponent implements OnInit {
   }
 
   public onUninstallPackages(): void {
-    if (!this.selection?.selected?.length) return;
+    if (!this.selection?.selected?.length) {
+      return;
+    }
 
     const numPackages: number = this.selection.selected.length;
 
@@ -112,21 +113,23 @@ export class MMPMLocalPackagesComponent implements OnInit {
     });
 
     confirmationDialogRef.afterClosed().subscribe((yes) => {
-      if (!yes) return;
+      if (!yes) {
+        return;
+      }
+
       let ids: Array<number> = this.tableUtility.saveProcessIds(this.selection.selected, "Removing");
 
       this.snackbar.notify("Executing ...");
       const selected = this.selection.selected;
 
-      this.selection.clear();
+      this.selection.clear(); // clear out the checkboxes
 
       this.api.packagesRemove(selected).then((result: string) => {
         const failures: Array<object> = JSON.parse(result);
 
         if (failures.length) {
-          const pkg = failures.length == 1 ? "package" : "packages";
           this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings(failures));
-          this.snackbar.error(`Failed to remove ${failures.length} ${pkg}`);
+          this.snackbar.error(`Failed to remove ${failures.length} ${failures.length == 1 ? "package" : "packages"}`);
 
         } else {
           this.snackbar.success("Removed successfully!");
@@ -140,7 +143,9 @@ export class MMPMLocalPackagesComponent implements OnInit {
   }
 
   public onUpgradeModules(): void {
-    if (!this.selection?.selected?.length) return;
+    if (!this.selection?.selected?.length) {
+      return;
+    }
 
     const numPackages: number = this.selection.selected.length;
 
@@ -152,7 +157,9 @@ export class MMPMLocalPackagesComponent implements OnInit {
     });
 
     confirmationDialogRef.afterClosed().subscribe((yes) => {
-      if (!yes) return;
+      if (!yes) {
+        return;
+      }
 
       this.snackbar.notify("Executing ...");
 
@@ -160,9 +167,8 @@ export class MMPMLocalPackagesComponent implements OnInit {
         fails = JSON.parse(fails);
 
         if (fails.length) {
-          const pkg = fails.length == 1 ? "package" : "packages";
           this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings(fails));
-          this.snackbar.error(`Failed to upgrade ${fails.length} ${pkg}`);
+          this.snackbar.error(`Failed to upgrade ${fails.length} ${fails.length == 1 ? "package" : "packages"}`);
         } else {
           this.snackbar.success("Upgraded selected modules successfully!");
         }

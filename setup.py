@@ -28,8 +28,7 @@ class InitializeDefaultFilesCommand(distutils.cmd.Command):
 
         if not bool(os.stat(mmpm.consts.MMPM_ENV_FILE).st_size):
             with open(mmpm.consts.MMPM_ENV_FILE, 'w') as env:
-                json.dump(
-                    {key: mmpm.consts.MMPM_ENV[key]['value'] for key in mmpm.consts.MMPM_ENV}, env)
+                json.dump({key: mmpm.consts.MMPM_ENV[key]['value'] for key in mmpm.consts.MMPM_ENV}, env)
 
 
 class InstallRequirements(distutils.cmd.Command):

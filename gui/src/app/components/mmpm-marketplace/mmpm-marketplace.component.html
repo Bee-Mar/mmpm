@@ -10,8 +10,9 @@
     [dataSource]="dataSource"
     class="mat-elevation-z8"
     style="margin: 0 auto; width: 90vw; position: relative;"
-    > <ng-container matColumnDef="select">
+    >
 
+    <ng-container matColumnDef="select">
       <th mat-header-cell *matHeaderCellDef>
         <mat-checkbox
           color="primary"
@@ -95,7 +96,7 @@
       mat-raised-button
       color="primary"
       [disabled]="!selection?.selected?.length || !allPackages?.length"
-      matTooltip="{{ selection?.selected?.length === 1 ? 'Install package' : 'Install packages' }}"
+      matTooltip="Install packages"
       [matTooltipPosition]="tableUtility?.tooltipPosition"
       (click)="onInstallPackages()"
       >
@@ -107,9 +108,9 @@
     <button
       color="accent"
       mat-raised-button
-      matTooltip="Refresh Marketplace"
+      matTooltip="Refresh marketplace"
       [matTooltipPosition]="tableUtility?.tooltipPosition"
-      style="margin-left: 3em;"
+      style="margin-left: 5em;"
       (click)="onRefreshPackages()"
       >
       <mat-icon>

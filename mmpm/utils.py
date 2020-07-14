@@ -510,7 +510,7 @@ def kill_magicmirror_processes() -> None:
         None
     '''
 
-    processes = ['node', 'npm', 'electron']
+    processes = ['electron']
 
     log.info('Killing processes associated with MagicMirror: {processes}')
 
@@ -924,11 +924,7 @@ def is_magicmirror_running() -> bool:
     Returns:
         running (bool): True if running, False if not
     '''
-    return bool(mmpm.utils.get_pids('node') and
-                mmpm.utils.get_pids('npm') and
-                mmpm.utils.get_pids('electron') or
-                mmpm.utils.get_pids('pm2')
-                )
+    return bool(mmpm.utils.get_pids('electron') or mmpm.utils.get_pids('pm2'))
 
 
 def socketio_client_factory():

@@ -1,8 +1,9 @@
 import { Component, OnInit } from "@angular/core";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { MatDialog } from "@angular/material/dialog";
+import { MatDialog, MatDialogConfig } from "@angular/material/dialog";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
+import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
 import { DataStoreService } from "src/app/services/data-store.service";
 import { URLS } from "src/app/utils/urls";
 import { ActiveModule } from "src/app/interfaces/interfaces";
@@ -13,7 +14,8 @@ interface Tile {
   icon: string;
   cols: number;
   rows: number;
-  tooltip: string;
+  visibleTooltip: string;
+  disabledTooltip: string;
   message: string;
   url: string;
   disabled: boolean;
@@ -27,17 +29,21 @@ interface Tile {
 export class MagicMirrorControlCenterComponent implements OnInit {
   constructor(
     private api: RestApiService,
-    private snackbar: MatSnackBar,
+    private _snackbar: MatSnackBar,
     private dataStore: DataStoreService,
     public dialog: MatDialog,
   ) {}
 
   public socket: any;
-  public magicMirrorIsUpgrable: boolean = false;
   public activeModules: Array<ActiveModule>;
   public mmpmEnvVars: Map<string, string>;
+  private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this._snackbar);
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
+    this.loadControlCenterData();
+  }
+
+  public loadControlCenterData(): void {
     this.activeModules = new Array<ActiveModule>();
 
     this.api.retrieve(URLS.GET.MMPM.ENVIRONMENT_VARS).then((envVars: any) => {
@@ -78,11 +84,20 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       this.socket.on("error", (data: any) => console.log(data));
 
       this.dataStore.upgradeablePackages.subscribe((upgradeable: object) => {
-        this.magicMirrorIsUpgrable = upgradeable["MagicMirror"];
+        this.tiles.forEach((t) => {
+          if (t.url === URLS.GET.MAGICMIRROR.UPGRADE) {
+            t.disabled = !upgradeable["MagicMirror"];
+
+            if (!mmpmIsDockerImage) {
+              t.disabledTooltip = "No upgrades available for MagicMirror"
+            }
+          }
+        });
       });
 
     }).catch((error) => console.log(error));
   }
+
 
   public ngOnDestroy(): void {
     this.socket.disconnect();
@@ -96,15 +111,11 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     }
   }
 
-  private liveTerminalFeedDialogSettings: object = {
-    width: "75vw",
-    height: "75vh"
-  };
-
   public tiles: Tile[] = [
     {
       icon: "live_tv",
-      tooltip: "Start MagicMirror",
+      visibleTooltip: "Start MagicMirror",
+      disabledTooltip: "Unable to start MagicMirror within a Docker image",
       cols: 1,
       rows: 1,
       url: URLS.GET.MAGICMIRROR.START,
@@ -113,7 +124,8 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     },
     {
       icon: "tv_off",
-      tooltip: "Stop MagicMirror",
+      visibleTooltip: "Stop MagicMirror",
+      disabledTooltip: "Unable to stop MagicMirror within a Docker image",
       cols: 1,
       rows: 1,
       url: URLS.GET.MAGICMIRROR.STOP,
@@ -122,7 +134,8 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     },
     {
       icon: "refresh",
-      tooltip: "Restart MagicMirror",
+      visibleTooltip: "Restart MagicMirror",
+      disabledTooltip: "Unable to restart MagicMirror within a Docker image",
       cols: 1,
       rows: 1,
       url: URLS.GET.MAGICMIRROR.RESTART,
@@ -131,16 +144,18 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     },
     {
       icon: "system_update",
-      tooltip: "Upgrade MagicMirror",
+      visibleTooltip: "Upgrade MagicMirror",
+      disabledTooltip: "Unable to upgrade MagicMirror within a Docker image",
       cols: 1,
       rows: 1,
       url: URLS.GET.MAGICMIRROR.UPGRADE,
       message: "MagicMirror will be upgraded and restarted, if running.",
-      disabled: !this.magicMirrorIsUpgrable,
+      disabled: false,
     },
     {
       icon: "power_settings_new",
-      tooltip: "Restart RaspberryPi",
+      visibleTooltip: "Restart RaspberryPi",
+      disabledTooltip: "Unable to restart RaspberryPi within a Docker image",
       cols: 1,
       rows: 1,
       url: URLS.GET.RASPBERRYPI.RESTART,
@@ -149,7 +164,8 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     },
     {
       icon: "power_off",
-      tooltip: "Shutdown RaspberryPi",
+      visibleTooltip: "Shutdown RaspberryPi",
+      disabledTooltip: "Unable to shutdown RaspberryPi within a Docker image",
       cols: 1,
       rows: 1,
       url: URLS.GET.RASPBERRYPI.STOP,
@@ -158,40 +174,23 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     },
   ];
 
-  private snackbarSettings: object = { duration: 5000 };
-
-  private working = () => {
-    this.snackbar.open(
-      "This may take a moment ...",
-      "Close",
-      this.snackbarSettings
-    );
-  };
-
-  private executed = () => {
-    this.snackbar.open("Process executed", "Close", this.snackbarSettings);
-  };
-
-  private magicMirrorRunningAlready = () => {
-    this.snackbar.open(
-      "MagicMirror appears to be running already. If this is a mistake, stop, then start MagicMirror.",
-      "Close",
-      this.snackbarSettings
-    );
-  };
+  private working = () => this.snackbar.notify("This may take a moment ...");
+  private executed = () => this.snackbar.notify("Process executed");
+  private magicMirrorRunningAlready = () => this.snackbar.error("MagicMirror appears to be running already. If this is a mistake, stop, then start MagicMirror.");
 
   public sendControlSignal(url: string, message: string): void {
-
-    const data = {
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       height: "15vh",
       width: "33vw",
-      data: { message }
-    };
-
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, data);
+      data: {
+        message
+      }
+    });
 
     dialogRef.afterClosed().subscribe((response) => {
-      if (!response) return;
+      if (!response) {
+        return;
+      }
 
       if (url === URLS.GET.MAGICMIRROR.UPGRADE) {
         console.log("FIXME");
@@ -203,6 +202,8 @@ export class MagicMirrorControlCenterComponent implements OnInit {
         } else {
           url === URLS.GET.MAGICMIRROR.RESTART ? this.working() : this.executed();
         }
+
+        this.loadControlCenterData();
       }).catch((error) => { console.log(error); });
     });
   }

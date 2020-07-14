@@ -12,7 +12,6 @@
     style="margin: 0 auto; width: 90vw; position: relative;"
   >
     <ng-container matColumnDef="select">
-
       <th mat-header-cell *matHeaderCellDef>
         <mat-checkbox
           color="primary"
@@ -83,7 +82,7 @@
     mat-raised-button
     color="primary"
     [disabled]="(!upgradeablePackages?.length || !selection?.selected?.length)"
-    matTooltip="{{ selection?.selected?.length === 1 ? 'Upgrade package' : 'Upgrade packages' }}"
+    matTooltip="{{ !upgradeablePackages?.length ? 'No upgrades available' : 'Upgrade packages' }}"
     [matTooltipPosition]="tableUtility?.tooltipPosition"
     (click)="onUpgradeModules()"
   >
@@ -95,8 +94,8 @@
   <button
     mat-raised-button
     color="accent"
-    style="margin-left: 3em;"
-    matTooltip="{{ selection?.selected?.length === 1 ? 'Uninstall package' : 'Uninstall packages' }}"
+    style="margin-left: 5em;"
+    matTooltip="Uninstall packages"
     [matTooltipPosition]="tableUtility?.tooltipPosition"
     (click)="onUninstallPackages()"
     [disabled]="!selection?.selected?.length || !packages?.length"

@@ -58,7 +58,6 @@ export class MMPMLocalPackagesComponent implements OnInit {
       this.mmpmUtility.setCookie(this.mmpmLocalPackagesPageSizeCookie, "10");
     }
 
-
     this.paginator.pageSize = Number(this.mmpmUtility.getCookie(this.mmpmLocalPackagesPageSizeCookie));
   }
 

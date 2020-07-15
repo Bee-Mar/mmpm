@@ -1114,9 +1114,9 @@ def get_available_upgrades() -> dict:
 
 def get_installed_packages(packages: Dict[str, List[MagicMirrorPackage]]) -> Dict[str, List[MagicMirrorPackage]]:
     '''
-    Saves a list of all currently installed packages in the
-    ~/MagicMirror/modules directory, and compares against the known packages
-    from the MagicMirror 3rd Party Wiki.
+    Scans the list <MMPM_MAGICMIRROR_ROOT>/modules directory, and compares
+    against the known packages from the MagicMirror 3rd Party Wiki. Returns a
+    dictionary of all found packages
 
     Parameters:
         packages (Dict[str, List[MagicMirrorPackage]]): Dictionary of MagicMirror packages

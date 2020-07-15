@@ -64,29 +64,29 @@ export class DataStoreService {
       }).catch((error) => console.log(error));
     }).catch((error) => console.log(error));
 
-    this.api.retrieve(URLS.GET.PACKAGES.MARKETPLACE).then((allPkgs: Array<MagicMirrorPackage>) => {
-      this.api.retrieve(URLS.GET.PACKAGES.INSTALLED).then((installedPkgs: Array<MagicMirrorPackage>) => {
-        this.api.retrieve(URLS.GET.PACKAGES.EXTERNAL).then((extPkgs: Array<MagicMirrorPackage>) => {
+    this.api.retrieve(URLS.GET.PACKAGES.MARKETPLACE).then((marketkplace: Array<MagicMirrorPackage>) => {
+      this.api.retrieve(URLS.GET.PACKAGES.INSTALLED).then((installed: Array<MagicMirrorPackage>) => {
+        this.api.retrieve(URLS.GET.PACKAGES.EXTERNAL).then((external: Array<MagicMirrorPackage>) => {
 
-          extPkgs = this.fill(extPkgs);
-          installedPkgs = this.fill(installedPkgs);
+          external = this.fill(external);
+          installed = this.fill(installed);
 
-          allPkgs = [...this.fill(allPkgs), ...extPkgs];
+          marketkplace = [...this.fill(marketkplace), ...external];
 
           // removing all the packages that are currently installed from the list of available packages
-          for (const installedPkg of installedPkgs) {
-            let index: number = allPkgs.findIndex((available: MagicMirrorPackage) => {
+          for (const installedPkg of installed) {
+            let index: number = marketkplace.findIndex((available: MagicMirrorPackage) => {
               return this.isSamePackage(available, installedPkg)
             });
 
             if (index > -1) {
-              allPkgs.splice(index, 1);
+              marketkplace.splice(index, 1);
             }
           }
 
-          this._marketplacePackages.next(allPkgs);
-          this._installedPackages.next(installedPkgs);
-          this._externalPackages.next(extPkgs);
+          this._marketplacePackages.next(marketkplace);
+          this._installedPackages.next(installed);
+          this._externalPackages.next(external);
 
         }).catch((error) => console.log(error));
       }).catch((error) => console.log(error));

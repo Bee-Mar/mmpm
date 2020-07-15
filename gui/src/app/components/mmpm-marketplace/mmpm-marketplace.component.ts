@@ -119,7 +119,7 @@ export class MMPMMarketplaceComponent implements OnInit {
     return promise;
   }
 
-  private installPackages(selected: MagicMirrorPackage[]) {
+  private installPackages(selected: MagicMirrorPackage[]): void {
     let ids: Array<number> = this.tableUtility.saveProcessIds(selected, "[ Installation ]");
 
     this.api.packagesInstall(selected).then((failures: string) => {
@@ -136,6 +136,7 @@ export class MMPMMarketplaceComponent implements OnInit {
       }
 
       this.tableUtility.deleteProcessIds(ids);
+      this.dataStore.loadData();
 
     }).catch((error) => console.log(error));
   }
@@ -188,8 +189,8 @@ export class MMPMMarketplaceComponent implements OnInit {
               selected.splice(selected.findIndex((pkg: MagicMirrorPackage) => this.mmpmUtility.isSamePackage(pkg, remove)), 1);
             }
 
+            console.log(selected);
             this.installPackages(selected);
-            this.dataStore.loadData();
             console.log('here')
           });
         }

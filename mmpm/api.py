@@ -11,7 +11,7 @@ import datetime
 from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
 from flask_socketio import SocketIO
-from typing import Tuple, List
+from typing import Tuple, List, Callable
 
 import mmpm.utils
 import mmpm.consts
@@ -19,16 +19,9 @@ import mmpm.core
 import mmpm.models
 
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
-get_env = mmpm.utils.get_env
+get_env: Callable = mmpm.utils.get_env
 
-MMPM_EXECUTABLE: list = [os.path.join(mmpm.consts.HOME_DIR, '.local', 'bin', 'mmpm')]
-
-app = Flask(
-    __name__,
-    root_path='/var/www/mmpm',
-    static_folder="/var/www/mmpm/static",
-)
-
+app = Flask(__name__, root_path='/var/www/mmpm', static_folder="/var/www/mmpm/static")
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 resources: dict = {
@@ -119,31 +112,31 @@ def root() -> str:
 
 
 @app.errorhandler(500)
-def server_error(error) -> Tuple[str, int]:
-    return f'An internal error occurred [{__name__}.py]: {error}', 500
+def server_error(error) -> Response:
+    return Response(f'An internal error occurred [{__name__}.py]: {error}', status=500)
 
 
 #  -- START: PACKAGES --
 @app.route(api('packages/marketplace'), methods=[mmpm.consts.GET])
-def packages_marketplace() -> str:
+def packages_marketplace() -> Response:
     mmpm.utils.log.info('Sending all marketplace packages')
-    return json.dumps(_packages_, default=lambda pkg: pkg.serialize_full())
+    return Response(json.dumps(_packages_, default=lambda pkg: pkg.serialize_full()))
 
 
 @app.route(api('packages/installed'), methods=[mmpm.consts.GET])
-def packages_installed() -> str:
+def packages_installed() -> Response:
     mmpm.utils.log.info('Sending all installed packages')
-    return json.dumps(mmpm.core.get_installed_packages(_packages_), default=lambda pkg: pkg.serialize_full())
+    return Response(json.dumps(mmpm.core.get_installed_packages(_packages_), default=lambda pkg: pkg.serialize_full()))
 
 
 @app.route(api('packages/external'), methods=[mmpm.consts.GET])
-def packages_external() -> str:
+def packages_external() -> Response:
     mmpm.utils.log.info('Sending all external packages')
-    return json.dumps(mmpm.core.load_external_packages(), default=lambda pkg: pkg.serialize_full())
+    return Response(json.dumps(mmpm.core.load_external_packages(), default=lambda pkg: pkg.serialize_full()))
 
 
 @app.route(api('packages/install'), methods=[mmpm.consts.POST])
-def packages_install() -> str:
+def packages_install() -> Response:
     selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
     mmpm.utils.log.info(f'User selected {selected_packages} to be installed')
     failures: List[dict] = []
@@ -157,11 +150,11 @@ def packages_install() -> str:
         else:
             mmpm.utils.log.info(f'Installed {package.title}')
 
-    return json.dumps(failures)
+    return Response(json.dumps(failures))
 
 
 @app.route(api('packages/remove'), methods=[mmpm.consts.POST])
-def packages_remove() -> str:
+def packages_remove() -> Response:
     selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
     mmpm.utils.log.info(f'User selected {selected_packages} to be removed')
     failures: List[dict] = []
@@ -174,11 +167,11 @@ def packages_remove() -> str:
         os.system(f"rm -rf '{package.directory}'")
         mmpm.utils.log.info(f'Removed {package.directory}')
 
-    return json.dumps(failures)
+    return Response(json.dumps(failures))
 
 
 @app.route(api('packages/upgrade'), methods=[mmpm.consts.POST])
-def packages_upgrade() -> str:
+def packages_upgrade() -> Response:
     selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
     mmpm.utils.log.info(f'Request to upgrade {selected_packages}')
 
@@ -191,23 +184,23 @@ def packages_upgrade() -> str:
             failures.append({'package': package.serialize(), 'error': error})
 
     mmpm.utils.log.info('Finished executing upgrades')
-    return json.dumps(failures)
+    return Response(json.dumps(failures))
 
 
 @app.route(api('packages/update'), methods=[mmpm.consts.GET])
-def packages_update() -> str:
+def packages_update() -> Response:
     try:
         mmpm.core.check_for_package_updates(_packages_)
         mmpm.core.check_for_mmpm_updates()
         mmpm.core.check_for_magicmirror_updates()
     except Exception as error:
         mmpm.utils.log.error(str(error))
-        return json.dumps(False)
+        return Response(json.dumps(False))
 
-    return json.dumps(True)
+    return Response(json.dumps(True))
 
 @app.route(api('packages/upgradeable'), methods=[mmpm.consts.GET])
-def packages_upgradeable() -> str:
+def packages_upgradeable() -> Response:
     mmpm.utils.log.info('Request to get upgradeable packages')
     available_upgrades: dict = mmpm.core.get_available_upgrades()
 
@@ -218,11 +211,11 @@ def packages_upgradeable() -> str:
             ]
 
     MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV)))
-    return json.dumps(available_upgrades[MMPM_MAGICMIRROR_ROOT])
+    return Response(json.dumps(available_upgrades[MMPM_MAGICMIRROR_ROOT]))
 
 
 @app.route(api('packages/details'), methods=[mmpm.consts.POST])
-def packages_details() -> str:
+def packages_details() -> Response:
     selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
     mmpm.utils.log.info(f'Request to get verbose details about {selected_packages}')
 
@@ -241,13 +234,13 @@ def packages_details() -> str:
             })
 
     mmpm.utils.log.info('Finished retrieving verbose details for packages')
-    return json.dumps(result)
+    return Response(json.dumps(result))
 #  -- END: PACKAGES --
 
 
 #  -- START: EXTERNAL PACKAGES --
 @app.route(api('external-packages/add'), methods=[mmpm.consts.POST])
-def external_packages_add() -> str:
+def external_packages_add() -> Response:
     package: dict = request.get_json(force=True)['external-package']
 
     failures: List[dict] = []
@@ -260,11 +253,11 @@ def external_packages_add() -> str:
     )
 
     failures.append({'package': package, 'error': error})
-    return json.dumps({'error': "no_error" if not error else error})
+    return Response(json.dumps({'error': "no_error" if not error else error}))
 
 
 @app.route(api('external-packages/remove'), methods=[mmpm.consts.DELETE])
-def external_packages_remove() -> str:
+def external_packages_remove() -> Response:
     selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request, 'external-packages')
     mmpm.utils.log.info('Request to remove external sources')
 
@@ -285,35 +278,36 @@ def external_packages_remove() -> str:
     try:
         with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as mmpm_ext_srcs:
             json.dump(ext_packages, mmpm_ext_srcs)
+
         mmpm.utils.log.info(f'Wrote updated external modules to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
+
     except IOError as error:
         mmpm.utils.log.error(error)
-        return json.dumps({'error': str(error)})
+        return Response(json.dumps({'error': str(error)}))
 
     mmpm.utils.log.info(f'Wrote external modules to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
-    return json.dumps({'error': "no_error"})
+    return Response(json.dumps({'error': "no_error"}))
 #  -- END: EXTERNAL PACKAGES --
 
 
 #  -- START: MAGICMIRROR --
 @app.route(api('magicmirror/config'), methods=[mmpm.consts.GET, mmpm.consts.POST])
-def magicmirror_config() -> str:
+def magicmirror_config() -> Response:
     if request.method == mmpm.consts.GET:
         MAGICMIRROR_CONFIG_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'config')
         MAGICMIRROR_CONFIG_FILE: str = os.path.join(MAGICMIRROR_CONFIG_DIR, 'config.js')
 
         if not os.path.exists(MAGICMIRROR_CONFIG_FILE):
+            does_not_exist: str = f'// {MAGICMIRROR_CONFIG_FILE} not found. An empty file was created for you in its place'
             try:
                 pathlib.Path(MAGICMIRROR_CONFIG_DIR).mkdir(parents=True, exist_ok=True)
                 pathlib.Path(MAGICMIRROR_CONFIG_FILE).touch(mode=0o664, exist_ok=True)
-                return f'// {MAGICMIRROR_CONFIG_FILE} not found. An empty file was created for you in its place'
+                return Response(does_not_exist)
             except OSError:
-                pass
-        else:
-            result: str = send_file(MAGICMIRROR_CONFIG_FILE, attachment_filename='config.js')
+                return Response(does_not_exist)
 
         mmpm.utils.log.info('Retrieving MagicMirror config')
-        return result
+        return send_file(MAGICMIRROR_CONFIG_FILE, attachment_filename='config.js')
 
     data: dict = request.get_json(force=True)
     mmpm.utils.log.info('Saving MagicMirror config file')
@@ -322,13 +316,13 @@ def magicmirror_config() -> str:
         with open(MAGICMIRROR_CONFIG_FILE, 'w') as config:
             config.write(data.get('code'))
     except IOError:
-        return json.dumps(False)
+        return Response(json.dumps(False))
 
-    return json.dumps(True)
+    return Response(json.dumps(True))
 
 
 @app.route(api('magicmirror/custom-css'), methods=[mmpm.consts.GET, mmpm.consts.POST])
-def magicmirror_custom_css() -> str:
+def magicmirror_custom_css() -> Response:
     if request.method == mmpm.consts.GET:
         MAGICMIRROR_CUSTOM_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'custom')
         MAGICMIRROR_CUSTOM_CSS_FILE: str = os.path.join(MAGICMIRROR_CUSTOM_DIR, 'custom.css')
@@ -340,11 +334,10 @@ def magicmirror_custom_css() -> str:
             except OSError:
                 message: str = f'/* File not found. Unable to create {MAGICMIRROR_CUSTOM_CSS_FILE}. Is the MagicMirror directory owned by root? */'
                 mmpm.utils.log.error(message)
-                return message
+                return Response(message)
 
-        result: str = send_file(MAGICMIRROR_CUSTOM_CSS_FILE, attachment_filename='custom.css')
         mmpm.utils.log.info(f'Retrieving MagicMirror {MAGICMIRROR_CUSTOM_CSS_FILE}')
-        return result
+        return send_file(MAGICMIRROR_CUSTOM_CSS_FILE, attachment_filename='custom.css')
 
     # POST
     data: dict = request.get_json(force=True)
@@ -354,13 +347,13 @@ def magicmirror_custom_css() -> str:
         with open(MAGICMIRROR_CUSTOM_CSS_FILE, 'w') as custom_css:
             custom_css.write(data.get('code'))
     except IOError:
-        return json.dumps(False)
+        return Response(json.dumps(False))
 
-    return json.dumps(True)
+    return Response(json.dumps(True))
 
 
 @app.route(api('magicmirror/start'), methods=[mmpm.consts.GET])
-def magicmirror_start() -> str:
+def magicmirror_start() -> Response:
     '''
     Restart the MagicMirror by killing all associated processes, the
     re-running the startup script for MagicMirror
@@ -377,15 +370,15 @@ def magicmirror_start() -> str:
     # if these processes are all running, we assume MagicMirror is running currently
     if mmpm.utils.is_magicmirror_running():
         mmpm.utils.log.info('MagicMirror appears to be running already. Returning False.')
-        return json.dumps(False)
+        return Response(json.dumps(False))
 
     mmpm.utils.log.info('MagicMirror does not appear to be running currently. Returning True.')
     mmpm.core.start_magicmirror()
-    return json.dumps(True)
+    return Response(json.dumps(True))
 
 
 @app.route(api('magicmirror/restart'), methods=[mmpm.consts.GET])
-def magicmirror_restart() -> str:
+def magicmirror_restart() -> Response:
     '''
     Restart the MagicMirror by killing all associated processes, then
     re-running the startup script for MagicMirror
@@ -398,11 +391,11 @@ def magicmirror_restart() -> str:
     '''
     # same issue as the start-magicmirror api call
     mmpm.core.restart_magicmirror()
-    return json.dumps(True)
+    return Response(json.dumps(True))
 
 
 @app.route(api('magicmirror/stop'), methods=[mmpm.consts.GET])
-def magicmirror_stop() -> str:
+def magicmirror_stop() -> Response:
     '''
     Stop the MagicMirror by killing all associated processes
 
@@ -414,11 +407,11 @@ def magicmirror_stop() -> str:
     '''
     # same sort of issue as the start-magicmirror call
     mmpm.core.stop_magicmirror()
-    return json.dumps(True)
+    return Response(json.dumps(True))
 
 
 @app.route(api('magicmirror/upgrade'), methods=[mmpm.consts.GET])
-def magicmirror_upgrade() -> str:
+def magicmirror_upgrade() -> Response:
     mmpm.utils.log.info('Request to upgrade MagicMirror')
     mmpm.utils.log.info('Finished installing')
 
@@ -427,13 +420,13 @@ def magicmirror_upgrade() -> str:
     if mmpm.utils.is_magicmirror_running():
         mmpm.core.restart_magicmirror()
 
-    return json.dumps(True)
+    return Response(json.dumps(True))
 #  -- END: MAGICMIRROR --
 
 
 #  -- START: RASPBERRYPI --
 @app.route(api('raspberrypi/restart'), methods=[mmpm.consts.GET])
-def raspberrypi_restart() -> str:
+def raspberrypi_restart() -> Response:
     '''
     Reboot the RaspberryPi
 
@@ -448,11 +441,11 @@ def raspberrypi_restart() -> str:
     mmpm.core.stop_magicmirror()
     error_code, _, _ = mmpm.utils.run_cmd(['sudo', 'reboot'])
     # if success, it'll never get the response, but we'll know if it fails
-    return json.dumps(bool(not error_code))
+    return Response(json.dumps(bool(not error_code)))
 
 
 @app.route(api('raspberrypi/stop'), methods=[mmpm.consts.GET])
-def raspberrypi_stop() -> str:
+def raspberrypi_stop() -> Response:
     '''
     Shut down the RaspberryPi
 
@@ -467,13 +460,13 @@ def raspberrypi_stop() -> str:
     # if success, we'll never get the response, but we'll know if it fails
     mmpm.core.stop_magicmirror()
     error_code, _, _ = mmpm.utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
-    return json.dumps(bool(not error_code))
+    return Response(json.dumps(bool(not error_code)))
 #  -- END: RASPBERRYPI --
 
 
 #  -- START: MMPM --
 @app.route(api('mmpm/download-logs'), methods=[mmpm.consts.GET])
-def download_log_files():
+def download_log_files() -> Response:
     os.chdir('/tmp')
     today = datetime.datetime.now()
     zip_file_name = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
@@ -482,7 +475,7 @@ def download_log_files():
 
 
 @app.route(api('mmpm/environment-vars'), methods=[mmpm.consts.GET])
-def mmpm_environment_vars() -> str:
+def mmpm_environment_vars() -> Response:
     env_vars: dict = {}
 
     with open(mmpm.consts.MMPM_ENV_FILE, 'r') as env:
@@ -491,14 +484,13 @@ def mmpm_environment_vars() -> str:
         except json.JSONDecodeError:
             pass
 
-    return json.dumps(env_vars)
+    return Response(json.dumps(env_vars))
 
 
 @app.route(api('mmpm/environment-vars-file'), methods=[mmpm.consts.GET, mmpm.consts.POST])
-def mmpm_environment_vars_file() -> str:
+def mmpm_environment_vars_file() -> Response:
     if request.method == mmpm.consts.GET:
-        result: str = send_file(mmpm.consts.MMPM_ENV_FILE, attachment_filename='mmpm-env.json')
-        return result
+        return send_file(mmpm.consts.MMPM_ENV_FILE, attachment_filename='mmpm-env.json')
 
     data: dict = request.get_json(force=True)
     mmpm.utils.log.info('Saving MMPM environment variables file')
@@ -507,6 +499,6 @@ def mmpm_environment_vars_file() -> str:
         with open(mmpm.consts.MMPM_ENV_FILE, 'w') as config:
             config.write(data.get('code'))
     except IOError:
-        return json.dumps(False)
+        return Response(json.dumps(False))
 
-    return json.dumps(True)
+    return Response(json.dumps(True))

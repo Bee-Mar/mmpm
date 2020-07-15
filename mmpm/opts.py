@@ -467,7 +467,7 @@ def get_user_args() -> object:
     )
 
     # ENV SUBCOMMANDS
-    env_parser = subparsers.add_parser(
+    subparsers.add_parser(
         ENV,
         usage='\n  mmpm env',
         help='display the MMPM environment variables and their value(s)'

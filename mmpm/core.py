@@ -50,7 +50,7 @@ def database_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     print(mmpm.color.normal_green('Packages available:'), f'{num_packages}')
 
 
-def check_for_mmpm_updates(assume_yes=False, gui=False, automated=False) -> bool:
+def check_for_mmpm_updates(gui=False, automated=False) -> bool:
     '''
     Scrapes the main file of MMPM off the github repo, and compares the current
     version, versus the one available in the master branch. If there is a newer
@@ -62,7 +62,7 @@ def check_for_mmpm_updates(assume_yes=False, gui=False, automated=False) -> bool
     Returns:
         bool: True on success, False on failure
     '''
-    import mmpm.mmpm
+    import mmpm.mmpm # pylint: disable=redefined-outer-name
 
     try:
         cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
@@ -113,9 +113,9 @@ def check_for_mmpm_updates(assume_yes=False, gui=False, automated=False) -> bool
     return True
 
 
-def upgrade_mmpm(assume_yes: bool = False) -> bool:
+def upgrade_mmpm() -> bool:
 
-    mmpm.utils.log.info(f'User chose to update MMPM')
+    mmpm.utils.log.info('User chose to update MMPM')
 
     print(f"{mmpm.consts.GREEN_PLUS} Upgrading {mmpm.color.normal_green('MMPM')}")
     os.system('rm -rf /tmp/mmpm')
@@ -134,7 +134,7 @@ def upgrade_mmpm(assume_yes: bool = False) -> bool:
     return True
 
 
-def upgrade_package(package: MagicMirrorPackage, assume_yes: bool = False) -> str:
+def upgrade_package(package: MagicMirrorPackage) -> str:
     '''
     Depending on flags passed in as arguments:
 
@@ -195,7 +195,7 @@ def upgrade_available(assume_yes: bool = False, selection: List[str] = []) -> bo
         if selection:
             valid_pkgs: List[MagicMirrorPackage] = [pkg for pkg in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] if pkg.title in selection]
 
-            if not valid_pkgs and not mmpm.consts.MMPM in selection or not mmpm.consts.MAGICMIRROR not in selection:
+            if not valid_pkgs and mmpm.consts.MMPM not in selection or not mmpm.consts.MAGICMIRROR not in selection:
                 mmpm.utils.error_msg(f'Unable to match {selection} to a package/application with available upgrades')
 
             for package in valid_pkgs:
@@ -446,12 +446,10 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
         bool: True upon success, False upon failure
     '''
 
-    errors: List[dict] = []
-
     MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules'))
 
     if not os.path.exists(MAGICMIRROR_MODULES_DIR):
-        mmpm.utils.error_msg(f'MagicMirror directory not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
+        mmpm.utils.error_msg('MagicMirror directory not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
         return False
 
     if not installation_candidates:
@@ -505,7 +503,7 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
     if not successes:
         return False
 
-    print(f'Run `mmpm open --config` to edit the configuration for newly installed modules')
+    print('Run `mmpm open --config` to edit the configuration for newly installed modules')
     return True
 
 
@@ -568,12 +566,12 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
     return True, str()
 
 
-def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
+def check_for_magicmirror_updates() -> bool:
     '''
     Checks for updates available to the MagicMirror repository. Alerts user if an upgrade is available.
 
     Parameters:
-        assume_yes (bool): if True, assume yes for user response, and do not display prompt
+        None
 
     Returns:
         bool: True upon success, False upon failure
@@ -581,7 +579,7 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
     MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
 
     if not os.path.exists(MMPM_MAGICMIRROR_ROOT):
-        mmpm.utils.error_msg(f'MagicMirror application directory not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
+        mmpm.utils.error_msg('MagicMirror application directory not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
         return False
 
     is_git: bool = True
@@ -668,7 +666,7 @@ def upgrade_magicmirror() -> bool:
         mmpm.utils.error_msg(error)
         return False
 
-    print(f'Restart MagicMirror for the changes to take effect')
+    print('Restart MagicMirror for the changes to take effect')
     return True
 
 
@@ -699,8 +697,8 @@ def install_magicmirror() -> bool:
             parent = os.path.abspath(
                 os.path.normpath(
                     mmpm.utils.assert_valid_input("Absolute path to new installation location: ",
-                                                forbidden_responses=known_envs,
-                                                reason='matches a known MagicMirror environment')
+                        forbidden_responses=known_envs,
+                        reason='matches a known MagicMirror environment')
                 )
             )
         except KeyboardInterrupt:
@@ -772,7 +770,7 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
         mmpm.utils.log.info(f'Removed {dir_name}')
 
     if marked_for_removal:
-        print(f'Run `mmpm open --config` to delete associated configurations of any removed modules')
+        print('Run `mmpm open --config` to delete associated configurations of any removed modules')
 
     return True
 
@@ -804,7 +802,7 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
             f'{mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE}.bak'
         )
 
-        mmpm.utils.log.info(f'Back up of database complete')
+        mmpm.utils.log.info('Back up of database complete')
 
     # if the database has expired, or doesn't exist, get a new one
     if force_refresh or not db_exists:
@@ -1074,6 +1072,15 @@ def display_available_upgrades() -> None:
 
 def get_available_upgrades() -> dict:
     '''
+    Parses the mmpm-available-upgrades.json file, and ensures the contents are
+    valid. If the contents are malformed, the file is reset.
+
+    Parameters:
+        None
+
+    Returns:
+        available_upgrades (dict): a dictionary containg the upgrades available
+                                   for every MagicMirror environment encountered
 
     '''
     MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
@@ -1317,24 +1324,24 @@ def display_magicmirror_modules_status() -> None:
     MMPM_MAGICMIRROR_URI: str = mmpm.utils.get_env(mmpm.consts.MMPM_MAGICMIRROR_URI_ENV)
 
     @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
-    def connect():
+    def connect(): # pylint: disable=unused-variable
         mmpm.utils.log.info('connected to MagicMirror websocket')
         client.emit('FROM_MMPM_APP_get_active_modules', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE, data=None)
         mmpm.utils.log.info('emitted request for active modules to MMPM module')
 
 
     @client.event
-    def connect_error():
+    def connect_error(): # pylint: disable=unused-variable
         mmpm.utils.error_msg('Failed to connect to MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set properly?')
 
 
     @client.on('disconnect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
-    def disconnect():
+    def disconnect(): # pylint: disable=unused-variable
         mmpm.utils.log.info('disconnected from MagicMirror websocket')
 
 
     @client.on('ACTIVE_MODULES', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
-    def active_modules(data):
+    def active_modules(data): # pylint: disable=unused-variable
         mmpm.utils.log.info('received active modules from MMPM MagicMirror module')
 
         if not data:
@@ -1353,7 +1360,7 @@ def display_magicmirror_modules_status() -> None:
     try:
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
     except (OSError, BrokenPipeError) as error:
-        mmpm.utils.log.warn(str(error))
+        mmpm.utils.log.warning(str(error))
 
 
 
@@ -1374,24 +1381,24 @@ def hide_magicmirror_modules(modules_to_hide: List[str]):
     MMPM_MAGICMIRROR_URI: str = mmpm.utils.get_env(mmpm.consts.MMPM_MAGICMIRROR_URI_ENV)
 
     @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
-    def connect():
+    def connect(): # pylint: disable=unused-variable
         mmpm.utils.log.info('connected to MagicMirror websocket')
         client.emit('FROM_MMPM_APP_hide_modules', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE, data=modules_to_hide)
         mmpm.utils.log.info('emitted request to hide modules to MMPM module')
 
 
     @client.event
-    def connect_error():
+    def connect_error(): # pylint: disable=unused-variable
         mmpm.utils.error_msg('Failed to connect to MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set properly?')
 
 
     @client.on('disconnect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
-    def disconnect():
+    def disconnect(): # pylint: disable=unused-variable
         mmpm.utils.log.info('disconnected from MagicMirror websocket')
 
 
     @client.on('MODULES_HIDDEN', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
-    def active_modules(data):
+    def modules_hidden(data): # pylint: disable=unused-variable
         mmpm.utils.log.info('received hidden modules from MMPM MagicMirror module')
 
         if not data:
@@ -1407,7 +1414,7 @@ def hide_magicmirror_modules(modules_to_hide: List[str]):
     try:
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
     except (OSError, BrokenPipeError) as error:
-        mmpm.utils.log.warn(str(error))
+        mmpm.utils.log.warning(str(error))
 
 def show_magicmirror_modules(modules_to_show: List[str]) -> None:
     '''
@@ -1426,24 +1433,24 @@ def show_magicmirror_modules(modules_to_show: List[str]) -> None:
     MMPM_MAGICMIRROR_URI: str = mmpm.utils.get_env(mmpm.consts.MMPM_MAGICMIRROR_URI_ENV)
 
     @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
-    def connect():
+    def connect(): # pylint: disable=unused-variable
         mmpm.utils.log.info('connected to MagicMirror websocket')
         client.emit('FROM_MMPM_APP_show_modules', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE, data=modules_to_show)
         mmpm.utils.log.info('emitted request for show modules to MMPM module')
 
 
     @client.event
-    def connect_error():
+    def connect_error(): # pylint: disable=unused-variable
         mmpm.utils.error_msg('Failed to connect to MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set properly?')
 
 
     @client.on('disconnect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
-    def disconnect():
+    def disconnect(): # pylint: disable=unused-variable
         mmpm.utils.log.info('disconnected from MagicMirror websocket')
 
 
     @client.on('MODULES_SHOWN', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
-    def active_modules(data):
+    def modules_shown(data): # pylint: disable=unused-variable
         mmpm.utils.log.info('received active modules from MMPM MagicMirror module')
 
         if not data:
@@ -1459,7 +1466,7 @@ def show_magicmirror_modules(modules_to_show: List[str]) -> None:
     try:
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
     except (OSError, BrokenPipeError) as error:
-        mmpm.utils.log.warn(str(error))
+        mmpm.utils.log.warning(str(error))
 
 
 def get_web_interface_url() -> str:
@@ -1583,9 +1590,8 @@ def start_magicmirror() -> bool:
     os.chdir(MMPM_MAGICMIRROR_ROOT)
     mmpm.utils.log.info("Running 'npm start' in the background")
 
-    command: str = 'npm start &'
-    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} {command} ')
-    os.system(command)
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} npm start ')
+    os.system('npm start &')
     print(mmpm.consts.GREEN_CHECK_MARK)
     mmpm.utils.log.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
     return True
@@ -1693,7 +1699,7 @@ def display_mmpm_env_vars() -> None:
         None
     '''
 
-    mmpm.utils.log.info(f'User listing environment variables, set with the following values')
+    mmpm.utils.log.info('User listing environment variables, set with the following values')
 
     from pygments import highlight, formatters
     from pygments.lexers.data import JsonLexer
@@ -1806,6 +1812,9 @@ def rotate_raspberrypi_screen(degrees: int) -> bool:
     Returns:
         success (bool): True if successful, False if failure
     '''
+
+    import re
+
     config: str = '/boot/config.txt'
 
     rotation_map: Dict[int, int] = {
@@ -1829,7 +1838,7 @@ def rotate_raspberrypi_screen(degrees: int) -> bool:
 
             with open(config, 'r+') as cfg:
                 contents: str = cfg.read()
-                setting: List[str] = findall(pattern, contents)
+                setting: List[str] = re.findall(pattern, contents)
 
                 if not setting:
                     # this file should not be empty, but just in case
@@ -1883,7 +1892,7 @@ def migrate() -> None:
                     data.pop(legacy_key)
 
                 else:
-                    mmpm.utils.log.info(f'No data found in the legacy key, resetting with empty list')
+                    mmpm.utils.log.info('No data found in the legacy key, resetting with empty list')
                     data[mmpm.consts.EXTERNAL_PACKAGES] = []
 
             except json.JSONDecodeError:
@@ -1893,7 +1902,7 @@ def migrate() -> None:
         pathlib.Path(legacy_ext_src_file).rename(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE)
 
         with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as ext_pkgs:
-            mmpm.utils.log.info(f'Saving updated external packages data')
+            mmpm.utils.log.info('Saving updated external packages data')
             json.dump(data, ext_pkgs)
 
     else:

@@ -208,7 +208,7 @@ def packages_update() -> str:
 
 @app.route(api('packages/upgradeable'), methods=[mmpm.consts.GET])
 def packages_upgradeable() -> str:
-    mmpm.utils.log.info(f'Request to get upgradeable packages')
+    mmpm.utils.log.info('Request to get upgradeable packages')
     available_upgrades: dict = mmpm.core.get_available_upgrades()
 
     for key in available_upgrades:
@@ -266,7 +266,7 @@ def external_packages_add() -> str:
 @app.route(api('external-packages/remove'), methods=[mmpm.consts.DELETE])
 def external_packages_remove() -> str:
     selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request, 'external-packages')
-    mmpm.utils.log.info(f'Request to remove external sources')
+    mmpm.utils.log.info('Request to remove external sources')
 
     ext_packages: dict = {mmpm.consts.EXTERNAL_PACKAGES: []}
     marked_for_removal: list = []
@@ -315,17 +315,16 @@ def magicmirror_config() -> str:
         mmpm.utils.log.info('Retrieving MagicMirror config')
         return result
 
-    elif request.method == mmpm.consts.POST:
-        data: dict = request.get_json(force=True)
-        mmpm.utils.log.info('Saving MagicMirror config file')
+    data: dict = request.get_json(force=True)
+    mmpm.utils.log.info('Saving MagicMirror config file')
 
-        try:
-            with open(MAGICMIRROR_CONFIG_FILE, 'w') as config:
-                config.write(data.get('code'))
-        except IOError:
-            return json.dumps(False)
+    try:
+        with open(MAGICMIRROR_CONFIG_FILE, 'w') as config:
+            config.write(data.get('code'))
+    except IOError:
+        return json.dumps(False)
 
-        return json.dumps(True)
+    return json.dumps(True)
 
 
 @app.route(api('magicmirror/custom-css'), methods=[mmpm.consts.GET, mmpm.consts.POST])
@@ -347,17 +346,17 @@ def magicmirror_custom_css() -> str:
         mmpm.utils.log.info(f'Retrieving MagicMirror {MAGICMIRROR_CUSTOM_CSS_FILE}')
         return result
 
-    elif request.method == mmpm.consts.POST:
-        data: dict = request.get_json(force=True)
-        mmpm.utils.log.info(f'Saving MagicMirror {MAGICMIRROR_CUSTOM_CSS_FILE}')
+    # POST
+    data: dict = request.get_json(force=True)
+    mmpm.utils.log.info(f'Saving MagicMirror {MAGICMIRROR_CUSTOM_CSS_FILE}')
 
-        try:
-            with open(MAGICMIRROR_CUSTOM_CSS_FILE, 'w') as custom_css:
-                custom_css.write(data.get('code'))
-        except IOError:
-            return json.dumps(False)
+    try:
+        with open(MAGICMIRROR_CUSTOM_CSS_FILE, 'w') as custom_css:
+            custom_css.write(data.get('code'))
+    except IOError:
+        return json.dumps(False)
 
-        return json.dumps(True)
+    return json.dumps(True)
 
 
 @app.route(api('magicmirror/start'), methods=[mmpm.consts.GET])
@@ -420,7 +419,7 @@ def magicmirror_stop() -> str:
 
 @app.route(api('magicmirror/upgrade'), methods=[mmpm.consts.GET])
 def magicmirror_upgrade() -> str:
-    mmpm.utils.log.info(f'Request to upgrade MagicMirror')
+    mmpm.utils.log.info('Request to upgrade MagicMirror')
     mmpm.utils.log.info('Finished installing')
 
     mmpm.core.upgrade_magicmirror()
@@ -501,14 +500,13 @@ def mmpm_environment_vars_file() -> str:
         result: str = send_file(mmpm.consts.MMPM_ENV_FILE, attachment_filename='mmpm-env.json')
         return result
 
-    elif request.method == mmpm.consts.POST:
-        data: dict = request.get_json(force=True)
-        mmpm.utils.log.info('Saving MMPM environment variables file')
+    data: dict = request.get_json(force=True)
+    mmpm.utils.log.info('Saving MMPM environment variables file')
 
-        try:
-            with open(mmpm.consts.MMPM_ENV_FILE, 'w') as config:
-                config.write(data.get('code'))
-        except IOError:
-            return json.dumps(False)
+    try:
+        with open(mmpm.consts.MMPM_ENV_FILE, 'w') as config:
+            config.write(data.get('code'))
+    except IOError:
+        return json.dumps(False)
 
-        return json.dumps(True)
+    return json.dumps(True)

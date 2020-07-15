@@ -18,8 +18,7 @@ import mmpm.models
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 MMPMLogger = mmpm.models.MMPMLogger
 
-
-log: Logger = MMPMLogger().logger
+log: Logger = MMPMLogger().logger # type: ignore
 
 
 def plain_print(msg: str) -> None:
@@ -646,7 +645,7 @@ def assert_valid_input(prompt: str, forbidden_responses: List[str] = [], reason:
     '''
     while True:
         user_response = input(prompt)
-        if not user_response:
+        if not user_response: # pylint: disable=no-else-continue
             warning_msg('A non-empty response must be given')
             continue
         elif user_response in forbidden_responses:
@@ -799,7 +798,7 @@ def get_remote_repo_api_health() -> Dict[str, dict]:
 
         if gitlab_api.status_code != 200:
             health[mmpm.consts.GITLAB][mmpm.consts.ERROR] = 'GitLab server returned invalid response'
-    except requests.exceptions.RequestException as error:
+    except requests.exceptions.RequestException:
         health[mmpm.consts.GITLAB][mmpm.consts.ERROR] = 'Unable to communicate with GitLab server'
 
     try:
@@ -808,7 +807,7 @@ def get_remote_repo_api_health() -> Dict[str, dict]:
 
         if bitbucket_api.status_code != 200:
             health[mmpm.consts.BITBUCKET][mmpm.consts.ERROR] = 'Bitbucket server returned invalid response'
-    except requests.exceptions.RequestException as error:
+    except requests.exceptions.RequestException:
         health[mmpm.consts.GITLAB][mmpm.consts.ERROR] = 'Unable to communicate with Bitbucket server'
 
     return health
@@ -927,6 +926,8 @@ def get_remote_package_details(package: MagicMirrorPackage) -> dict:
 
         return __format_bitbucket_api_details__(json.loads(data.text), url) if data else {}
 
+    return {}
+
 
 def is_magicmirror_running() -> bool:
     '''
@@ -965,8 +966,6 @@ def socketio_client_factory():
 
 
 def socketio_client_disconnect(client) -> bool:
-    import socketio # socketio is a slow import, so only doing it when absolutely necessary
-
     try:
         log.info('attempting to disconnect from MagicMirror websocket')
         client.disconnect()
@@ -997,4 +996,3 @@ def get_env(key: str) -> str:
             pass
 
     return value
-

@@ -1834,7 +1834,7 @@ def rotate_raspberrypi_screen(degrees: int) -> bool:
 
             # this really should exist anyway
             if not os.path.exists(config):
-                os.system(f'touch {config}')
+                os.system(f'sudo touch {config}')
 
             with open(config, 'r+') as cfg:
                 contents: str = cfg.read()

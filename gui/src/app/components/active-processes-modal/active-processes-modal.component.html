@@ -1,6 +1,6 @@
 <h2 mat-dialog-title style="text-align: center">Active Processes</h2>
 
-<mat-dialog-content *ngIf="data.service.activeProcesses?.size; else display_empty" class="mat-typography" style="text-align: left; padding-left: 3em; overflow-y: scroll;">
+<mat-dialog-content *ngIf="data.service.activeProcesses?.size; else display_empty" class="mat-typography" style="text-align: left; padding-left: 3em; overflow-y: auto;">
 
   <span *ngFor="let process of data.service.activeProcesses | keyvalue">
     <p><strong>Process:</strong> {{ process.value.name }}</p>
@@ -9,7 +9,7 @@
 </mat-dialog-content>
 
 <ng-template #display_empty>
-  <mat-dialog-content class="mat-typography" style="text-align: center; margin-top: 10em; margin-bottom: 10em; overflow-y: scroll;">
+  <mat-dialog-content class="mat-typography" style="text-align: center; margin-top: 10em; margin-bottom: 10em; overflow-y: auto;">
     No active processes
   </mat-dialog-content>
 </ng-template>

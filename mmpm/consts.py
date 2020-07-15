@@ -34,10 +34,10 @@ RED_X: str = mmpm.color.N_RED + u'\u2718' + mmpm.color.RESET
 GREEN_DASHES: str = mmpm.color.N_GREEN + '----' + mmpm.color.RESET
 GREEN_PLUS: str = mmpm.color.N_GREEN + '+' + mmpm.color.RESET
 EXTERNAL_PACKAGES: str = 'External Packages'
-MMPM_SOCKETIO_NAMESPACE: str = '/mmpm'
 
 HOME_DIR: str = expanduser("~")
 
+MMPM_SOCKETIO_NAMESPACE: str = '/mmpm'
 MMPM_CONFIG_DIR: str = normpath(join(HOME_DIR, '.config', 'mmpm'))
 MMPM_LOG_DIR: str = normpath(join(MMPM_CONFIG_DIR, 'log'))
 

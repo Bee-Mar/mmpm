@@ -46,27 +46,6 @@ See the [MMPM Installation](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installati
 
 If any issues arise, please consult the wiki first, which can be found [here](https://github.com/Bee-Mar/mmpm/wiki). Additionally, please examine the log files for `MMPM` located in `~/.config/mmpm/log/`, and post any relevant information when creating an issue.
 
-## GUI Demo
-
-- Managing Packages with Live Terminal Feed and Responsive Search
-
-    ![Managing Packages](https://media.giphy.com/media/MEuuL0fOIzcejxWATL/giphy.gif)
-
-- Editing MagicMirror Config
-
-    ![Editing MagicMirror Config](https://media.giphy.com/media/XDdeJQpzZRRwrylBVg/giphy.gif)
-
-- Using [WebSSH](https://github.com/huashengdun/webssh) within GUI
-
-    ![Using WebSSH](https://media.giphy.com/media/gkLZiyqWfDqcH0tHE0/giphy.gif)
-
-- Adding External Sources
-
-    ![Adding External Sources](https://media.giphy.com/media/loAdplweaF3BpyGS1M/giphy.gif)
-
-- MagicMirror Control Center
-
-    ![MagicMirror Control Center](https://media.giphy.com/media/eH9GfGdbZfUxJuJ9o5/giphy.gif)
 
 ## Future State of Affairs
 

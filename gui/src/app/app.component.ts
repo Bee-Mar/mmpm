@@ -18,4 +18,7 @@ export class AppComponent {
 
   public webSSHLocation = `http://${window.location.hostname}:7892`;
   public title = "gui";
+
+  public toggleTheme(): void {
+  }
 }

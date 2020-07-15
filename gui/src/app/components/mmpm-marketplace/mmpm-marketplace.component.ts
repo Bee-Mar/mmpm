@@ -173,7 +173,8 @@ export class MMPMMarketplaceComponent implements OnInit {
                 matchesSelectedTitles: installationConflicts.matchesSelectedTitles,
                 matchesInstalledTitles: installationConflicts.matchesInstalledTitles,
                 magicmirrorRootDirectory: this.mmpmEnvVars.get('MMPM_MAGICMIRROR_ROOT')
-              }
+              },
+              disableClose: true
             });
 
           dialogRef.afterClosed().subscribe((toRemove: MagicMirrorPackage[]) => {

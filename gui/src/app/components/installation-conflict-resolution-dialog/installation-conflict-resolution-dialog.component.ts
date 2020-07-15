@@ -39,6 +39,9 @@ export class InstallationConflictResolutionDialogComponent implements OnInit {
           this.dialogRef.close();
         }
       });
+
+    } else {
+      this.dialogRef.close();
     }
   }
 

@@ -4,6 +4,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 import { URLS } from "src/app/utils/urls";
+import { DataStoreService } from "src/app/services/data-store.service";
 import * as Cookie from "js-cookie";
 
 interface FileCharacteristics {
@@ -22,7 +23,8 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
   constructor(
     private dialog: MatDialog,
     private api: RestApiService,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private dataStore: DataStoreService,
   ) {}
 
   private mmpmEditorThemeCookie = "MMPM-editor-theme";
@@ -98,6 +100,7 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
       this.api.updateMagicMirrorConfig(url, this.fileSelection[this.fileIndex]?.code).subscribe((success) => {
         const message: any = success ? `Successfully saved ${file}` : `Failed to save ${file}`;
         this.snackbar.open(message, "Close", { duration: 3000 });
+        this.dataStore.loadData();
       });
     });
   }

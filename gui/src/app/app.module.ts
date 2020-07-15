@@ -24,7 +24,6 @@ import { MMPMExternalPackagesComponent } from "./components/mmpm-external-packag
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountTickerComponent } from "./components/active-process-count-ticker/active-process-count-ticker.component";
 import { ActiveProcessesModalComponent } from "./components/active-processes-modal/active-processes-modal.component";
-import { MMPMTableContainerComponent } from "./components/mmpm-table-container/mmpm-table-container.component";
 import { InstallationConflictResolutionDialogComponent } from "./components/installation-conflict-resolution-dialog/installation-conflict-resolution-dialog.component";
 
 export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
@@ -47,7 +46,6 @@ export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
     MMPMExternalPackagesComponent,
     ActiveProcessCountTickerComponent,
     ActiveProcessesModalComponent,
-    MMPMTableContainerComponent,
     InstallationConflictResolutionDialogComponent,
   ],
   imports: [

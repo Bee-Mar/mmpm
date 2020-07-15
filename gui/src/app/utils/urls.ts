@@ -9,11 +9,6 @@ export const URLS = {
       get UPGRADEABLE() { return `${this._ROOT}/upgradeable`; },
     },
 
-    DATABASE: {
-      _ROOT: "/database",
-      get REFRESH() { return `${this._ROOT}/refresh`; },
-    },
-
     MAGICMIRROR: {
       _ROOT: "/magicmirror",
       get START() { return `${this._ROOT}/start`; },

@@ -139,7 +139,6 @@ def assert_required_defaults_exist() -> bool:
         os.system(f'mkdir -p {directory}')
 
     for data_file in mmpm.consts.MMPM_DATA_FILES_NAMES:
-        print(data_file)
         os.system(f'touch {data_file}')
 
     current_env: dict = {}
@@ -155,7 +154,7 @@ def assert_required_defaults_exist() -> bool:
             current_env[key] = mmpm.consts.MMPM_DEFAULT_ENV[key]
 
     with open(mmpm.consts.MMPM_ENV_FILE, 'w') as env:
-        json.dump(current_env, env)
+        json.dump(current_env, env, indent=2)
 
 
 def calculation_expiration_date_of_database() -> Tuple[float, float]:

@@ -1,54 +1,60 @@
-<h2 mat-dialog-title style="text-align: center">Installation Conflict</h2>
+<h2 mat-dialog-title style="text-align: center">
+  Installation Conflict
+  <mat-icon style="color: yellow;">report_problem</mat-icon>
+</h2>
 <div>
   <mat-dialog-content class="mat-typography">
     <div *ngIf="data?.matchesInstalledTitles?.length">
-      <h4>
-        The following selected packages conflict with already installed packages:
-      </h4>
-      <div *ngFor="let pkg of data.matchesInstalledTitles | keyvalue">
-        {{ pkg.value.title }} ({{ pkg.value.repository }})
+      <h3 style="text-align: center;">
+        <strong>
+          The following selected packages match an already installed package's title:
+        </strong>
+      </h3>
+      <ul style="margin-left: 3em;">
+        <li *ngFor="let pkg of data.matchesInstalledTitles | keyvalue">
+          {{ pkg.value.title }} ({{ pkg.value.repository }})
+        </li>
+      </ul>
+      <br>
+      <br>
+      <div style="text-align: center;">
+        <strong>Please remove the conflicting packages first</strong>
       </div>
-      <strong>Please remove the conflicting packages and try to reinstall the ones you've selected</strong>
       <br>
     </div>
 
     <div *ngIf="data?.matchesSelectedTitles?.length">
-      <h4>
-        The following selected packages have conflicting titles:
-      </h4>
-      <div *ngFor="let pkg of data.matchesSelectedTitles | keyvalue">
-        <mat-checkbox
-          color="primary"
-          (click)="$event.stopPropagation()"
-          (change)="$event ? onSelection(pkg) : null"
-          [checked]="selection.isSelected(pkg)"
-          [disabled]="disable[pkg.key]"
-          >
-        </mat-checkbox>
-          {{ pkg.value.title }} ({{ pkg.value.repository }})
+      <h3 style="text-align: center;">
+        <strong>
+          The following selected packages have conflicting titles:
+        </strong>
+      </h3>
+      <div style="margin-left: 5em;">
+        <div *ngFor="let pkg of data.matchesSelectedTitles | keyvalue" style="margin-bottom: 1em; text-align: left;">
+          <mat-checkbox color="primary" (click)="$event.stopPropagation()" (change)="$event ? onSelection(pkg) : null" [checked]="selection.isSelected(pkg)" [disabled]="disable[pkg.key]">
+            {{ pkg.value.title }} (<a href="{{ pkg.value.repository }}" target="_blank">{{ pkg.value.repository }})</a>)
+          </mat-checkbox>
+        </div>
       </div>
       <br>
+      <div style="text-align: center;">
+        <strong>
+          Please select one of each of the duplicate titles to install
+        </strong>
+      </div>
     </div>
   </mat-dialog-content>
 </div>
 
 <mat-dialog-actions align="center">
-  <button mat-raised-button (click)="onCancel()">
+  <button mat-raised-button (click)="onCancel()" color="primary" style="margin-right: 3em;">
     <mat-icon>
       close
     </mat-icon>
   </button>
-  <button
-    *ngIf="data?.matchesSelectedTitles?.length"
-    mat-raised-button
-    color="primary"
-    matTooltip="Submit"
-    (click)="onSubmit()"
-    >
+  <button *ngIf="data?.matchesSelectedTitles?.length" mat-raised-button color="accent" matTooltip="Submit" (click)="onSubmit()">
     <mat-icon>
-      save
+      done
     </mat-icon>
   </button>
 </mat-dialog-actions>
-
-

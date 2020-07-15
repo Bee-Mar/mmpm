@@ -1698,9 +1698,10 @@ def display_mmpm_env_vars() -> None:
     from pygments import highlight, formatters
     from pygments.lexers.data import JsonLexer
 
-
     with open(mmpm.consts.MMPM_ENV_FILE, 'r') as env:
         print(highlight(json.dumps(json.load(env), indent=2), JsonLexer(), formatters.TerminalFormatter()))
+
+    print('Run `mmpm open --env` to edit the variable values')
 
 
 def install_autocompletion(assume_yes: bool = False) -> None:

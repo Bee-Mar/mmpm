@@ -49,6 +49,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
   public snackbarSettings: object = { duration: 5000 };
   public isUpgradeable: Array<boolean>;
   public upgradeablePackages: Array<MagicMirrorPackage>;
+  public canSelectUpgradeButton: boolean = false;
 
   public ngOnInit(): void {
     this.setupTableData();
@@ -179,5 +180,11 @@ export class MMPMLocalPackagesComponent implements OnInit {
 
   public setPaginationCookie(pageEvent?: PageEvent): void {
     this.mmpmUtility.setCookie(this.mmpmLocalPackagesPageSizeCookie, pageEvent.pageSize);
+  }
+
+  public onSelectionChange(row: MagicMirrorPackage): boolean {
+
+    console.log(row);
+    return this.selection.isSelected(row);
   }
 }

@@ -146,8 +146,9 @@ def assert_required_defaults_exist() -> bool:
     with open(mmpm.consts.MMPM_ENV_FILE, 'r') as env:
         try:
             current_env = json.load(env)
-        except json.JSONDecodeError:
-            mmpm.utils.log.warn(f'{mmpm.consts.MMPM_ENV_FILE} did not exist, created new file')
+        except json.JSONDecodeError as error:
+            warning_msg(f'Encountered error when reading {mmpm.consts.MMPM_ENV_FILE}. See `mmpm log` for details')
+            log.error(str(error))
 
     for key in mmpm.consts.MMPM_DEFAULT_ENV:
         if key not in current_env:
@@ -265,11 +266,11 @@ def open_default_editor(path_to_file: str) -> Optional[None]:
 
     if not os.path.exists(path_to_file):
         try:
-            mmpm.utils.warning_msg(f'{path_to_file} does not exist. Creating the directory and empty file')
+            warning_msg(f'{path_to_file} does not exist. Creating the directory and empty file')
             pathlib.Path('/'.join(path_to_file.split('/')[:-1])).mkdir(parents=True, exist_ok=True)
             pathlib.Path(path_to_file).touch(mode=0o664, exist_ok=True)
         except OSError as error:
-            mmpm.utils.fatal_msg(f'Unable to create {path_to_file}: {str(error)}')
+            fatal_msg(f'Unable to create {path_to_file}: {str(error)}')
 
     editor = os.getenv('EDITOR') if os.getenv('EDITOR') else 'nano'
     error_code, _, _ = run_cmd(['which', editor], progress=False)
@@ -507,7 +508,7 @@ def kill_pids_of_process(process: str):
         processes (str): the processes IDs found
     '''
     log.info(f'Killing all processes of type {process}')
-    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} stopping MagicMirror electron processes ')
+    plain_print(f'{mmpm.consts.GREEN_PLUS} stopping MagicMirror electron processes ')
     os.system(f'for process in $(pgrep {process}); do kill -9 $process; done')
     print(f'{mmpm.consts.GREEN_CHECK_MARK}')
 
@@ -743,7 +744,7 @@ def safe_get_request(url: str) -> requests.Response:
     try:
         data = requests.get(url)
     except requests.exceptions.RequestException as error:
-        mmpm.utils.log.error(str(error))
+        log.error(str(error))
         return requests.Response()
     return data
 
@@ -777,7 +778,7 @@ def get_remote_repo_api_health() -> Dict[str, dict]:
         }
     }
 
-    github_api_response: requests.Response = mmpm.utils.safe_get_request('https://api.github.com/rate_limit')
+    github_api_response: requests.Response = safe_get_request('https://api.github.com/rate_limit')
 
     if not github_api_response.status_code or github_api_response.status_code != 200:
         health[mmpm.consts.GITHUB][mmpm.consts.ERROR] = 'Unable to contact GitHub API'
@@ -824,9 +825,9 @@ def __format_bitbucket_api_details__(data: dict, url: str) -> dict:
     Returns:
         details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
     '''
-    stars = mmpm.utils.safe_get_request(f'{url}/watchers')
-    forks = mmpm.utils.safe_get_request(f'{url}/watchers')
-    issues = mmpm.utils.safe_get_request(f'{url}/issues')
+    stars = safe_get_request(f'{url}/watchers')
+    forks = safe_get_request(f'{url}/watchers')
+    issues = safe_get_request(f'{url}/issues')
 
     return {
         'Stars': int(json.loads(stars.text)['pagelen']) if stars else 'N/A',
@@ -848,7 +849,7 @@ def __format_gitlab_api_details__(data: dict, url: str) -> dict:
     Returns:
         details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
     '''
-    issues = mmpm.utils.safe_get_request(f'{url}/issues')
+    issues = safe_get_request(f'{url}/issues')
 
     return {
         'Stars': data['star_count'] if data else 'N/A',
@@ -894,35 +895,35 @@ def get_remote_package_details(package: MagicMirrorPackage) -> dict:
     project: str = spliced[-1]
 
     if project[-4:] == '.git':
-        mmpm.utils.log.info(f"Found '.git' in repository url, trimmed project name from {project} to {project[:-4]}")
+        log.info(f"Found '.git' in repository url, trimmed project name from {project} to {project[:-4]}")
         project = project[:-4]
 
     if 'github' in package.repository:
         url = f'https://api.github.com/repos/{user}/{project}'
-        mmpm.utils.log.info(f'Constructed {url} to request more details for {package.title}')
+        log.info(f'Constructed {url} to request more details for {package.title}')
         data = safe_get_request(url)
 
         if not data:
-            mmpm.utils.log.error(f'Unable to retrieve {package.title} details, data was empty')
+            log.error(f'Unable to retrieve {package.title} details, data was empty')
 
         return __format_github_api_details__(json.loads(data.text)) if data else {}
 
     elif 'gitlab' in package.repository:
         url = f'https://gitlab.com/api/v4/projects/{user}%2F{project}'
-        mmpm.utils.log.info(f'Constructed {url} to request more details for {package.title}')
+        log.info(f'Constructed {url} to request more details for {package.title}')
         data = safe_get_request(url)
 
         if not data:
-            mmpm.utils.log.error(f'Unable to retrieve {package.title} details, data was empty')
+            log.error(f'Unable to retrieve {package.title} details, data was empty')
 
         return __format_gitlab_api_details__(json.loads(data.text), url) if data else {}
     elif 'bitbucket' in package.repository:
         url = f'https://api.bitbucket.org/2.0/repositories/{user}/{project}'
-        mmpm.utils.log.info(f'Constructed {url} to request more details for {package.title}')
+        log.info(f'Constructed {url} to request more details for {package.title}')
         data = safe_get_request(url)
 
         if not data:
-            mmpm.utils.log.error(f'Unable to retrieve {package.title} details, data was empty')
+            log.error(f'Unable to retrieve {package.title} details, data was empty')
 
         return __format_bitbucket_api_details__(json.loads(data.text), url) if data else {}
 
@@ -939,7 +940,7 @@ def is_magicmirror_running() -> bool:
     Returns:
         running (bool): True if running, False if not
     '''
-    return bool(mmpm.utils.get_pids('electron') or mmpm.utils.get_pids('pm2'))
+    return bool(get_pids('electron') or get_pids('pm2'))
 
 
 def socketio_client_factory():
@@ -957,7 +958,7 @@ def socketio_client_factory():
     client = socketio.Client()
 
     try:
-        client = socketio.Client(logger=mmpm.utils.log, reconnection=True, request_timeout=3000)
+        client = socketio.Client(logger=log, reconnection=True, request_timeout=3000)
     except Exception:
         error_msg('Failed to connect to MagicMirror websocket. Is MagicMirror running?')
     return client
@@ -967,10 +968,10 @@ def socketio_client_disconnect(client) -> bool:
     import socketio # socketio is a slow import, so only doing it when absolutely necessary
 
     try:
-        mmpm.utils.log.info('attempting to disconnect from MagicMirror websocket')
+        log.info('attempting to disconnect from MagicMirror websocket')
         client.disconnect()
     except (OSError, BrokenPipeError, Exception):
-        mmpm.utils.log.info('encountered OSError when disconnecting from websocket, ignoring')
+        log.info('encountered OSError when disconnecting from websocket, ignoring')
     return True
 
 def get_env(key: str) -> str:

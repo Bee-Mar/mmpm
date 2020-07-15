@@ -2,13 +2,7 @@
   <div style="height: 100%; width: 20%; background-color: #303030; float: left">
     <mat-grid-list cols="2" rowHeight="33%">
       <mat-grid-tile *ngFor="let tile of tiles" [colspan]="tile.cols" [rowspan]="tile.rows" color="#FFFFFF">
-        <button
-            mat-fab
-            matTooltip="{{ tile.disabled ? tile.disabledTooltip : tile.visibleTooltip }}"
-            style="background-color: #6600cc;"
-            [disabled]="tile.disabled"
-            (click)="sendControlSignal(tile.url, tile.message)"
-          >
+        <button mat-fab matTooltip="{{ tile.disabled ? tile.disabledTooltip : tile.visibleTooltip }}" style="background-color: #6600cc;" [disabled]="tile.disabled" (click)="sendControlSignal(tile.url, tile.message)">
           <mat-icon>
             {{ tile.icon }}
           </mat-icon>
@@ -17,14 +11,16 @@
     </mat-grid-list>
   </div>
 
-  <div style="height: 100%; width: 30%; margin-left: 10%; background-color: #303030; overflow-y: scroll; float: left;">
+  <div style="height: 100%; width: 25%; margin-left: 5%; background-color: #303030; overflow-y: scroll; float: left;">
     <h1 style="text-align: center; margin-top: 5%;">Active Modules</h1>
     <div *ngIf="activeModules?.length; else activeModulesNotFound" style="margin-left: 20%; margin-top: 10%;">
       <ul style="list-style-type: none;">
         <li *ngFor="let active of activeModules | keyvalue" style="margin-top: 10%;">
-          <mat-slide-toggle [(ngModel)]="active.value.visible" (change)="toggle($event, active.value)" style="font-size: 20px;">
+          <mat-slide-toggle [disabled]="active.value.name === 'mmpm'" [(ngModel)]="active.value.visible" (change)="toggle($event, active.value)" style="font-size: 20px;">
             {{ active.value.name }}
-            <mat-icon *ngIf="active.value.visible; else not_visible" matTooltip="visible">visibility</mat-icon>
+            <mat-icon *ngIf="active.value.visible; else not_visible" matTooltip="{{ active.value.name === 'mmpm' ? 'MMPM must remain visible' : 'visible'}}">
+              visibility
+            </mat-icon>
             <ng-template #not_visible>
               <mat-icon matTooltip="hidden">visibility_off</mat-icon>
             </ng-template>
@@ -47,46 +43,46 @@
     </ng-template>
   </div>
 
-  <div style="height: 100%; width: 30%; float: right; background-color: #303030;">
-    <h1 style="text-align: center; margin-top: 5%;">Resources</h1>
-    <div style="margin-left: 5em;">
+  <div style="height: 100%; width: 45%; float: right; background-color: #303030;">
+    <h1 style="text-align: center; margin-top: 4%;">Resources</h1>
+    <div style="margin-left: 35%;">
       <ul style="list-style-type: none;">
-        <li style="margin-bottom: 3%;">
-          <button mat-button (click)="openUrl(mmpmEnvVars?.get('MMPM_MAGICMIRROR_URI'))">
-            <mat-icon>exit_to_app</mat-icon> MagicMirror
-          </button>
-        </li>
-        <li style="margin-bottom: 3%;">
+        <li style="margin-bottom: 2%;">
           <button mat-button (click)="openUrl('https://github.com/Bee-Mar/mmpm/wiki')">
             <mat-icon>exit_to_app</mat-icon> MMPM Wiki
           </button>
         </li>
-        <li style="margin-bottom: 3%;">
-          <button mat-button (click)="openUrl('https://github.com/Bee-Mar/mmpm/issues/new')">
-            <mat-icon style="top: 5px;">error_outline</mat-icon> Create an Issue
+        <li style="margin-bottom: 2%;">
+          <button mat-button (click)="openUrl(mmpmEnvVars?.get('MMPM_MAGICMIRROR_URI'))">
+            <mat-icon>exit_to_app</mat-icon> MagicMirror
           </button>
         </li>
-        <li style="margin-bottom: 3%;">
+        <li style="margin-bottom: 2%;">
           <button mat-button (click)="openUrl('https://github.com/MichMich/MagicMirror')">
             <mat-icon>exit_to_app</mat-icon> MagicMirror GitHub
           </button>
         </li>
-        <li style="margin-bottom: 3%;">
+        <li style="margin-bottom: 2%;">
           <button mat-button (click)="openUrl('https://docs.magicmirror.builders/')">
             <mat-icon>exit_to_app</mat-icon> MagicMirror Documentation
           </button>
         </li>
+        <li style="margin-bottom: 2%;">
+          <button mat-button (click)="openUrl('https://github.com/Bee-Mar/mmpm/issues/new')">
+            <mat-icon style="top: 5px;">error_outline</mat-icon> Create an Issue
+          </button>
+        </li>
       </ul>
     </div>
-    <h1 style="text-align: center; margin-top: 10%; margin-bottom: 5%;">
+    <h1 style="text-align: center; margin-top: 10%; margin-bottom: 4%;">
       Environment Variables
-      <span matTooltip="To update the environment variables below, edit the 'mmpm-env.json' file in the 'Config Editor' tab, then click the 'Reload control center' button">
+      <span matTooltip="To update the environment variables below, edit the 'mmpm-env.json' file in the 'Config Editor' tab, then reload the page">
         <mat-icon>help</mat-icon>
       </span>
     </h1>
     <div>
       <ul style="list-style-type: none;">
-        <li *ngFor="let envVar of mmpmEnvVars | keyvalue" style="margin-bottom: 3%; margin-left: 1em; font-size: 13px;">
+        <li *ngFor="let envVar of mmpmEnvVars | keyvalue" style="margin-bottom: 2%; margin-left: 1em; font-size: 13px;">
           <code>{{ envVar.key }}={{ envVar.value }}</code>
         </li>
       </ul>

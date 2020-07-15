@@ -16,7 +16,7 @@ from typing import List, Dict, Tuple
 
 
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
-
+get_env = mmpm.utils.get_env
 
 def database_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     '''
@@ -99,7 +99,6 @@ def check_for_mmpm_updates(assume_yes=False, gui=False, automated=False) -> bool
         return False
 
     mmpm.utils.log.info(f'Found newer version of MMPM: {version_number}')
-    env: str = mmpm.consts.MMPM_MAGICMIRROR_ROOT
     upgrades, _ = get_available_upgrades()
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
@@ -178,23 +177,23 @@ def upgrade_package(package: MagicMirrorPackage, assume_yes: bool = False) -> st
 
 def upgrade_available(assume_yes: bool = False, selection: List[str] = []) -> bool:
     confirmed: dict = {mmpm.consts.PACKAGES: [], mmpm.consts.MMPM: False, mmpm.consts.MAGICMIRROR: False}
-    env: str = mmpm.consts.MMPM_MAGICMIRROR_ROOT
+    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
     upgrades = get_available_upgrades()
     upgraded: bool = False
 
     has_upgrades: bool = False
 
-    for key in upgrades[env]:
-        if upgrades[env][key]:
+    for key in upgrades[MMPM_MAGICMIRROR_ROOT]:
+        if upgrades[MMPM_MAGICMIRROR_ROOT][key]:
             has_upgrades = True
             break
 
     if not has_upgrades and not upgrades[mmpm.consts.MMPM]:
         print(f'No upgrades available {mmpm.consts.YELLOW_X}')
 
-    if upgrades[env][mmpm.consts.PACKAGES]:
+    if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]:
         if selection:
-            valid_pkgs: List[MagicMirrorPackage] = [pkg for pkg in upgrades[env][mmpm.consts.PACKAGES] if pkg.title in selection]
+            valid_pkgs: List[MagicMirrorPackage] = [pkg for pkg in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] if pkg.title in selection]
 
             if not valid_pkgs and not mmpm.consts.MMPM in selection or not mmpm.consts.MAGICMIRROR not in selection:
                 mmpm.utils.error_msg(f'Unable to match {selection} to a package/application with available upgrades')
@@ -203,11 +202,11 @@ def upgrade_available(assume_yes: bool = False, selection: List[str] = []) -> bo
                 if package.title in selection and mmpm.utils.prompt_user(f'Upgrade {mmpm.color.normal_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
                     confirmed[mmpm.consts.PACKAGES].append(package)
         else:
-            for package in upgrades[env][mmpm.consts.PACKAGES]:
+            for package in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]:
                 if mmpm.utils.prompt_user(f'Upgrade {mmpm.color.normal_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
                     confirmed[mmpm.consts.PACKAGES].append(package)
 
-    if mmpm.consts.MAGICMIRROR in selection or not selection and upgrades[env][mmpm.consts.MAGICMIRROR]:
+    if mmpm.consts.MAGICMIRROR in selection or not selection and upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR]:
         confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt_user(f"Upgrade {mmpm.color.normal_green('MagicMirror')} now?", assume_yes=assume_yes)
 
     if mmpm.consts.MMPM in selection or not selection and upgrades[mmpm.consts.MMPM]:
@@ -220,7 +219,7 @@ def upgrade_available(assume_yes: bool = False, selection: List[str] = []) -> bo
             mmpm.utils.error_msg(error)
             continue
 
-        upgrades[env][mmpm.consts.PACKAGES].remove(pkg)
+        upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES].remove(pkg)
         upgraded = True
 
     warning: str = 'The above error requires user correction. Please fix this, and re-run `mmpm update` to sync the database'
@@ -236,10 +235,10 @@ def upgrade_available(assume_yes: bool = False, selection: List[str] = []) -> bo
         if not upgrade_magicmirror():
             mmpm.utils.warning_msg(warning)
         else:
-            upgrades[env][mmpm.consts.MAGICMIRROR] = False
+            upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR] = False
             upgraded = True
 
-    upgrades[env][mmpm.consts.PACKAGES] = [pkg.serialize_full() for pkg in upgrades[env][mmpm.consts.PACKAGES]]
+    upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] = [pkg.serialize_full() for pkg in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]]
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
         json.dump(upgrades, available_upgrades)
@@ -268,7 +267,9 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
         upgradeable (List[MagicMirrorPackage]): the list of packages that have available upgrades
     '''
 
-    os.chdir(mmpm.consts.MAGICMIRROR_MODULES_DIR)
+    MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules'))
+
+    os.chdir(MAGICMIRROR_MODULES_DIR)
     installed_packages: Dict[str, List[MagicMirrorPackage]] = get_installed_packages(packages)
     any_installed: bool = False
 
@@ -308,15 +309,15 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
             print(mmpm.consts.GREEN_CHECK_MARK)
 
     upgrades: dict = {}
-    env: str = mmpm.consts.MMPM_MAGICMIRROR_ROOT
+    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
 
     upgrades = get_available_upgrades()
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
-        if env not in upgrades:
-            upgrades[env] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}
+        if MMPM_MAGICMIRROR_ROOT not in upgrades:
+            upgrades[MMPM_MAGICMIRROR_ROOT] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}
 
-        upgrades[env][mmpm.consts.PACKAGES] = [pkg.serialize_full() for pkg in upgradeable]
+        upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] = [pkg.serialize_full() for pkg in upgradeable]
         json.dump(upgrades, available_upgrades)
 
     return upgradeable
@@ -447,7 +448,9 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
 
     errors: List[dict] = []
 
-    if not os.path.exists(mmpm.consts.MAGICMIRROR_MODULES_DIR):
+    MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules'))
+
+    if not os.path.exists(MAGICMIRROR_MODULES_DIR):
         mmpm.utils.error_msg(f'MagicMirror directory not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
         return False
 
@@ -455,8 +458,8 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
         mmpm.utils.error_msg('Unable to match query any to installation candidates')
         return False
 
-    mmpm.utils.log.info(f'Changing into MagicMirror modules directory {mmpm.consts.MAGICMIRROR_MODULES_DIR}')
-    os.chdir(mmpm.consts.MAGICMIRROR_MODULES_DIR)
+    mmpm.utils.log.info(f'Changing into MagicMirror modules directory {MAGICMIRROR_MODULES_DIR}')
+    os.chdir(MAGICMIRROR_MODULES_DIR)
 
     # a flag to check if any of the modules have been installed. Used for displaying a message later
     successes: int = 0
@@ -477,7 +480,7 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
         if package == None: # the module may be empty due to the above for loop
             continue
 
-        package.directory = os.path.join(mmpm.consts.MAGICMIRROR_MODULES_DIR, package.title)
+        package.directory = os.path.join(MAGICMIRROR_MODULES_DIR, package.title)
 
         # ideally, providiing alternative installation directories would be done, but it would require messing with file names within the renamed
         # module, which can cause a lot of problems when trying to update those repos
@@ -518,13 +521,15 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
         installation_candidates (List[dict]): list of modules whose module names match those of the modules_to_install
     '''
 
-    os.chdir(mmpm.consts.MAGICMIRROR_MODULES_DIR)
+    MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules'))
+
+    os.chdir(MAGICMIRROR_MODULES_DIR)
 
     print(f'{mmpm.consts.GREEN_PLUS} Installing {mmpm.color.normal_green(package.title)}')
     error_code, _, stderr = mmpm.utils.clone(
         package.title,
         package.repository,
-        os.path.normpath(package.directory if package.directory else os.path.join(mmpm.consts.MAGICMIRROR_MODULES_DIR, package.title))
+        os.path.normpath(package.directory if package.directory else os.path.join(MAGICMIRROR_MODULES_DIR, package.title))
     )
 
     if error_code:
@@ -536,7 +541,7 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
 
     error: str = mmpm.utils.install_dependencies(package.directory)
 
-    os.chdir(mmpm.consts.MAGICMIRROR_MODULES_DIR)
+    os.chdir(MAGICMIRROR_MODULES_DIR)
 
     if error:
         mmpm.utils.error_msg(error)
@@ -573,20 +578,22 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
     Returns:
         bool: True upon success, False upon failure
     '''
-    if not os.path.exists(mmpm.consts.MMPM_MAGICMIRROR_ROOT):
+    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
+
+    if not os.path.exists(MMPM_MAGICMIRROR_ROOT):
         mmpm.utils.error_msg(f'MagicMirror application directory not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
         return False
 
     is_git: bool = True
 
-    if not os.path.exists(os.path.join(mmpm.consts.MMPM_MAGICMIRROR_ROOT, '.git')):
+    if not os.path.exists(os.path.join(MMPM_MAGICMIRROR_ROOT, '.git')):
         mmpm.utils.warning_msg('The MagicMirror root is not a git repo. If running MagicMirror as a Docker container, updates cannot be performed via mmpm.')
         is_git = False
 
     update_available: bool = False
 
     if is_git:
-        os.chdir(mmpm.consts.MMPM_MAGICMIRROR_ROOT)
+        os.chdir(MMPM_MAGICMIRROR_ROOT)
         cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
         mmpm.utils.plain_print(f"Checking {mmpm.color.normal_green('MagicMirror')} [{cyan_application}] for updates")
 
@@ -608,25 +615,23 @@ def check_for_magicmirror_updates(assume_yes: bool = False) -> bool:
 
     upgrades: dict = {}
 
-    env: str = mmpm.consts.MMPM_MAGICMIRROR_ROOT
-
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
         try:
             upgrades = json.load(available_upgrades)
         except json.JSONDecodeError:
             upgrades = {
                 mmpm.consts.MMPM: False,
-                mmpm.consts.MMPM_MAGICMIRROR_ROOT: {
+                MMPM_MAGICMIRROR_ROOT: {
                     mmpm.consts.PACKAGES: [],
                     mmpm.consts.MAGICMIRROR: update_available
                 }
             }
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
-        if env not in upgrades:
-            upgrades[env] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: update_available}
+        if MMPM_MAGICMIRROR_ROOT not in upgrades:
+            upgrades[MMPM_MAGICMIRROR_ROOT] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: update_available}
         else:
-            upgrades[env][mmpm.consts.MAGICMIRROR] = update_available
+            upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR] = update_available
 
         json.dump(upgrades, available_upgrades)
 
@@ -647,7 +652,9 @@ def upgrade_magicmirror() -> bool:
     '''
     print(f"{mmpm.consts.GREEN_PLUS} Upgrading {mmpm.color.normal_green('MagicMirror')}")
 
-    os.chdir(mmpm.consts.MMPM_MAGICMIRROR_ROOT)
+    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
+
+    os.chdir(MMPM_MAGICMIRROR_ROOT)
     error_code, _, stderr = mmpm.utils.run_cmd(['git', 'pull'], progress=False)
 
     if error_code:
@@ -655,7 +662,7 @@ def upgrade_magicmirror() -> bool:
         mmpm.utils.error_msg(stderr)
         return False
 
-    error: str = mmpm.utils.install_dependencies(mmpm.consts.MMPM_MAGICMIRROR_ROOT)
+    error: str = mmpm.utils.install_dependencies(MMPM_MAGICMIRROR_ROOT)
 
     if error:
         mmpm.utils.error_msg(error)
@@ -684,7 +691,9 @@ def install_magicmirror() -> bool:
 
     import pathlib
 
-    if os.path.exists(mmpm.consts.MMPM_MAGICMIRROR_ROOT):
+    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
+
+    if os.path.exists(MMPM_MAGICMIRROR_ROOT):
         mmpm.utils.warning_msg(f'MagicMirror appears to be installed already in {os.getcwd()}. Please provide a new destination for the MagicMirror installation')
         try:
             parent = os.path.abspath(
@@ -733,7 +742,9 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
     cancelled_removal: List[str] = []
     marked_for_removal: List[str] = []
 
-    package_dirs: List[str] = os.listdir(mmpm.consts.MAGICMIRROR_MODULES_DIR)
+    MAGICMIRROR_MODULES_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules')
+
+    package_dirs: List[str] = os.listdir(MAGICMIRROR_MODULES_DIR)
 
     try:
         for _, packages in installed_packages.items():
@@ -753,7 +764,7 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
     for title in packages_to_remove:
         if title not in marked_for_removal and title not in cancelled_removal:
             mmpm.utils.error_msg(f"'{title}' is not installed")
-            mmpm.utils.log.info(f"User attemped to remove {title}, but no module named '{title}' was found in {mmpm.consts.MAGICMIRROR_MODULES_DIR}")
+            mmpm.utils.log.info(f"User attemped to remove {title}, but no module named '{title}' was found in {MAGICMIRROR_MODULES_DIR}")
 
     for dir_name in marked_for_removal:
         shutil.rmtree(dir_name)
@@ -1034,15 +1045,16 @@ def display_available_upgrades() -> None:
     Returns:
         None
     '''
+    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
+
     cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
     cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
-    env: str = mmpm.consts.MMPM_MAGICMIRROR_ROOT
 
     upgrades_available: bool = False
     upgrades = get_available_upgrades()
 
-    if upgrades[env][mmpm.consts.PACKAGES]:
-        for package in upgrades[env][mmpm.consts.PACKAGES]:
+    if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]:
+        for package in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]:
             print(mmpm.color.normal_green(package.title), f'[{cyan_package}]')
             upgrades_available = True
 
@@ -1050,7 +1062,7 @@ def display_available_upgrades() -> None:
         upgrades_available = True
         print(f'{mmpm.color.normal_green(mmpm.consts.MMPM)} [{cyan_application}]')
 
-    if upgrades[env][mmpm.consts.MAGICMIRROR]:
+    if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR]:
         upgrades_available = True
         print(f'{mmpm.color.normal_green(mmpm.consts.MAGICMIRROR)} [{cyan_application}]')
 
@@ -1064,15 +1076,16 @@ def get_available_upgrades() -> dict:
     '''
 
     '''
-    env: str = mmpm.consts.MMPM_MAGICMIRROR_ROOT
+    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
+
     reset_file: bool = False
     add_key: bool = False
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
         try:
             upgrades: dict = json.load(available_upgrades)
-            upgrades[env][mmpm.consts.PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(
-                upgrades[env][mmpm.consts.PACKAGES]
+            upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(
+                upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]
             )
         except json.JSONDecodeError:
             reset_file = True
@@ -1081,12 +1094,12 @@ def get_available_upgrades() -> dict:
 
     if reset_file:
         with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
-            upgrades = {mmpm.consts.MMPM: False, env: {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}}
+            upgrades = {mmpm.consts.MMPM: False, MMPM_MAGICMIRROR_ROOT: {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}}
             json.dump(upgrades, available_upgrades)
 
     elif add_key:
         with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
-            upgrades[env] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}
+            upgrades[MMPM_MAGICMIRROR_ROOT] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}
             json.dump(upgrades, available_upgrades)
 
     return upgrades
@@ -1111,7 +1124,9 @@ def get_installed_packages(packages: Dict[str, List[MagicMirrorPackage]]) -> Dic
         mmpm.utils.env_variables_error_msg('Failed to find MagicMirror root directory.')
         return {}
 
-    os.chdir(mmpm.consts.MAGICMIRROR_MODULES_DIR)
+    MAGICMIRROR_MODULES_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules')
+
+    os.chdir(MAGICMIRROR_MODULES_DIR)
 
     installed_packages: Dict[str, List[MagicMirrorPackage]] = {}
     packages_found: Dict[str, List[MagicMirrorPackage]] = {mmpm.consts.PACKAGES: []}
@@ -1121,7 +1136,7 @@ def get_installed_packages(packages: Dict[str, List[MagicMirrorPackage]]) -> Dic
             continue
 
         try:
-            os.chdir(os.path.join(mmpm.consts.MAGICMIRROR_MODULES_DIR, package_dir))
+            os.chdir(os.path.join(MAGICMIRROR_MODULES_DIR, package_dir))
 
             error_code, remote_origin_url, stderr = mmpm.utils.run_cmd(
                 ['git', 'config', '--get', 'remote.origin.url'],
@@ -1299,6 +1314,7 @@ def display_magicmirror_modules_status() -> None:
     '''
 
     client = mmpm.utils.socketio_client_factory()
+    MMPM_MAGICMIRROR_URI: str = mmpm.utils.get_env(mmpm.consts.MMPM_MAGICMIRROR_URI_ENV)
 
     @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def connect():
@@ -1335,7 +1351,7 @@ def display_magicmirror_modules_status() -> None:
     mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
 
     try:
-        client.connect(mmpm.consts.MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
+        client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
     except (OSError, BrokenPipeError) as error:
         mmpm.utils.log.warn(str(error))
 
@@ -1355,6 +1371,7 @@ def hide_magicmirror_modules(modules_to_hide: List[str]):
     '''
 
     client = mmpm.utils.socketio_client_factory()
+    MMPM_MAGICMIRROR_URI: str = mmpm.utils.get_env(mmpm.consts.MMPM_MAGICMIRROR_URI_ENV)
 
     @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def connect():
@@ -1388,7 +1405,7 @@ def hide_magicmirror_modules(modules_to_hide: List[str]):
 
     mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
     try:
-        client.connect(mmpm.consts.MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
+        client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
     except (OSError, BrokenPipeError) as error:
         mmpm.utils.log.warn(str(error))
 
@@ -1406,6 +1423,7 @@ def show_magicmirror_modules(modules_to_show: List[str]) -> None:
     '''
 
     client = mmpm.utils.socketio_client_factory()
+    MMPM_MAGICMIRROR_URI: str = mmpm.utils.get_env(mmpm.consts.MMPM_MAGICMIRROR_URI_ENV)
 
     @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def connect():
@@ -1439,7 +1457,7 @@ def show_magicmirror_modules(modules_to_show: List[str]) -> None:
     mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
 
     try:
-        client.connect(mmpm.consts.MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
+        client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
     except (OSError, BrokenPipeError) as error:
         mmpm.utils.log.warn(str(error))
 
@@ -1489,12 +1507,15 @@ def stop_magicmirror() -> bool:
     process: str = ''
     command: List[str] = []
 
-    if shutil.which('pm2') and mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
-        command = ['pm2', 'stop', mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
+    MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = get_env(mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME_ENV)
+    MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = get_env(mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE_ENV)
+
+    if shutil.which('pm2') and MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
+        command = ['pm2', 'stop', MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
         process = 'pm2'
 
-    elif shutil.which('docker-compose') and mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
-        command = ['docker-compose', '-f', mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, 'stop']
+    elif shutil.which('docker-compose') and MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
+        command = ['docker-compose', '-f', MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, 'stop']
         process = 'docker-compose'
 
     if command and process:
@@ -1532,12 +1553,15 @@ def start_magicmirror() -> bool:
     process: str = ''
     command: List[str] = []
 
-    if shutil.which('pm2') and mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
-        command = ['pm2', 'start', mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
+    MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = get_env(mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME_ENV)
+    MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = get_env(mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE_ENV)
+
+    if shutil.which('pm2') and MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
+        command = ['pm2', 'start', MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
         process = 'pm2'
 
-    elif shutil.which('docker-compose') and mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
-        command = ['docker-compose', '-f', mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, 'up', '-d']
+    elif shutil.which('docker-compose') and MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
+        command = ['docker-compose', '-f', MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, 'up', '-d']
         process = 'docker-compose'
 
     if command and process:
@@ -1554,7 +1578,9 @@ def start_magicmirror() -> bool:
         print(mmpm.consts.GREEN_CHECK_MARK)
         return True
 
-    os.chdir(mmpm.consts.MMPM_MAGICMIRROR_ROOT)
+    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
+
+    os.chdir(MMPM_MAGICMIRROR_ROOT)
     mmpm.utils.log.info("Running 'npm start' in the background")
 
     command: str = 'npm start &'
@@ -1580,12 +1606,15 @@ def restart_magicmirror() -> bool:
     process: str = ''
     command: List[str] = []
 
-    if shutil.which('pm2') and mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
-        command = ['pm2', 'restart', mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
+    MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = get_env(mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME_ENV)
+    MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = get_env(mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE_ENV)
+
+    if shutil.which('pm2') and MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
+        command = ['pm2', 'restart', MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
         process = 'pm2'
 
-    elif shutil.which('docker-compose') and mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
-        command = ['docker-compose', '-f', mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, 'restart']
+    elif shutil.which('docker-compose') and MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
+        command = ['docker-compose', '-f', MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, 'restart']
         process = 'docker-compose'
 
     if command and process:

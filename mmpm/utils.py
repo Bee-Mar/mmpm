@@ -133,17 +133,29 @@ def env_variables_fatal_msg(preamble: str = '') -> None:
     fatal_msg(msg)
 
 
-def assert_required_paths_exist() -> bool:
+def assert_required_defaults_exist() -> bool:
 
     for directory in mmpm.consts.MMPM_REQUIRED_DIRS:
         os.system(f'mkdir -p {directory}')
 
     for data_file in mmpm.consts.MMPM_DATA_FILES_NAMES:
+        print(data_file)
         os.system(f'touch {data_file}')
 
-    if not bool(os.stat(mmpm.consts.MMPM_ENV_FILE).st_size):
-        with open(mmpm.consts.MMPM_ENV_FILE, 'w') as env:
-            json.dump({key: mmpm.consts.MMPM_ENV[key] for key in mmpm.consts.MMPM_ENV}, env)
+    current_env: dict = {}
+
+    with open(mmpm.consts.MMPM_ENV_FILE, 'r') as env:
+        try:
+            current_env = json.load(env)
+        except json.JSONDecodeError:
+            mmpm.utils.log.warn(f'{mmpm.consts.MMPM_ENV_FILE} did not exist, created new file')
+
+    for key in mmpm.consts.MMPM_DEFAULT_ENV:
+        if key not in current_env:
+            current_env[key] = mmpm.consts.MMPM_DEFAULT_ENV[key]
+
+    with open(mmpm.consts.MMPM_ENV_FILE, 'w') as env:
+        json.dump(current_env, env)
 
 
 def calculation_expiration_date_of_database() -> Tuple[float, float]:
@@ -653,11 +665,13 @@ def get_existing_package_directories() -> List[str]:
     Returns:
         directories (List[str]): a list of directories found in the MagicMirror modules directory
     '''
-    if not os.path.exists(mmpm.consts.MAGICMIRROR_MODULES_DIR):
+    MAGICMIRROR_MODULES_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules')
+
+    if not os.path.exists(MAGICMIRROR_MODULES_DIR):
         return []
 
-    dirs: List[str] = os.listdir(mmpm.consts.MAGICMIRROR_MODULES_DIR)
-    return [d for d in dirs if os.path.isdir(os.path.join(mmpm.consts.MAGICMIRROR_MODULES_DIR, d))]
+    dirs: List[str] = os.listdir(MAGICMIRROR_MODULES_DIR)
+    return [d for d in dirs if os.path.isdir(os.path.join(MAGICMIRROR_MODULES_DIR, d))]
 
 
 def list_of_dict_to_list_of_magicmirror_packages(list_of_dict: List[dict]) -> List[MagicMirrorPackage]:
@@ -959,3 +973,28 @@ def socketio_client_disconnect(client) -> bool:
     except (OSError, BrokenPipeError, Exception):
         mmpm.utils.log.info('encountered OSError when disconnecting from websocket, ignoring')
     return True
+
+def get_env(key: str) -> str:
+    '''
+    Reads environment variables from the MMPM_ENV_FILE. In order to ensure
+    hot-reloading is usable in the GUI, the environment variables need to be
+    re-read from the file each time. Otherwise, cached data will be sent back
+    to the user.
+
+    Parameters:
+        None
+
+    Returns:
+        value (str): the value of the environment variable key
+    '''
+
+    value: str = ''
+
+    with open(mmpm.consts.MMPM_ENV_FILE, 'r') as env:
+        try:
+           value = json.load(env)[key]
+        except json.JSONDecodeError:
+            pass
+
+    return value
+

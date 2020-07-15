@@ -19,6 +19,7 @@ import mmpm.core
 import mmpm.models
 
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
+get_env = mmpm.utils.get_env
 
 MMPM_EXECUTABLE: list = [os.path.join(mmpm.consts.HOME_DIR, '.local', 'bin', 'mmpm')]
 
@@ -57,13 +58,15 @@ def __get_selected_packages__(rqst, key: str = 'selected-packages') -> List[Magi
     '''
     pkgs: dict = rqst.get_json(force=True)[key]
 
+    MAGICMIRROR_MODULES_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules')
+
     # more-or-less a bandaid to the larger problem of aligning the data structure in angular
     for pkg in pkgs:
         del pkg['category']
 
         if not pkg['directory']:
             mmpm.utils.log.info(pkg)
-            pkg['directory'] = os.path.normpath(os.path.join(mmpm.consts.MAGICMIRROR_MODULES_DIR, pkg['title']))
+            pkg['directory'] = os.path.normpath(os.path.join(MAGICMIRROR_MODULES_DIR, pkg['title']))
 
     return [MagicMirrorPackage(**pkg) for pkg in pkgs]
 
@@ -214,7 +217,8 @@ def packages_upgradeable() -> str:
                 pkg.serialize_full() for pkg in available_upgrades[key][mmpm.consts.PACKAGES]
             ]
 
-    return json.dumps(available_upgrades[mmpm.consts.MMPM_MAGICMIRROR_ROOT])
+    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV)))
+    return json.dumps(available_upgrades[MMPM_MAGICMIRROR_ROOT])
 
 
 @app.route(api('packages/details'), methods=[mmpm.consts.POST])
@@ -291,31 +295,22 @@ def external_packages_remove() -> str:
 #  -- END: EXTERNAL PACKAGES --
 
 
-#  -- START: DATABASE --
-@app.route(api('database/refresh'), methods=[mmpm.consts.GET])
-def database_refresh() -> dict:
-    mmpm.utils.log.info(f'Received request to refresh modules')
-    _packages_ = mmpm.core.load_packages(force_refresh=True)
-    return _packages_
-#  -- END: DATABASE --
-
-
 #  -- START: MAGICMIRROR --
 @app.route(api('magicmirror/config'), methods=[mmpm.consts.GET, mmpm.consts.POST])
 def magicmirror_config() -> str:
     if request.method == mmpm.consts.GET:
-        if not os.path.exists(mmpm.consts.MAGICMIRROR_CONFIG_FILE):
+        MAGICMIRROR_CONFIG_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'config')
+        MAGICMIRROR_CONFIG_FILE: str = os.path.join(MAGICMIRROR_CONFIG_DIR, 'config.js')
+
+        if not os.path.exists(MAGICMIRROR_CONFIG_FILE):
             try:
-                pathlib.Path(mmpm.consts.MAGICMIRROR_CONFIG_DIR).mkdir(parents=True, exist_ok=True)
-                pathlib.Path(mmpm.consts.MAGICMIRROR_CONFIG_FILE).touch(mode=0o664, exist_ok=True)
-                return f'// {mmpm.consts.MAGICMIRROR_CONFIG_FILE} not found. An empty file was created for you in its place'
+                pathlib.Path(MAGICMIRROR_CONFIG_DIR).mkdir(parents=True, exist_ok=True)
+                pathlib.Path(MAGICMIRROR_CONFIG_FILE).touch(mode=0o664, exist_ok=True)
+                return f'// {MAGICMIRROR_CONFIG_FILE} not found. An empty file was created for you in its place'
             except OSError:
                 pass
         else:
-            result: str = send_file(
-                mmpm.consts.MAGICMIRROR_CONFIG_FILE,
-                attachment_filename='config.js'
-            )
+            result: str = send_file(MAGICMIRROR_CONFIG_FILE, attachment_filename='config.js')
 
         mmpm.utils.log.info('Retrieving MagicMirror config')
         return result
@@ -325,7 +320,7 @@ def magicmirror_config() -> str:
         mmpm.utils.log.info('Saving MagicMirror config file')
 
         try:
-            with open(mmpm.consts.MAGICMIRROR_CONFIG_FILE, 'w') as config:
+            with open(MAGICMIRROR_CONFIG_FILE, 'w') as config:
                 config.write(data.get('code'))
         except IOError:
             return json.dumps(False)
@@ -334,27 +329,30 @@ def magicmirror_config() -> str:
 
 
 @app.route(api('magicmirror/custom-css'), methods=[mmpm.consts.GET, mmpm.consts.POST])
-def magicmirror_custom_css():
+def magicmirror_custom_css() -> str:
     if request.method == mmpm.consts.GET:
-        if not os.path.exists(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE):
+        MAGICMIRROR_CUSTOM_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'custom')
+        MAGICMIRROR_CUSTOM_CSS_FILE: str = os.path.join(MAGICMIRROR_CUSTOM_DIR, 'custom.css')
+
+        if not os.path.exists(MAGICMIRROR_CUSTOM_CSS_FILE):
             try:
-                pathlib.Path(mmpm.consts.MAGICMIRROR_CUSTOM_DIR).mkdir(parents=True, exist_ok=True)
-                pathlib.Path(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE).touch(mode=0o664, exist_ok=True)
+                pathlib.Path(MAGICMIRROR_CUSTOM_DIR).mkdir(parents=True, exist_ok=True)
+                pathlib.Path(MAGICMIRROR_CUSTOM_CSS_FILE).touch(mode=0o664, exist_ok=True)
             except OSError:
-                message: str = f'/* File not found. Unable to create {mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE}. Is the MagicMirror directory owned by root? */'
+                message: str = f'/* File not found. Unable to create {MAGICMIRROR_CUSTOM_CSS_FILE}. Is the MagicMirror directory owned by root? */'
                 mmpm.utils.log.error(message)
                 return message
 
-        result: str = send_file(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE, attachment_filename='custom.css')
-        mmpm.utils.log.info(f'Retrieving MagicMirror {mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE}')
+        result: str = send_file(MAGICMIRROR_CUSTOM_CSS_FILE, attachment_filename='custom.css')
+        mmpm.utils.log.info(f'Retrieving MagicMirror {MAGICMIRROR_CUSTOM_CSS_FILE}')
         return result
 
     elif request.method == mmpm.consts.POST:
         data: dict = request.get_json(force=True)
-        mmpm.utils.log.info(f'Saving MagicMirror {mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE}')
+        mmpm.utils.log.info(f'Saving MagicMirror {MAGICMIRROR_CUSTOM_CSS_FILE}')
 
         try:
-            with open(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE, 'w') as custom_css:
+            with open(MAGICMIRROR_CUSTOM_CSS_FILE, 'w') as custom_css:
                 custom_css.write(data.get('code'))
         except IOError:
             return json.dumps(False)

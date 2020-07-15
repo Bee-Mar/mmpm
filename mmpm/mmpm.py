@@ -7,11 +7,13 @@ import mmpm.core
 import mmpm.opts
 import mmpm.consts
 import mmpm.models
+import os
 
 from typing import List, Dict
 
 
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
+get_env = mmpm.utils.get_env
 
 __version__ = 1.25
 
@@ -30,7 +32,7 @@ def main(argv):
         mmpm.core.migrate()
         sys.exit(0)
 
-    mmpm.utils.assert_required_paths_exist()
+    mmpm.utils.assert_required_defaults_exist()
 
     if args.subcmd in mmpm.opts.SINGLE_OPTION_ARGS and not mmpm.utils.assert_one_option_selected(args):
         mmpm.utils.fatal_too_many_options(args)
@@ -97,11 +99,11 @@ def main(argv):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.config:
-            mmpm.utils.open_default_editor(mmpm.consts.MAGICMIRROR_CONFIG_FILE)
+            mmpm.utils.open_default_editor(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'config', 'config.js'))
         elif args.custom_css:
-            mmpm.utils.open_default_editor(mmpm.consts.MAGICMIRROR_CUSTOM_CSS_FILE)
+            mmpm.utils.open_default_editor(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'custom', 'custom.css'))
         elif args.magicmirror:
-            webbrowser.open(mmpm.consts.MMPM_MAGICMIRROR_URI)
+            webbrowser.open(get_env(mmpm.consts.MMPM_MAGICMIRROR_URI_ENV))
         elif args.gui:
             webbrowser.open(mmpm.core.get_web_interface_url())
         elif args.mm_wiki:
@@ -197,7 +199,8 @@ def main(argv):
         elif args.show:
             mmpm.core.show_magicmirror_modules(args.show)
         elif args.start or args.stop or args.restart or args.rotate:
-            if mmpm.consts.MMPM_IS_DOCKER_IMAGE:
+            MMPM_IS_DOCKER_IMAGE: str = mmpm.utils.get_env('MMPM_IS_DOCKER_IMAGE')
+            if bool(MMPM_IS_DOCKER_IMAGE.title()) == True:
                 mmpm.utils.fatal_msg('Cannot execute this command within a docker image')
             elif args.start:
                 mmpm.core.start_magicmirror()

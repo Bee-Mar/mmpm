@@ -25,8 +25,8 @@ import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountTickerComponent } from "./components/active-process-count-ticker/active-process-count-ticker.component";
 import { ActiveProcessesModalComponent } from "./components/active-processes-modal/active-processes-modal.component";
 import { InstallationConflictResolutionDialogComponent } from "./components/installation-conflict-resolution-dialog/installation-conflict-resolution-dialog.component";
-import { AvailableUpgradesTickerComponent } from './components/available-upgrades-ticker/available-upgrades-ticker.component';
-import { AvailableUpgradesModalDialogComponent } from './components/available-upgrades-modal-dialog/available-upgrades-modal-dialog.component';
+import { AvailableUpgradesTickerComponent } from "./components/available-upgrades-ticker/available-upgrades-ticker.component";
+import { AvailableUpgradesModalDialogComponent } from "./components/available-upgrades-modal-dialog/available-upgrades-modal-dialog.component";
 
 export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
   return () => dataStore.loadData();

@@ -314,10 +314,7 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
 
             print(mmpm.consts.GREEN_CHECK_MARK)
 
-    upgrades: dict = {}
-    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
-
-    upgrades = get_available_upgrades()
+    upgrades: dict = get_available_upgrades()
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
         if MMPM_MAGICMIRROR_ROOT not in upgrades:

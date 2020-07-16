@@ -155,7 +155,7 @@ def packages_install() -> Response:
 @app.route(api('packages/remove'), methods=[mmpm.consts.POST])
 def packages_remove() -> Response:
     # not bothering with serialization since the directory is already included in the request
-    selected_packages: List[MagicMirrorPackage] = request.get_json(force=True)['selected-packages']
+    selected_packages: List[dict] = request.get_json(force=True)['selected-packages']
     failures: List[dict] = []
 
     for package in selected_packages:
@@ -246,7 +246,6 @@ def packages_details() -> Response:
 @app.route(api('external-packages/add'), methods=[mmpm.consts.POST])
 def external_packages_add() -> Response:
     package: dict = request.get_json(force=True)['external-package']
-    j
 
     failures: List[dict] = []
 

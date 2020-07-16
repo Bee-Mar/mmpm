@@ -28,7 +28,7 @@ import { InstallationConflictResolutionDialogComponent } from "./components/inst
 import { AvailableUpgradesTickerComponent } from "./components/available-upgrades-ticker/available-upgrades-ticker.component";
 import { AvailableUpgradesModalDialogComponent } from "./components/available-upgrades-modal-dialog/available-upgrades-modal-dialog.component";
 import { environment } from "../environments/environment";
-import { SelectModalComponent } from './components/select-modal/select-modal.component';
+import { SelectModalComponent } from "./components/select-modal/select-modal.component";
 
 export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
   return () => dataStore.loadData();

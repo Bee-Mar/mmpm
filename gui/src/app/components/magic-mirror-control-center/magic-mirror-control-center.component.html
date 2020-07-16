@@ -21,16 +21,16 @@
 
   <div style="height: 100%; width: 25%; margin-left: 5%; background-color: #303030; overflow-y: auto; float: left;">
     <h1 style="text-align: center; margin-top: 5%;">Active Modules</h1>
-    <div *ngIf="activeModules?.length; else activeModulesNotFound" style="margin-left: 20%; margin-top: 10%;">
+    <div *ngIf="activeModules?.length; else activeModulesNotFound" style="margin-top: 10%;">
       <ul style="list-style-type: none;">
         <li *ngFor="let active of activeModules | keyvalue" style="margin-top: 10%;">
-          <mat-slide-toggle [disabled]="active.value.name === 'mmpm'" [(ngModel)]="active.value.visible" (change)="toggle($event, active.value)" style="font-size: 20px;">
+          <mat-slide-toggle [disabled]="active.value.name === 'mmpm'" [(ngModel)]="active.value.visible" (change)="toggle($event, active.value)" style="font-size: 18px;">
             {{ active.value.name }}
-            <mat-icon *ngIf="active.value.visible; else not_visible" matTooltip="{{ active.value.name === 'mmpm' ? 'MMPM must remain visible' : 'visible'}}">
+            <mat-icon *ngIf="active.value.visible; else not_visible" matTooltip="{{ active.value.name === 'mmpm' ? 'MMPM must remain visible' : 'visible'}}" style="margin-left: 0.5em;">
               visibility
             </mat-icon>
             <ng-template #not_visible>
-              <mat-icon matTooltip="hidden">visibility_off</mat-icon>
+              <mat-icon matTooltip="hidden" style="margin-left: 0.5em;">visibility_off</mat-icon>
             </ng-template>
           </mat-slide-toggle>
         </li>

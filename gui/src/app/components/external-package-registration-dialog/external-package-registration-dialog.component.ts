@@ -2,9 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { MatDialogRef } from "@angular/material/dialog";
 import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { FormControl, Validators } from "@angular/forms";
-
-@Component({
-  selector: "app-external-package-registration-dialog",
+@Component({ selector: "app-external-package-registration-dialog",
   templateUrl: "./external-package-registration-dialog.component.html",
   styleUrls: ["./external-package-registration-dialog.component.scss"]
 })
@@ -19,9 +17,7 @@ export class ExternalPackageRegistrationDialogComponent implements OnInit {
   public authorFormControl = new FormControl("", [Validators.required]);
   public descriptionFormControl = new FormControl("", [Validators.required]);
 
-  constructor(
-    private dialogRef: MatDialogRef<ExternalPackageRegistrationDialogComponent>,
-  ) {}
+  constructor(private dialogRef: MatDialogRef<ExternalPackageRegistrationDialogComponent>) {}
 
   ngOnInit(): void {}
 
@@ -38,7 +34,7 @@ export class ExternalPackageRegistrationDialogComponent implements OnInit {
         repository: this.repository,
         author: this.author,
         description: this.description,
-        category: "External Module Sources",
+        category: "External Packages",
         directory: "",
       };
 

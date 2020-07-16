@@ -1,0 +1,33 @@
+<h2 mat-dialog-title style="text-align: center">Available Upgrades</h2>
+<mat-dialog-content
+  *ngIf="data?.availableUpgrades?.packages?.length || data?.availableUpgrades?.mmpm || data?.availableUpgrades?.MagicMirror; else display_empty"
+  class="mat-typography"
+  style="text-align: left; padding-left: 3em; overflow-y: auto;"
+  >
+  <span *ngFor="let pkg of data?.availableUpgrades?.packages | keyvalue">
+    <p><strong>Package</strong> {{ pkg.value.title }}</p>
+  </span>
+
+  <span *ngIf="data?.availableUpgrades?.mmpm">
+    <p><strong>Application:</strong> MMPM</p>
+  </span>
+
+  <span *ngIf="data?.availableUpgrades?.MagicMirror">
+    <p><strong>Application:</strong> MagicMirror</p>
+  </span>
+
+</mat-dialog-content>
+
+<ng-template #display_empty>
+  <mat-dialog-content class="mat-typography" style="text-align: center; margin-top: 10em; margin-bottom: 10em; overflow-y: auto;">
+    No upgrades available
+  </mat-dialog-content>
+</ng-template>
+
+<mat-dialog-actions align="center">
+  <button mat-raised-button mat-dialog-close color="primary">
+    <mat-icon>
+      close
+    </mat-icon>
+  </button>
+</mat-dialog-actions>

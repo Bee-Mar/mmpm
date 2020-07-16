@@ -204,13 +204,13 @@ def packages_upgradeable() -> Response:
     mmpm.utils.log.info('Request to get upgradeable packages')
     available_upgrades: dict = mmpm.core.get_available_upgrades()
 
-    for key in available_upgrades:
-        if key != mmpm.consts.MMPM:
-            available_upgrades[key][mmpm.consts.PACKAGES] = [
-                pkg.serialize_full() for pkg in available_upgrades[key][mmpm.consts.PACKAGES]
-            ]
-
     MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV)))
+
+    available_upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] = [
+        pkg.serialize_full() for pkg in available_upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]
+    ]
+
+    available_upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MMPM] = available_upgrades[mmpm.consts.MMPM]
     return Response(json.dumps(available_upgrades[MMPM_MAGICMIRROR_ROOT]))
 
 

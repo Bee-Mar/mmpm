@@ -2,13 +2,14 @@ import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
 import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { RestApiService } from "src/app/services/rest-api.service";
+import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { URLS } from "src/app/utils/urls";
 
 @Injectable({
   providedIn: "root"
 })
 export class DataStoreService {
-  constructor(private api: RestApiService) {}
+  constructor(private api: RestApiService, private mmpmUtility: MMPMUtility) {}
 
   private _marketplacePackages: BehaviorSubject<MagicMirrorPackage[]> = new BehaviorSubject<Array<MagicMirrorPackage>>([]);
   private _installedPackages: BehaviorSubject<MagicMirrorPackage[]> = new BehaviorSubject<Array<MagicMirrorPackage>>([]);
@@ -47,10 +48,6 @@ export class DataStoreService {
     return array;
   }
 
-  private isSamePackage(a: MagicMirrorPackage, b: MagicMirrorPackage): boolean {
-    return a.title === b.title && a.repository === b.repository && a.author === b.author && a.category === b.category;
-  }
-
   public loadData(): void {
     this.api.retrieve(URLS.GET.MMPM.ENVIRONMENT_VARS).then((envVars: any) => {
       let tempMap = new Map<string, string>();
@@ -60,7 +57,6 @@ export class DataStoreService {
 
     this.api.retrieve(URLS.GET.PACKAGES.UPDATE).then((_) => {
       this.api.retrieve(URLS.GET.PACKAGES.UPGRADEABLE).then((upgradeable) => {
-        console.log(upgradeable);
         this._upgradablePackages.next(upgradeable);
       }).catch((error) => console.log(error));
     }).catch((error) => console.log(error));
@@ -77,7 +73,7 @@ export class DataStoreService {
           // removing all the packages that are currently installed from the list of available packages
           for (const installedPkg of installed) {
             let index: number = marketkplace.findIndex((available: MagicMirrorPackage) => {
-              return this.isSamePackage(available, installedPkg)
+              return this.mmpmUtility.isSamePackage(available, installedPkg, true);
             });
 
             if (index > -1) {

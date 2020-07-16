@@ -13,7 +13,6 @@ import { DataStoreService } from "src/app/services/data-store.service";
 import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity";
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
-import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 
 @Component({
@@ -32,7 +31,6 @@ export class MMPMLocalPackagesComponent implements OnInit {
     private api: RestApiService,
     private mSnackBar: MatSnackBar,
     private mmpmUtility: MMPMUtility,
-    private activeProcessService: ActiveProcessCountService
   ) {}
 
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;

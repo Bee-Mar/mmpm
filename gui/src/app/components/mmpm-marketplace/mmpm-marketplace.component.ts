@@ -76,7 +76,7 @@ export class MMPMMarketplaceComponent implements OnInit {
   }
 
   private checkForInstallationConflicts(selectedPackages: MagicMirrorPackage[]): Promise<InstallationConflict> {
-    let promise: Promise<InstallationConflict> = new Promise<InstallationConflict>((resolve, reject) => {
+    let promise: Promise<InstallationConflict> = new Promise<InstallationConflict>((resolve, _) => {
 
       let installationConflict: InstallationConflict = {
         matchesSelectedTitles: new Array<MagicMirrorPackage>(),

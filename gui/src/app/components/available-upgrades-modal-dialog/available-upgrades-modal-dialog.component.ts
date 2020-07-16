@@ -14,7 +14,6 @@ export class AvailableUpgradesModalDialogComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    console.log(this.data);
   }
 
 }

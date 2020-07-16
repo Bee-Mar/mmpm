@@ -33,10 +33,10 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
   public CONFIG_JS: number = 0;
   public CUSTOM_CSS: number = 1;
   public MMPM_ENV_VARS_JSON: number = 2;
+  public fileIndex: number = Number(Cookie.get(this.mmpmEditorCurrentFileCookie)) ?? this.CONFIG_JS;
 
   public editor: any;
-  public fileIndex: number;
-
+  public code: string = "";
   public fileSelection: Array<FileCharacteristics>;
 
   public editorOptions = {
@@ -50,22 +50,27 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
       {name: "mmpm-env.json", syntax: "json", url: URLS.GET.MMPM.ENVIRONMENT_VARS_FILE, code: ""},
     ];
 
-    this.fileIndex = Number(Cookie.get(this.mmpmEditorCurrentFileCookie)) ?? this.CONFIG_JS;
-
     this.api.getFile(URLS.GET.MAGICMIRROR.CONFIG).then((fileContents) => {
       this.fileSelection[this.CONFIG_JS].code = fileContents;
+      // this is genuinely stupid. I should just be able to access the code in
+      // the template by using 'fileSelection[fileSelection].code'. There's
+      // probably a better way for checking if the value is undefined, but I'll
+      // fix that later
+      if (this.fileIndex === this.CONFIG_JS) this.code = fileContents;
     }).catch((error) => {
       console.log(error);
     });
 
     this.api.getFile(URLS.GET.MAGICMIRROR.CUSTOM_CSS).then((fileContents) => {
       this.fileSelection[this.CUSTOM_CSS].code = fileContents;
+      if (this.fileIndex === this.CUSTOM_CSS) this.code = fileContents;
     }).catch((error) => {
       console.log(error);
     });
 
     this.api.getFile(URLS.GET.MMPM.ENVIRONMENT_VARS_FILE).then((fileContents) => {
       this.fileSelection[this.MMPM_ENV_VARS_JSON].code = fileContents;
+      if (this.fileIndex === this.MMPM_ENV_VARS_JSON) this.code = fileContents;
     }).catch((error) => {
       console.log(error);
     });
@@ -79,11 +84,13 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
 
   public onEditorInit(editor: any): void {
     this.editor = editor;
-    monaco.editor.setModelLanguage(this.editor.getModel(), this.fileSelection[this.fileIndex]?.syntax);
+    this.code = this.fileSelection[this.fileIndex].code;
+    monaco.editor.setModelLanguage(this.editor.getModel(), this.fileSelection[this.fileIndex].syntax);
   }
 
   public onSaveConfig(): void {
-    const file: string = this.fileSelection[this.fileIndex].name;
+    const file: string = this.fileSelection[this.fileIndex]?.name;
+    this.fileSelection[this.fileIndex].code = this.code;
 
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
@@ -114,7 +121,8 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
 
   public setFileIndexAndCookie(index: number = 0): void {
     this.fileIndex = index;
-    monaco.editor.setModelLanguage(this.editor.getModel(), this.fileSelection[this.fileIndex]?.syntax);
-    Cookie.set(this.mmpmEditorCurrentFileCookie, String(this.fileIndex), {expires: 7, path: ""});
+    this.code = this.fileSelection[index].code;
+    monaco.editor.setModelLanguage(this.editor.getModel(), this.fileSelection[this.fileIndex].syntax);
+    Cookie.set(this.mmpmEditorCurrentFileCookie, String(index), {expires: 7, path: ""});
   }
 }

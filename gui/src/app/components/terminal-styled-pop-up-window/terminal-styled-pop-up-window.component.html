@@ -1,13 +1,13 @@
 <div class="dark-terminal">
-  <code *ngFor="let item of data | keyvalue" style="white-space: pre-wrap;">
+  <code *ngFor="let item of data.failures | keyvalue" style="white-space: pre-wrap;">
     <p style="color: red;">
-    Error(s) encountered while installing {{ item.value.package.title }} ({{ item.value.package.repository }}):
+    Error(s) encountered while {{ data.action }} {{ item.value.package.title }} ({{ item.value.package.repository }}):
     </p>
     <p>
     {{ item.value.error }}
     </p>
     <p style="color: yellow;">
-    Due to unresolvable errors, {{ item.value.package.title }} ({{ item.value.package.repository }}) will need to be installed via the MMPM CLI or manually
+    Due to unresolvable errors, the issue associated with {{ item.value.package.title }} ({{ item.value.package.repository }}) will need to be resolved manually
     </p>
     <div style="height: 1px; background-color: #303030;"></div>
   </code>

@@ -1,6 +1,7 @@
 import * as Cookie from "js-cookie";
 import { Injectable } from "@angular/core";
 import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
+import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 
 @Injectable({
@@ -9,9 +10,11 @@ import { ActiveProcessCountService } from "src/app/services/active-process-count
 export class MMPMUtility {
   constructor(public activeProcessService: ActiveProcessCountService){}
 
-  public isSamePackage(a: MagicMirrorPackage, b: MagicMirrorPackage, strictEquality: boolean = false): boolean {
-    if (!strictEquality)
+  public isSamePackage(a: MagicMirrorPackage, b: MagicMirrorPackage): boolean {
       return a.title === b.title && a.repository === b.repository && a.author === b.author;
+  }
+
+  public isSamePackageStrict(a: MagicMirrorPackage, b: MagicMirrorPackage): boolean {
     return a.title === b.title && a.repository === b.repository && a.author === b.author && a.category === b.category;
   }
 

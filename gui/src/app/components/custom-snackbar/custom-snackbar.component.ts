@@ -11,7 +11,7 @@ export class CustomSnackbarComponent implements OnInit {
   constructor(private snackbar: MatSnackBar) { }
 
   private CLOSE: string = "Close";
-  private config: MatSnackBarConfig = {duration: 3000};
+  private config: MatSnackBarConfig = {duration: 5000};
 
   ngOnInit(): void {}
 

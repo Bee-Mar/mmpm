@@ -121,7 +121,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
         const failures: Array<object> = JSON.parse(result);
 
         if (failures.length) {
-          this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings(failures));
+          this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings({failures, action: "removing"}));
           this.snackbar.error(`Failed to remove ${failures.length} ${failures.length == 1 ? "package" : "packages"}`);
 
         } else {
@@ -129,6 +129,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
         }
 
         this.mmpmUtility.deleteProcessIds(ids);
+        this.tableUtility.clearFilter();
         this.dataStore.loadData();
 
       }).catch((error) => console.log(error));

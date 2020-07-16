@@ -1,5 +1,5 @@
 <mat-form-field>
-  <input matInput (keyup)="tableUtility?.searchFilter($event)" placeholder="Search ..." />
+  <input matInput id="searchbar" (keyup)="tableUtility?.searchFilter($event)" placeholder="Search ..." />
 </mat-form-field>
 
 <div class="table-container">
@@ -17,8 +17,8 @@
         <mat-checkbox
           color="primary"
           (change)="$event ? tableUtility?.toggleSelectAll() : null"
-          [checked]="selection.hasValue() && tableUtility?.isAllSelected()"
-          [indeterminate]="selection.hasValue() && !tableUtility?.isAllSelected()"
+          [checked]="selection.hasValue() && tableUtility?.isAllSelected(dataSource.filteredData?.length ? dataSource.filteredData : dataSource.data)"
+          [indeterminate]="selection.hasValue() && !tableUtility?.isAllSelected(dataSource?.filteredData?.length ? dataSource.filteredData : dataSource.data)"
           [aria-label]="tableUtility?.checkboxLabel()"
           >
         </mat-checkbox>

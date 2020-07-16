@@ -22,13 +22,20 @@ class InitializeDefaultFilesCommand(distutils.cmd.Command):
     def run(self):
         os.system(f'mkdir -p {mmpm.consts.MMPM_CONFIG_DIR}')
 
-        for data_file in mmpm.consts.MMPM_DATA_FILES_NAMES:
-            print(data_file)
-            os.system(f'touch {data_file}')
+        current_env: dict = {}
 
-        if not bool(os.stat(mmpm.consts.MMPM_ENV_FILE).st_size):
-            with open(mmpm.consts.MMPM_ENV_FILE, 'w') as env:
-                json.dump({key: mmpm.consts.MMPM_ENV[key] for key in mmpm.consts.MMPM_ENV}, env)
+        with open(mmpm.consts.MMPM_ENV_FILE, 'r') as env:
+            try:
+                current_env = json.load(env)
+            except json.JSONDecodeError:
+                pass
+
+        for key in mmpm.consts.MMPM_DEFAULT_ENV:
+            if key not in current_env:
+                current_env[key] = mmpm.consts.MMPM_DEFAULT_ENV[key]
+
+        with open(mmpm.consts.MMPM_ENV_FILE, 'w') as env:
+            json.dump(current_env, env, indent=2)
 
 
 class InstallRequirements(distutils.cmd.Command):

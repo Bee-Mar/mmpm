@@ -48,7 +48,17 @@ export class DataStoreService {
     return array;
   }
 
+  private resetObservables(): void {
+    this._marketplacePackages.next([]);
+    this._installedPackages.next([]);
+    this._externalPackages.next([]);
+    this._mmpmEnvironmentVariables.next(new Map<string, string>());
+    this._upgradablePackages.next({});
+  }
+
   public loadData(): void {
+    this.resetObservables();
+
     this.api.retrieve(URLS.GET.MMPM.ENVIRONMENT_VARS).then((envVars: any) => {
       let tempMap = new Map<string, string>();
       Object.keys(envVars).forEach((key) => tempMap.set(key, envVars[key]));
@@ -61,27 +71,31 @@ export class DataStoreService {
       }).catch((error) => console.log(error));
     }).catch((error) => console.log(error));
 
-    this.api.retrieve(URLS.GET.PACKAGES.MARKETPLACE).then((marketkplace: Array<MagicMirrorPackage>) => {
+    this.api.retrieve(URLS.GET.PACKAGES.MARKETPLACE).then((marketplace: Array<MagicMirrorPackage>) => {
       this.api.retrieve(URLS.GET.PACKAGES.INSTALLED).then((installed: Array<MagicMirrorPackage>) => {
         this.api.retrieve(URLS.GET.PACKAGES.EXTERNAL).then((external: Array<MagicMirrorPackage>) => {
 
           external = this.fill(external);
           installed = this.fill(installed);
 
-          marketkplace = [...this.fill(marketkplace), ...external];
+          for (const s of installed) console.log(s.title, s.directory);
+
+          marketplace = this.fill(marketplace);
+
+          let allPackagesInDatabase = [...marketplace, ...external];
 
           // removing all the packages that are currently installed from the list of available packages
           for (const installedPkg of installed) {
-            let index: number = marketkplace.findIndex((available: MagicMirrorPackage) => {
-              return this.mmpmUtility.isSamePackage(available, installedPkg, true);
+            let index: number = allPackagesInDatabase.findIndex((available: MagicMirrorPackage) => {
+              return this.mmpmUtility.isSamePackageStrict(available, installedPkg);
             });
 
             if (index > -1) {
-              marketkplace.splice(index, 1);
+              allPackagesInDatabase.splice(index, 1);
             }
           }
 
-          this._marketplacePackages.next(marketkplace);
+          this._marketplacePackages.next(allPackagesInDatabase);
           this._installedPackages.next(installed);
           this._externalPackages.next(external);
 

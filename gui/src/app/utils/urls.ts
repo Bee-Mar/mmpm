@@ -27,7 +27,7 @@ export const URLS = {
     },
 
     RASPBERRYPI: {
-      _ROOT: "/rasperrypi",
+      _ROOT: "/raspberrypi",
       get STOP() { return `${this._ROOT}/stop`; },
       get RESTART() { return `${this._ROOT}/restart`; },
     },
@@ -57,6 +57,11 @@ export const URLS = {
       _ROOT: "/magicmirror",
       get CONFIG() { return `${this._ROOT}/config`; },
       get CUSTOM_CSS() { return `${this._ROOT}/custom-css`; },
+    },
+
+    RASPBERRYPI: {
+      _ROOT: "/raspberrypi",
+      get ROTATE_SCREEN() { return `${this._ROOT}/rotate-screen` },
     },
 
     MMPM: {

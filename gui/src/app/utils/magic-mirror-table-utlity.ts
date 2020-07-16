@@ -59,16 +59,27 @@ export class MagicMirrorTableUtility {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-  public isAllSelected(): boolean {
-    return this.dataSource?.data.length === this.selection.selected.length;
+  public isAllSelected(data?: Array<MagicMirrorPackage>): boolean {
+    if (!data) {
+      return this.dataSource?.data?.length === this.selection.selected.length;
+    }
+
+    return data?.length === this.selection.selected.length;
   }
 
   public toggleSelectAll(): void {
-    this.isAllSelected() ? this.selection.clear() : this.dataSource?.data.forEach((row) => { this.selection.select(row); });
+    if (this.dataSource?.filteredData?.length) {
+      this.isAllSelected(this.dataSource?.filteredData) ?
+        this.selection.clear() : this.dataSource?.filteredData.forEach((row) => this.selection.select(row));
+      return;
+    }
+
+    this.isAllSelected(this.dataSource.data) ?
+    this.selection.clear() : this.dataSource?.data.forEach((row) => this.selection.select(row));
   }
 
   public checkboxLabel(row?: MagicMirrorPackage): string {
-    if (!row) return `${this.isAllSelected() ? "select" : "deselect"} all`;
+    if (!row) return `${this.isAllSelected(this.dataSource?.data) ? "select" : "deselect"} all`;
     return `${this.selection.isSelected(row) ? "deselect" : "select"} row ${row.category + 1}`;
   }
 
@@ -92,6 +103,12 @@ export class MagicMirrorTableUtility {
       disableClose: true,
       data: pkg
     });
+  }
+
+  public clearFilter(): void {
+    this.dataSource.filter = "";
+    let el = document.getElementById("searchbar") as HTMLInputElement;
+    el.value = "";
   }
 }
 

@@ -1,6 +1,7 @@
 import { Component } from "@angular/core";
 import { MatIconRegistry } from "@angular/material/icon";
 import { DomSanitizer } from "@angular/platform-browser";
+import { environment } from "../environments/environment";
 
 @Component({
   selector: "app-root",
@@ -12,7 +13,7 @@ export class AppComponent {
   constructor(private registry: MatIconRegistry, private sanitizer: DomSanitizer) {
     this.registry.addSvgIcon(
       "paypal",
-      this.sanitizer.bypassSecurityTrustResourceUrl("assets/icons/paypal.svg")
+      this.sanitizer.bypassSecurityTrustResourceUrl(`${environment.assetsPath}/icons/paypal.svg`)
     );
   }
 

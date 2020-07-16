@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatTableModule } from "@angular/material/table";
 import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatSelectModule } from "@angular/material/select";
 import { MatInputModule } from "@angular/material/input";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatSortModule } from "@angular/material/sort";
@@ -17,7 +18,8 @@ import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatGridListModule } from "@angular/material/grid-list";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
-import { MatBadgeModule } from '@angular/material/badge';
+import { MatBadgeModule } from "@angular/material/badge";
+import { MatListModule } from "@angular/material/list";
 
 @NgModule({
   declarations: [],
@@ -40,7 +42,9 @@ import { MatBadgeModule } from '@angular/material/badge';
     MatGridListModule,
     MatMenuModule,
     MatSlideToggleModule,
-    MatBadgeModule
+    MatBadgeModule,
+    MatSelectModule,
+    MatListModule
   ],
   exports: [
     CommonModule,
@@ -61,7 +65,9 @@ import { MatBadgeModule } from '@angular/material/badge';
     MatGridListModule,
     MatMenuModule,
     MatSlideToggleModule,
-    MatBadgeModule
+    MatBadgeModule,
+    MatSelectModule,
+    MatListModule
   ]
 })
 export class MaterialModule {}

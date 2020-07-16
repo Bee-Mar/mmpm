@@ -1,5 +1,5 @@
-<h2 mat-dialog-title style="text-align: center">Package Details</h2>
-<mat-dialog-content class="mat-typography" style="margin-left: 2em;">
+<h2 style="text-align: center;">Package Details</h2>
+<div style="height: 80%; overflow-y: auto; margin-left: 3em;">
   <p><strong>Title:</strong> {{ data.title }}</p>
   <p><strong>Category:</strong> {{ data.category }}</p>
   <p><strong>Author:</strong> {{ data.author }}</p>
@@ -11,7 +11,7 @@
   <p><strong>Last Updated:</strong> {{ data["Last Updated"] ? data["Last Updated"] : "N/A" }}</p>
   <p><strong>Created:</strong> {{ data["Created"] ? data["Created"] : "N/A" }}</p>
   <p><strong>Forks:</strong> {{ data["Forks"] ? data["Forks"] : "N/A" }}</p>
-</mat-dialog-content>
+</div>
 <mat-dialog-actions align="center">
   <button mat-raised-button mat-dialog-close color="primary">
     <mat-icon>

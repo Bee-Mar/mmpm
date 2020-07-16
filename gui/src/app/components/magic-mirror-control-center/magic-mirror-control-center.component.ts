@@ -10,6 +10,7 @@ import { ActiveModule } from "src/app/interfaces/interfaces";
 import { MatSlideToggleChange } from "@angular/material/slide-toggle";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
+import { SelectModalComponent } from "src/app/components/select-modal/select-modal.component";
 import io from "socket.io-client";
 
 interface Tile {
@@ -22,6 +23,7 @@ interface Tile {
   badge: number;
   url: string;
   disabled: boolean;
+  dialogWidth: string;
 }
 
 @Component({
@@ -64,12 +66,14 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       this.socket.on("disconnect", (data: any) => console.log(data));
 
       this.socket.on("MODULES_SHOWN", (result: any) => {
-        console.log(result);
+        if (result.fails?.length) {
+          this.snackbar.error(`Failed to hide ${result.fails}. Seee MMPM logs for details`)
+        }
       });
 
       this.socket.on("MODULES_HIDDEN", (result: any) => {
         if (result.fails.length) {
-          console.log(result);
+          this.snackbar.error(`Failed to hide ${result.fails}. Seee MMPM logs for details`)
         }
       });
 
@@ -126,6 +130,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       url: URLS.GET.MAGICMIRROR.START,
       message: "MagicMirror will be started.",
       disabled: false,
+      dialogWidth: "30vw",
     },
     {
       icon: "tv_off",
@@ -137,6 +142,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       url: URLS.GET.MAGICMIRROR.STOP,
       message: "MagicMirror will be stopped.",
       disabled: false,
+      dialogWidth: "30vw",
     },
     {
       icon: "refresh",
@@ -148,6 +154,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       url: URLS.GET.MAGICMIRROR.RESTART,
       message: "MagicMirror will be restarted.",
       disabled: false,
+      dialogWidth: "30vw",
     },
     {
       icon: "system_update",
@@ -159,10 +166,11 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       url: URLS.GET.MAGICMIRROR.UPGRADE,
       message: "MagicMirror will be upgraded and restarted, if running.",
       disabled: false,
+      dialogWidth: "33vw",
     },
     {
       icon: "power_settings_new",
-      visibleTooltip: "Restart RaspberryPi",
+      visibleTooltip: "Reboot RaspberryPi",
       disabledTooltip: "Unable to restart RaspberryPi within a Docker image",
       cols: 1,
       rows: 1,
@@ -170,6 +178,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       url: URLS.GET.RASPBERRYPI.RESTART,
       message: "Your RaspberryPi will be rebooted.",
       disabled: false,
+      dialogWidth: "30vw",
     },
     {
       icon: "power_off",
@@ -181,58 +190,117 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       url: URLS.GET.RASPBERRYPI.STOP,
       message: "Your RaspberryPi will be powered off.",
       disabled: false,
+      dialogWidth: "33vw",
     },
+    {
+      icon: "cached",
+      visibleTooltip: "Rotate screen",
+      disabledTooltip: "Unable to rotate screen within a Docker image",
+      cols: 2,
+      rows: 1,
+      badge: null,
+      url: URLS.POST.RASPBERRYPI.ROTATE_SCREEN,
+      message: "The screen will be rotated. The RaspberryPi must be restarted to take effect",
+      disabled: false,
+      dialogWidth: "45vw",
+    }
   ];
 
   private working = () => this.snackbar.notify("This may take a moment ...");
   private executed = () => this.snackbar.notify("Process executed");
   private magicMirrorRunningAlready = () => this.snackbar.error("MagicMirror appears to be running already. If this is a mistake, stop, then start MagicMirror.");
 
-  public sendControlSignal(url: string, message: string): void {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      height: "15vh",
-      width: "33vw",
-      data: {
-        message
-      }
-    });
+  public sendControlSignal(url: string, message: string, dialogWidth: string): void {
 
-    dialogRef.afterClosed().subscribe((response) => {
-      if (!response) {
-        return;
-      }
+    if (url === URLS.POST.RASPBERRYPI.ROTATE_SCREEN) {
+      const selectDialogRef = this.dialog.open(SelectModalComponent, {
+        data: {
+          title: "Rotate RaspberryPi Screen",
+          label: "Degrees",
+          choices: [0, 90, 180, 270],
+          description: "degrees"
+        },
+        width: "20vw",
+        height: "40vh",
+        disableClose: true
+      });
 
-      let ids: Array<number>;
+      selectDialogRef.afterClosed().subscribe((value) => {
 
-      if (url === URLS.GET.MAGICMIRROR.UPGRADE) {
-        // just a dummy MagicMirrorPackage to represent MagicMirror
-        const pkg: MagicMirrorPackage = {
-          title: "MagicMirror",
-          repository: "",
-          author: "",
-          description: "",
-          directory: "",
-          category: ""
-        };
+        const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
+          height: "15vh",
+          width: dialogWidth,
+          data: {
+            message
+          },
+          disableClose: true
+        });
 
-        this.snackbar.notify('Upgrading MagicMirror. This may take a few moments')
-        ids = this.mmpmUtility.saveProcessIds([pkg], "Upgrading");
-      }
+        confirmationDialogRef.afterClosed().subscribe((response) => {
+          if (!response) {
+            return;
+          }
 
-      this.api.retrieve(url).then((success) => {
-        if (url === URLS.GET.MAGICMIRROR.START) {
-          success ? this.working() : this.magicMirrorRunningAlready();
-        } else if (url === URLS.GET.MAGICMIRROR.UPGRADE) {
-          success ? this.snackbar.success('Upgraded MagicMirror!') : this.snackbar.error('Failed to upgrade MagicMirror. Please see the MMPM log files for details');
-          this.mmpmUtility.deleteProcessIds(ids);
-          this.dataStore.loadData();
-        } else {
-          url === URLS.GET.MAGICMIRROR.RESTART ? this.working() : this.executed();
+          this.api.rotateRaspberryPiScreen(value).then((error: any) => {
+            if (error?.error) {
+              this.snackbar.error(error.error);
+            }
+          });
+
+        });
+      });
+      return;
+
+    } else {
+      const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+        height: "15vh",
+        width: dialogWidth,
+        data: {
+          message
+        },
+        disableClose: true
+      });
+
+      dialogRef.afterClosed().subscribe((response) => {
+        if (!response) {
+          return;
         }
 
-        this.loadControlCenterData();
-      }).catch((error) => { console.log(error); });
-    });
+        let ids: Array<number>;
+
+        if (url === URLS.GET.MAGICMIRROR.UPGRADE) {
+          // just a dummy MagicMirrorPackage to represent MagicMirror
+          const pkg: MagicMirrorPackage = {
+            title: "MagicMirror",
+            repository: "",
+            author: "",
+            description: "",
+            directory: "",
+            category: ""
+          };
+
+          this.snackbar.notify('Upgrading MagicMirror. This may take a few moments')
+          ids = this.mmpmUtility.saveProcessIds([pkg], "Upgrading");
+        }
+
+        this.api.retrieve(url).then((success) => {
+          if (url === URLS.GET.MAGICMIRROR.START) {
+            success ? this.working() : this.magicMirrorRunningAlready();
+          } else if (url === URLS.GET.MAGICMIRROR.UPGRADE) {
+            success ? this.snackbar.success('Upgraded MagicMirror!') : this.snackbar.error('Failed to upgrade MagicMirror. Please see the MMPM log files for details');
+            this.mmpmUtility.deleteProcessIds(ids);
+            this.dataStore.loadData();
+          } else {
+            url === URLS.GET.MAGICMIRROR.RESTART ? this.working() : this.executed();
+          }
+
+          this.loadControlCenterData();
+        }).catch((error) => { console.log(error); });
+      });
+
+    }
+
+
   }
 
   public downloadLogs(): void {

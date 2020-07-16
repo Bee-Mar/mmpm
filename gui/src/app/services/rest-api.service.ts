@@ -100,6 +100,19 @@ export class RestApiService {
       }).pipe(retry(1), catchError(this.handleError)).toPromise();
   }
 
+  public rotateRaspberryPiScreen(degrees: number): Promise<any> {
+    return this.http.post<boolean>(
+      this.route(URLS.POST.RASPBERRYPI.ROTATE_SCREEN),
+      {
+        "degrees": String(degrees)
+      },
+      {
+        headers: httpOptions({
+          "Content-Type": "application/x-www-form-urlencoded"
+        })
+      }).pipe(retry(1), catchError(this.handleError)).toPromise();
+  }
+
   public removeExternalPackage(externalSources: MagicMirrorPackage[]): Promise<any> {
     return this.http.request(
       "DELETE",

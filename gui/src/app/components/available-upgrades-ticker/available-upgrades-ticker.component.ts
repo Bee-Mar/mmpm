@@ -17,7 +17,7 @@ export class AvailableUpgradesTickerComponent implements OnInit {
   ) {}
 
   public availableUpgrades: Array<MagicMirrorPackage>;
-  public count: number = 0;
+  public count: number;
 
   public ngOnInit(): void {
     this.dataStore.upgradeablePackages.subscribe((upgradeable) => {

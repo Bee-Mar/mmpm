@@ -2,7 +2,7 @@
     style="height: 92%;"
     [options]="editorOptions"
     (onInit)="onEditorInit($event)"
-    [(ngModel)]="fileSelection[fileIndex].code"
+    [(ngModel)]="code"
 >
 </ngx-monaco-editor>
 
@@ -20,7 +20,8 @@
 
     <button
       mat-raised-button
-      style="background-color: #00b8e6; margin-right: 5em;"
+      color="accent"
+      style="margin-right: 5em;"
       matTooltip="Toggle theme"
       [matTooltipPosition]="'below'"
       (click)="onToggleTheme()"

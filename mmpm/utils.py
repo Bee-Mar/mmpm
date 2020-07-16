@@ -291,11 +291,11 @@ def clone(title: str, repo: str, target_dir: str = '') -> Tuple[int, str, str]:
     Returns:
         Tuple[returncode (int), stdout (str), stderr (str)]: Return code, stdout, and stderr of the process
     '''
-    # by using "repo.split()", it allows the user to bake in additional commands when making custom sources
-    # ie. git clone [repo] -b [branch] [target]
     log.info(f'Cloning {repo} into {target_dir if target_dir else os.path.join(os.getcwd(), title)}')
     plain_print(f"{mmpm.consts.GREEN_DASHES} Cloning repository")
 
+    # by using "repo.split()", it allows the user to bake in additional commands when making custom sources
+    # ie. git clone [repo] -b [branch] [target]
     command = ['git', 'clone'] + repo.split()
 
     if target_dir:
@@ -974,6 +974,7 @@ def socketio_client_disconnect(client) -> bool:
         log.info('encountered OSError when disconnecting from websocket, ignoring')
     return True
 
+
 def get_env(key: str) -> str:
     '''
     Reads environment variables from the MMPM_ENV_FILE. In order to ensure
@@ -992,8 +993,33 @@ def get_env(key: str) -> str:
 
     with open(mmpm.consts.MMPM_ENV_FILE, 'r') as env:
         try:
-           value = json.load(env)[key]
+            value = json.load(env)[key]
         except json.JSONDecodeError:
-            pass
+            log.warning(f'environment variable {key} does not exist, returning empty string')
 
     return value
+
+
+def reset_available_upgrades_for_environment(env: str) -> bool:
+
+    upgrades: dict = {}
+
+    log.info(f'Resetting available upgrades for {env}')
+
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
+        try:
+            upgrades = json.load(available_upgrades)
+        except (json.JSONDecodeError, OSError) as error:
+            log.error(f'Encountered error when reading {mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE}: {str(error)}')
+            upgrades = {mmpm.consts.MMPM: False, env: {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}}
+
+    try:
+        with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
+            upgrades[env] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}
+            json.dump(upgrades, available_upgrades)
+
+    except OSError as error:
+        log.error(str(error))
+        return False
+
+    return True

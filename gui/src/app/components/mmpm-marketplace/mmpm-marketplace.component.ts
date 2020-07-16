@@ -122,11 +122,16 @@ export class MMPMMarketplaceComponent implements OnInit {
       } else {
         const pkg = failures.length == 1 ? "package" : "packages";
 
-        this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings(failures));
+        this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings({
+          failures,
+          action: "installing"
+        }));
+
         this.snackbar.error(`${failures.length} ${pkg} failed to install`);
       }
 
       this.mmpmUtility.deleteProcessIds(ids);
+      this.tableUtility.clearFilter();
       this.dataStore.loadData();
 
     }).catch((error) => console.log(error));
@@ -154,7 +159,6 @@ export class MMPMMarketplaceComponent implements OnInit {
 
         if (!installationConflicts?.matchesSelectedTitles?.length && !installationConflicts?.matchesInstalledTitles?.length) {
           this.installPackages(selected);
-          this.dataStore.loadData();
 
         } else {
           let dialogRef = this.dialog.open(
@@ -180,9 +184,7 @@ export class MMPMMarketplaceComponent implements OnInit {
               selected.splice(selected.findIndex((pkg: MagicMirrorPackage) => this.mmpmUtility.isSamePackage(pkg, remove)), 1);
             }
 
-            console.log(selected);
             this.installPackages(selected);
-            console.log('here')
           });
         }
       }).catch((error) => console.log(error));
@@ -191,8 +193,7 @@ export class MMPMMarketplaceComponent implements OnInit {
 
   public onRefreshPackages(): void {
     this.snackbar.notify("Executing ... ");
-    this.setupTableData();
-    this.snackbar.notify("Refresh complete!");
+    this.dataStore.loadData();
   }
 
   ngOnDestroy() {

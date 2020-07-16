@@ -12,6 +12,7 @@ from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
 from flask_socketio import SocketIO
 from typing import Tuple, List, Callable
+from time import sleep
 
 import mmpm.utils
 import mmpm.consts
@@ -58,7 +59,6 @@ def __get_selected_packages__(rqst, key: str = 'selected-packages') -> List[Magi
         del pkg['category']
 
         if not pkg['directory']:
-            mmpm.utils.log.info(pkg)
             pkg['directory'] = os.path.normpath(os.path.join(MAGICMIRROR_MODULES_DIR, pkg['title']))
 
     return [MagicMirrorPackage(**pkg) for pkg in pkgs]
@@ -138,7 +138,6 @@ def packages_external() -> Response:
 @app.route(api('packages/install'), methods=[mmpm.consts.POST])
 def packages_install() -> Response:
     selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
-    mmpm.utils.log.info(f'User selected {selected_packages} to be installed')
     failures: List[dict] = []
 
     for package in selected_packages:
@@ -155,17 +154,22 @@ def packages_install() -> Response:
 
 @app.route(api('packages/remove'), methods=[mmpm.consts.POST])
 def packages_remove() -> Response:
-    selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
-    mmpm.utils.log.info(f'User selected {selected_packages} to be removed')
+    # not bothering with serialization since the directory is already included in the request
+    selected_packages: List[MagicMirrorPackage] = request.get_json(force=True)['selected-packages']
     failures: List[dict] = []
 
     for package in selected_packages:
-        if not os.path.exists(package.directory):
-            failures.append({'package': package.serialize(), 'error': f'{package.directory} not found'})
-            continue
+        directory = package['directory']
+        mmpm.utils.log.info(f"Attempting to removing {package['title']} at {directory}")
 
-        os.system(f"rm -rf '{package.directory}'")
-        mmpm.utils.log.info(f'Removed {package.directory}')
+        try:
+            shutil.rmtree(directory)
+        except PermissionError as error:
+            failures.append({'package': package, 'error': f"Cannot remove {directory}: {str(error)}"})
+        except Exception as error:
+            failures.append({'package': package, 'error': f"Cannot remove {directory}: {str(error)}"})
+        finally:
+            sleep(0.05)
 
     return Response(json.dumps(failures))
 
@@ -242,6 +246,7 @@ def packages_details() -> Response:
 @app.route(api('external-packages/add'), methods=[mmpm.consts.POST])
 def external_packages_add() -> Response:
     package: dict = request.get_json(force=True)['external-package']
+    j
 
     failures: List[dict] = []
 
@@ -293,10 +298,10 @@ def external_packages_remove() -> Response:
 #  -- START: MAGICMIRROR --
 @app.route(api('magicmirror/config'), methods=[mmpm.consts.GET, mmpm.consts.POST])
 def magicmirror_config() -> Response:
-    if request.method == mmpm.consts.GET:
-        MAGICMIRROR_CONFIG_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'config')
-        MAGICMIRROR_CONFIG_FILE: str = os.path.join(MAGICMIRROR_CONFIG_DIR, 'config.js')
+    MAGICMIRROR_CONFIG_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'config')
+    MAGICMIRROR_CONFIG_FILE: str = os.path.join(MAGICMIRROR_CONFIG_DIR, 'config.js')
 
+    if request.method == mmpm.consts.GET:
         if not os.path.exists(MAGICMIRROR_CONFIG_FILE):
             does_not_exist: str = f'// {MAGICMIRROR_CONFIG_FILE} not found. An empty file was created for you in its place'
             try:
@@ -323,10 +328,10 @@ def magicmirror_config() -> Response:
 
 @app.route(api('magicmirror/custom-css'), methods=[mmpm.consts.GET, mmpm.consts.POST])
 def magicmirror_custom_css() -> Response:
-    if request.method == mmpm.consts.GET:
-        MAGICMIRROR_CUSTOM_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'custom')
-        MAGICMIRROR_CUSTOM_CSS_FILE: str = os.path.join(MAGICMIRROR_CUSTOM_DIR, 'custom.css')
+    MAGICMIRROR_CUSTOM_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'custom')
+    MAGICMIRROR_CUSTOM_CSS_FILE: str = os.path.join(MAGICMIRROR_CUSTOM_DIR, 'custom.css')
 
+    if request.method == mmpm.consts.GET:
         if not os.path.exists(MAGICMIRROR_CUSTOM_CSS_FILE):
             try:
                 pathlib.Path(MAGICMIRROR_CUSTOM_DIR).mkdir(parents=True, exist_ok=True)
@@ -461,6 +466,12 @@ def raspberrypi_stop() -> Response:
     mmpm.core.stop_magicmirror()
     error_code, _, _ = mmpm.utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
     return Response(json.dumps(bool(not error_code)))
+
+
+@app.route(api('raspberrypi/rotate-screen'), methods=[mmpm.consts.POST])
+def raspberrypi_rotate_screent() -> Response:
+    degrees: int = request.get_json(force=True)['degrees']
+    return Response(json.dumps({'error': mmpm.core.rotate_raspberrypi_screen(degrees)}))
 #  -- END: RASPBERRYPI --
 
 

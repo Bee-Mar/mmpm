@@ -27,6 +27,8 @@ import { ActiveProcessesModalComponent } from "./components/active-processes-mod
 import { InstallationConflictResolutionDialogComponent } from "./components/installation-conflict-resolution-dialog/installation-conflict-resolution-dialog.component";
 import { AvailableUpgradesTickerComponent } from "./components/available-upgrades-ticker/available-upgrades-ticker.component";
 import { AvailableUpgradesModalDialogComponent } from "./components/available-upgrades-modal-dialog/available-upgrades-modal-dialog.component";
+import { environment } from "../environments/environment";
+import { SelectModalComponent } from './components/select-modal/select-modal.component';
 
 export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
   return () => dataStore.loadData();
@@ -51,6 +53,7 @@ export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
     InstallationConflictResolutionDialogComponent,
     AvailableUpgradesTickerComponent,
     AvailableUpgradesModalDialogComponent,
+    SelectModalComponent,
   ],
   imports: [
     BrowserModule,
@@ -61,8 +64,7 @@ export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
     ReactiveFormsModule,
     FormsModule,
     MonacoEditorModule.forRoot({
-      //baseUrl: "./static/assets",
-      baseUrl: "../assets", // NOTE: DEV ONLY
+      baseUrl: environment.assetsPath,
       defaultOptions: {
         language: "javascript",
         scrollBeyondLastLine: false,

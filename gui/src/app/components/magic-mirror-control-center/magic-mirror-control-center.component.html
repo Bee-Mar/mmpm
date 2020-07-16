@@ -1,6 +1,6 @@
 <div style="width: 100%; height: 100%;">
   <div style="height: 100%; width: 20%; background-color: #303030; float: left">
-    <mat-grid-list cols="2" rowHeight="33%">
+    <mat-grid-list cols="2" rowHeight="25%">
       <mat-grid-tile *ngFor="let tile of tiles" [colspan]="tile.cols" [rowspan]="tile.rows" color="#FFFFFF">
         <button
           class="remote-button"
@@ -9,7 +9,7 @@
           matTooltip="{{ tile.disabled ? tile.disabledTooltip : tile.visibleTooltip }}"
           color="accent"
           [disabled]="tile.disabled"
-          (click)="sendControlSignal(tile.url, tile.message)"
+          (click)="sendControlSignal(tile.url, tile.message, tile.dialogWidth)"
         >
           <mat-icon>
             {{ tile.icon }}

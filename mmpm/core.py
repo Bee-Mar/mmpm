@@ -267,7 +267,8 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
         upgradeable (List[MagicMirrorPackage]): the list of packages that have available upgrades
     '''
 
-    MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules'))
+    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
+    MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(MMPM_MAGICMIRROR_ROOT, 'modules'))
 
     os.chdir(MAGICMIRROR_MODULES_DIR)
     installed_packages: Dict[str, List[MagicMirrorPackage]] = get_installed_packages(packages)
@@ -279,7 +280,12 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
             break
 
     if not any_installed:
-        mmpm.utils.error_msg('No packages installed')
+        mmpm.utils.warning_msg('No packages installed')
+        # asserting the available-updates file doesn't contain any artifacts of
+        # previously installed packages that had updates at one point in time
+        if not mmpm.utils.reset_available_upgrades_for_environment(MMPM_MAGICMIRROR_ROOT):
+            mmpm.utils.log.error('Failed to reset available upgrades for the current environment. File has been recreated')
+            os.system(f'rm -f {mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE}; touch {mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE}')
         return []
 
     upgradeable: List[MagicMirrorPackage] = []
@@ -456,9 +462,7 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
     os.chdir(MAGICMIRROR_MODULES_DIR)
 
     # a flag to check if any of the modules have been installed. Used for displaying a message later
-    successes: int = 0
     match_count: int = len(installation_candidates)
-
     print(mmpm.color.normal_cyan(f"Matched query to {match_count} {'package' if match_count == 1 else 'packages'}"))
 
     for index, candidate in enumerate(installation_candidates):
@@ -469,6 +473,7 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
             mmpm.utils.log.info(f'User chose to install {candidate.title} ({candidate.repository})')
 
     existing_module_dirs: List[str] = mmpm.utils.get_existing_package_directories()
+    starting_count: int = len(existing_module_dirs)
 
     for package in installation_candidates:
         if package == None: # the module may be empty due to the above for loop
@@ -476,19 +481,17 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
 
         package.directory = os.path.join(MAGICMIRROR_MODULES_DIR, package.title)
 
-        # ideally, providiing alternative installation directories would be done, but it would require messing with file names within the renamed
-        # module, which can cause a lot of problems when trying to update those repos
-        if package.title in existing_module_dirs:
-            mmpm.utils.log.error(f'Conflict encountered. Found a package named {package.title} already at {package.directory}')
-            mmpm.utils.error_msg(f'A module named {package.title} is already installed in {package.directory}. Please remove {package.title} first.')
-            continue
+        for existing_dir in existing_module_dirs:
+            if package.directory == existing_dir:
+                mmpm.utils.log.error(f'Conflict encountered. Found a package named {package.title} already at {package.directory}')
+                mmpm.utils.error_msg(f'A module named {package.title} is already installed in {package.directory}. Please remove {package.title} first.')
+                continue
 
         try:
             success, _ = install_package(package, assume_yes=assume_yes)
 
             if success:
-                existing_module_dirs.append(package.directory)
-                successes += 1
+                existing_module_dirs.append(package.title)
 
         except KeyboardInterrupt:
             mmpm.utils.log.info(f'Cleaning up cancelled installation path of {package.directory} before exiting')
@@ -496,7 +499,7 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
             os.system(f"rm -rf '{package.directory}'")
             mmpm.utils.keyboard_interrupt_log()
 
-    if not successes:
+    if len(existing_module_dirs) == starting_count:
         return False
 
     print('Run `mmpm open --config` to edit the configuration for newly installed modules')
@@ -516,10 +519,10 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
     '''
 
     MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules'))
-
     os.chdir(MAGICMIRROR_MODULES_DIR)
 
     print(f'{mmpm.consts.GREEN_PLUS} Installing {mmpm.color.normal_green(package.title)}')
+
     error_code, _, stderr = mmpm.utils.clone(
         package.title,
         package.repository,
@@ -532,9 +535,7 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
         return False, stderr
 
     print(mmpm.consts.GREEN_CHECK_MARK)
-
     error: str = mmpm.utils.install_dependencies(package.directory)
-
     os.chdir(MAGICMIRROR_MODULES_DIR)
 
     if error:
@@ -615,10 +616,7 @@ def check_for_magicmirror_updates() -> bool:
         except json.JSONDecodeError:
             upgrades = {
                 mmpm.consts.MMPM: False,
-                MMPM_MAGICMIRROR_ROOT: {
-                    mmpm.consts.PACKAGES: [],
-                    mmpm.consts.MAGICMIRROR: update_available
-                }
+                MMPM_MAGICMIRROR_ROOT: {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: update_available}
             }
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
@@ -1177,6 +1175,7 @@ def get_installed_packages(packages: Dict[str, List[MagicMirrorPackage]]) -> Dic
 
     for category, package_names in packages.items():
         installed_packages.setdefault(category, [])
+
         for package in package_names:
             for package_found in packages_found[mmpm.consts.PACKAGES]:
                 if package.repository == package_found.repository:
@@ -1799,7 +1798,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
         mmpm.utils.fatal_msg(f'Unable install autocompletion for ({shell}). Please see {autocomplete_url} for help installing autocomplete')
 
 
-def rotate_raspberrypi_screen(degrees: int) -> bool:
+def rotate_raspberrypi_screen(degrees: int) -> str:
     '''
     Rotates screen of RaspberryPi 3 and RaspberryPi 4 to the setting supplied
     by the user
@@ -1808,7 +1807,7 @@ def rotate_raspberrypi_screen(degrees: int) -> bool:
         degrees (int): desired setting in degrees
 
     Returns:
-        success (bool): True if successful, False if failure
+        error (str): empty if on success, error message on failure
     '''
 
     import re
@@ -1848,15 +1847,15 @@ def rotate_raspberrypi_screen(degrees: int) -> bool:
                 cfg.write(contents)
 
         elif 'Raspberry Pi 4' in rpi_model:
-            # TODO: figure this out
             mmpm.utils.warning_msg('Sorry, this has not been implemented yet')
 
     else:
-        mmpm.utils.error_msg('Display rotation has not been implemented for this type of computing unit. Only Raspberry Pi 3 and 4 are supported')
-        return False
+        message: str = 'Display rotation has not been implemented for this type device. Only Raspberry Pi 3 is supported for the moment'
+        mmpm.utils.error_msg(message)
+        return message
 
     print('Please restart your RaspberryPi for the changes to take effect')
-    return True
+    return ''
 
 
 def migrate() -> None:

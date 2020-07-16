@@ -226,7 +226,7 @@ def get_user_args() -> object:
         '-t',
         '--title-only',
         action='store_true',
-        help='display title only of packages (used with -c, -a, -e, or -i)',
+        help='display the title only of packages (used with -c, -a, -e, or -i)',
         dest='title_only'
     )
 

@@ -159,7 +159,8 @@ def assert_required_defaults_exist() -> bool:
 
 def calculation_expiration_date_of_database() -> Tuple[float, float]:
     '''
-    Calculates the expiration timestamp of the MagicMirror database file
+    Calculates the expiration timestamp of the MagicMirror database file. The
+    database is considered expired if it is 24 hours or older
 
     Parameters:
         None
@@ -171,7 +172,7 @@ def calculation_expiration_date_of_database() -> Tuple[float, float]:
 
     if os.path.exists(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE):
         creation_date = os.path.getmtime(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE)
-        expiration_date = creation_date + 12 * 60 * 60
+        expiration_date = creation_date + 24 * 60 * 60
 
     return creation_date, expiration_date
 

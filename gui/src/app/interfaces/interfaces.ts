@@ -14,6 +14,7 @@ export interface InstallationConflict {
 
 export interface ActiveProcess {
   name: string;
+  action: string;
   startTime: string;
 }
 

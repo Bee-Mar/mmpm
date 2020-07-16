@@ -414,10 +414,6 @@ def get_installation_candidates(packages: Dict[str, List[MagicMirrorPackage]], p
 
     installation_candidates: List[MagicMirrorPackage] = []
 
-    if 'mmpm' in packages_to_install:
-        mmpm.utils.warning_msg("Removing 'mmpm' as an installation candidate. It's obviously already installed " + u'\U0001F609')
-        packages_to_install.remove('mmpm')
-
     for package_to_install in packages_to_install:
         found: bool = False
         for category in packages.values():
@@ -926,7 +922,7 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
                                 repo = a['href']
 
                         package.repository = str(repo).strip()
-                        package.title = str(title)
+                        package.title = mmpm.utils.sanitize_name(title).strip()
 
                     elif idx == 1:
                         for contents in td_soup[idx].contents:
@@ -948,14 +944,16 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
                             else:
                                 desc += contents.string
 
-                packages[categories[index]].append(
-                    MagicMirrorPackage(
-                        title=mmpm.utils.sanitize_name(title).strip(),
-                        author=author.strip(),
-                        description=desc.strip(),
-                        repository=repo.strip()
+                if package.title != mmpm.consts.MMPM:
+                    # this is not very efficient, but it only runs once in a while
+                    packages[categories[index]].append(
+                        MagicMirrorPackage(
+                            title=title,
+                            author=author.strip(),
+                            description=desc.strip(),
+                            repository=repo.strip()
+                        )
                     )
-                )
 
     return packages
 

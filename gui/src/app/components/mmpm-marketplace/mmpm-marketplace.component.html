@@ -95,17 +95,17 @@
     <button
       mat-raised-button
       color="primary"
+      class="remote-button"
       [disabled]="!selection?.selected?.length || !allPackages?.length"
       matTooltip="Install packages"
       [matTooltipPosition]="tableUtility?.tooltipPosition"
       (click)="onInstallPackages()"
       >
-      <mat-icon>
-        get_app
-      </mat-icon>
+      <mat-icon>get_app</mat-icon>
     </button>
 
     <button
+      class="remote-button"
       color="accent"
       mat-raised-button
       matTooltip="Refresh marketplace"
@@ -113,8 +113,6 @@
       style="margin-left: 5em;"
       (click)="onRefreshPackages()"
       >
-      <mat-icon>
-        refresh
-      </mat-icon>
+      <mat-icon>refresh</mat-icon>
     </button>
 </div>

@@ -83,12 +83,13 @@ export class MagicMirrorTableUtility {
     return `${description.slice(0, maxDescriptionLength - 3)} ...`;
   }
 
-  public saveProcessIds(pkgs: MagicMirrorPackage[], titlePreamble: string): Array<number> {
+  public saveProcessIds(pkgs: MagicMirrorPackage[], action: string): Array<number> {
     let ids: Array<number> = new Array<number>();
 
     for (let pkg of pkgs) {
       ids.push(this.activeProcessService.insertProcess({
-        name: `${titlePreamble} ${pkg.title}`,
+        name: pkg.title,
+        action,
         startTime: Date().toString()
       }));
     }

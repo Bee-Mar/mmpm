@@ -78,8 +78,9 @@
 
   <button
     mat-raised-button
+    class="remote-button"
     color="primary"
-    style="margin-left: 5em;"
+    style="margin-right: 5em;"
     matTooltip="Add external package"
     [matTooltipPosition]="tableUtility?.tooltipPosition"
     (click)="onAddExternalPackage()"
@@ -91,8 +92,8 @@
 
   <button
     mat-raised-button
+    class="remote-button"
     color="accent"
-    style="margin-left: 3em;"
     matTooltip="{{ selection?.selected?.length === 1 ? 'Remove external module source' : 'Remove external module sources' }}"
     [matTooltipPosition]="tableUtility?.tooltipPosition"
     (click)="onRemoveExternalPackage()"

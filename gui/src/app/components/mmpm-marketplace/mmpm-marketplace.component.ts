@@ -120,7 +120,7 @@ export class MMPMMarketplaceComponent implements OnInit {
   }
 
   private installPackages(selected: MagicMirrorPackage[]): void {
-    let ids: Array<number> = this.tableUtility.saveProcessIds(selected, "[ Installation ]");
+    let ids: Array<number> = this.tableUtility.saveProcessIds(selected, "Installing");
 
     this.api.packagesInstall(selected).then((failures: string) => {
       failures = JSON.parse(failures);

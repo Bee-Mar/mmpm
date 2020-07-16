@@ -2,7 +2,15 @@
   <div style="height: 100%; width: 20%; background-color: #303030; float: left">
     <mat-grid-list cols="2" rowHeight="33%">
       <mat-grid-tile *ngFor="let tile of tiles" [colspan]="tile.cols" [rowspan]="tile.rows" color="#FFFFFF">
-        <button mat-fab matTooltip="{{ tile.disabled ? tile.disabledTooltip : tile.visibleTooltip }}" style="background-color: #00b8e6;" [disabled]="tile.disabled" (click)="sendControlSignal(tile.url, tile.message)">
+        <button
+          class="remote-button"
+          mat-raised-button
+          [matBadge]="tile.badge"
+          matTooltip="{{ tile.disabled ? tile.disabledTooltip : tile.visibleTooltip }}"
+          color="accent"
+          [disabled]="tile.disabled"
+          (click)="sendControlSignal(tile.url, tile.message)"
+        >
           <mat-icon>
             {{ tile.icon }}
           </mat-icon>
@@ -46,20 +54,20 @@
   <div style="height: 100%; width: 45%; float: right; background-color: #303030;">
     <h1 style="text-align: center; margin-top: 4%;">Resources</h1>
     <div style="text-align: center; margin-top: 8%;">
-      <button mat-button (click)="openUrl('https://github.com/Bee-Mar/mmpm/wiki')">
+      <button class="link-button" mat-button (click)="openUrl('https://github.com/Bee-Mar/mmpm/wiki')">
         <mat-icon color="primary">exit_to_app</mat-icon> MMPM Wiki
       </button>
-      <button mat-button (click)="openUrl(mmpmEnvVars?.get('MMPM_MAGICMIRROR_URI'))">
+      <button class="link-button" mat-button (click)="openUrl(mmpmEnvVars?.get('MMPM_MAGICMIRROR_URI'))">
         <mat-icon color="primary">exit_to_app</mat-icon> MagicMirror
       </button>
-      <button mat-button (click)="openUrl('https://github.com/MichMich/MagicMirror')">
+      <button class="link-button" mat-button (click)="openUrl('https://github.com/MichMich/MagicMirror')">
         <mat-icon color="primary">exit_to_app</mat-icon> MagicMirror GitHub
       </button>
-      <button mat-button (click)="openUrl('https://docs.magicmirror.builders/')">
+      <button class="link-button" mat-button (click)="openUrl('https://docs.magicmirror.builders/')">
         <mat-icon color="primary">exit_to_app</mat-icon> MagicMirror Documentation
       </button>
       <div style="text-align: center; margin-top: 2em;">
-        <button mat-button (click)="openUrl('https://github.com/Bee-Mar/mmpm/issues/new')">
+        <button class="link-button" mat-button (click)="openUrl('https://github.com/Bee-Mar/mmpm/issues/new')">
           <mat-icon style="top: 5px; color: yellow;">error_outline</mat-icon> Create an Issue
         </button>
       </div>
@@ -78,10 +86,10 @@
       </ul>
     </div>
     <div style="margin-top: 8%; text-align: center;">
-      <button mat-raised-button color="primary" matTooltip="Download MMPM log files" [matTooltipPosition]="'below'" (click)="downloadLogs()" style="background-color: #00b8e6; margin-right: 5em;">
+      <button mat-raised-button color="accent" matTooltip="Download MMPM log files" [matTooltipPosition]="'below'" class="remote-button" (click)="downloadLogs()" class="remote-button" style="margin-right: 5em;">
         <mat-icon>get_app</mat-icon>
       </button>
-      <button mat-raised-button color="primary" matTooltip="Reload control center" [matTooltipPosition]="'below'" (click)="loadControlCenterData()" style="background-color: #00b8e6">
+      <button mat-raised-button color="accent" matTooltip="Reload control center" [matTooltipPosition]="'below'" (click)="loadControlCenterData()" class="remote-button">
         <mat-icon>refresh</mat-icon>
       </button>
     </div>

@@ -1,7 +1,11 @@
 button {
   float: right;
-  margin-right: 2em;
-  background-color: #5c5c5c;
+  margin-right: 3em;
+  margin-top: 7px;
   color: white;
-  border-radius: 20px;
+}
+
+button:hover {
+  color: #303030;
+  background-color: none;
 }

@@ -68,9 +68,9 @@ export class MMPMLocalPackagesComponent implements OnInit {
       this.isUpgradeable.fill(false);
 
       this.dataStore.upgradeablePackages.subscribe((upgradeable) => {
-        this.upgradeablePackages = upgradeable;
+        this.upgradeablePackages = upgradeable?.packages;
 
-        this.upgradeablePackages.forEach((upgradeablePackage: MagicMirrorPackage) => {
+        this.upgradeablePackages?.forEach((upgradeablePackage: MagicMirrorPackage) => {
           pkgs.forEach((installedPkg: MagicMirrorPackage, index: number) => {
             if (this.mmpmUtility.isSamePackage(upgradeablePackage, installedPkg)) {
               this.isUpgradeable[index] = true;

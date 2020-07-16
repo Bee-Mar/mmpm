@@ -14,6 +14,7 @@ import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/cust
 import { ExternalPackageRegistrationDialogComponent } from "src/app/components/external-package-registration-dialog/external-package-registration-dialog.component";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
+import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 
 @Component({
   selector: "app-mmpm-external-packages",
@@ -83,7 +84,23 @@ export class MMPMExternalPackagesComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((newExternalPackage: MagicMirrorPackage) => {
       // the user may have exited without entering anything
-      if (newExternalPackage) {
+      if (!newExternalPackage?.title?.length) {
+        dialogRef.close();
+        return;
+      }
+
+      const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
+        data: {
+          message: `${newExternalPackage.title} will be added to the database`
+        },
+        disableClose: true
+      });
+
+      confirmationDialogRef.afterClosed().subscribe((yes) => {
+        if (!yes) {
+          return;
+        }
+
         let ids: Array<number> = this.tableUtility.saveProcessIds(this.selection.selected, "Adding External Source");
 
         this.api.addExternalPackage(newExternalPackage).then((error) => {
@@ -97,21 +114,35 @@ export class MMPMExternalPackagesComponent implements OnInit {
           this.dataStore.loadData();
           this.snackbar.success(message);
         }).catch((error) => console.log(error));
-      }
+      });
+
     });
   }
 
   public onRemoveExternalPackage(): void {
-    if (this.selection.selected.length) {
-      this.snackbar.notify("Executing ... ");
+    const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: "The selected external packages will be removed from the database"
+      },
+      disableClose: true
+    });
 
-      this.api.removeExternalPackage(this.selection.selected).then((_) => {
-        this.dataStore.loadData();
-        this.snackbar.success("Process complete!");
-      }).catch((error) => {
-        console.log(error);
-      });
-    }
+    confirmationDialogRef.afterClosed().subscribe((yes) => {
+      if (!yes) {
+        return;
+      }
+
+      if (this.selection.selected.length) {
+        this.snackbar.notify("Executing ... ");
+
+        this.api.removeExternalPackage(this.selection.selected).then((_) => {
+          this.dataStore.loadData();
+          this.snackbar.success("Process complete!");
+        }).catch((error) => {
+          console.log(error);
+        });
+      }
+    });
   }
 
   ngOnDestroy() {

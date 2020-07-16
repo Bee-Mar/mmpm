@@ -1,7 +1,8 @@
 import { Component, OnInit } from "@angular/core";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { MatDialog, MatDialogConfig } from "@angular/material/dialog";
+import { MatDialog } from "@angular/material/dialog";
+import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
 import { DataStoreService } from "src/app/services/data-store.service";
@@ -17,6 +18,7 @@ interface Tile {
   visibleTooltip: string;
   disabledTooltip: string;
   message: string;
+  badge: number;
   url: string;
   disabled: boolean;
 }
@@ -31,6 +33,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     private api: RestApiService,
     private _snackbar: MatSnackBar,
     private dataStore: DataStoreService,
+    private activeProcessService: ActiveProcessCountService,
     public dialog: MatDialog,
   ) {}
 
@@ -83,10 +86,11 @@ export class MagicMirrorControlCenterComponent implements OnInit {
 
       this.socket.on("error", (data: any) => console.log(data));
 
-      this.dataStore.upgradeablePackages.subscribe((upgradeable: object) => {
+      this.dataStore.upgradeablePackages.subscribe((upgradeable: any) => {
         this.tiles.forEach((t) => {
           if (t.url === URLS.GET.MAGICMIRROR.UPGRADE) {
-            t.disabled = !upgradeable["MagicMirror"];
+            t.disabled = !upgradeable.MagicMirror;
+            t.badge = t.disabled ? null : 1;
 
             if (!mmpmIsDockerImage) {
               t.disabledTooltip = "No upgrades available for MagicMirror"
@@ -118,6 +122,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       disabledTooltip: "Unable to start MagicMirror within a Docker image",
       cols: 1,
       rows: 1,
+      badge: null,
       url: URLS.GET.MAGICMIRROR.START,
       message: "MagicMirror will be started.",
       disabled: false,
@@ -128,6 +133,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       disabledTooltip: "Unable to stop MagicMirror within a Docker image",
       cols: 1,
       rows: 1,
+      badge: null,
       url: URLS.GET.MAGICMIRROR.STOP,
       message: "MagicMirror will be stopped.",
       disabled: false,
@@ -138,6 +144,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       disabledTooltip: "Unable to restart MagicMirror within a Docker image",
       cols: 1,
       rows: 1,
+      badge: null,
       url: URLS.GET.MAGICMIRROR.RESTART,
       message: "MagicMirror will be restarted.",
       disabled: false,
@@ -148,6 +155,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       disabledTooltip: "Unable to upgrade MagicMirror within a Docker image",
       cols: 1,
       rows: 1,
+      badge: null,
       url: URLS.GET.MAGICMIRROR.UPGRADE,
       message: "MagicMirror will be upgraded and restarted, if running.",
       disabled: false,
@@ -158,6 +166,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       disabledTooltip: "Unable to restart RaspberryPi within a Docker image",
       cols: 1,
       rows: 1,
+      badge: null,
       url: URLS.GET.RASPBERRYPI.RESTART,
       message: "Your RaspberryPi will be rebooted.",
       disabled: false,
@@ -168,6 +177,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       disabledTooltip: "Unable to shutdown RaspberryPi within a Docker image",
       cols: 1,
       rows: 1,
+      badge: null,
       url: URLS.GET.RASPBERRYPI.STOP,
       message: "Your RaspberryPi will be powered off.",
       disabled: false,

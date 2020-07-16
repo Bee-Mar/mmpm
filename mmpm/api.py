@@ -415,12 +415,12 @@ def magicmirror_upgrade() -> Response:
     mmpm.utils.log.info('Request to upgrade MagicMirror')
     mmpm.utils.log.info('Finished installing')
 
-    mmpm.core.upgrade_magicmirror()
+    success: bool = mmpm.core.upgrade_magicmirror()
 
     if mmpm.utils.is_magicmirror_running():
         mmpm.core.restart_magicmirror()
 
-    return Response(json.dumps(True))
+    return Response(json.dumps(success))
 #  -- END: MAGICMIRROR --
 
 

@@ -200,7 +200,7 @@ def main(argv):
             mmpm.core.show_magicmirror_modules(args.show)
         elif args.start or args.stop or args.restart or args.rotate:
             MMPM_IS_DOCKER_IMAGE: str = mmpm.utils.get_env('MMPM_IS_DOCKER_IMAGE')
-            if bool(MMPM_IS_DOCKER_IMAGE.title()) == True:
+            if MMPM_IS_DOCKER_IMAGE:
                 mmpm.utils.fatal_msg('Cannot execute this command within a docker image')
             elif args.start:
                 mmpm.core.start_magicmirror()

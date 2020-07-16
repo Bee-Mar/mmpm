@@ -1,8 +1,13 @@
 import * as Cookie from "js-cookie";
+import { Injectable } from "@angular/core";
 import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
+import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 
+@Injectable({
+  providedIn: "root"
+})
 export class MMPMUtility {
-  constructor(){}
+  constructor(public activeProcessService: ActiveProcessCountService){}
 
   public isSamePackage(a: MagicMirrorPackage, b: MagicMirrorPackage, strictEquality: boolean = false): boolean {
     if (!strictEquality)
@@ -29,5 +34,27 @@ export class MMPMUtility {
       height: "75vh",
       disableClose: true
     };
+  }
+
+  public saveProcessIds(pkgs: MagicMirrorPackage[], action: string): Array<number> {
+    let ids: Array<number> = new Array<number>();
+
+    for (let pkg of pkgs) {
+      ids.push(this.activeProcessService.insertProcess({
+        name: pkg.title,
+        action,
+        startTime: Date().toString()
+      }));
+    }
+
+    return ids;
+  }
+
+  public deleteProcessIds(ids: Array<number>): void {
+    for (let id of ids) {
+      if (!this.activeProcessService.removeProcess(id)) {
+        console.log(`Failed to remove process ${id}`);
+      }
+    }
   }
 }

@@ -13,7 +13,6 @@ import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
 import { ExternalPackageRegistrationDialogComponent } from "src/app/components/external-package-registration-dialog/external-package-registration-dialog.component";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
-import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 
 @Component({
@@ -34,7 +33,6 @@ export class MMPMExternalPackagesComponent implements OnInit {
     private api: RestApiService,
     private mSnackBar: MatSnackBar,
     private mmpmUtility: MMPMUtility,
-    private activeProcessService: ActiveProcessCountService,
   ) {}
 
   public packages: MagicMirrorPackage[];
@@ -65,15 +63,7 @@ export class MMPMExternalPackagesComponent implements OnInit {
       this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.packages);
       this.dataSource.paginator = this.paginator;
       this.dataSource.sort = this.sort;
-
-      this.tableUtility = new MagicMirrorTableUtility(
-        this.selection,
-        this.dataSource,
-        this.sort,
-        this.dialog,
-        this.activeProcessService
-      );
-
+      this.tableUtility = new MagicMirrorTableUtility(this.selection, this.dataSource, this.sort, this.dialog);
     });
   }
 
@@ -101,7 +91,7 @@ export class MMPMExternalPackagesComponent implements OnInit {
           return;
         }
 
-        let ids: Array<number> = this.tableUtility.saveProcessIds(this.selection.selected, "Adding External Source");
+        let ids: Array<number> = this.mmpmUtility.saveProcessIds(this.selection.selected, "Adding External Source");
 
         this.api.addExternalPackage(newExternalPackage).then((error) => {
           console.log(error["error"]);
@@ -110,7 +100,7 @@ export class MMPMExternalPackagesComponent implements OnInit {
             `Successfully added '${newExternalPackage.title}' to 'External Module Sources'` :
             "Failed to add new source";
 
-          this.tableUtility.deleteProcessIds(ids);
+          this.mmpmUtility.deleteProcessIds(ids);
           this.dataStore.loadData();
           this.snackbar.success(message);
         }).catch((error) => console.log(error));

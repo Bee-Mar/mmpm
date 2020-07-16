@@ -12,7 +12,6 @@ import { DataStoreService } from "src/app/services/data-store.service";
 import { MagicMirrorTableUtility } from "src/app/utils/magic-mirror-table-utlity";
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
-import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { InstallationConflict, MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 import { InstallationConflictResolutionDialogComponent } from "src/app/components/installation-conflict-resolution-dialog/installation-conflict-resolution-dialog.component";
@@ -36,7 +35,6 @@ export class MMPMMarketplaceComponent implements OnInit {
     private api: RestApiService,
     private mSnackBar: MatSnackBar,
     private mmpmUtility: MMPMUtility,
-    private activeProcessService: ActiveProcessCountService
   ) {}
 
   public allPackages: MagicMirrorPackage[];
@@ -72,14 +70,7 @@ export class MMPMMarketplaceComponent implements OnInit {
         this.dataSource = new MatTableDataSource<MagicMirrorPackage>(this.allPackages);
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
-
-        this.tableUtility = new MagicMirrorTableUtility(
-          this.selection,
-          this.dataSource,
-          this.sort,
-          this.dialog,
-          this.activeProcessService
-        );
+        this.tableUtility = new MagicMirrorTableUtility(this.selection, this.dataSource, this.sort, this.dialog);
       });
     });
   }
@@ -120,7 +111,7 @@ export class MMPMMarketplaceComponent implements OnInit {
   }
 
   private installPackages(selected: MagicMirrorPackage[]): void {
-    let ids: Array<number> = this.tableUtility.saveProcessIds(selected, "Installing");
+    let ids: Array<number> = this.mmpmUtility.saveProcessIds(selected, "Installing");
 
     this.api.packagesInstall(selected).then((failures: string) => {
       failures = JSON.parse(failures);
@@ -135,7 +126,7 @@ export class MMPMMarketplaceComponent implements OnInit {
         this.snackbar.error(`${failures.length} ${pkg} failed to install`);
       }
 
-      this.tableUtility.deleteProcessIds(ids);
+      this.mmpmUtility.deleteProcessIds(ids);
       this.dataStore.loadData();
 
     }).catch((error) => console.log(error));

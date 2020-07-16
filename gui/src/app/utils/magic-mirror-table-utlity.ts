@@ -4,7 +4,6 @@ import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { MatTableDataSource } from "@angular/material/table";
 import { SelectionModel } from "@angular/cdk/collections";
 import { PackageDetailsModalComponent } from "src/app/components/package-details-modal/package-details-modal.component";
-import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { TooltipPosition } from "@angular/material/tooltip";
 
 export class MagicMirrorTableUtility {
@@ -13,7 +12,6 @@ export class MagicMirrorTableUtility {
     private dataSource: MatTableDataSource<MagicMirrorPackage>,
     private sort: MatSort,
     public dialog: MatDialog,
-    public activeProcessService: ActiveProcessCountService
   ) {}
 
   public displayedColumns: string[] = [
@@ -81,28 +79,6 @@ export class MagicMirrorTableUtility {
       return description;
 
     return `${description.slice(0, maxDescriptionLength - 3)} ...`;
-  }
-
-  public saveProcessIds(pkgs: MagicMirrorPackage[], action: string): Array<number> {
-    let ids: Array<number> = new Array<number>();
-
-    for (let pkg of pkgs) {
-      ids.push(this.activeProcessService.insertProcess({
-        name: pkg.title,
-        action,
-        startTime: Date().toString()
-      }));
-    }
-
-    return ids;
-  }
-
-  public deleteProcessIds(ids: Array<number>): void {
-    for (let id of ids) {
-      if (!this.activeProcessService.removeProcess(id)) {
-        console.log(`Failed to remove process ${id}`);
-      }
-    }
   }
 
   public showPackageDetails(pkg: MagicMirrorPackage) {

@@ -2,13 +2,14 @@ import { Component, OnInit } from "@angular/core";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog } from "@angular/material/dialog";
-import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
 import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
 import { DataStoreService } from "src/app/services/data-store.service";
 import { URLS } from "src/app/utils/urls";
 import { ActiveModule } from "src/app/interfaces/interfaces";
 import { MatSlideToggleChange } from "@angular/material/slide-toggle";
+import { MMPMUtility } from "src/app/utils/mmpm-utility";
+import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import io from "socket.io-client";
 
 interface Tile {
@@ -33,7 +34,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     private api: RestApiService,
     private _snackbar: MatSnackBar,
     private dataStore: DataStoreService,
-    private activeProcessService: ActiveProcessCountService,
+    private mmpmUtility: MMPMUtility,
     public dialog: MatDialog,
   ) {}
 
@@ -101,7 +102,6 @@ export class MagicMirrorControlCenterComponent implements OnInit {
 
     }).catch((error) => console.log(error));
   }
-
 
   public ngOnDestroy(): void {
     this.socket.disconnect();
@@ -202,13 +202,30 @@ export class MagicMirrorControlCenterComponent implements OnInit {
         return;
       }
 
+      let ids: Array<number>;
+
       if (url === URLS.GET.MAGICMIRROR.UPGRADE) {
-        console.log("FIXME");
+        // just a dummy MagicMirrorPackage to represent MagicMirror
+        const pkg: MagicMirrorPackage = {
+          title: "MagicMirror",
+          repository: "",
+          author: "",
+          description: "",
+          directory: "",
+          category: ""
+        };
+
+        this.snackbar.notify('Upgrading MagicMirror. This may take a few moments')
+        ids = this.mmpmUtility.saveProcessIds([pkg], "Upgrading");
       }
 
       this.api.retrieve(url).then((success) => {
         if (url === URLS.GET.MAGICMIRROR.START) {
           success ? this.working() : this.magicMirrorRunningAlready();
+        } else if (url === URLS.GET.MAGICMIRROR.UPGRADE) {
+          success ? this.snackbar.success('Upgraded MagicMirror!') : this.snackbar.error('Failed to upgrade MagicMirror. Please see the MMPM log files for details');
+          this.mmpmUtility.deleteProcessIds(ids);
+          this.dataStore.loadData();
         } else {
           url === URLS.GET.MAGICMIRROR.RESTART ? this.working() : this.executed();
         }

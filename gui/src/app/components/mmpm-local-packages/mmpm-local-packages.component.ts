@@ -85,13 +85,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
       this.dataSource.paginator = this.paginator;
       this.dataSource.sort = this.sort;
 
-      this.tableUtility = new MagicMirrorTableUtility(
-        this.selection,
-        this.dataSource,
-        this.sort,
-        this.dialog,
-        this.activeProcessService
-      );
+      this.tableUtility = new MagicMirrorTableUtility(this.selection, this.dataSource, this.sort, this.dialog);
     });
   }
 
@@ -118,7 +112,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
         return;
       }
 
-      let ids: Array<number> = this.tableUtility.saveProcessIds(this.selection.selected, "Removing");
+      let ids: Array<number> = this.mmpmUtility.saveProcessIds(this.selection.selected, "Removing");
 
       this.snackbar.notify("Executing ...");
       const selected = this.selection.selected;
@@ -136,7 +130,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
           this.snackbar.success("Removed successfully!");
         }
 
-        this.tableUtility.deleteProcessIds(ids);
+        this.mmpmUtility.deleteProcessIds(ids);
         this.dataStore.loadData();
 
       }).catch((error) => console.log(error));

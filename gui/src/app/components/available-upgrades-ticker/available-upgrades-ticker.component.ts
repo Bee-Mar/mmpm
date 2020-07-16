@@ -29,7 +29,7 @@ export class AvailableUpgradesTickerComponent implements OnInit {
   public showAvailableUpgrades(): void {
     this.dialog.open(AvailableUpgradesModalDialogComponent, {
       height: "40vh",
-      width: "33vw",
+      width: "45vw",
       data: {
         availableUpgrades: this.availableUpgrades
       }

@@ -2,24 +2,23 @@
 <mat-dialog-content
   *ngIf="data?.availableUpgrades?.packages?.length || data?.availableUpgrades?.mmpm || data?.availableUpgrades?.MagicMirror; else display_empty"
   class="mat-typography"
-  style="text-align: left; padding-left: 3em; overflow-y: auto;"
-  >
+  style="text-align: left; margin-left: 3em; overflow-y: auto;"
+>
   <span *ngFor="let pkg of data?.availableUpgrades?.packages | keyvalue">
     <p><strong>Package</strong> {{ pkg.value.title }}</p>
   </span>
 
   <span *ngIf="data?.availableUpgrades?.mmpm">
-    <p><strong>Application:</strong> MMPM</p>
+    <p><strong>Application:</strong> MMPM - <i> (Upgrade must be performed in terminal) </i></p>
   </span>
 
   <span *ngIf="data?.availableUpgrades?.MagicMirror">
-    <p><strong>Application:</strong> MagicMirror</p>
+    <p><strong>Application:</strong> MagicMirror - <i> (Upgrade can be performed in Control Center)</i></p>
   </span>
-
 </mat-dialog-content>
 
 <ng-template #display_empty>
-  <mat-dialog-content class="mat-typography" style="text-align: center; margin-top: 10em; margin-bottom: 10em; overflow-y: auto;">
+  <mat-dialog-content class="mat-typography" style="text-align: center; margin-top: 5em; margin-bottom: 5em;">
     No upgrades available
   </mat-dialog-content>
 </ng-template>

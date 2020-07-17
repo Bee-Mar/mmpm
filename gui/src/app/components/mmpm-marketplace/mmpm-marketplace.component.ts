@@ -132,7 +132,7 @@ export class MMPMMarketplaceComponent implements OnInit {
 
       this.mmpmUtility?.deleteProcessIds(ids);
       this.tableUtility?.clearFilter();
-      this.dataStore?.loadData(false);
+      this.dataStore?.loadData(true);
 
     }).catch((error) => console.log(error));
   }

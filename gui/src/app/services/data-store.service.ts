@@ -48,7 +48,7 @@ export class DataStoreService {
     return array;
   }
 
-  public loadData(update: boolean = false): void {
+  public loadData(update: boolean = true): void {
     this.api.retrieve(URLS.GET.MMPM.ENVIRONMENT_VARS).then((envVars: any) => {
       let tempMap = new Map<string, string>();
       Object.keys(envVars).forEach((key) => tempMap.set(key, envVars[key]));

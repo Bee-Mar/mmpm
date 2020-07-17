@@ -116,13 +116,13 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
     const newTheme = this.editorOptions.theme === "vs-dark" ? "vs-light" : "vs-dark";
     monaco.editor.setTheme(newTheme);
     this.editorOptions.theme = newTheme;
-    Cookie.set(this.mmpmEditorThemeCookie, newTheme, {expires: 7, path: ""});
+    Cookie.set(this.mmpmEditorThemeCookie, newTheme, {expires: 1825, path: ""});
   }
 
   public setFileIndexAndCookie(index: number = 0): void {
     this.fileIndex = index;
     this.code = this.fileSelection[index].code;
     monaco.editor.setModelLanguage(this.editor.getModel(), this.fileSelection[this.fileIndex].syntax);
-    Cookie.set(this.mmpmEditorCurrentFileCookie, String(index), {expires: 7, path: ""});
+    Cookie.set(this.mmpmEditorCurrentFileCookie, String(index), {expires: 1825, path: ""});
   }
 }

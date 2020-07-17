@@ -31,7 +31,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
     private api: RestApiService,
     private mSnackBar: MatSnackBar,
     private mmpmUtility: MMPMUtility,
-  ) {}
+  ) { }
 
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
@@ -121,7 +121,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
         const failures: Array<object> = JSON.parse(result);
 
         if (failures.length) {
-          this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings({failures, action: "removing"}));
+          this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings({ failures, action: "removing" }));
           this.snackbar.error(`Failed to remove ${failures.length} ${failures.length == 1 ? "package" : "packages"}`);
 
         } else {
@@ -130,42 +130,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
 
         this.mmpmUtility.deleteProcessIds(ids);
         this.tableUtility.clearFilter();
-        this.dataStore.loadData(false);
-
-      }).catch((error) => console.log(error));
-    });
-  }
-
-  public onUpgradeModules(): void {
-    if (!this.selection?.selected?.length) {
-      return;
-    }
-
-    const numPackages: number = this.selection.selected.length;
-
-    const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        message: `${numPackages} ${numPackages === 1 ? "package" : "packages"} will be upgraded, if available`
-      },
-      disableClose: true
-    });
-
-    confirmationDialogRef.afterClosed().subscribe((yes) => {
-      if (!yes) {
-        return;
-      }
-
-      this.snackbar.notify("Executing ...");
-
-      this.api.packagesUpgrade(this.selection.selected).then((fails) => {
-        fails = JSON.parse(fails);
-
-        if (fails.length) {
-          this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings(fails));
-          this.snackbar.error(`Failed to upgrade ${fails.length} ${fails.length == 1 ? "package" : "packages"}`);
-        } else {
-          this.snackbar.success("Upgraded selected modules successfully!");
-        }
+        this.dataStore.loadData(true);
 
       }).catch((error) => console.log(error));
     });

@@ -1,30 +1,39 @@
 <h2 mat-dialog-title style="text-align: center">Available Upgrades</h2>
 <div
-  *ngIf="data?.availableUpgrades?.packages?.length || data?.availableUpgrades?.mmpm || data?.availableUpgrades?.MagicMirror; else display_empty"
   class="mat-typography"
   style="text-align: left; margin-left: 3em; overflow-y: auto; height: 70%;"
 >
-  <span *ngFor="let pkg of data?.availableUpgrades?.packages | keyvalue">
-    <p><strong>Package</strong> {{ pkg.value.title }}</p>
-  </span>
+<mat-selection-list #packageUpgradeSelections>
+  <mat-list-option *ngFor="let pkg of data?.availableUpgrades?.packages | keyvalue" [value]="pkg" [disabled]="pkg.title === 'MMPM'">
+    <strong>{{ pkg.value.title }}</strong> <i>({{ pkg.value.repository }})</i>
+  </mat-list-option>
 
-  <span *ngIf="data?.availableUpgrades?.mmpm">
-    <p><strong>Application:</strong> MMPM - <i> (Upgrade must be performed in terminal) </i></p>
-  </span>
+  <mat-list-option *ngIf="data?.availableUpgrades?.mmpm" [disabled]="true">
+    <strong>MMPM</strong> <i>(MagicMirror Package Manager) </i> <strong style="color: #33cc33"> (Upgrade must be performed in terminal) </strong>
+  </mat-list-option>
 
-  <span *ngIf="data?.availableUpgrades?.MagicMirror">
-    <p><strong>Application:</strong> MagicMirror - <i> (Upgrade can be performed in Control Center)</i></p>
-  </span>
-</div>
+  <mat-list-option *ngIf="data?.availableUpgrades?.MagicMirror">
+    <strong>MagicMirror</strong>
+  </mat-list-option>
 
-<ng-template #display_empty>
-  <div class="mat-typography" style="text-align: center; margin-top: 5em; overflow-y: auto; height: 50%;">
+  <span *ngIf="!data?.availableUpgrades?.MagicMirror && !data?.availableUpgrades?.mmpm && !data?.availableUpgrades?.packages?.length">
     No upgrades available
-  </div>
-</ng-template>
-
+  </span>
+</mat-selection-list>
+</div>
 <mat-dialog-actions align="center">
-  <button mat-raised-button mat-dialog-close color="primary">
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="upgradePackages(packageUpgradeSelections?.selectedOptions?.selected)"
+    style="margin-right: 5em;"
+    [disabled]="!packageUpgradeSelections?.selectedOptions?.selected?.length"
+    >
+    <mat-icon>
+      done
+    </mat-icon>
+  </button>
+  <button mat-raised-button mat-dialog-close color="accent">
     <mat-icon>
       close
     </mat-icon>

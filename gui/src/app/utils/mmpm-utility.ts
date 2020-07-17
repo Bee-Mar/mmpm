@@ -22,7 +22,7 @@ export class MMPMUtility {
   }
 
   public setCookie(name: string, value: any) {
-    Cookie.set(name, String(value), {expires: 14, path: ""});
+    Cookie.set(name, String(value), {expires: 1825, path: ""});
   }
 
   public basicDialogSettings(data?: any): object {

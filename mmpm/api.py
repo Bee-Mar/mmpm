@@ -56,7 +56,8 @@ def __get_selected_packages__(rqst, key: str = 'selected-packages') -> List[Magi
 
     # more-or-less a bandaid to the larger problem of aligning the data structure in angular
     for pkg in pkgs:
-        del pkg['category']
+        if 'category' in pkg:
+            del pkg['category']
 
         if not pkg['directory']:
             pkg['directory'] = os.path.normpath(os.path.join(MAGICMIRROR_MODULES_DIR, pkg['title']))

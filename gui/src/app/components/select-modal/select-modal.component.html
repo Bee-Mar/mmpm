@@ -7,7 +7,7 @@
   </mat-selection-list>
 </div>
 <mat-dialog-actions align="center">
-  <button class="remote-button" mat-raised-button color="primary" (click)="onConfirm(menuChoices.selectedOptions.selected[0]?.value)">
+  <button class="remote-button" mat-raised-button color="primary" (click)="onConfirm(menuChoices?.selectedOptions?.selected[0]?.value)" [disabled]="!menuChoices?.selectedOptions?.selected?.length">
     <mat-icon>
       done
     </mat-icon>

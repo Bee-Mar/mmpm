@@ -9,7 +9,6 @@ import { URLS } from "src/app/utils/urls";
 import { ActiveModule } from "src/app/interfaces/interfaces";
 import { MatSlideToggleChange } from "@angular/material/slide-toggle";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
-import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { SelectModalComponent } from "src/app/components/select-modal/select-modal.component";
 import io from "socket.io-client";
 
@@ -157,18 +156,6 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       dialogWidth: "30vw",
     },
     {
-      icon: "system_update",
-      visibleTooltip: "Upgrade MagicMirror",
-      disabledTooltip: "Unable to upgrade MagicMirror within a Docker image",
-      cols: 1,
-      rows: 1,
-      badge: null,
-      url: URLS.GET.MAGICMIRROR.UPGRADE,
-      message: "MagicMirror will be upgraded and restarted, if running.",
-      disabled: false,
-      dialogWidth: "33vw",
-    },
-    {
       icon: "power_settings_new",
       visibleTooltip: "Reboot RaspberryPi",
       disabledTooltip: "Unable to restart RaspberryPi within a Docker image",
@@ -196,7 +183,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       icon: "cached",
       visibleTooltip: "Rotate screen",
       disabledTooltip: "Unable to rotate screen within a Docker image",
-      cols: 2,
+      cols: 1,
       rows: 1,
       badge: null,
       url: URLS.POST.RASPBERRYPI.ROTATE_SCREEN,
@@ -267,21 +254,6 @@ export class MagicMirrorControlCenterComponent implements OnInit {
         }
 
         let ids: Array<number>;
-
-        if (url === URLS.GET.MAGICMIRROR.UPGRADE) {
-          // just a dummy MagicMirrorPackage to represent MagicMirror
-          const pkg: MagicMirrorPackage = {
-            title: "MagicMirror",
-            repository: "",
-            author: "",
-            description: "",
-            directory: "",
-            category: ""
-          };
-
-          this.snackbar.notify('Upgrading MagicMirror. This may take a few moments')
-          ids = this.mmpmUtility.saveProcessIds([pkg], "Upgrading");
-        }
 
         this.api.retrieve(url).then((success) => {
           if (url === URLS.GET.MAGICMIRROR.START) {

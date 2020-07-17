@@ -280,7 +280,6 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
             break
 
     if not any_installed:
-        mmpm.utils.warning_msg('No packages installed')
         # asserting the available-updates file doesn't contain any artifacts of
         # previously installed packages that had updates at one point in time
         if not mmpm.utils.reset_available_upgrades_for_environment(MMPM_MAGICMIRROR_ROOT):

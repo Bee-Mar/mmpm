@@ -39,7 +39,7 @@ api = lambda path: f'/api/{path}'
 _packages_ = mmpm.core.load_packages()
 
 
-def __get_selected_packages__(rqst, key: str = 'selected-packages') -> List[MagicMirrorPackage]:
+def __deserialize_selected_packages__(rqst, key: str = 'selected-packages') -> List[MagicMirrorPackage]:
     '''
     Helper method to extract a list of MagicMirrorPackage objects from Flask
     request object
@@ -50,17 +50,15 @@ def __get_selected_packages__(rqst, key: str = 'selected-packages') -> List[Magi
     Returns:
         selected_packages (List[MagicMirrorPackage]): extracted list of MagicMirrorPackage objects
     '''
+
     pkgs: dict = rqst.get_json(force=True)[key]
 
     MAGICMIRROR_MODULES_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules')
+    default_directory = lambda title: os.path.normpath(os.path.join(MAGICMIRROR_MODULES_DIR, title))
 
-    # more-or-less a bandaid to the larger problem of aligning the data structure in angular
     for pkg in pkgs:
-        if 'category' in pkg:
-            del pkg['category']
-
         if not pkg['directory']:
-            pkg['directory'] = os.path.normpath(os.path.join(MAGICMIRROR_MODULES_DIR, pkg['title']))
+            pkg['directory'] =  default_directory(pkg['title'])
 
     return [MagicMirrorPackage(**pkg) for pkg in pkgs]
 
@@ -138,7 +136,7 @@ def packages_external() -> Response:
 
 @app.route(api('packages/install'), methods=[mmpm.consts.POST])
 def packages_install() -> Response:
-    selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
+    selected_packages: List[MagicMirrorPackage] = __deserialize_selected_packages__(request)
     failures: List[dict] = []
 
     for package in selected_packages:
@@ -177,7 +175,7 @@ def packages_remove() -> Response:
 
 @app.route(api('packages/upgrade'), methods=[mmpm.consts.POST])
 def packages_upgrade() -> Response:
-    selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
+    selected_packages: List[MagicMirrorPackage] = __deserialize_selected_packages__(request)
     mmpm.utils.log.info(f'Request to upgrade {selected_packages}')
 
     failures: List[dict] = []
@@ -221,7 +219,7 @@ def packages_upgradeable() -> Response:
 
 @app.route(api('packages/details'), methods=[mmpm.consts.POST])
 def packages_details() -> Response:
-    selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request)
+    selected_packages: List[MagicMirrorPackage] = __deserialize_selected_packages__(request)
     mmpm.utils.log.info(f'Request to get verbose details about {selected_packages}')
 
     result: List[dict] = []
@@ -263,7 +261,7 @@ def external_packages_add() -> Response:
 
 @app.route(api('external-packages/remove'), methods=[mmpm.consts.DELETE])
 def external_packages_remove() -> Response:
-    selected_packages: List[MagicMirrorPackage] = __get_selected_packages__(request, 'external-packages')
+    selected_packages: List[MagicMirrorPackage] = __deserialize_selected_packages__(request, 'external-packages')
     mmpm.utils.log.info('Request to remove external sources')
 
     ext_packages: dict = {mmpm.consts.EXTERNAL_PACKAGES: []}

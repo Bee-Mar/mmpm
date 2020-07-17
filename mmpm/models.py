@@ -46,7 +46,8 @@ class MagicMirrorPackage():
     MagicMirror package's metadata
     '''
 
-    def __init__(self, title: str = NA, author: str = NA, repository: str = NA, description: str = NA, directory: str = '') -> None:
+    def __init__(self, title: str = NA, author: str = NA, repository: str = NA, description: str = NA, directory: str = '', **kwargs) -> None:
+        # **kwargs allows for simplified dict unpacking in some instances, as it's discarded during the __init__
         self.title = title
         self.author = author
         self.repository = repository

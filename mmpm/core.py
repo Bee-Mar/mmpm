@@ -916,8 +916,6 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
             if column_number > 0:
                 td_soup: list = tr_soup[index][column_number].find_all('td')
 
-                package = MagicMirrorPackage()
-
                 title: str = mmpm.consts.NOT_AVAILABLE
                 repo: str = mmpm.consts.NOT_AVAILABLE
                 author: str = mmpm.consts.NOT_AVAILABLE
@@ -1871,7 +1869,7 @@ def rotate_raspberrypi_screen(degrees: int) -> str:
     return ''
 
 
-def migrate(assume_yes: bool = False) -> None:
+def migrate() -> None:
     '''
     Migrates legacy External Module Sources to External Packages. The legacy
     file name of ~/.config/mmpm/mmpm-external-sources.json is renamed to
@@ -1885,8 +1883,6 @@ def migrate(assume_yes: bool = False) -> None:
         None
     '''
     import pathlib
-
-    mmpm.utils.prompt_user('Are you want to migrate the database')
 
     legacy_ext_src_file: str = os.path.join(mmpm.consts.MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
     legacy_key: str = 'External Module Sources'

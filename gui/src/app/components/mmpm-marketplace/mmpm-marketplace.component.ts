@@ -130,9 +130,9 @@ export class MMPMMarketplaceComponent implements OnInit {
         this.snackbar.error(`${failures.length} ${pkg} failed to install`);
       }
 
-      this.mmpmUtility.deleteProcessIds(ids);
-      this.tableUtility.clearFilter();
-      this.dataStore.loadData();
+      this.mmpmUtility?.deleteProcessIds(ids);
+      this.tableUtility?.clearFilter();
+      this.dataStore?.loadData(false);
 
     }).catch((error) => console.log(error));
   }
@@ -193,7 +193,7 @@ export class MMPMMarketplaceComponent implements OnInit {
 
   public onRefreshPackages(): void {
     this.snackbar.notify("Executing ... ");
-    this.dataStore.loadData();
+    this.dataStore.loadData(true);
   }
 
   ngOnDestroy() {

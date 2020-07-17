@@ -97,11 +97,11 @@ export class MMPMExternalPackagesComponent implements OnInit {
           console.log(error["error"]);
 
           const message = error["error"] === "no_error" ?
-            `Successfully added '${newExternalPackage.title}' to 'External Module Sources'` :
+            `Successfully added '${newExternalPackage.title}' to 'External Packages'` :
             "Failed to add new source";
 
           this.mmpmUtility.deleteProcessIds(ids);
-          this.dataStore.loadData();
+          this.dataStore.loadData(false);
           this.snackbar.success(message);
         }).catch((error) => console.log(error));
       });

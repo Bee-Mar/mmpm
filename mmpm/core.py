@@ -113,7 +113,7 @@ def check_for_mmpm_updates(gui=False, automated=False) -> bool:
     return True
 
 
-def upgrade_mmpm() -> bool:
+def upgrade_mmpm() -> str:
 
     mmpm.utils.log.info('User chose to update MMPM')
 
@@ -125,13 +125,13 @@ def upgrade_mmpm() -> bool:
 
     if error_code:
         mmpm.utils.error_msg(stderr)
-        return False
+        return stderr
 
     os.chdir('/tmp/mmpm')
 
     # if the user needs to be prompted for their password, this can't be a subprocess
     os.system('make reinstall')
-    return True
+    return ''
 
 
 def upgrade_package(package: MagicMirrorPackage) -> str:
@@ -182,6 +182,9 @@ def upgrade_available(assume_yes: bool = False, selection: List[str] = []) -> bo
     upgraded: bool = False
 
     has_upgrades: bool = False
+    mmpm_selected: bool = False
+    magicmirror_selected: bool = False
+    user_selections: bool = bool(selection)
 
     for key in upgrades[MMPM_MAGICMIRROR_ROOT]:
         if upgrades[MMPM_MAGICMIRROR_ROOT][key]:
@@ -195,7 +198,20 @@ def upgrade_available(assume_yes: bool = False, selection: List[str] = []) -> bo
         if selection:
             valid_pkgs: List[MagicMirrorPackage] = [pkg for pkg in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] if pkg.title in selection]
 
-            if not valid_pkgs and mmpm.consts.MMPM not in selection or not mmpm.consts.MAGICMIRROR not in selection:
+            for pkg in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]:
+                if pkg.title in selection:
+                    valid_pkgs.append(pkg)
+                    selection.remove(pkg.title)
+
+            if mmpm.consts.MMPM in selection and upgrades[mmpm.consts.MMPM]:
+                    mmpm_selected = True
+                    selection.remove(mmpm.consts.MMPM)
+
+            if mmpm.consts.MAGICMIRROR in selection and upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR]:
+                    magicmirror_selected = True
+                    selection.remove(mmpm.consts.MAGICMIRROR)
+
+            if selection: # the left overs that weren't matched
                 mmpm.utils.error_msg(f'Unable to match {selection} to a package/application with available upgrades')
 
             for package in valid_pkgs:
@@ -206,10 +222,10 @@ def upgrade_available(assume_yes: bool = False, selection: List[str] = []) -> bo
                 if mmpm.utils.prompt_user(f'Upgrade {mmpm.color.normal_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
                     confirmed[mmpm.consts.PACKAGES].append(package)
 
-    if mmpm.consts.MAGICMIRROR in selection or not selection and upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR]:
+    if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR] and magicmirror_selected or not user_selections:
         confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt_user(f"Upgrade {mmpm.color.normal_green('MagicMirror')} now?", assume_yes=assume_yes)
 
-    if mmpm.consts.MMPM in selection or not selection and upgrades[mmpm.consts.MMPM]:
+    if upgrades[mmpm.consts.MMPM] and mmpm_selected or not user_selections:
         confirmed[mmpm.consts.MMPM] = mmpm.utils.prompt_user(f"Upgrade {mmpm.color.normal_green('MMPM')} now?", assume_yes=assume_yes)
 
     for pkg in confirmed[mmpm.consts.PACKAGES]:
@@ -222,18 +238,19 @@ def upgrade_available(assume_yes: bool = False, selection: List[str] = []) -> bo
         upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES].remove(pkg)
         upgraded = True
 
-    warning: str = 'The above error requires user correction. Please fix this, and re-run `mmpm update` to sync the database'
-
     if confirmed[mmpm.consts.MMPM]:
-        if not upgrade_mmpm():
-            mmpm.utils.warning_msg(warning)
+        error = upgrade_mmpm()
+        if error:
+            mmpm.utils.error_msg(f'{error} {mmpm.consts.RED_X}')
         else:
             upgrades[mmpm.consts.MMPM] = False
             upgraded = True
 
     if confirmed[mmpm.consts.MAGICMIRROR]:
-        if not upgrade_magicmirror():
-            mmpm.utils.warning_msg(warning)
+        error = upgrade_magicmirror()
+
+        if error:
+            mmpm.utils.error_msg(error)
         else:
             upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR] = False
             upgraded = True
@@ -626,7 +643,7 @@ def check_for_magicmirror_updates() -> bool:
     return update_available
 
 
-def upgrade_magicmirror() -> bool:
+def upgrade_magicmirror() -> str:
     '''
     Handles upgrade processs of MagicMirror by pulling changes from MagicMirror
     repo, and installing dependencies.
@@ -635,7 +652,7 @@ def upgrade_magicmirror() -> bool:
         None
 
     Returns:
-        success (bool): True if success, False if failure
+        error (str): empty string if succcessful, contains error message on failure
 
     '''
     print(f"{mmpm.consts.GREEN_PLUS} Upgrading {mmpm.color.normal_green('MagicMirror')}")
@@ -648,16 +665,16 @@ def upgrade_magicmirror() -> bool:
     if error_code:
         mmpm.utils.error_msg(f'Failed to upgrade MagicMirror {mmpm.consts.RED_X}')
         mmpm.utils.error_msg(stderr)
-        return False
+        return stderr
 
     error: str = mmpm.utils.install_dependencies(MMPM_MAGICMIRROR_ROOT)
 
     if error:
         mmpm.utils.error_msg(error)
-        return False
+        return error
 
-    print('Restart MagicMirror for the changes to take effect')
-    return True
+    print('Upgrade complete! Restart MagicMirror for the changes to take effect')
+    return ''
 
 
 def install_magicmirror() -> bool:
@@ -1854,7 +1871,7 @@ def rotate_raspberrypi_screen(degrees: int) -> str:
     return ''
 
 
-def migrate() -> None:
+def migrate(assume_yes: bool = False) -> None:
     '''
     Migrates legacy External Module Sources to External Packages. The legacy
     file name of ~/.config/mmpm/mmpm-external-sources.json is renamed to
@@ -1868,6 +1885,8 @@ def migrate() -> None:
         None
     '''
     import pathlib
+
+    mmpm.utils.prompt_user('Are you want to migrate the database')
 
     legacy_ext_src_file: str = os.path.join(mmpm.consts.MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
     legacy_key: str = 'External Module Sources'

@@ -45,9 +45,9 @@ class MagicMirrorPackage():
     A container object used to simplify the represenation of a given
     MagicMirror package's metadata
     '''
-
+    # pylint: disable=unused-argument
     def __init__(self, title: str = NA, author: str = NA, repository: str = NA, description: str = NA, directory: str = '', **kwargs) -> None:
-        # **kwargs allows for simplified dict unpacking in some instances, as it's discarded during the __init__
+        # **kwargs allows for simplified dict unpacking in some instances, and is intentionally unused
         self.title = title
         self.author = author
         self.repository = repository

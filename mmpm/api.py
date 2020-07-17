@@ -58,7 +58,7 @@ def __deserialize_selected_packages__(rqst, key: str = 'selected-packages') -> L
 
     for pkg in pkgs:
         if not pkg['directory']:
-            pkg['directory'] =  default_directory(pkg['title'])
+            pkg['directory'] = default_directory(pkg['title'])
 
     return [MagicMirrorPackage(**pkg) for pkg in pkgs]
 
@@ -418,12 +418,12 @@ def magicmirror_upgrade() -> Response:
     mmpm.utils.log.info('Request to upgrade MagicMirror')
     mmpm.utils.log.info('Finished installing')
 
-    success: bool = mmpm.core.upgrade_magicmirror()
+    error: str = mmpm.core.upgrade_magicmirror()
 
     if mmpm.utils.is_magicmirror_running():
         mmpm.core.restart_magicmirror()
 
-    return Response(json.dumps(success))
+    return Response(json.dumps({'error': error}))
 #  -- END: MAGICMIRROR --
 
 

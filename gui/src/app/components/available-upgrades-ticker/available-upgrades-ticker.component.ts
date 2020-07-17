@@ -28,11 +28,9 @@ export class AvailableUpgradesTickerComponent implements OnInit {
 
   public showAvailableUpgrades(): void {
     this.dialog.open(AvailableUpgradesModalDialogComponent, {
-      height: "40vh",
-      width: "50vw",
-      data: {
-        availableUpgrades: this.availableUpgrades
-      }
+      height: "60vh",
+      width: "40vw",
+      disableClose: true
     });
   }
 }

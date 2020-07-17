@@ -4,21 +4,26 @@
   style="text-align: left; margin-left: 3em; overflow-y: auto; height: 70%;"
 >
 <mat-selection-list #packageUpgradeSelections>
-  <mat-list-option *ngFor="let pkg of data?.availableUpgrades?.packages | keyvalue" [value]="pkg" [disabled]="pkg.title === 'MMPM'">
-    <strong>{{ pkg.value.title }}</strong> <i>({{ pkg.value.repository }})</i>
+
+  <div mat-subheader *ngIf="availableUpgrades?.mmpm || availableUpgrades?.MagicMirror">Applications</div>
+  <mat-list-option *ngIf="availableUpgrades?.mmpm" [disabled]="true">
+    <strong>MMPM (MagicMirror Package Manager)</strong><strong style="color: #33cc33"> Upgrade must be performed through CLI </strong>
   </mat-list-option>
 
-  <mat-list-option *ngIf="data?.availableUpgrades?.mmpm" [disabled]="true">
-    <strong>MMPM</strong> <i>(MagicMirror Package Manager) </i> <strong style="color: #33cc33"> (Upgrade must be performed in terminal) </strong>
-  </mat-list-option>
-
-  <mat-list-option *ngIf="data?.availableUpgrades?.MagicMirror">
+  <mat-list-option *ngIf="availableUpgrades?.MagicMirror" [value]="MagicMirror">
     <strong>MagicMirror</strong>
   </mat-list-option>
 
+  <mat-divider *ngIf="availableUpgrades?.packages?.length"></mat-divider>
+
+  <div mat-subheader *ngIf="availableUpgrades?.packages?.length">Packages</div>
+  <mat-list-option *ngFor="let pkg of availableUpgrades?.packages | keyvalue" [value]="pkg.value">
+    <strong>{{ pkg.value.title }}</strong> <i>({{ pkg.value.repository }})</i>
+  </mat-list-option>
+
   <div
-    *ngIf="!data?.availableUpgrades?.MagicMirror && !data?.availableUpgrades?.mmpm && !data?.availableUpgrades?.packages?.length"
-    style="text-align: center; margin-right: 3em; margin-top: 5em;"
+    *ngIf="!availableUpgrades?.MagicMirror && !availableUpgrades?.mmpm && !availableUpgrades?.packages?.length"
+    style="text-align: center; margin-right: 3em; margin-top: 10em;"
   >
     No upgrades available
   </div>

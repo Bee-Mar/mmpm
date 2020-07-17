@@ -100,7 +100,7 @@ export class RestApiService {
       }).pipe(retry(1), catchError(this.handleError)).toPromise();
   }
 
-  public rotateRaspberryPiScreen(degrees: number): Promise<any> {
+  public rotateRaspberryPiScreen(degrees: number): Promise<boolean> {
     return this.http.post<boolean>(
       this.route(URLS.POST.RASPBERRYPI.ROTATE_SCREEN),
       {
@@ -125,6 +125,10 @@ export class RestApiService {
           "Content-Type": "text/plain"
         })
       }).pipe(retry(1), catchError(this.handleError)).toPromise();
+  }
+
+  public upgradeMagicMirror(): Promise<any> {
+    return this.retrieve(URLS.GET.MAGICMIRROR.UPGRADE);
   }
 
   public getRepoDetails(packages: MagicMirrorPackage[]): Promise<any> {

@@ -16,9 +16,12 @@
     <strong>MagicMirror</strong>
   </mat-list-option>
 
-  <span *ngIf="!data?.availableUpgrades?.MagicMirror && !data?.availableUpgrades?.mmpm && !data?.availableUpgrades?.packages?.length">
+  <div
+    *ngIf="!data?.availableUpgrades?.MagicMirror && !data?.availableUpgrades?.mmpm && !data?.availableUpgrades?.packages?.length"
+    style="text-align: center; margin-right: 3em; margin-top: 5em;"
+  >
     No upgrades available
-  </span>
+  </div>
 </mat-selection-list>
 </div>
 <mat-dialog-actions align="center">

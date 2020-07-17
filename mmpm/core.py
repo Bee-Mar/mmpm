@@ -916,8 +916,8 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
                             if a.has_attr('href'):
                                 repo = a['href']
 
-                        package.repository = str(repo).strip()
-                        package.title = mmpm.utils.sanitize_name(title).strip()
+                        repo = str(repo)
+                        title = mmpm.utils.sanitize_name(title)
 
                     elif idx == 1:
                         for contents in td_soup[idx].contents:
@@ -939,11 +939,11 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
                             else:
                                 desc += contents.string
 
-                if package.title != mmpm.consts.MMPM:
+                if title != mmpm.consts.MMPM:
                     # this is not very efficient, but it only runs once in a while
                     packages[categories[index]].append(
                         MagicMirrorPackage(
-                            title=title,
+                            title=title.strip(),
                             author=author.strip(),
                             description=desc.strip(),
                             repository=repo.strip()

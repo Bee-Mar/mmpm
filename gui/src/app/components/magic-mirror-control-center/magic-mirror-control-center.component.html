@@ -54,9 +54,6 @@
   <div style="height: 100%; width: 45%; float: right; background-color: #303030;">
     <h1 style="text-align: center; margin-top: 4%;">Resources</h1>
     <div style="text-align: center; margin-top: 8%;">
-      <button class="link-button" mat-button (click)="openUrl('https://github.com/Bee-Mar/mmpm/wiki')">
-        <mat-icon color="primary">exit_to_app</mat-icon> MMPM Wiki
-      </button>
       <button class="link-button" mat-button (click)="openUrl(mmpmEnvVars?.get('MMPM_MAGICMIRROR_URI'))">
         <mat-icon color="primary">exit_to_app</mat-icon> MagicMirror
       </button>
@@ -66,7 +63,13 @@
       <button class="link-button" mat-button (click)="openUrl('https://docs.magicmirror.builders/')">
         <mat-icon color="primary">exit_to_app</mat-icon> MagicMirror Documentation
       </button>
+      <button class="link-button" mat-button (click)="openUrl('https://forum.magicmirror.builders/')">
+        <mat-icon color="primary">exit_to_app</mat-icon> MagicMirror Forum
+      </button>
       <div style="text-align: center; margin-top: 2em;">
+        <button class="link-button" mat-button (click)="openUrl('https://github.com/Bee-Mar/mmpm/wiki')">
+          <mat-icon color="primary">exit_to_app</mat-icon> MMPM Wiki
+        </button>
         <button class="link-button" mat-button (click)="openUrl('https://github.com/Bee-Mar/mmpm/issues/new')">
           <mat-icon style="top: 5px; color: yellow;">error_outline</mat-icon> Create an Issue
         </button>

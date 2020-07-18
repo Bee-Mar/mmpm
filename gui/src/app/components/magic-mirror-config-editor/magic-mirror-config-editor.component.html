@@ -1,52 +1,26 @@
-<ngx-monaco-editor
-    style="height: 92%;"
-    [options]="editorOptions"
-    (onInit)="onEditorInit($event)"
-    [(ngModel)]="code"
->
-</ngx-monaco-editor>
+<ngx-monaco-editor style="height: 92%;" [options]="editorOptions" (onInit)="onEditorInit($event)" [(ngModel)]="code"></ngx-monaco-editor>
 
-  <div style="margin: 0 auto; width: 15%; justify-content: space-evenly; display: flex;">
-    <button
-      mat-raised-button
-      style="margin-right: 5em;"
-      color="primary"
-      matTooltip="Save"
-      [matTooltipPosition]="'below'"
-      (click)="onSaveConfig()"
-      >
-      <mat-icon>save</mat-icon>
-    </button>
+<div style="margin: 0 auto; width: 15%; justify-content: space-evenly; display: flex; vertical-align: middle;">
+  <button mat-raised-button style="margin-right: 5em;" color="primary" matTooltip="Save" matTooltipPosition="below" (click)="onSaveConfig()">
+    <mat-icon>save</mat-icon>
+  </button>
 
-    <button
-      mat-raised-button
-      color="accent"
-      style="margin-right: 5em;"
-      matTooltip="Toggle theme"
-      [matTooltipPosition]="'below'"
-      (click)="onToggleTheme()"
-      >
-      <mat-icon>palette</mat-icon>
-    </button>
+  <button mat-raised-button color="accent" style="margin-right: 5em;" matTooltip="Toggle theme" matTooltipPosition="below" (click)="onToggleTheme()">
+    <mat-icon>palette</mat-icon>
+  </button>
 
-    <button
-      mat-raised-button
-      style="background-color: #959595; margin-right: 5em;"
-      matTooltip="Select file"
-      [matTooltipPosition]="'below'"
-      [matMenuTriggerFor]="menu"
-      >
-      <mat-icon>folder_open</mat-icon>
-      <mat-menu #menu="matMenu" yPosition="below">
-        <button mat-menu-item (click)="setFileIndexAndCookie(CONFIG_JS)">
-          <code>config.js</code>
-        </button>
-        <button mat-menu-item (click)="setFileIndexAndCookie(CUSTOM_CSS)">
-          <code>custom.css</code>
-        </button>
-        <button mat-menu-item (click)="setFileIndexAndCookie(MMPM_ENV_VARS_JSON)">
-          <code>mmpm-env.json</code>
-        </button>
-      </mat-menu>
-    </button>
-  </div>
+  <button mat-raised-button style="background-color: #959595; margin-right: 5em;" matTooltip="Select file" matTooltipPosition="below" [matMenuTriggerFor]="menu">
+    <mat-icon>folder_open</mat-icon>
+    <mat-menu #menu="matMenu" yPosition="below">
+      <button mat-menu-item (click)="setFileIndexAndCookie(CONFIG_JS)">
+        <code>config.js</code>
+      </button>
+      <button mat-menu-item (click)="setFileIndexAndCookie(CUSTOM_CSS)">
+        <code>custom.css</code>
+      </button>
+      <button mat-menu-item (click)="setFileIndexAndCookie(MMPM_ENV_VARS_JSON)">
+        <code>mmpm-env.json</code>
+      </button>
+    </mat-menu>
+  </button>
+</div>

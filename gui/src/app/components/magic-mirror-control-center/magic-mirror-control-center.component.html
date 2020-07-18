@@ -44,13 +44,19 @@
       <div style="text-align: center; margin-top: 50%; margin-left: 3em; margin-right: 3em;">
         <span style="font-size: 18px;">
           Unable to retrieve active modules
-          <mat-icon style="color: yellow; font-size: 25px;">error</mat-icon>
+          <mat-icon style="color: yellow; font-size: 25px; vertical-align: middle;">error</mat-icon>
         </span>
+      </div>
+      <div style="text-align: center; margin-left: 2em; margin-right: 2em;">
         <br>
         <br>
-        <span style="font-size: 14px;">
-          Please make sure MagicMirror is running, and the <code>MMPM_MAGICMIRROR_URI</code> is correct
-        </span>
+          Please make sure MagicMirror is running, the
+          <code>MMPM_MAGICMIRROR_URI</code> is correct, and the
+          <code>ipWhitelist</code> in your MagicMirror <code>config.js</code>
+          includes <code>0.0.0.0</code>
+        <br>
+        <br>
+        You may need to open MagicMirror in your browser to activate the connection.
       </div>
     </ng-template>
   </div>

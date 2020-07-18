@@ -7,16 +7,8 @@ log_notice
 
 log_action "Installing MMPM CLI"
 
-printf " -- installing CLI using 'python3 setup.py requirements init_files install --user' (this may take some time)"
-log_and_eval "python3 setup.py requirements init_files install --user"
-_done_
-
-printf " -- initializing MMPM/MagicMirror database"
-log_and_eval "$HOME/.local/bin/mmpm db --refresh"
-_done_
-
-printf " -- migrating legacy database keys"
-log_and_eval "$HOME/.local/bin/mmpm --migrate"
+printf " -- installing CLI using 'python3 setup.py requirements init_files init_db install --user' (this may take some time)"
+log_and_eval "python3 setup.py requirements init_files init_db install --user"
 _done_
 
 log_action "MMPM CLI Installed"

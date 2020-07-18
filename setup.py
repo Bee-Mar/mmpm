@@ -55,6 +55,21 @@ class InstallRequirements(distutils.cmd.Command):
         os.system('pip3 install -r ./requirements.txt --user')
 
 
+class InitializeDatabase(distutils.cmd.Command):
+    description = 'Initialize MMPM Database'
+    user_options = []  # no options are needed
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        mmpm.core.load_packages()
+        mmpm.core.migrate()
+
+
 def load_requirements() -> List[str]:
     '''
     Parses requirements from requirements.txt to eliminate duplicate listing of packages
@@ -88,5 +103,6 @@ setup(
     cmdclass={
         'init_files': InitializeDefaultFilesCommand,
         'requirements': InstallRequirements,
+        'init_db': InitializeDatabase
     }
 )

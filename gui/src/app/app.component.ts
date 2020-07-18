@@ -2,6 +2,7 @@ import { Component } from "@angular/core";
 import { MatIconRegistry } from "@angular/material/icon";
 import { DomSanitizer } from "@angular/platform-browser";
 import { environment } from "../environments/environment";
+import * as Cookie from "js-cookie";
 
 @Component({
   selector: "app-root",
@@ -17,9 +18,24 @@ export class AppComponent {
     );
   }
 
+  private mmpmThemeCookie = "MMPM-theme";
+
+  public themeColor = Cookie.get("MMPM-theme") ?? "dark-theme";
+
   public webSSHLocation = `http://${window.location.hostname}:7892`;
   public title = "gui";
 
   public toggleTheme(): void {
+
+    const body = document.getElementsByTagName("body")[0];
+    body.classList.remove(this.themeColor);
+
+    // switch theme
+    (this.themeColor == "light-theme") ? this.themeColor = "dark-theme" : this.themeColor = "light-theme";
+
+    body.classList.add(this.themeColor);
+
+    //save it to local storage
+    Cookie.set(this.mmpmThemeCookie, this.themeColor);
   }
 }

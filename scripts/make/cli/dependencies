@@ -12,9 +12,9 @@ printf " -- checking Python3 version"
 PYTHON3_VERSION=$(python3 -c "import sys; print(float(f'{sys.version_info.major}.{sys.version_info.minor}'))")
 log_and_eval "echo 'Detected Python3 version $PYTHON3_VERSION' is installed"
 
-if [[ $PYTHON3_VERSION < 3.6 ]]; then
+if [[ $PYTHON3_VERSION < $MMPM_REQUIRED_PYTHON3_VERSION ]]; then
   log_and_eval "echo 'Installed version of Python3 $PYTHON3_VERSION is not suitable. Must be >= 3.6'"
-  printf "\nERROR: Python3 version must be >= to 3.6, but found $PYTHON3_VERSION. Please install a compatible version of Python3\n"
+  printf "\nERROR: Python3 version must be >= to $MMPM_REQUIRED_PYTHON3_VERSION, but found $PYTHON3_VERSION. Please install a compatible version of Python3\n"
   exit 1
 fi
 

@@ -22,7 +22,7 @@
 
 The MagicMirror Package Manager (`mmpm`) is both a command line and web interface designed to simplify the installation, removal, and maintenance of MagicMirror modules.
 
-<i>Consider this project to be in a Beta state. The CLI is quite mature, but lacks tests (don't worry, they'll be added), and the GUI is still in development.</i>
+<i>Consider this project to be in a Beta state. The CLI is quite mature, but lacks tests (don't worry, they'll be added)</i>
 
 The MagicMirror Package Manager is featured as an alternative installation method on the [MagicMirror Documentation](https://docs.magicmirror.builders/getting-started/installation.html#alternative-installation-methods).
 
@@ -31,12 +31,13 @@ The supported features are comprised of the following categories:
 1) Search
 2) Installation
 3) Removal
-4) Checking for updates
-5) Upgrading packages that have updates available
-6) Adding external module sources
-7) Accessing MagicMirror config file
-8) Self updating
-9) Installing MagicMirror
+4) Updates/Upgrading
+5) Adding external module sources (think of it like PPAs for Ubuntu)
+6) Quick config editing access
+7) Self updating
+8) Installing MagicMirror
+9) Hiding/showing MagicMirror modules on the fly
+
 
 ## TLDR; What's the Installation/Removal Process?
 
@@ -45,11 +46,6 @@ See the [MMPM Installation](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installati
 ## Refer to the Wiki and Log Files First
 
 If any issues arise, please consult the wiki first, which can be found [here](https://github.com/Bee-Mar/mmpm/wiki). Additionally, please examine the log files for `MMPM` located in `~/.config/mmpm/log/`, and post any relevant information when creating an issue.
-
-
-## Future State of Affairs
-
-In the not-to-distant future, `.deb` releases of this package will be available for download, simplifying the installation.
 
 ## Potential Problems
 

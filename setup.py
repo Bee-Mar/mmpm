@@ -22,6 +22,9 @@ class InitializeDefaultFilesCommand(distutils.cmd.Command):
     def run(self):
         os.system(f'mkdir -p {mmpm.consts.MMPM_CONFIG_DIR}')
 
+        for required_file in mmpm.consts.MMPM_DATA_FILES_NAMES:
+            os.system(f'touch {required_file}')
+
         current_env: dict = {}
 
         with open(mmpm.consts.MMPM_ENV_FILE, 'r') as env:

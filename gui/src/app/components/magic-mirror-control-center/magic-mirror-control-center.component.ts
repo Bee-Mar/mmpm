@@ -35,7 +35,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     private api: RestApiService,
     private _snackbar: MatSnackBar,
     private dataStore: DataStoreService,
-    private mmpmUtility: MMPMUtility,
+    public mmpmUtility: MMPMUtility,
     public dialog: MatDialog,
   ) {}
 
@@ -293,9 +293,5 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }).catch((error) => console.log(error));
-  }
-
-  public openUrl(url: string) {
-    window.open(url, '_blank');
   }
 }

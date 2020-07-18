@@ -1,6 +1,7 @@
 import { Component, OnInit, Inject } from "@angular/core";
-import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
+import {  MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { RestApiService } from "src/app/services/rest-api.service";
+import { MMPMUtility } from "src/app/utils/mmpm-utility";
 
 @Component({
   selector: "app-package-details-modal",
@@ -11,7 +12,7 @@ export class PackageDetailsModalComponent implements OnInit {
 
   constructor(
     private api: RestApiService,
-    private dialogRef: MatDialogRef<PackageDetailsModalComponent>,
+    public mmpmUtility: MMPMUtility,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) { }
 
@@ -26,9 +27,4 @@ export class PackageDetailsModalComponent implements OnInit {
   }
 
   public onNoClick(): void {}
-
-  public openUrl(url: string) {
-    window.open(url, '_blank');
-  }
-
 }

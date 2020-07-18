@@ -132,7 +132,7 @@ export class MMPMMarketplaceComponent implements OnInit {
 
       this.mmpmUtility?.deleteProcessIds(ids);
       this.tableUtility?.clearFilter();
-      this.dataStore?.loadData(true);
+      this.dataStore?.retrieveMagicMirrorPackageData();
 
     }).catch((error) => console.log(error));
   }
@@ -193,7 +193,7 @@ export class MMPMMarketplaceComponent implements OnInit {
 
   public onRefreshPackages(): void {
     this.snackbar.notify("Executing ... ");
-    this.dataStore.loadData(true);
+    this.dataStore.retrieveMagicMirrorPackageData(true);
   }
 
   ngOnDestroy() {

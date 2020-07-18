@@ -10,10 +10,9 @@
           The following selected packages match an already installed package's title:
         </strong>
       </h3>
-      <ul style="margin-left: 3em;">
-        <li *ngFor="let pkg of data.matchesInstalledTitles | keyvalue"> {{ pkg.value.title }} ({{ pkg.value.repository }})
-        </li>
-      </ul>
+      <mat-list style="margin-left: 3em;">
+        <mat-list-itme *ngFor="let pkg of data.matchesInstalledTitles | keyvalue"> {{ pkg.value.title }} ({{ pkg.value.repository }})</mat-list-itme>
+      </mat-list>
       <br>
       <br>
       <div style="text-align: center;">

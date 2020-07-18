@@ -107,7 +107,7 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
       this.api.updateMagicMirrorConfig(url, this.fileSelection[this.fileIndex]?.code).subscribe((success) => {
         const message: any = success ? `Successfully saved ${file}` : `Failed to save ${file}`;
         this.snackbar.open(message, "Close", { duration: 3000 });
-        this.dataStore.loadData();
+        this.dataStore.retrieveMagicMirrorPackageData();
       });
     });
   }

@@ -18,7 +18,12 @@
 
   <div mat-subheader *ngIf="availableUpgrades?.packages?.length">Packages</div>
   <mat-list-option *ngFor="let pkg of availableUpgrades?.packages | keyvalue" [value]="pkg.value">
-    <strong>{{ pkg.value.title }}</strong> <i>({{ pkg.value.repository }})</i>
+    <div>
+      <mat-icon color="accent" style="font-size: 18px; margin-top: 5px; vertical-align: middle;">
+        local_mall
+      </mat-icon>
+      <span> {{ pkg.value.title }}</span>
+    </div>
   </mat-list-option>
 
   <div

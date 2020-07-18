@@ -26,4 +26,9 @@ export class PackageDetailsModalComponent implements OnInit {
   }
 
   public onNoClick(): void {}
+
+  public openUrl(url: string) {
+    window.open(url, '_blank');
+  }
+
 }

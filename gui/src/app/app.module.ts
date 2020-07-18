@@ -31,7 +31,7 @@ import { environment } from "../environments/environment";
 import { SelectModalComponent } from "./components/select-modal/select-modal.component";
 
 export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
-  return () => dataStore.loadData();
+  return () => dataStore.retrieveMagicMirrorPackageData();
 }
 
 @NgModule({

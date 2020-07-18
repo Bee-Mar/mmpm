@@ -26,11 +26,15 @@
         <li *ngFor="let active of activeModules | keyvalue" style="margin-top: 10%;">
           <mat-slide-toggle [disabled]="active.value.name === 'mmpm'" [(ngModel)]="active.value.visible" (change)="toggle($event, active.value)" style="font-size: 18px;">
             {{ active.value.name }}
-            <mat-icon *ngIf="active.value.visible; else not_visible" matTooltip="{{ active.value.name === 'mmpm' ? 'MMPM must remain visible' : 'visible'}}" style="margin-left: 0.5em;">
+            <mat-icon
+              *ngIf="active.value.visible; else not_visible"
+              matTooltip="{{ active.value.name === 'mmpm' ? 'MMPM must remain visible' : 'visible'}}"
+              style="margin-left: 0.5em;"
+            >
               visibility
             </mat-icon>
             <ng-template #not_visible>
-              <mat-icon matTooltip="hidden" style="margin-left: 0.5em;">visibility_off</mat-icon>
+              <mat-icon matTooltip="hidden" style="margin-left: 0.5em; vertical-align: middle;">visibility_off</mat-icon>
             </ng-template>
           </mat-slide-toggle>
         </li>
@@ -71,7 +75,7 @@
           <mat-icon color="primary">exit_to_app</mat-icon> MMPM Wiki
         </button>
         <button class="link-button" mat-button (click)="openUrl('https://github.com/Bee-Mar/mmpm/issues/new')">
-          <mat-icon style="top: 5px; color: yellow;">error_outline</mat-icon> Create an Issue
+          <mat-icon style="color: yellow;">error_outline</mat-icon> Create an Issue
         </button>
       </div>
     </div>

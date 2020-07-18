@@ -80,7 +80,7 @@ export class AvailableUpgradesModalDialogComponent implements OnInit {
           }
 
           this.mmpmUtility.deleteProcessIds(ids);
-          this.dataStore.loadData();
+          this.dataStore.retrieveMagicMirrorPackageData();
         }).catch((error) => console.log(error));
       }
 
@@ -99,7 +99,7 @@ export class AvailableUpgradesModalDialogComponent implements OnInit {
           }
 
           this.mmpmUtility.deleteProcessIds(ids);
-          this.dataStore.loadData();
+          this.dataStore.retrieveMagicMirrorPackageData();
         }).catch((error) => console.log(error));
       }
     });

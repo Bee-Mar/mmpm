@@ -130,7 +130,7 @@ export class MMPMLocalPackagesComponent implements OnInit {
 
         this.mmpmUtility.deleteProcessIds(ids);
         this.tableUtility.clearFilter();
-        this.dataStore.loadData(true);
+        this.dataStore.retrieveMagicMirrorPackageData(true);
 
       }).catch((error) => console.log(error));
     });

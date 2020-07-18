@@ -261,7 +261,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
           } else if (url === URLS.GET.MAGICMIRROR.UPGRADE) {
             success ? this.snackbar.success('Upgraded MagicMirror!') : this.snackbar.error('Failed to upgrade MagicMirror. Please see the MMPM log files for details');
             this.mmpmUtility.deleteProcessIds(ids);
-            this.dataStore.loadData();
+            this.dataStore.retrieveMagicMirrorPackageData();
           } else {
             url === URLS.GET.MAGICMIRROR.RESTART ? this.working() : this.executed();
           }

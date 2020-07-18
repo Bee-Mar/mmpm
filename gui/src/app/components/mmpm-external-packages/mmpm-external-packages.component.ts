@@ -101,7 +101,7 @@ export class MMPMExternalPackagesComponent implements OnInit {
             "Failed to add new source";
 
           this.mmpmUtility.deleteProcessIds(ids);
-          this.dataStore.loadData(true);
+          this.dataStore.retrieveMagicMirrorPackageData(true);
           this.snackbar.success(message);
         }).catch((error) => console.log(error));
       });
@@ -126,7 +126,7 @@ export class MMPMExternalPackagesComponent implements OnInit {
         this.snackbar.notify("Executing ... ");
 
         this.api.removeExternalPackage(this.selection.selected).then((_) => {
-          this.dataStore.loadData(true);
+          this.dataStore.retrieveMagicMirrorPackageData(true);
           this.snackbar.success("Process complete!");
         }).catch((error) => {
           console.log(error);

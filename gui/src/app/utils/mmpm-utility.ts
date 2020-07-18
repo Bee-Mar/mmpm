@@ -63,5 +63,4 @@ export class MMPMUtility {
   public openUrl(url: string) {
     window.open(url, '_blank');
   }
-
 }

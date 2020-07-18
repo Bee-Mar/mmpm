@@ -1,6 +1,17 @@
 <h2 style="text-align: center;">{{ data.title }} - {{ data.category }}</h2>
 <div style="height: 70%; overflow-y: auto; margin-top: 3em;">
   <div style="display: flex; justify-content: space-evenly; text-align: center;">
+    <span matTooltip="Repository" class="clickable" (click)="mmpmUtility?.openUrl(data.repository)">
+      <mat-icon color="accent">home</mat-icon>
+    </span>
+
+    <span matTooltip="Forks">
+      <mat-icon color="accent" style="transform: rotate(270deg)">
+        share
+      </mat-icon>
+      {{ data["Forks"] ? data["Forks"] : "N/A" }}
+    </span>
+
     <span matTooltip="Stars">
       <mat-icon color="accent">
         star_rate
@@ -29,20 +40,8 @@
       {{ data["Created"] ? data["Created"] : "N/A" }}
     </span>
 
-    <span matTooltip="Forks">
-      <mat-icon color="accent" style="transform: rotate(270deg)">
-        share
-      </mat-icon>
-      {{ data["Forks"] ? data["Forks"] : "N/A" }}
-    </span>
-
-    <span>
-      <button mat-button class="link-button" (click)="mmpmUtility?.openUrl(data.repository)" matTooltip="Repository">
-        <mat-icon color="accent">home</mat-icon>
-      </button>
-    </span>
   </div>
-  <div style="text-align: center; margin-top: 1em;">
+  <div style="text-align: center; margin-top: 2em;">
     <span matTooltip="Creator">
       <mat-icon color="accent">
         create

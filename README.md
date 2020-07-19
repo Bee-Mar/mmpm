@@ -1,18 +1,25 @@
 <p align="center">
+  <!-- badges start -->
   <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank">
-    <img src="https://img.shields.io/badge/Donate-PayPal-green.svg">
+    <img src="https://img.shields.io/badge/Donate-PayPal-green.svg" alt="PayPal">
   </a>
-  <a href="http://choosealicense.com/licenses/mit">
+  <a href="http://choosealicense.com/licenses/mit" target="_blank">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
   </a>
-  <a href="https://travis-ci.org/github/Bee-Mar/mmpm">
-    <img src="https://travis-ci.org/Bee-Mar/mmpm.svg?branch=master">
+  <a href="https://travis-ci.org/github/Bee-Mar/mmpm" target="_blank">
+    <img src="https://travis-ci.org/Bee-Mar/mmpm.svg?branch=master" alt="Travis CI">
   </a>
-  <a href="https://hub.docker.com/r/karsten13/mmpm">
-    <img src="https://img.shields.io/docker/pulls/karsten13/mmpm.svg">
+  <a href="https://hub.docker.com/r/karsten13/mmpm" target="_blank">
+    <img src="https://img.shields.io/docker/pulls/karsten13/mmpm.svg" alt="Docker Pulls">
   </a>
+  <a href="https://pypi.org/project/mmpm/2.0/" target="_blank">
+    <img src="https://img.shields.io/pypi/v/mmpm.svg" alt="PyPI version">
+  </a>
+  <!-- badges end -->
+
+  <!-- The main Title -->
   <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank">
-    <img src="assets/MagicMirrorPackageManager.png" alt="accessibility text">
+    <img src="assets/MagicMirrorPackageManager.png" alt="MagicMirror Package Manager">
   </a>
 </p>
 
@@ -20,23 +27,21 @@
 | --------------- | --------------------------------- |
 | Brandon Marlowe | bpmarlowe-software@protonmail.com |
 
-The MagicMirror Package Manager (`mmpm`) is both a command line and web interface designed to simplify the installation, removal, and maintenance of MagicMirror modules.
-
-<i>Consider this project to be in a Beta state. The CLI is quite mature, but lacks tests (don't worry, they'll be added)</i>
+`MMPM`, the MagicMirror Package Manager is a command line and graphical interface designed to simplify the installation, removal, and maintenance of MagicMirror packages.
 
 The MagicMirror Package Manager is featured as an alternative installation method on the [MagicMirror Documentation](https://docs.magicmirror.builders/getting-started/installation.html#alternative-installation-methods).
 
 The supported features are comprised of the following categories:
 
-1) Search
-2) Installation
-3) Removal
-4) Updates/Upgrading
-5) Adding external module sources (think of it like PPAs for Ubuntu)
-6) Quick config editing access
-7) Self updating
-8) Installing MagicMirror
-9) Hiding/showing MagicMirror modules on the fly
+- Search
+- Installation
+- Removal
+- Updates/Upgrading
+- Adding external module sources (think of it like PPAs for Ubuntu)
+- Quick config editing access
+- Self updating
+- Installing MagicMirror
+- Hiding/showing MagicMirror modules on the fly
 
 
 ## TLDR; What's the Installation/Removal Process?

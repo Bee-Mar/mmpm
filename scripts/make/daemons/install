@@ -26,7 +26,7 @@ printf "WantedBy=multi-user.target\n\n" >> $MMPM_CONFIGS_DIR/mmpm.service
 printf "[Service]\n" >> $MMPM_CONFIGS_DIR/mmpm.service
 printf "User=$USER\n" >> $MMPM_CONFIGS_DIR/mmpm.service
 printf "Type=notify\n" >> $MMPM_CONFIGS_DIR/mmpm.service
-printf "ExecStart=$HOME/.local/bin/gunicorn --reload --worker-class eventlet -w 1 -c $HOME/.config/mmpm/configs/gunicorn.conf.py mmpm.wsgi:app -u $USER\n" >> $MMPM_CONFIGS_DIR/mmpm.service
+printf "ExecStart=gunicorn --reload --worker-class eventlet -w 1 -c $HOME/.config/mmpm/configs/gunicorn.conf.py mmpm.wsgi:app -u $USER\n" >> $MMPM_CONFIGS_DIR/mmpm.service
 printf "ExecReload=/bin/kill -s HUP \$MAINPID\n" >> $MMPM_CONFIGS_DIR/mmpm.service
 printf "KillMode=mixed\n" >> $MMPM_CONFIGS_DIR/mmpm.service
 printf "TimeoutStopSec=5\n" >> $MMPM_CONFIGS_DIR/mmpm.service
@@ -41,7 +41,7 @@ printf "StartLimitBurst=5, StartLimitIntervalSec=1\n\n" >> $MMPM_CONFIGS_DIR/mmp
 printf "[Service]\n" >> ./$MMPM_CONFIGS_DIR/mmpm-webssh.service
 printf "User=$USER\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
 printf "WorkingDirectory=$HOME\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
-printf "ExecStart=$HOME/.local/bin/wssh --address=127.0.0.1 --port=$MMPM_WEBSSH_LOCALHOST_PORT\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
+printf "ExecStart=wssh --address=127.0.0.1 --port=$MMPM_WEBSSH_LOCALHOST_PORT\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
 printf "ExecReload=/bin/kill -s HUP \$MAINPID\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
 printf "Type=simple\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
 printf "PIDFile=/var/run/webssh.pid\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service

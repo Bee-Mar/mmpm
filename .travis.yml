@@ -28,8 +28,8 @@ matrix:
         file: deb_dist/python3-mmpm*.deb
         on:
           repo: Bee-Mar/mmpm
-          branch: master
-          tags: true
+          branch: develop
+          #tags: true
 
       - provider: pypi
         skip_cleanup: true

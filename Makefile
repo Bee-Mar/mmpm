@@ -37,14 +37,15 @@ build-gui:
 build-from-src: build-cli-from-src build-gui-from-src
 
 build-cli-from-src:
-	@$(SHELL) $(CLI)/build
+	@$(SHELL) $(CLI)/build-from-src
 
 build-gui-from-src:
 	@$(SHELL) $(GUI)/build-from-src
 
 install: install-cli install-gui
 
-install-cli-from-src: install-cli
+install-cli-from-src:
+	@$(SHELL) $(CLI)/install-from-src
 
 install-cli:
 	@$(SHELL) $(CLI)/install

@@ -15,5 +15,3 @@ log_action "MMPM CLI Installed"
 
 printf "\033[1;36mMMPM CLI Installed \e[0m\n"
 printf "\e[92mNOTE: Ensure \"${HOME}/.local/bin\" is in your PATH\e[0m\n"
-
-

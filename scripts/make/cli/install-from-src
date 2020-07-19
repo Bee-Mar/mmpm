@@ -1,3 +1,15 @@
 #!/bin/bash
 source ./scripts/make/constants
 
+printf "\e[92mInstalling MMPM CLI From Source \e[0m\n"
+
+log_notice
+
+log_action "Installing MMPM CLI from dist/mmpm*whl"
+
+printf " -- installing MMPM CLI Wheel"
+log_and_eval "pip3 install --user ./dist/mmpm*.whl"
+_done_
+
+printf "\033[1;36mMMPM CLI Installed \e[0m\n"
+printf "\e[92mNOTE: Ensure \"${HOME}/.local/bin\" is in your PATH\e[0m\n"

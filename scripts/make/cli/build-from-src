@@ -1,3 +1,14 @@
 #!/bin/bash
 source ./scripts/make/constants
 
+printf "\e[92mBuilding MMPM CLI Wheel from Source\e[0m\n"
+
+log_notice
+
+log_action "Building MMPM wheel"
+
+printf " -- running 'python3 setup.py sdist bdist_wheel' (this may take some time)"
+log_and_eval "python3 setup.py sdist bdist_wheel"
+_done_
+
+log_action "MMPM CLI wheel built"

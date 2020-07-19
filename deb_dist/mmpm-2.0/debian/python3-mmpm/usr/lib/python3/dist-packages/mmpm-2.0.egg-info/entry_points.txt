@@ -1,3 +1,0 @@
-[console_scripts]
-mmpm = mmpm.__main__:main
-

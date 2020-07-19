@@ -12,3 +12,6 @@ lib/*.o
 lib/libmmpm.so
 NOTES.md
 mmpm*.log
+deb_dist
+mmpm*tar.gz
+

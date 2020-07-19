@@ -30,8 +30,8 @@ matrix:
         secure: jKhyTecMagRxiC8lKBYiXtm/fr1UzidnsdCYd1QScIwVEy68leGWS6j40HXyEX1rlWI8HOJ17P5XkovUM7muV4O7LOhkHgueVq4J6ABdRJVa9KEvRYnipr9m03a3DBicKPfyRX6wP22jAVu5IRRx/d6KXCtSXGs2TJM8Ql7KHEutALfWvguIaowk4sIYg9JdCturSW7F/4RBuh0xa93uB+/4Uv85sor8aZQ9QMESqi2NqT8dSpeLlwRzBHuexDBsN7g5iBbutfK/bex+e5S3UFS4ds/kgaeeWFrtfCKahhqMNaTdEaXJqsq5h6vvyfM71uFiVmQZp594CLQLAS2aRje4MQXwnL6L8hr08QqgaK0EbFciVzXeYJ7vWCPUCotDRgyVJLKD623GHqgz9Gd15Z/6fyaPFj8Senj3l9oT/sVbXEF1RykA9sk41HIXHOx90FdNUw9iovSBS6VjHboZh0QYvwYHU5ywnd3w7jjqVY1YAOYOm88sqyxPyVNdO+PUrVImPRVSUNnLJe1zQXjllTHdRYYGXAwPJfB1bPOZGTDPZ2w2tlmUXqk1AtDttmCd2ykkW7uZ1X34KdNOdUX5i/WvM05BXkcsxJm/IO9Z/uBNzvC4EsU0uQADfCGBgff6w7CNYlq1ZIGBfwtBM72CpzgjUscYJEVFN9GChpSXBAw=
       on:
         repo: Bee-Mar/mmpm
-        branch: develop
-        #tags: true
+        branch: master
+        tags: true
   - language: nodejs
     node_js:
       - 10

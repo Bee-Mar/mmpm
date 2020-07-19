@@ -14,7 +14,7 @@ matrix:
     install:
       - pip3 install mypy codecov pytest pylint twine
       - pip3 install -r requirements.txt
-      - python3 setup.py sdist bdist_wheel init_files init_db install
+      - pip3 install .
     script:
       - bash tests/travis-ci/mypy
       - bash tests/travis-ci/pylint
@@ -32,7 +32,7 @@ matrix:
       on:
         repo: Bee-Mar/mmpm
         branch: develop
-        tags: true
+        #tags: true
   - language: nodejs
     node_js:
       - 10

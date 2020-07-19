@@ -5,11 +5,11 @@
     <mat-icon>save</mat-icon>
   </button>
 
-  <button mat-raised-button color="accent" style="margin-right: 5em;" matTooltip="Toggle theme" matTooltipPosition="below" (click)="onToggleTheme()">
+  <button mat-raised-button color="accent" style="margin-right: 5em;" matTooltip="Toggle Theme" matTooltipPosition="below" (click)="onToggleTheme()">
     <mat-icon>palette</mat-icon>
   </button>
 
-  <button mat-raised-button style="background-color: #959595; margin-right: 5em;" matTooltip="Select file" matTooltipPosition="below" [matMenuTriggerFor]="menu">
+  <button mat-raised-button style="background-color: #959595; margin-right: 5em;" matTooltip="Files" matTooltipPosition="below" [matMenuTriggerFor]="menu">
     <mat-icon>folder_open</mat-icon>
     <mat-menu #menu="matMenu" yPosition="below">
       <button mat-menu-item (click)="setFileIndexAndCookie(CONFIG_JS)">

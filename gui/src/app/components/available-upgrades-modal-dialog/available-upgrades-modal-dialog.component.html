@@ -4,14 +4,24 @@
   style="text-align: left; margin-left: 3em; overflow-y: auto; height: 70%;"
 >
 <mat-selection-list #packageUpgradeSelections>
-
   <div mat-subheader *ngIf="availableUpgrades?.mmpm || availableUpgrades?.MagicMirror">Applications</div>
+
   <mat-list-option *ngIf="availableUpgrades?.mmpm" [disabled]="true">
-    <strong>MMPM (MagicMirror Package Manager)</strong><strong style="color: #33cc33"> Upgrade must be performed through CLI </strong>
+    <span>
+    <mat-icon color="accent" style="font-size: 18px; margin-top: 5px; vertical-align: middle;">
+      devices
+    </mat-icon>
+    MMPM - <strong style="color: #33cc33"> Upgrade must be performed through CLI </strong>
+  </span>
   </mat-list-option>
 
   <mat-list-option *ngIf="availableUpgrades?.MagicMirror" [value]="MagicMirror">
-    <strong>MagicMirror</strong>
+    <span>
+    <mat-icon color="accent" style="font-size: 18px; margin-top: 5px; vertical-align: middle;">
+      devices
+    </mat-icon>
+    MagicMirror
+    </span>
   </mat-list-option>
 
   <mat-divider *ngIf="availableUpgrades?.packages?.length"></mat-divider>

@@ -1,5 +1,5 @@
 <mat-form-field>
-  <input matInput id="searchbar" (keyup)="tableUtility?.searchFilter($event)" placeholder="Search ..." />
+  <mat-icon matPrefix style="vertical-align: middle;">search</mat-icon> <input matInput id="searchbar" (keyup)="tableUtility?.searchFilter($event)"/>
 </mat-form-field>
 
 <div class="table-container">
@@ -40,7 +40,7 @@
       <th mat-header-cell *matHeaderCellDef mat-sort-header>Title</th>
       <td mat-cell *matCellDef="let package; let i = index;">{{ package.title }}
       <mat-icon *ngIf="isUpgradeable[i]" matTooltip="Upgrade available" color="accent">
-        get_app
+        unarchive
       </mat-icon>
     </ng-container>
 

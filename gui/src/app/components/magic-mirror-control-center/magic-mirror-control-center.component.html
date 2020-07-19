@@ -1,25 +1,5 @@
 <div style="width: 100%; height: 100%;">
-  <div style="height: 100%; width: 20%; background-color: #303030; float: left">
-    <mat-grid-list cols="2" rowHeight="25%">
-      <mat-grid-tile *ngFor="let tile of tiles" [colspan]="tile.cols" [rowspan]="tile.rows" color="#FFFFFF">
-        <button
-          class="remote-button"
-          mat-raised-button
-          [matBadge]="tile.badge"
-          matTooltip="{{ tile.disabled ? tile.disabledTooltip : tile.visibleTooltip }}"
-          color="accent"
-          [disabled]="tile.disabled"
-          (click)="sendControlSignal(tile.url, tile.message, tile.dialogWidth)"
-        >
-          <mat-icon>
-            {{ tile.icon }}
-          </mat-icon>
-        </button>
-      </mat-grid-tile>
-    </mat-grid-list>
-  </div>
-
-  <div style="height: 100%; width: 25%; margin-left: 5%; background-color: #303030; overflow-y: auto; float: left;">
+  <div style="height: 100%; width: 25%; background-color: #303030; overflow-y: auto; float: left;">
     <h1 style="text-align: center; margin-top: 5%;">Active Modules</h1>
     <div *ngIf="activeModules?.length; else activeModulesNotFound" style="margin-top: 10%;">
       <ul style="list-style-type: none;">
@@ -53,12 +33,33 @@
           Please make sure MagicMirror is running, the
           <code>MMPM_MAGICMIRROR_URI</code> is correct, and the
           <code>ipWhitelist</code> in your MagicMirror <code>config.js</code>
-          includes <code>0.0.0.0</code>
+          includes <code>0.0.0.0</code>, or the <code>ipWhitelist</code> is an
+          empty array.
         <br>
         <br>
         You may need to open MagicMirror in your browser to activate the connection.
       </div>
     </ng-template>
+  </div>
+
+  <div style="height: 100%; width: 20%; margin-left: 5%; background-color: #303030; float: left">
+    <mat-grid-list cols="2" rowHeight="25%">
+      <mat-grid-tile *ngFor="let tile of tiles" [colspan]="tile.cols" [rowspan]="tile.rows" color="#FFFFFF">
+        <button
+          class="remote-button"
+          mat-raised-button
+          [matBadge]="tile.badge"
+          matTooltip="{{ tile.disabled ? tile.disabledTooltip : tile.visibleTooltip }}"
+          color="accent"
+          [disabled]="tile.disabled"
+          (click)="sendControlSignal(tile.url, tile.message, tile.dialogWidth)"
+        >
+          <mat-icon>
+            {{ tile.icon }}
+          </mat-icon>
+        </button>
+      </mat-grid-tile>
+    </mat-grid-list>
   </div>
 
   <div style="height: 100%; width: 45%; float: right; background-color: #303030;">
@@ -86,15 +87,15 @@
       </div>
     </div>
     <h1 style="text-align: center; margin-top: 8%; margin-bottom: 4%;">
-      Environment Variables
-      <span matTooltip="To update the environment variables below, edit the 'mmpm-env.json' file in the 'Config Editor' tab, then reload the page">
+      Environment
+      <span matTooltip="Modify the environment variables by editing 'mmpm-env.json' in the 'Config Editor' tab, then refresh your browser">
         <mat-icon>help</mat-icon>
       </span>
     </h1>
-    <div style="margin-left: 5%;">
+    <div style="margin-left: 1%;">
       <ul style="list-style-type: none;">
         <li *ngFor="let envVar of mmpmEnvVars | keyvalue" style="margin-bottom: 2%; margin-left: 1em; font-size: 13px;">
-          <code>{{ envVar.key }}={{ envVar.value }}</code>
+          <code>{{ envVar.key }}: {{ envVar.value }}</code>
         </li>
       </ul>
     </div>

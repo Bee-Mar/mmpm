@@ -18,7 +18,7 @@ matrix:
       - bash tests/travis-ci/mypy
       - bash tests/travis-ci/pylint
     before_deploy:
-      - apt install dh-python python3-stdeb -y
+      - sudo apt install -y dh-python python3-stdeb
       - python3 setup.py sdist bdist_wheel
       - python3 setup.py --command-packages=stdeb.command bdist_deb
     deploy:

@@ -1,5 +1,11 @@
 matrix:
   include:
+  - os: linux
+    dist: xenial
+  - os: linux
+    dist: bionic
+  - os: linux
+    dist: focal
   - language: python
     python:
       - '3.7'
@@ -18,7 +24,7 @@ matrix:
       - bash tests/travis-ci/mypy
       - bash tests/travis-ci/pylint
     before_deploy:
-      - sudo apt install -y dh-python python3-stdeb
+      - sudo apt install -y dh-python python-stdeb
       - python3 setup.py sdist bdist_wheel
       - python3 setup.py --command-packages=stdeb.command bdist_deb
     deploy:

@@ -1,0 +1,14 @@
+mmpm/__pycache__
+__pycache__
+build
+dist
+mmpm.egg-info
+gui/build
+gui/.clangd
+configs/*.service
+.mypy_cache
+mmpm-gui.tar*.gz
+lib/*.o
+lib/libmmpm.so
+NOTES.md
+mmpm*.log

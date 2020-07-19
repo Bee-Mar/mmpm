@@ -142,7 +142,7 @@ def main(argv):
             print(f'{message}. Run `mmpm list --upgradable` for details')
 
     elif args.subcmd == mmpm.opts.UPGRADE:
-        mmpm.core.upgrade_available_packages_and_applications(args.assume_yes, additional_args)
+        mmpm.core.upgrade_available(args.assume_yes, additional_args)
 
     elif args.subcmd == mmpm.opts.INSTALL:
         if args.magicmirror:

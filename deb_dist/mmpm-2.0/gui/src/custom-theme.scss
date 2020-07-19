@@ -1,0 +1,28 @@
+@import "../node_modules/@angular/material/theming";
+@include mat-core();
+
+$primary: mat-palette($mat-purple);
+$accent:  mat-palette($mat-cyan, 500, 900, A100);
+$warn:    mat-palette($mat-red);
+
+$theme: mat-dark-theme($primary, $accent, $warn);
+/*$my-app-theme: mat-light-theme($my-app-primary, $my-app-accent, $my-app-warn);*/
+
+@include angular-material-theme($theme);
+
+// Define the light theme
+$light-app-primary: mat-palette($mat-indigo);
+$light-app-accent:  mat-palette($mat-pink, A200, A100, A400);
+$light-app-theme:   mat-light-theme($light-app-primary, $light-app-accent);
+
+.dark-theme {
+  $dark-primary: mat-palette($mat-purple);
+  $dark-accent:  mat-palette($mat-cyan, 500, 900, A100);
+  $dark-theme: mat-dark-theme($dark-primary, $dark-accent);
+  @include angular-material-theme($dark-theme);
+}
+
+
+.light-theme {
+  @include angular-material-theme($light-app-theme)
+}

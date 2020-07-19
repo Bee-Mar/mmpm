@@ -1,0 +1,17 @@
+#!/bin/bash
+source ./scripts/make/constants
+
+printf "\e[92mInstalling MMPM CLI \e[0m\n"
+
+log_notice
+
+log_action "Installing MMPM CLI"
+
+printf " -- installing CLI using 'python3 setup.py requirements init_files init_db install --user' (this may take some time)"
+log_and_eval "python3 setup.py requirements init_files init_db install --user"
+_done_
+
+log_action "MMPM CLI Installed"
+
+printf "\033[1;36mMMPM CLI Installed \e[0m\n"
+printf "\e[92mNOTE: Ensure \"${HOME}/.local/bin\" is in your PATH\e[0m\n"

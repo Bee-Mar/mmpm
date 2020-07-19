@@ -1,0 +1,111 @@
+<div style="width: 100%; height: 100%;">
+  <div style="height: 100%; width: 25%; background-color: #303030; overflow-y: auto; float: left;">
+    <h1 style="text-align: center; margin-top: 5%;">Active Modules</h1>
+    <div *ngIf="activeModules?.length; else activeModulesNotFound" style="margin-top: 10%;">
+      <ul style="list-style-type: none;">
+        <li *ngFor="let active of activeModules | keyvalue" style="margin-top: 10%;">
+          <mat-slide-toggle [disabled]="active.value.name === 'mmpm'" [(ngModel)]="active.value.visible" (change)="toggle($event, active.value)" style="font-size: 18px;">
+            {{ active.value.name }}
+            <mat-icon
+              *ngIf="active.value.visible; else not_visible"
+              matTooltip="{{ active.value.name === 'mmpm' ? 'MMPM must remain visible' : 'visible'}}"
+              style="margin-left: 0.5em;"
+            >
+              visibility
+            </mat-icon>
+            <ng-template #not_visible>
+              <mat-icon matTooltip="hidden" style="margin-left: 0.5em; vertical-align: middle;">visibility_off</mat-icon>
+            </ng-template>
+          </mat-slide-toggle>
+        </li>
+      </ul>
+    </div>
+    <ng-template #activeModulesNotFound>
+      <div style="text-align: center; margin-top: 50%; margin-left: 3em; margin-right: 3em;">
+        <span style="font-size: 18px;">
+          Unable to retrieve active modules
+          <mat-icon style="color: yellow; font-size: 25px; vertical-align: middle;">error</mat-icon>
+        </span>
+      </div>
+      <div style="text-align: center; margin-left: 2em; margin-right: 2em;">
+        <br>
+        <br>
+          Please make sure MagicMirror is running, the
+          <code>MMPM_MAGICMIRROR_URI</code> is correct, and the
+          <code>ipWhitelist</code> in your MagicMirror <code>config.js</code>
+          includes <code>0.0.0.0</code>, or the <code>ipWhitelist</code> is an
+          empty array.
+        <br>
+        <br>
+        You may need to open MagicMirror in your browser to activate the connection.
+      </div>
+    </ng-template>
+  </div>
+
+  <div style="height: 100%; width: 20%; margin-left: 5%; background-color: #303030; float: left">
+    <mat-grid-list cols="2" rowHeight="25%">
+      <mat-grid-tile *ngFor="let tile of tiles" [colspan]="tile.cols" [rowspan]="tile.rows" color="#FFFFFF">
+        <button
+          class="remote-button"
+          mat-raised-button
+          [matBadge]="tile.badge"
+          matTooltip="{{ tile.disabled ? tile.disabledTooltip : tile.visibleTooltip }}"
+          color="accent"
+          [disabled]="tile.disabled"
+          (click)="sendControlSignal(tile.url, tile.message, tile.dialogWidth)"
+        >
+          <mat-icon>
+            {{ tile.icon }}
+          </mat-icon>
+        </button>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </div>
+
+  <div style="height: 100%; width: 45%; float: right; background-color: #303030;">
+    <h1 style="text-align: center; margin-top: 4%;">Resources</h1>
+    <div style="text-align: center; margin-top: 8%;">
+      <button class="link-button" mat-button (click)="mmpmUtility?.openUrl(mmpmEnvVars?.get('MMPM_MAGICMIRROR_URI'))">
+        <mat-icon color="primary">exit_to_app</mat-icon> MagicMirror
+      </button>
+      <button class="link-button" mat-button (click)="mmpmUtility?.openUrl('https://github.com/MichMich/MagicMirror')">
+        <mat-icon color="primary">exit_to_app</mat-icon> MagicMirror GitHub
+      </button>
+      <button class="link-button" mat-button (click)="mmpmUtility?.openUrl('https://docs.magicmirror.builders/')">
+        <mat-icon color="primary">exit_to_app</mat-icon> MagicMirror Documentation
+      </button>
+      <button class="link-button" mat-button (click)="mmpmUtility?.openUrl('https://forum.magicmirror.builders/')">
+        <mat-icon color="primary">exit_to_app</mat-icon> MagicMirror Forum
+      </button>
+      <div style="text-align: center; margin-top: 2em;">
+        <button class="link-button" mat-button (click)="mmpmUtility?.openUrl('https://github.com/Bee-Mar/mmpm/wiki')">
+          <mat-icon color="primary">exit_to_app</mat-icon> MMPM Wiki
+        </button>
+        <button class="link-button" mat-button (click)="mmpmUtility?.openUrl('https://github.com/Bee-Mar/mmpm/issues/new')">
+          <mat-icon style="color: yellow;">error_outline</mat-icon> Create an Issue
+        </button>
+      </div>
+    </div>
+    <h1 style="text-align: center; margin-top: 8%; margin-bottom: 4%;">
+      Environment
+      <span matTooltip="Modify the environment variables by editing 'mmpm-env.json' in the 'Config Editor' tab, then refresh your browser">
+        <mat-icon>help</mat-icon>
+      </span>
+    </h1>
+    <div style="margin-left: 1%;">
+      <ul style="list-style-type: none;">
+        <li *ngFor="let envVar of mmpmEnvVars | keyvalue" style="margin-bottom: 2%; margin-left: 1em; font-size: 13px;">
+          <code>{{ envVar.key }}: {{ envVar.value }}</code>
+        </li>
+      </ul>
+    </div>
+    <div style="margin-top: 8%; text-align: center;">
+      <button mat-raised-button color="accent" matTooltip="Download MMPM log files" [matTooltipPosition]="'below'" class="remote-button" (click)="downloadLogs()" class="remote-button" style="margin-right: 5em;">
+        <mat-icon>get_app</mat-icon>
+      </button>
+      <button mat-raised-button color="accent" matTooltip="Reload control center" [matTooltipPosition]="'below'" (click)="loadControlCenterData()" class="remote-button">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>

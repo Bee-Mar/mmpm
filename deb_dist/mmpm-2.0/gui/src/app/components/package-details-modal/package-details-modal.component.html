@@ -1,0 +1,70 @@
+<h2 style="text-align: center;">{{ data.title }} - {{ data.category }}</h2>
+<div style="height: 70%; overflow-y: auto; margin-top: 3em;">
+  <div style="display: flex; justify-content: space-evenly; text-align: center;">
+    <span matTooltip="Repository" class="clickable" (click)="mmpmUtility?.openUrl(data.repository)">
+      <mat-icon color="accent">home</mat-icon>
+    </span>
+
+    <span matTooltip="Forks">
+      <mat-icon color="accent" style="transform: rotate(270deg)">
+        share
+      </mat-icon>
+      {{ data["Forks"] ? data["Forks"] : "N/A" }}
+    </span>
+
+    <span matTooltip="Stars">
+      <mat-icon color="accent">
+        star_rate
+      </mat-icon>
+      {{ data["Stars"] ? data["Stars"] : "N/A" }}
+    </span>
+
+    <span matTooltip="Open issues">
+      <mat-icon style="color: yellow;">
+        error_outline
+      </mat-icon>
+      {{ data["Open Issues"] ? data["Open Issues"] : "N/A" }}
+    </span>
+
+    <span matTooltip="Last updated">
+      <mat-icon color="accent">
+        schedule
+      </mat-icon>
+      {{ data["Last Updated"] ? data["Last Updated"] : "N/A" }}
+    </span>
+
+    <span matTooltip="Create date">
+      <mat-icon color="accent">
+        today
+      </mat-icon>
+      {{ data["Created"] ? data["Created"] : "N/A" }}
+    </span>
+
+  </div>
+  <div style="text-align: center; margin-top: 2em;">
+    <span matTooltip="Creator">
+      <mat-icon color="accent">
+        create
+      </mat-icon>
+      {{ data.author }}
+    </span>
+    <br>
+    <br>
+    <span *ngIf="data.directory" matTooltip="Installation path">
+      <mat-icon color="accent">folder</mat-icon>
+      {{ data.directory }}
+    </span>
+
+    <p style="margin-top: 3em;">
+      {{ data.description }}
+    </p>
+  </div>
+
+</div>
+<mat-dialog-actions align="center">
+  <button mat-raised-button mat-dialog-close color="primary">
+    <mat-icon>
+      close
+    </mat-icon>
+  </button>
+</mat-dialog-actions>

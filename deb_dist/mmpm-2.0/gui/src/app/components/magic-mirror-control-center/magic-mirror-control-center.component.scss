@@ -1,0 +1,27 @@
+div {
+  border-radius: 5px;
+  -webkit-box-shadow: 8px 14px 24px 8px rgba(50, 50, 50, 0.75);
+  -moz-box-shadow: 8px 14px 24px 8px rgba(50, 50, 50, 0.75);
+  box-shadow: 8px 14px 24px 8px rgba(50, 50, 50, 0.75);
+}
+
+a {
+  text-decoration: none;
+}
+
+.remote-button:hover {
+  color: #303030;
+}
+
+.link-button:hover {
+  color: #D0D0D0;
+}
+
+mat-icon {
+  vertical-align: middle;
+}
+
+
+mat-list-item {
+  font-size: 12px;
+}

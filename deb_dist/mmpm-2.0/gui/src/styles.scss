@@ -1,0 +1,19 @@
+/* You can add global styles to this file, and also import other style files */
+$material-icons-font-path: '~material-icons/iconfont/';
+@import '~material-icons/iconfont/material-icons.scss';
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Orbitron, Roboto, "Helvetica Neue", sans-serif;
+  background-color: #202020;
+}
+
+@font-face {
+  font-family: 'Permanent Marker';
+  src: url(assets/fonts/PermanentMarker-Regular.ttf) format('opentype');
+}
+

@@ -1,0 +1,52 @@
+<mat-toolbar color="primary">
+  <button mat-button id="theme-switcher" (click)="toggleTheme()" style="margin-left: 1em; margin-right: 15em;">
+    <mat-icon matTooltip="Toggle Theme">color_lens</mat-icon>
+  </button>
+  <span style="margin: 0 auto;" id="banner">
+    <a href="https://github.com/Bee-Mar/mmpm" target="_blank" id="homepage">
+      MagicMirror Package Manager
+    </a>
+  </span>
+  <app-available-upgrades-ticker style="margin-right: 0.75em;"></app-available-upgrades-ticker>
+  <app-active-process-count-ticker style="margin-right: 0.25em;"></app-active-process-count-ticker>
+  <span>
+    <a id="paypal" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank" style="text-decoration: none;">
+      <mat-icon svgIcon="paypal" style="margin-right: 1em; color: white;" matTooltip="Donate">
+      </mat-icon>
+    </a>
+  </span>
+</mat-toolbar>
+
+<mat-tab-group color="primary" mat-align-tabs="center">
+  <mat-tab label="Control Center">
+    <mat-card class="card-container">
+      <app-magic-mirror-control-center></app-magic-mirror-control-center>
+    </mat-card>
+  </mat-tab>
+  <mat-tab label="Config Editor">
+    <mat-card class="card-container">
+      <app-magic-mirror-config-editor></app-magic-mirror-config-editor>
+    </mat-card>
+  </mat-tab>
+  <mat-tab label="Marketplace" color="secondary">
+    <mat-card class="card-container" style="text-align: center;">
+      <app-mmpm-marketplace></app-mmpm-marketplace>
+    </mat-card>
+  </mat-tab>
+  <mat-tab label="Local Packages">
+    <mat-card class="card-container" style="text-align: center;">
+      <app-mmpm-local-packages></app-mmpm-local-packages>
+    </mat-card>
+  </mat-tab>
+  <mat-tab label="External Packages" color="secondary">
+    <mat-card class="card-container" style="text-align: center;">
+      <app-mmpm-external-packages></app-mmpm-external-packages>
+    </mat-card>
+  </mat-tab>
+  <mat-tab label="Terminal">
+    <mat-card class="card-container">
+      <iframe style="height: 100%; width: 100%;" [src]="webSSHLocation | safe"></iframe>
+    </mat-card>
+  </mat-tab>
+</mat-tab-group>
+<router-outlet></router-outlet>

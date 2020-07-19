@@ -146,6 +146,7 @@ def assert_required_defaults_exist() -> bool:
         try:
             current_env = json.load(env)
         except json.JSONDecodeError as error:
+            warning_msg(f'Encountered error when reading {mmpm.consts.MMPM_ENV_FILE}. See `mmpm log` for details')
             log.error(str(error))
 
     for key in mmpm.consts.MMPM_DEFAULT_ENV:
@@ -966,15 +967,6 @@ def socketio_client_factory():
 
 
 def socketio_client_disconnect(client) -> bool:
-    '''
-    Wrapper method to include try/except block for handling any issues encountered during disconnect
-
-    Parameters:
-        client (socketio.Client): the client object instance
-
-    Returns:
-        success (bool): True on success, False if not
-    '''
     try:
         log.info('attempting to disconnect from MagicMirror websocket')
         client.disconnect()
@@ -1009,15 +1001,6 @@ def get_env(key: str) -> str:
 
 
 def reset_available_upgrades_for_environment(env: str) -> bool:
-    '''
-    Resets a given MagicMirror installation environment within the ~/.config/mmpm/mmpm-available-upgrades.json to have no upgrades available.
-
-    Parameters:
-        env (str): the path of a MagicMirror installation
-
-    Returns:
-        success (bool): True on success, False on failure
-    '''
 
     upgrades: dict = {}
 

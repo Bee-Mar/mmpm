@@ -114,15 +114,6 @@ def check_for_mmpm_updates(gui=False, automated=False) -> bool:
 
 
 def upgrade_mmpm() -> str:
-    '''
-    Handles upgrade process of MMPM
-
-    Parameters:
-        None
-
-    Returns:
-        error (str): empty if success, error message on failure
-    '''
 
     mmpm.utils.log.info('User chose to update MMPM')
 
@@ -184,21 +175,7 @@ def upgrade_package(package: MagicMirrorPackage) -> str:
     return ''
 
 
-def upgrade_available_packages_and_applications(assume_yes: bool = False, selection: List[str] = []) -> None:
-    '''
-    Wrapper method to handle upgrade process of all available packages and/or
-    applications (MMPM and MagicMirror). A user may supply specific
-    packages/applications to upgrade, or upgrade all available by supplying no
-    arguments. No result is returned. All sub-functions responsible for
-    upgrading packages handle errors, and the execution does not need to halt
-    do to errors in this wrapper method
-
-    Parameters:
-        None
-
-    Returns:
-        None
-    '''
+def upgrade_available(assume_yes: bool = False, selection: List[str] = []) -> bool:
     confirmed: dict = {mmpm.consts.PACKAGES: [], mmpm.consts.MMPM: False, mmpm.consts.MAGICMIRROR: False}
     MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
     upgrades = get_available_upgrades()
@@ -286,6 +263,7 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
     if upgraded and mmpm.utils.is_magicmirror_running():
         print('Restart MagicMirror for the changes to take effect')
 
+    return True
 
 
 def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> List[MagicMirrorPackage]:
@@ -1944,7 +1922,7 @@ def migrate() -> None:
 
 def dump_database() -> None:
     '''
-    Pretty prints contents of database to stdout
+    Prints contents of database to stdout
 
     Parameters:
         None

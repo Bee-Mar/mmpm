@@ -1,0 +1,19 @@
+#!/bin/bash
+source ./scripts/make/constants
+
+printf "\e[92mInstalling GUI Static Files\e[0m\n"
+
+log_notice
+
+log_action "Installing MMPM GUI Static Files"
+
+printf " -- extracting and copying files to installation destination"
+log_and_eval "sudo rm -rfv /var/www/mmpm/static"
+log_and_eval "sudo mkdir -vp /var/www/mmpm/{static,templates}"
+log_and_eval "sudo tar xvf mmpm-gui-$MMPM_LATEST_VERSION.tar.gz -C /var/www/mmpm"
+log_and_eval "sudo cp -v /var/www/mmpm/static/index.html /var/www/mmpm/templates/"
+log_and_eval "rm -vf mmpm-gui-$MMPM_LATEST_VERSION.tar.gz"
+_done_
+
+log_action "Installed MMPM GUI Static Files"
+printf "\033[1;36mInstalled MMPM GUI Static Files\e[0m\n"

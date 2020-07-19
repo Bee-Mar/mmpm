@@ -1,0 +1,15 @@
+<h2 style="text-align: center;">{{ data.title }}</h2>
+<div>
+  <mat-selection-list #menuChoices [multiple]="false">
+    <mat-list-option *ngFor="let choice of data.choices" [value]="choice">
+      {{ choice }} {{ data?.description }}
+    </mat-list-option>
+  </mat-selection-list>
+</div>
+<mat-dialog-actions align="center">
+  <button class="remote-button" mat-raised-button color="primary" (click)="onConfirm(menuChoices?.selectedOptions?.selected[0]?.value)" [disabled]="!menuChoices?.selectedOptions?.selected?.length">
+    <mat-icon>
+      done
+    </mat-icon>
+  </button>
+</mat-dialog-actions>

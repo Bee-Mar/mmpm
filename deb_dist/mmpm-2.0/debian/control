@@ -1,0 +1,13 @@
+Source: mmpm
+Maintainer: Brandon Marlowe <bpmarlowe-software@protonmail.com>
+Section: python
+Priority: optional
+Build-Depends: dh-python, python3-setuptools, python3-all, debhelper (>= 9)
+Standards-Version: 3.9.6
+Homepage: https://github.com/Bee-Mar/mmpm
+
+Package: python3-mmpm
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}
+Description: MMPM, the MagicMirror Package Manager CLI simplifies the ins
+

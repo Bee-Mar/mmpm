@@ -88,10 +88,10 @@ def load_requirements() -> List[str]:
 setup(
     name="mmpm",
     version=mmpm.mmpm.__version__,
-    description="The MagicMirror Package Manager (MMPM)",
+    description="MMPM, the MagicMirror Package Manager CLI simplifies the installation, removal, and general maintenance of MagicMirror packages",
     url="https://github.com/Bee-Mar/mmpm",
     author="Brandon Marlowe",
-    # download_url=f'https://github.com/Bee-Mar/mmpm/archive/{__version__}.tar.gz',
+    download_url=f'https://github.com/Bee-Mar/mmpm/archive/{mmpm.mmpm.__version__}.tar.gz',
     author_email="bpmarlowe-software@protonmail.com",
     license="MIT",
     include_package_data=True,
@@ -99,10 +99,11 @@ setup(
     packages=find_packages(),
     entry_points={"console_scripts": ["mmpm=mmpm.__main__:main"]},
     install_requires=load_requirements(),
+    python_requires='>=3.7',
     zip_safe=True,
     cmdclass={
-        'init_files': InitializeDefaultFilesCommand,
         'requirements': InstallRequirements,
-        'init_db': InitializeDatabase
+        'init_files': InitializeDefaultFilesCommand,
+        'init_db': InitializeDatabase,
     }
 )

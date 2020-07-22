@@ -12,5 +12,5 @@ webssh>=1.5.1
 flask-socketio>=4.2.1
 eventlet>=0.25.1
 python-socketio[client]>=4.6.0
-requests>=2.23.0
+requests==2.23.0
 pygments>=2.3.1

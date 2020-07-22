@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 import os
+import sys
 import json
 import shutil
-import sys
+import pathlib
+import subprocess
+import requests
 
 import mmpm.color
 import mmpm.utils
 import mmpm.consts
 import mmpm.models
 
-from urllib.error import HTTPError, URLError
-from urllib.request import urlopen
 from collections import defaultdict
 from typing import List, Dict, Tuple
 
@@ -47,7 +48,7 @@ def database_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     print(mmpm.color.normal_green('Last updated:'), f'{creation_date}')
     print(mmpm.color.normal_green('Next scheduled update:'), f'{expiration_date}')
     print(mmpm.color.normal_green('Package categories:'), f'{num_categories}')
-    print(mmpm.color.normal_green('Packages available:'), f'{num_packages}')
+    print(mmpm.color.normal_green('Packages available:'), f'{num_packages - 1}') # skip MMPM itself
 
 
 def check_for_mmpm_updates(gui=False, automated=False) -> bool:
@@ -64,28 +65,23 @@ def check_for_mmpm_updates(gui=False, automated=False) -> bool:
     '''
     import mmpm.mmpm # pylint: disable=redefined-outer-name
 
+    cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
+    mmpm.utils.log.info(f'Checking for newer version of MMPM. Current version: {mmpm.mmpm.__version__}')
+
+    if automated:
+        message: str = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] ({mmpm.color.normal_magenta('automated')}) for updates"
+    else:
+        message = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] for updates"
+    mmpm.utils.plain_print(message)
+
     try:
-        cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
-        mmpm.utils.log.info(f'Checking for newer version of MMPM. Current version: {mmpm.mmpm.__version__}')
-        if automated:
-            message: str = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] ({mmpm.color.normal_magenta('automated')}) for updates"
-        else:
-            message = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] for updates"
-        mmpm.utils.plain_print(message)
+        # just to keep the console output the same as all other update commands
+        error_code, contents, _ = mmpm.utils.run_cmd(['curl', mmpm.consts.MMPM_FILE_URL])
+    except KeyboardInterrupt:
+        mmpm.utils.keyboard_interrupt_log()
 
-        try:
-            # just to keep the console output the same as all other update commands
-            error_code, contents, _ = mmpm.utils.run_cmd(['curl', mmpm.consts.MMPM_FILE_URL])
-        except KeyboardInterrupt:
-            mmpm.utils.keyboard_interrupt_log()
-
-        if error_code:
-            mmpm.utils.fatal_msg('Failed to retrieve MMPM version number')
-
-    except (HTTPError, URLError) as error:
-        print(mmpm.consts.RED_X)
-        mmpm.utils.error_msg(str(error))
-        return False
+    if error_code:
+        mmpm.utils.fatal_msg('Failed to retrieve MMPM version number')
 
     from re import findall
     version_number: float = float(findall(r"\d+\.\d+", findall(r"__version__ = \d+\.\d+", contents)[0])[0])
@@ -699,6 +695,289 @@ def upgrade_magicmirror() -> str:
     return ''
 
 
+def install_mmpm_gui() -> None:
+    '''
+    Installs the MMPM GUI by configuring the required NGINX files bundled in
+    the MMPM PyPI package. This asks the user for sudo permissions. The
+    template config files are copied from the mmpm PyPI package, modified to
+    contain the proper paths, then installed in the required system folders
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+
+    if not mmpm.utils.prompt_user('Are you sure you want to install the MMPM GUI? This requires sudo permission.'):
+        return
+
+    sub_gunicorn: str = 'SUBSTITUTE_gunicorn'
+    sub_user: str = 'SUBSTITUTE_user'
+    sub_wssh: str = 'SUBSTITUTE_wssh'
+    sub_static: str = 'SUBSTITUTE_static'
+
+    user: str = os.environ.get('USERNAME')
+
+    gunicorn_executable: str = shutil.which('gunicorn')
+
+    if not gunicorn_executable:
+        mmpm.utils.fatal_msg('Gunicorn executable not found. Please ensure Gunicorn is installed and in your PATH')
+
+    wssh_executable: str = shutil.which('wssh')
+
+    if not wssh_executable:
+        mmpm.utils.fatal_msg('WebSSH executable not found. Please ensure WebSSH is installed and in your PATH')
+
+    temp_etc: str = '/tmp/etc'
+
+    shutil.rmtree(temp_etc, ignore_errors=True)
+    shutil.copytree(mmpm.consts.MMPM_BUNDLED_ETC_DIR, temp_etc)
+
+    temp_mmpm_service: str = f'{temp_etc}/systemd/system/mmpm.service'
+    temp_mmpm_webbssh_service: str = f'{temp_etc}/systemd/system/mmpm-webssh.service'
+    temp_nginx_conf: str = f'{temp_etc}/nginx/sites-available/mmpm.conf'
+
+    print(f'{mmpm.consts.GREEN_PLUS} Cleaning confiuration files and resetting SystemdD daemons')
+    remove_mmpm_gui(hide_prompt=True)
+
+    with open(temp_mmpm_service, 'r') as original:
+        config = original.read()
+
+    with open(temp_mmpm_service, 'w') as mmpm_service:
+        subbed = config.replace(sub_gunicorn, gunicorn_executable)
+        subbed = subbed.replace(sub_user, user)
+        mmpm_service.write(subbed)
+
+    with open(temp_mmpm_webbssh_service, 'r') as original:
+        config = original.read()
+
+    with open(temp_mmpm_webbssh_service, 'w') as mmpm_webssh_service:
+        subbed = config.replace(sub_wssh, wssh_executable)
+        subbed = subbed.replace(sub_user, user)
+        mmpm_webssh_service.write(subbed)
+
+    with open(temp_nginx_conf, 'r') as original:
+        config = original.read()
+
+    with open(temp_nginx_conf, 'w') as nginx_conf:
+        subbed = config.replace(sub_static, mmpm.consts.MMPM_STATIC_FOLDER)
+        nginx_conf.write(subbed)
+
+
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Copying NGINX and SystemdD service configs ')
+    os.system('sudo cp -r /tmp/etc /')
+    print(mmpm.consts.GREEN_CHECK_MARK)
+    os.system('rm -rf /tmp/etc')
+
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Reloading SystemdD daemon ')
+    daemon_reload = mmpm.utils.systemctl('daemon-reload')
+
+    if daemon_reload.returncode != 0:
+        print(mmpm.consts.RED_X)
+        mmpm.utils.error_msg('Failed to reload SystemdD daemon. See `mmpm log` for details')
+        mmpm.utils.log.error(daemon_reload.stderr.decode('utf-8'))
+    else:
+        print(mmpm.consts.GREEN_CHECK_MARK)
+
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Enabling MMPM SystemdD daemon ')
+
+    enable_mmpm_service = mmpm.utils.systemctl('enable', ['mmpm.service'])
+
+    if enable_mmpm_service.returncode != 0:
+        if mmpm.utils.log_gui_install_error_and_prompt_for_removal(enable_mmpm_service, 'Failed to enable MMPM SystemD service'):
+            remove_mmpm_gui()
+        sys.exit(127)
+
+    print(mmpm.consts.GREEN_CHECK_MARK)
+
+    start_mmpm_service = mmpm.utils.systemctl('start', ['mmpm.service'])
+
+    if start_mmpm_service.returncode != 0:
+        if mmpm.utils.log_gui_install_error_and_prompt_for_removal(start_mmpm_service, 'Failed to start MMPM SystemD service'):
+            remove_mmpm_gui()
+        sys.exit(127)
+
+    enable_mmpm_webssh_service = mmpm.utils.systemctl('enable', ['mmpm-webssh.service'])
+
+    if enable_mmpm_webssh_service.returncode != 0:
+        if mmpm.utils.log_gui_install_error_and_prompt_for_removal(enable_mmpm_webssh_service, 'Failed to enable MMPM-WebSSH SystemD service'):
+            remove_mmpm_gui()
+        sys.exit(127)
+
+    start_mmpm_webssh_service = mmpm.utils.systemctl('start', ['mmpm-webssh.service'])
+
+    if start_mmpm_webssh_service.returncode != 0:
+        if mmpm.utils.log_gui_install_error_and_prompt_for_removal(start_mmpm_webssh_service, 'Failed to start MMPM-WebSSH SystemD service'):
+            remove_mmpm_gui()
+        sys.exit(127)
+
+    link_nginx_conf = subprocess.run(['sudo', 'ln', '-sf', '/etc/nginx/sites-available/mmpm.conf', '/etc/nginx/sites-enabled'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    if link_nginx_conf.returncode != 0:
+        if mmpm.utils.log_gui_install_error_and_prompt_for_removal(link_nginx_conf, 'Failed to create symbolic links for NGINX configuration'):
+            remove_mmpm_gui()
+        sys.exit(127)
+
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Restarting NGINX SystemD service ')
+    restart_nginx = mmpm.utils.systemctl('restart', ['nginx'])
+
+    if restart_nginx.returncode != 0:
+        if mmpm.utils.log_gui_install_error_and_prompt_for_removal(restart_nginx, 'Failed to restart NGINX SystemD service'):
+            remove_mmpm_gui()
+        sys.exit(127)
+
+    print(mmpm.consts.GREEN_CHECK_MARK)
+
+    print('MMPM GUI installed! See `mmpm list --gui-url` for the URI, or run `mmpm open --gui` to launch')
+
+
+def install_mmpm_as_magicmirror_module(assume_yes: bool = False) -> str:
+    '''
+    Installs the MMPM javascript files to the user's MagicMirror modules
+    directory. This should succeed, but will fail if permissions are not
+    granted to create the necessary files. This most likely will only happen in
+    the case of MagicMirror being a docker image, and the folders being owned
+    by root.
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+
+    if not mmpm.utils.prompt_user('Are you sure you want to install the MMPM module?', assume_yes=assume_yes):
+        return ''
+
+    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
+    MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(MMPM_MAGICMIRROR_ROOT, 'modules'))
+    MMPM_MODULE_DIR: str = os.path.join(MAGICMIRROR_MODULES_DIR, 'mmpm')
+
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Creating MMPM module in MagicMirror modules directory ')
+
+    try:
+        pathlib.Path(MMPM_MODULE_DIR).mkdir(parents=True, exist_ok=True, mode=0o777)
+        shutil.copyfile(f'{mmpm.consts.MMPM_JS_DIR}/mmpm.js', f'{MMPM_MODULE_DIR}/mmpm.js')
+        shutil.copyfile(f'{mmpm.consts.MMPM_JS_DIR}/node_helper.js', f'{MMPM_MODULE_DIR}/node_helper.js')
+    except OSError as error:
+        print(mmpm.consts.RED_X)
+        mmpm.utils.error_msg('Failed to create MMPM module. Is the directory owned by root?')
+        mmpm.utils.log.error(str(error))
+        return str(error)
+
+    print(mmpm.consts.GREEN_CHECK_MARK)
+    print('Run `mmpm open --config` and add { module: "mmpm" } the the modules array, then restart MagicMirror if running')
+
+    return ''
+
+
+def remove_mmpm_gui(hide_prompt: bool = False) -> None:
+    if not hide_prompt and not mmpm.utils.prompt_user('Are you sure you want to remove the MMPM GUI? This requires sudo permission.'):
+        return
+
+    INACTIVE: str = 'inactive\n'
+    DISABLED: str = 'disabled\n'
+
+    is_active = mmpm.utils.systemctl('is-active', ['mmpm.service'])
+
+    if is_active.returncode == 0:
+        mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Stopping MMPM SystemD service ')
+        stopping = mmpm.utils.systemctl('stop', ['mmpm.service'])
+
+        if stopping.returncode == 0:
+            print(mmpm.consts.GREEN_CHECK_MARK)
+        else:
+            print(mmpm.consts.RED_X)
+            mmpm.utils.error_msg('Failed to stop MMPM SystemD service. See `mmpm log` for details')
+            mmpm.utils.log.error(f"{stopping.stdout.decode('utf-8')}\n{stopping.stderr.decode('utf-8')}")
+
+    elif is_active.stdout.decode('utf-8') == INACTIVE:
+        print(f'{mmpm.consts.GREEN_PLUS} MMPM SystemD service not active, nothing to do {mmpm.consts.GREEN_CHECK_MARK}')
+
+    is_enabled = mmpm.utils.systemctl('is-enabled', ['mmpm.service'])
+
+    if is_enabled.returncode == 0:
+        mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Disabling MMPM SystemD service ')
+        disabling = mmpm.utils.systemctl('disable', ['mmpm.service'])
+
+        if disabling.returncode == 0:
+            print(mmpm.consts.GREEN_CHECK_MARK)
+        else:
+            print(mmpm.consts.RED_X)
+            mmpm.utils.error_msg('Failed to disable MMPM SystemD service. See `mmpm log` for details')
+            mmpm.utils.log.error(f"{disabling.stdout.decode('utf-8')}\n{disabling.stderr.decode('utf-8')}")
+
+    elif is_enabled.stdout.decode('utf-8') == DISABLED:
+        print(f'{mmpm.consts.GREEN_PLUS} MMPM SystemD service not enabled, nothing to do {mmpm.consts.GREEN_CHECK_MARK}')
+
+    is_active = mmpm.utils.systemctl('is-active', ['mmpm-webssh.service'])
+
+    if is_active.returncode == 0:
+        mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Stopping MMPM-WebSSH SystemD service ')
+        stopping = mmpm.utils.systemctl('stop', ['mmpm-webssh.service'])
+
+        if stopping.returncode == 0:
+            print(mmpm.consts.GREEN_CHECK_MARK)
+        else:
+            print(mmpm.consts.RED_X)
+            mmpm.utils.error_msg('Failed to stop MMPM-WebSSH SystemD service. See `mmpm log` for details')
+            mmpm.utils.log.error(f"{stopping.stdout.decode('utf-8')}\n{stopping.stderr.decode('utf-8')}")
+
+    elif is_active.stdout.decode('utf-8') == INACTIVE:
+        print(f'{mmpm.consts.GREEN_PLUS} MMPM-WebSSH SystemD service not active, nothing to do {mmpm.consts.GREEN_CHECK_MARK}')
+
+    is_enabled = mmpm.utils.systemctl('is-enabled', ['mmpm-webssh.service'])
+
+    if is_enabled.returncode == 0:
+        mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Disabling MMPM-WebSSH SystemD service ')
+        disabling = mmpm.utils.systemctl('disable', ['mmpm-webssh.service'])
+
+        if disabling.returncode == 0:
+            print(mmpm.consts.GREEN_CHECK_MARK)
+        else:
+            print(mmpm.consts.RED_X)
+            mmpm.utils.error_msg('Failed to disbale MMPM-WebSSH SystemD service. See `mmpm log` for details')
+            mmpm.utils.log.error(f"{disabling.stdout.decode('utf-8')}\n{disabling.stderr.decode('utf-8')}")
+
+    elif is_enabled.stdout.decode('utf-8') == DISABLED:
+        print(f'{mmpm.consts.GREEN_PLUS} MMPM-WebSSH SystemD service not enabled, nothing to do {mmpm.consts.GREEN_CHECK_MARK}')
+
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Force removing NGINX and SystemD configs ')
+
+    cmd: str = f"""
+    sudo rm -f {mmpm.consts.MMPM_SYSTEMD_SERVICE_FILE} ;
+    sudo rm -f {mmpm.consts.MMPM_WEBSSH_SYSTEMD_SERVICE_FILE} ;
+    sudo rm -f {mmpm.consts.MMPM_NGINX_CONF_FILE} ;
+    sudo rm -f /etc/nginx/sites-available/mmpm.conf ;
+    """
+
+    print(mmpm.consts.GREEN_CHECK_MARK)
+
+    os.system(cmd)
+
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Reloading SystemdD daemon ')
+    daemon_reload = mmpm.utils.systemctl('daemon-reload')
+
+    if daemon_reload.returncode != 0:
+        print(mmpm.consts.RED_X)
+        mmpm.utils.error_msg('Failed to reload SystemdD daemon. See `mmpm log` for details')
+        mmpm.utils.log.error(daemon_reload.stderr.decode('utf-8'))
+    else:
+        print(mmpm.consts.GREEN_CHECK_MARK)
+
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Restarting NGINX SystemD service ')
+    restart_nginx = mmpm.utils.systemctl('restart', ['nginx'])
+
+    if restart_nginx.returncode != 0:
+        print(mmpm.consts.RED_X)
+        mmpm.utils.error_msg('Failed to restart NGINX SystemdD daemon. See `mmpm log` for details')
+        mmpm.utils.log.error(restart_nginx.stderr.decode('utf-8'))
+    else:
+        print(mmpm.consts.GREEN_CHECK_MARK)
+
+    print('MMPM GUI Removed!')
+
 def install_magicmirror() -> bool:
     '''
     Installs MagicMirror. First checks if a MagicMirror installation can be
@@ -716,7 +995,6 @@ def install_magicmirror() -> bool:
     known_envs: List[str] = [env for env in get_available_upgrades() if env != 'mmpm']
     parent: str = mmpm.consts.HOME_DIR
 
-    import pathlib
 
     MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
 
@@ -880,14 +1158,19 @@ def load_external_packages() -> Dict[str, List[MagicMirrorPackage]]:
     '''
     external_packages: List[MagicMirrorPackage] = []
 
-    try:
-        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r') as f:
-            external_packages = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(f)[mmpm.consts.EXTERNAL_PACKAGES])
-    except Exception:
-        message = f'Failed to load data from {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}. Please examine the file, as it may be malformed and required manual corrective action.'
-        mmpm.utils.warning_msg(message)
+    if bool(os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size):
+        try:
+            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r') as ext_pkgs:
+                external_packages = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(ext_pkgs)[mmpm.consts.EXTERNAL_PACKAGES])
+        except Exception:
+            message = f'Failed to load data from {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}. Please examine the file, as it may be malformed and required manual corrective action.'
+            mmpm.utils.warning_msg(message)
+    else:
+        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as ext_pkgs:
+            json.dump({mmpm.consts.EXTERNAL_PACKAGES: external_packages}, ext_pkgs)
 
     return {mmpm.consts.EXTERNAL_PACKAGES: external_packages}
+
 
 def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
     '''
@@ -901,90 +1184,84 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
     '''
 
     packages: Dict[str, List[MagicMirrorPackage]] = defaultdict(list)
+    response: requests.Response = requests.Response()
 
     try:
-        url = urlopen(mmpm.consts.MAGICMIRROR_MODULES_URL)
-        web_page = url.read()
-    except (HTTPError, URLError):
+        response = requests.get(mmpm.consts.MAGICMIRROR_MODULES_URL)
+    except requests.exceptions.RequestException:
         print(mmpm.consts.RED_X)
         mmpm.utils.fatal_msg('Unable to retrieve MagicMirror modules. Is your internet connection up?')
         return {}
 
     from bs4 import BeautifulSoup
 
-    soup = BeautifulSoup(web_page, 'html.parser')
+    soup = BeautifulSoup(response.text, 'html.parser')
     table_soup: list = soup.find_all('table')
+    category_soup = soup.find_all(attrs={'class': 'markdown-body'})
+    categories_soup = category_soup[0].find_all('h3')
+    del categories_soup[0] # the General Advice section
 
-    category_soup: list = soup.find_all(attrs={'class': 'markdown-body'})
-    categories_soup: list = category_soup[0].find_all('h3')
-
-    categories: list = []
-
-    for index, _ in enumerate(categories_soup):
-        last_element: object = len(categories_soup[index].contents) - 1
-        new_category: object = categories_soup[index].contents[last_element]
-
-        if new_category != 'General Advice':
-            categories.append(new_category)
-
-    tr_soup: list = []
-
-    for table in table_soup:
-        tr_soup.append(table.find_all("tr"))
+    # the last entry contains the actual category name
+    categories: list = [category.contents[-1] for category in categories_soup]
+    # the first index is a row that literally says 'Title' 'Author' 'Description'
+    tr_soup: list = [table.find_all('tr')[1:] for table in table_soup]
 
     for index, row in enumerate(tr_soup):
         for column_number, _ in enumerate(row):
-            # ignore cells that literally say "Title", "Author", "Description"
-            if column_number > 0:
-                td_soup: list = tr_soup[index][column_number].find_all('td')
+            td_soup: list = tr_soup[index][column_number].find_all('td')
 
-                title: str = mmpm.consts.NOT_AVAILABLE
-                repo: str = mmpm.consts.NOT_AVAILABLE
-                author: str = mmpm.consts.NOT_AVAILABLE
-                desc: str = mmpm.consts.NOT_AVAILABLE
+            title: str = mmpm.consts.NOT_AVAILABLE
+            repo: str = mmpm.consts.NOT_AVAILABLE
+            author: str = mmpm.consts.NOT_AVAILABLE
+            desc: str = mmpm.consts.NOT_AVAILABLE
 
-                for idx, _ in enumerate(td_soup):
-                    if idx == 0:
-                        for td in td_soup[idx]:
-                            title = td.contents[0]
+            # should look into a way of simplifying this more, but it works for now. So, if it ain't broke ...
+            for idx, _ in enumerate(td_soup):
+                # the first index is the title information
+                if idx == 0:
+                    title = mmpm.utils.sanitize_name(td_soup[idx].contents[0].contents[0])
+                    anchor_tag = td_soup[idx].find_all('a')[0]
+                    repo = str(anchor_tag['href']) if anchor_tag.has_attr('href') else mmpm.consts.NOT_AVAILABLE
 
-                        for a in td_soup[idx].find_all('a'):
-                            if a.has_attr('href'):
-                                repo = a['href']
+                # the second index is the author information
+                elif idx == 1:
+                    # all because some people want to get fancy and embed anchor tags
+                    author_block = td_soup[idx].contents
 
-                        repo = str(repo)
-                        title = mmpm.utils.sanitize_name(title)
+                    if author_block:
+                        author = str()
 
-                    elif idx == 1:
-                        for contents in td_soup[idx].contents:
-                            if type(contents).__name__ == 'Tag':
-                                for tag in contents:
-                                    author = tag.strip()
-                            else:
-                                author = contents
+                    for name in author_block:
+                        if type(name).__name__ == 'NavigableString':
+                            author += f'{name.strip()} '
+                        elif type(name).__name__ == 'Tag':
+                            author += f'{name.contents[0].strip()} '
 
-                        author = str(author)
+                # the final index is the description information
+                else:
+                    descrption_block = td_soup[idx].contents
 
-                    else:
-                        if contents:
-                            desc = str()
-                        for contents in td_soup[idx].contents:
-                            if type(contents).__name__ == 'Tag':
-                                for content in contents:
-                                    desc += content.string
-                            else:
-                                desc += contents.string
+                    if descrption_block:
+                        desc = str()
 
-                if title != mmpm.consts.MMPM:
-                    # this is not very efficient, but it only runs once in a while
-                    packages[categories[index]].append(
-                        MagicMirrorPackage(
-                            title=title.strip(),
-                            author=author.strip(),
-                            description=desc.strip(),
-                            repository=repo.strip()
-                        )
+                    # some people embed other html elements in here, so they need to be parsed out
+                    for desciption in descrption_block:
+                        if type(desciption).__name__ == 'Tag':
+                            for content in desciption:
+                                desc += content.string
+                        else:
+                            desc += desciption.string
+
+            # this is not very efficient, but it rarely runs, so it'll do for now
+            if title != mmpm.consts.MMPM:
+                packages[categories[index]].append(
+                    MagicMirrorPackage(
+                        title=title.strip(),
+                        author=author.strip(),
+                        description=desc.strip(),
+                        repository=repo.strip()
                     )
+                )
 
     return packages
 
@@ -1702,12 +1979,12 @@ def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool
             mmpm.utils.error_msg('MMPM log file not found')
 
     if gui_logs:
-        if os.path.exists(mmpm.consts.MMPM_GUNICORN_ACCESS_LOG_FILE):
-            logs.append(mmpm.consts.MMPM_GUNICORN_ACCESS_LOG_FILE)
+        if os.path.exists(mmpm.consts.MMPM_NGINX_ACCESS_LOG_FILE):
+            logs.append(mmpm.consts.MMPM_NGINX_ACCESS_LOG_FILE)
         else:
             mmpm.utils.error_msg('Gunicorn access log file not found')
-        if os.path.exists(mmpm.consts.MMPM_GUNICORN_ERROR_LOG_FILE):
-            logs.append(mmpm.consts.MMPM_GUNICORN_ERROR_LOG_FILE)
+        if os.path.exists(mmpm.consts.MMPM_NGINX_ERROR_LOG_FILE):
+            logs.append(mmpm.consts.MMPM_NGINX_ERROR_LOG_FILE)
         else:
             mmpm.utils.error_msg('Gunicorn error log file not found')
 
@@ -1904,7 +2181,6 @@ def migrate() -> None:
     Returns:
         None
     '''
-    import pathlib
 
     legacy_ext_src_file: str = os.path.join(mmpm.consts.MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
     legacy_key: str = 'External Module Sources'

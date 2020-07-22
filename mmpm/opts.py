@@ -86,7 +86,7 @@ def get_user_args() -> object:
     # INSTALL PARSER
     install_parser = subparsers.add_parser(
         INSTALL,
-        usage='\n  mmpm install <package(s)> [--yes]\n  mmpm install [--magicmirror] [--autocomplete]',
+        usage='\n  mmpm install <package(s)> [--yes]\n  mmpm install [--magicmirror] [--autocomplete] [--gui] [--as-module]',
         help='install MagicMirror packages'
     )
 
@@ -114,6 +114,20 @@ def get_user_args() -> object:
         dest='autocomplete'
     )
 
+    install_parser.add_argument(
+        '--gui',
+        action='store_true',
+        help='install the MMPM GUI. Asks for sudo permissions',
+        dest='gui'
+    )
+
+    install_parser.add_argument(
+        '--as-module',
+        action='store_true',
+        help='install the MMPM MagicMirror helper module in your MagicMirror modules directory to enable hide/show functionality',
+        dest='as_module'
+    )
+
     # REMOVE PARSER
     remove_parser = subparsers.add_parser(
         REMOVE,
@@ -128,6 +142,14 @@ def get_user_args() -> object:
         default=False,
         help='assume yes for user response and do not show prompt',
         dest='assume_yes'
+    )
+
+    remove_parser.add_argument(
+        '--gui',
+        action='store_true',
+        default=False,
+        help='remove the MMPM GUI. Asks for sudo permissions',
+        dest='gui'
     )
 
     # UPDATE PARSER

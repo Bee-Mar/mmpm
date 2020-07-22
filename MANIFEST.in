@@ -1,0 +1,4 @@
+recursive-include mmpm/js *
+recursive-include mmpm/static *
+recursive-include mmpm/templates *
+recursive-include mmpm/etc *

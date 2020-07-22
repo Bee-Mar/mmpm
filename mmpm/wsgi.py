@@ -1,12 +1,14 @@
 #!/usr/bin python3
 # pylint: disable=unused-import
-from mmpm.api import flask_sio, app
+from mmpm.api import app
 import mmpm.utils
 import mmpm.consts
+import mmpm.core
+
+mmpm.core.load_packages()
 
 if __name__ == '__main__':
-    flask_sio.run(
-        flask_sio,
+    app.run(
         threaded=False,
         keepalive=True,
         log=mmpm.utils.log,

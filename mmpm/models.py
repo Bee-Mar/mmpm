@@ -19,8 +19,7 @@ class MMPMLogger():
         if not os.path.exists(mmpm.consts.MMPM_LOG_DIR):
             os.system(f'mkdir -p {mmpm.consts.MMPM_LOG_DIR}')
 
-        for log_file in mmpm.consts.MMPM_LOG_FILES:
-            os.system(f'touch {log_file}')
+        os.system(f'touch {mmpm.consts.MMPM_CLI_LOG_FILE}')
 
         self.log_format: str = '%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s'
         logging.basicConfig(filename=self.log_file, format=self.log_format)

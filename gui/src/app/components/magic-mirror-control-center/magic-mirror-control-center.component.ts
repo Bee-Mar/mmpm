@@ -37,7 +37,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     private dataStore: DataStoreService,
     public mmpmUtility: MMPMUtility,
     public dialog: MatDialog,
-  ) {}
+  ) { }
 
   public socket: any;
   public activeModules: Array<ActiveModule>;
@@ -51,6 +51,9 @@ export class MagicMirrorControlCenterComponent implements OnInit {
   public loadControlCenterData(): void {
     this.activeModules = new Array<ActiveModule>();
 
+    // needs to be a promise, because an observable from the dataStore would
+    // initially come back empty, then eventually have a value the socketio
+    // call needs the value on the first go in order to function properly
     this.api.retrieve(URLS.GET.MMPM.ENVIRONMENT_VARS).then((envVars: any) => {
       this.mmpmEnvVars = new Map<string, string>();
 
@@ -59,21 +62,18 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       const mmpmIsDockerImage: boolean = Boolean(this.mmpmEnvVars?.get("MMPM_IS_DOCKER_IMAGE"));
       this.tiles.forEach((t) => t.disabled = mmpmIsDockerImage);
 
-      this.socket = io(`${this.mmpmEnvVars?.get("MMPM_MAGICMIRROR_URI")}/mmpm`, {reconnection: true});
+      this.socket = io(`${this.mmpmEnvVars?.get("MMPM_MAGICMIRROR_URI")}/mmpm`, { reconnection: true });
       this.socket.on("connect", () => this.socket.emit("FROM_MMPM_APP_get_active_modules"));
       this.socket.on("notification", (data: any) => console.log(data));
       this.socket.on("disconnect", (data: any) => console.log(data));
 
+      // these keywords are used in node_helper.js and mmpm.js within the mmpm magicmirror module
       this.socket.on("MODULES_SHOWN", (result: any) => {
-        if (result.fails?.length) {
-          this.snackbar.error(`Failed to hide ${result.fails}. Seee MMPM logs for details`)
-        }
+        if (result.fails?.length) { this.snackbar.error(`Failed to hide ${result.fails}. Seee MMPM logs for details`) }
       });
 
       this.socket.on("MODULES_HIDDEN", (result: any) => {
-        if (result.fails.length) {
-          this.snackbar.error(`Failed to hide ${result.fails}. Seee MMPM logs for details`)
-        }
+        if (result.fails.length) { this.snackbar.error(`Failed to hide ${result.fails}. Seee MMPM logs for details`) }
       });
 
       this.socket.on("ACTIVE_MODULES", (active: any) => {
@@ -163,9 +163,9 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       rows: 1,
       badge: null,
       url: URLS.GET.RASPBERRYPI.RESTART,
-      message: "Your RaspberryPi will be rebooted.",
+      message: "Your RaspberryPi will be rebooted with sudo permissions",
       disabled: false,
-      dialogWidth: "30vw",
+      dialogWidth: "35vw",
     },
     {
       icon: "power_off",
@@ -175,9 +175,9 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       rows: 1,
       badge: null,
       url: URLS.GET.RASPBERRYPI.STOP,
-      message: "Your RaspberryPi will be powered off.",
+      message: "Your RaspberryPi will be powered off with sudo permissions",
       disabled: false,
-      dialogWidth: "33vw",
+      dialogWidth: "40vw",
     },
     {
       icon: "cached",
@@ -187,34 +187,60 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       rows: 1,
       badge: null,
       url: URLS.POST.RASPBERRYPI.ROTATE_SCREEN,
-      message: "The screen will be rotated. The RaspberryPi must be restarted to take effect",
+      message: "The screen will be rotated with sudo permissions. The RaspberryPi must be restarted after",
+      disabled: false,
+      dialogWidth: "50vw",
+    },
+    {
+      icon: "add_to_photos",
+      visibleTooltip: "Install MMPM Module",
+      disabledTooltip: "Unable install MMPM module within a Docker image",
+      cols: 2,
+      rows: 1,
+      badge: null,
+      url: URLS.POST.MAGICMIRROR.INSTALL_MMPM_MODULE,
+      message: "The MMPM MagicMirror module will be installed in your modules directory",
       disabled: false,
       dialogWidth: "45vw",
     }
   ];
 
-  private working = () => this.snackbar.notify("This may take a moment ...");
-  private executed = () => this.snackbar.notify("Process executed");
-  private magicMirrorRunningAlready = () => this.snackbar.error("MagicMirror appears to be running already. If this is a mistake, stop, then start MagicMirror.");
-
   public sendControlSignal(url: string, message: string, dialogWidth: string): void {
+    switch (url) {
+      case URLS.POST.RASPBERRYPI.ROTATE_SCREEN:
+        const selectDialogRef = this.dialog.open(SelectModalComponent, {
+          data: {
+            title: "Rotate RaspberryPi Screen",
+            label: "Degrees",
+            choices: [0, 90, 180, 270],
+            description: "degrees"
+          },
+          width: "20vw",
+          height: "40vh",
+          disableClose: true
+        });
 
-    if (url === URLS.POST.RASPBERRYPI.ROTATE_SCREEN) {
-      const selectDialogRef = this.dialog.open(SelectModalComponent, {
-        data: {
-          title: "Rotate RaspberryPi Screen",
-          label: "Degrees",
-          choices: [0, 90, 180, 270],
-          description: "degrees"
-        },
-        width: "20vw",
-        height: "40vh",
-        disableClose: true
-      });
+        selectDialogRef.afterClosed().subscribe((value) => {
+          const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
+            height: "15vh",
+            width: dialogWidth,
+            data: { message },
+            disableClose: true
+          });
 
-      selectDialogRef.afterClosed().subscribe((value) => {
+          confirmationDialogRef.afterClosed().subscribe((response) => {
+            if (!response) { return; }
 
-        const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
+            this.api.rotateRaspberryPiScreen(value).then((error: any) => {
+              if (error?.error) { this.snackbar.error(error.error); }
+            });
+          });
+        });
+
+        break;
+
+      default:
+        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
           height: "15vh",
           width: dialogWidth,
           data: {
@@ -223,67 +249,26 @@ export class MagicMirrorControlCenterComponent implements OnInit {
           disableClose: true
         });
 
-        confirmationDialogRef.afterClosed().subscribe((response) => {
-          if (!response) {
-            return;
-          }
+        dialogRef.afterClosed().subscribe((yes) => {
+          if (!yes) { return; }
 
-          this.api.rotateRaspberryPiScreen(value).then((error: any) => {
-            if (error?.error) {
-              this.snackbar.error(error.error);
-            }
-          });
-
+          this.api.retrieve(url).then((error: any) => {
+            error.error ? this.snackbar.error(error.error) : this.snackbar.success('Done!')
+            this.loadControlCenterData();
+          }).catch((error) => { console.log(error); });
         });
-      });
-      return;
-
-    } else {
-      const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-        height: "15vh",
-        width: dialogWidth,
-        data: {
-          message
-        },
-        disableClose: true
-      });
-
-      dialogRef.afterClosed().subscribe((response) => {
-        if (!response) {
-          return;
-        }
-
-        let ids: Array<number>;
-
-        this.api.retrieve(url).then((success) => {
-          if (url === URLS.GET.MAGICMIRROR.START) {
-            success ? this.working() : this.magicMirrorRunningAlready();
-          } else if (url === URLS.GET.MAGICMIRROR.UPGRADE) {
-            success ? this.snackbar.success('Upgraded MagicMirror!') : this.snackbar.error('Failed to upgrade MagicMirror. Please see the MMPM log files for details');
-            this.mmpmUtility.deleteProcessIds(ids);
-            this.dataStore.retrieveMagicMirrorPackageData();
-          } else {
-            url === URLS.GET.MAGICMIRROR.RESTART ? this.working() : this.executed();
-          }
-
-          this.loadControlCenterData();
-        }).catch((error) => { console.log(error); });
-      });
-
+        break;
     }
-
-
   }
 
   public downloadLogs(): void {
     this.api.getLogFiles().then((file) => {
-
-      const blob = new Blob([file], {type: 'application/zip'});
+      const blob = new Blob([file], { type: "application/zip" });
       const date = new Date();
 
       const fileName: string = `mmpm-logs-${date.getFullYear()}-${date.getMonth()}-${date.getDay()}.zip`;
       const url: string = URL.createObjectURL(blob);
-      const a: HTMLAnchorElement = document.createElement('a') as HTMLAnchorElement;
+      const a: HTMLAnchorElement = document.createElement("a") as HTMLAnchorElement;
 
       a.href = url;
       a.download = fileName;

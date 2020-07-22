@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatDialog } from "@angular/material/dialog";
+import { MatDialogRef, MatDialog } from "@angular/material/dialog";
 import { MatListOption } from "@angular/material/list";
 import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { ConfirmationDialogComponent } from "src/app/components/confirmation-dialog/confirmation-dialog.component";
@@ -19,6 +19,7 @@ export class AvailableUpgradesModalDialogComponent implements OnInit {
 
   constructor(
     public dialog: MatDialog,
+    private dialogRef: MatDialogRef<AvailableUpgradesModalDialogComponent>,
     private api: RestApiService,
     private mSnackBar: MatSnackBar,
     private mmpmUtility: MMPMUtility,
@@ -61,6 +62,7 @@ export class AvailableUpgradesModalDialogComponent implements OnInit {
 
     confirmationDialogRef.afterClosed().subscribe((yes) => {
       if (!yes) {
+        this.dialogRef.close();
         return;
       }
 
@@ -102,6 +104,8 @@ export class AvailableUpgradesModalDialogComponent implements OnInit {
           this.dataStore.retrieveMagicMirrorPackageData();
         }).catch((error) => console.log(error));
       }
+
+      this.dialogRef.close();
     });
   }
 

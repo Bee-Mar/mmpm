@@ -15,7 +15,7 @@ from typing import List, Dict
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 get_env = mmpm.utils.get_env
 
-__version__ = 2.0
+__version__ = 2.01
 
 
 def main(argv):
@@ -145,7 +145,11 @@ def main(argv):
         mmpm.core.upgrade_available_packages_and_applications(args.assume_yes, additional_args)
 
     elif args.subcmd == mmpm.opts.INSTALL:
-        if args.magicmirror:
+        if args.gui:
+            mmpm.core.install_mmpm_gui()
+        elif args.as_module:
+            mmpm.core.install_mmpm_as_magicmirror_module()
+        elif args.magicmirror:
             mmpm.core.install_magicmirror()
         elif args.autocomplete:
             mmpm.core.install_autocompletion(assume_yes=args.assume_yes)
@@ -160,7 +164,10 @@ def main(argv):
             mmpm.core.install_packages(installation_candidates, assume_yes=args.assume_yes)
 
     elif args.subcmd == mmpm.opts.REMOVE:
-        if not additional_args:
+        if args.gui:
+            mmpm.core.remove_mmpm_gui()
+
+        elif not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
         installed_packages = mmpm.core.get_installed_packages(packages)

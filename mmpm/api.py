@@ -10,8 +10,7 @@ import datetime
 
 from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
-from flask_socketio import SocketIO
-from typing import Tuple, List, Callable
+from typing import List, Callable
 from time import sleep
 
 import mmpm.utils
@@ -22,7 +21,12 @@ import mmpm.models
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 get_env: Callable = mmpm.utils.get_env
 
-app = Flask(__name__, root_path='/var/www/mmpm', static_folder="/var/www/mmpm/static")
+app = Flask(__name__,
+    root_path=mmpm.consts.MMPM_PYTHON_ROOT_DIR,
+    static_folder=mmpm.consts.MMPM_STATIC_FOLDER,
+    template_folder=mmpm.consts.MMPM_TEMPLATES_FOLDER,
+)
+
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 resources: dict = {
@@ -32,7 +36,6 @@ resources: dict = {
 }
 
 CORS(app)
-flask_sio = SocketIO(app, cors_allowed_origins='*', logger=mmpm.utils.log)
 
 api = lambda path: f'/api/{path}'
 
@@ -63,33 +66,6 @@ def __deserialize_selected_packages__(rqst, key: str = 'selected-packages') -> L
             pkg['directory'] = default_directory(pkg['title'])
 
     return [MagicMirrorPackage(**pkg) for pkg in pkgs]
-
-
-@flask_sio.on_error()
-def error_handler(error) -> Tuple[str, int]:
-    '''
-    Socket.io error handler
-
-    Parameters:
-        error (str): error message
-
-    Returns:
-        tuple (str, int): error message and code
-    '''
-    message: str = f'An internal error occurred within flask_socketio: {error}'
-    mmpm.utils.log.critical(message)
-    return message, 500
-
-
-@flask_sio.on('connect')
-def on_connect() -> None:
-    mmpm.utils.log.info('connected to socketio')
-
-
-@flask_sio.on('disconnect')
-def on_disconnect() -> None:
-    message: str = 'Server disconnected'
-    mmpm.utils.log.info(message)
 
 
 @app.after_request
@@ -232,7 +208,8 @@ def packages_details() -> Response:
                 'package': package.serialize_full(),
                 'details': mmpm.utils.get_remote_package_details(package)
             })
-        except Exception:
+        except Exception as error:
+            mmpm.utils.log.error(str(error))
             result.append({
                 'package': package.serialize_full(),
                 'details': {}
@@ -375,11 +352,11 @@ def magicmirror_start() -> Response:
     # if these processes are all running, we assume MagicMirror is running currently
     if mmpm.utils.is_magicmirror_running():
         mmpm.utils.log.info('MagicMirror appears to be running already. Returning False.')
-        return Response(json.dumps(False))
+        return Response(json.dumps({'error': 'MagicMirror appears to be running already'}))
 
     mmpm.utils.log.info('MagicMirror does not appear to be running currently. Returning True.')
     mmpm.core.start_magicmirror()
-    return Response(json.dumps(True))
+    return Response(json.dumps({'error': ''}))
 
 
 @app.route(api('magicmirror/restart'), methods=[mmpm.consts.GET])
@@ -426,6 +403,10 @@ def magicmirror_upgrade() -> Response:
         mmpm.core.restart_magicmirror()
 
     return Response(json.dumps({'error': error}))
+
+@app.route(api('magicmirror/install-mmpm-module'))
+def magicmirror_install_mmpm_module() -> Response:
+    return Response(json.dumps({'error': mmpm.core.install_mmpm_as_magicmirror_module(assume_yes=True)}))
 #  -- END: MAGICMIRROR --
 
 

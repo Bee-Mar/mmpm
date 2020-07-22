@@ -1,7 +1,7 @@
 #!/bin/bash
 source ./scripts/make/constants
 
-printf "\n\e[92mBuilding MMPM GUI\e[0m\n"
+printf "\nBuilding MMPM GUI\n"
 
 log_notice
 
@@ -14,5 +14,5 @@ _done_
 
 printf " -- running 'ng build' within 'gui' directory (this may take some time)"
 
-log_and_eval "cd gui && node_modules/@angular/cli/bin/ng build --prod --deploy-url static/"
+log_and_eval "cd gui && node_modules/@angular/cli/bin/ng build --prod"
 _done_

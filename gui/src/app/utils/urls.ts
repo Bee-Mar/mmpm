@@ -57,6 +57,7 @@ export const URLS = {
       _ROOT: "/magicmirror",
       get CONFIG() { return `${this._ROOT}/config`; },
       get CUSTOM_CSS() { return `${this._ROOT}/custom-css`; },
+      get INSTALL_MMPM_MODULE() { return `${this._ROOT}/install-mmpm-module`; }
     },
 
     RASPBERRYPI: {

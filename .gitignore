@@ -14,4 +14,6 @@ NOTES.md
 mmpm*.log
 deb_dist
 mmpm*tar.gz
-
+mmpm/static
+mmpm/templates
+gui/src/assets/monaco

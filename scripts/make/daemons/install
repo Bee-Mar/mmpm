@@ -1,82 +1,27 @@
 #!/bin/bash
 source ./scripts/make/constants
 
-printf "\e[92mInstalling MMPM Daemons \e[0m\n"
+printf "Installing MMPM Daemons\n"
 
 log_notice
 
 log_action "Installing MMPM Daemons"
 
-printf " -- creating MMPM service directories and files"
-log_and_eval "touch ~/.config/mmpm/log/mmpm-gunicorn-{error,access}.log"
-log_and_eval "mkdir -vp ~/.config/mmpm/{log,configs}"
-log_and_eval "rm -vf $MMPM_CONFIGS_DIR/*service"
-_done_
+printf " -- configuring MMPM systemd services"
 
-printf " -- building MMPM service files"
-# --- START: SystemD Service Config Files
-# MMPM SystemdD Service
-printf "[Unit]\n" >> $MMPM_CONFIGS_DIR/mmpm.service
-printf "Description=MMPM Gunicorn daemon\n" >> $MMPM_CONFIGS_DIR/mmpm.service
-printf "After=network.target\n\n" >> $MMPM_CONFIGS_DIR/mmpm.service
+U=$(id -u -n)
+log_and_eval "sudo sed -i "s/SUBSTITUTE_ME/$U/g" /etc/systemd/system/mmpm.service"
 
-printf "[Install]\n" >> $MMPM_CONFIGS_DIR/mmpm.service
-printf "WantedBy=multi-user.target\n\n" >> $MMPM_CONFIGS_DIR/mmpm.service
+log_and_eval "sudo systemctl enable mmpm mmpm-webssh" # prints to stdout regardless
 
-printf "[Service]\n" >> $MMPM_CONFIGS_DIR/mmpm.service
-printf "User=$USER\n" >> $MMPM_CONFIGS_DIR/mmpm.service
-printf "Type=notify\n" >> $MMPM_CONFIGS_DIR/mmpm.service
-printf "ExecStart=gunicorn --reload --worker-class eventlet -w 1 -c $HOME/.config/mmpm/configs/gunicorn.conf.py mmpm.wsgi:app -u $USER\n" >> $MMPM_CONFIGS_DIR/mmpm.service
-printf "ExecReload=/bin/kill -s HUP \$MAINPID\n" >> $MMPM_CONFIGS_DIR/mmpm.service
-printf "KillMode=mixed\n" >> $MMPM_CONFIGS_DIR/mmpm.service
-printf "TimeoutStopSec=5\n" >> $MMPM_CONFIGS_DIR/mmpm.service
-printf "PrivateTmp=true\n" >> $MMPM_CONFIGS_DIR/mmpm.service
-
-# MMPM-WebSSH SystemdD Service
-printf "[Unit]\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
-printf "Description=MMPM WebSSH daemon\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
-printf "After=syslog.target network.target\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
-printf "StartLimitBurst=5, StartLimitIntervalSec=1\n\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
-
-printf "[Service]\n" >> ./$MMPM_CONFIGS_DIR/mmpm-webssh.service
-printf "User=$USER\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
-printf "WorkingDirectory=$HOME\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
-printf "ExecStart=wssh --address=127.0.0.1 --port=$MMPM_WEBSSH_LOCALHOST_PORT\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
-printf "ExecReload=/bin/kill -s HUP \$MAINPID\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
-printf "Type=simple\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
-printf "PIDFile=/var/run/webssh.pid\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
-printf "Restart=on-failure\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
-printf "RestartSec=1\n\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
-
-printf "[Install]\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
-printf "WantedBy=multi-user.target\n" >> $MMPM_CONFIGS_DIR/mmpm-webssh.service
-# --- END: SystemD Service Config Files
-_done_
-
-printf " -- copying MMPM service files"
-log_and_eval "sudo cp -v configs/*.service /etc/systemd/system/"
-log_and_eval "cp -v configs/gunicorn.conf.py ~/.config/mmpm/configs"
-log_and_eval "cp -v configs/*conf ~/.config/mmpm/configs"
-log_and_eval "cp -v configs/*service ~/.config/mmpm/configs"
-_done_
-
-log_and_eval "sudo systemctl enable mmpm" # prints to stdout regardless
-
-printf " -- starting MMPM service"
-log_and_eval "sudo systemctl start mmpm"
-_done_
-
-log_and_eval "sudo systemctl enable mmpm-webssh" # prints to stdout regardless
-
-printf " -- starting MMPM-WebSSH service"
-log_and_eval "sudo systemctl start mmpm-webssh"
+printf " -- starting MMPM systemd services"
+log_and_eval "sudo systemctl start mmpm mmpm-webssh"
 _done_
 
 log_and_eval "sudo systemctl status mmpm --no-pager" # just for log keeping
 log_and_eval "sudo systemctl status mmpm-webssh --no-pager" # just for log keeping
 
-printf " -- copying NGINX configs"
-log_and_eval "sudo cp -v configs/mmpm.conf /etc/nginx/sites-available"
+printf " -- configuring NGINX service files"
 log_and_eval "sudo ln -sv /etc/nginx/sites-available/mmpm.conf /etc/nginx/sites-enabled"
 _done_
 
@@ -84,11 +29,11 @@ printf " -- restarting NGINX service"
 log_and_eval "sudo systemctl restart nginx.service --no-pager"
 _done_
 
-printf "\033[1;36mMMPM GUI Installed \e[0m\n"
+printf "MMPM GUI Installed\n"
 
 log_action "MMPM GUI Installed"
 
 printf "\nThe MMPM GUI is being served the IP address of your default interface at port $MMPM_PROXY_PORT"
 printf "\nBest guess: http://$MMPM_HOST_IP:$MMPM_PROXY_PORT\n"
-printf "\nYou may also place an entry for the MMPM Host IP address in your /etc/hosts file, ie. '$MMPM_HOST_IP   mmpm'\n"
+printf "\nYou may also place an entry for the MMPM Host IP address in your /etc/hosts file, ie. '$MMPM_HOST_IP mmpm'\n"
 

@@ -1,20 +1,17 @@
 #!/bin/bash
 source ./scripts/make/constants
 
-printf "\e[92mRemoving MMPM CLI \e[0m\n"
+printf "Removing MMPM CLI\n"
 
 log_notice
 
 log_action "Removing MMPM CLI"
 
-printf " -- removing MMPM python3 package"
-log_and_eval "pip3 uninstall mmpm -v -y"
-_done_
-
-printf " -- removing MMPM hidden config directory"
+printf " -- removing MMPM CLI"
 log_and_eval "rm -rvf ~/.config/mmpm"
+log_and_eval "sudo rm -rf /opt/mmpm"
 _done_
 
 log_action "MMPM CLI Removed"
 
-printf "\033[1;36mMMPM CLI Removed\e[0m\n"
+printf "MMPM CLI Removed\n"

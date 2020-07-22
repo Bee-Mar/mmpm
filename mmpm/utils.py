@@ -134,10 +134,9 @@ def env_variables_fatal_msg(preamble: str = '') -> None:
 
 def assert_required_defaults_exist() -> bool:
 
-    for directory in mmpm.consts.MMPM_REQUIRED_DIRS:
-        os.system(f'mkdir -p {directory}')
+    os.system(f'mkdir -p {mmpm.consts.MMPM_CONFIG_DIR}')
 
-    for data_file in mmpm.consts.MMPM_DATA_FILES_NAMES:
+    for data_file in mmpm.consts.MMPM_REQUIRED_DATA_FILES:
         os.system(f'touch {data_file}')
 
     current_env: dict = {}
@@ -1040,3 +1039,14 @@ def reset_available_upgrades_for_environment(env: str) -> bool:
         return False
 
     return True
+
+
+def systemctl(subcmd: str, services: List[str] = []) -> subprocess.CompletedProcess:
+    return subprocess.run(['sudo', 'systemctl', subcmd] + services, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
+def log_gui_install_error_and_prompt_for_removal(proc: subprocess.CompletedProcess, message: str) -> bool:
+    print(mmpm.consts.RED_X)
+    mmpm.utils.log.critical(f"{proc.stderr.decode('utf-8')}\n{proc.stdout.decode('utf-8')}")
+    mmpm.utils.error_msg(f'{message}. See `mmpm log` for details')
+    return prompt_user('Remove the MMPM GUI?')

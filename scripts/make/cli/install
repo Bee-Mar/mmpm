@@ -1,17 +1,27 @@
 #!/bin/bash
 source ./scripts/make/constants
 
-printf "\e[92mInstalling MMPM CLI \e[0m\n"
+printf "Installing MMPM CLI\n"
 
 log_notice
 
 log_action "Installing MMPM CLI"
 
-printf " -- installing CLI using 'python3 setup.py requirements init_files init_db install --user' (this may take some time)"
-log_and_eval "python3 setup.py requirements init_files init_db install --user"
+printf " -- installing CLI in /opt/mmpm/venv"
+
+U=$(id -u -n)
+G=$(id -g -n)
+
+log_and_eval "sudo mkdir -p /opt/mmpm/"
+log_and_eval "sudo chown -R $U:$G /opt/mmpm"
+log_and_eval "python3 -m venv /opt/mmpm/venv"
+log_and_eval "/opt/mmpm/venv/bin/pip3 install -r requirements.txt; /opt/mmpm/venv/bin/pip3 install ."
+#log_and_eval "/opt/mmpm/venv/bin/pip3 install mmpm"
+log_and_eval "/opt/mmpm/venv/bin/mmpm db -r"
+log_and_eval "sudo ln -sf /opt/mmpm/venv/bin/mmpm /usr/local/bin"
+
 _done_
 
 log_action "MMPM CLI Installed"
 
-printf "\033[1;36mMMPM CLI Installed \e[0m\n"
-printf "\e[92mNOTE: Ensure \"${HOME}/.local/bin\" is in your PATH\e[0m\n"
+printf "MMPM CLI Installed\n"

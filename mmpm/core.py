@@ -6,7 +6,6 @@ import shutil
 import pathlib
 import subprocess
 import requests
-
 import mmpm.color
 import mmpm.utils
 import mmpm.consts
@@ -95,7 +94,7 @@ def check_for_mmpm_updates(gui=False, automated=False) -> bool:
         return False
 
     mmpm.utils.log.info(f'Found newer version of MMPM: {version_number}')
-    upgrades, _ = get_available_upgrades()
+    upgrades = get_available_upgrades()
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
         upgrades[mmpm.consts.MMPM] = True
@@ -103,7 +102,7 @@ def check_for_mmpm_updates(gui=False, automated=False) -> bool:
 
     if gui:
         mmpm.utils.log.info('A newer version of MMPM was detected via the GUI')
-        print(f"A newer version of MMPM is available ({version_number}). Please upgrade via terminal using 'mmpm uprade --mmpm")
+        print(f"A newer version of MMPM is available ({version_number}). Please upgrade via terminal using `pip install --upgrade mmpm`")
         return True
 
     return True
@@ -111,7 +110,8 @@ def check_for_mmpm_updates(gui=False, automated=False) -> bool:
 
 def upgrade_mmpm() -> str:
     '''
-    Handles upgrade process of MMPM
+    Handles upgrade process of MMPM by calling pip, which is picked up from the
+    user path, even if in a virtualenv
 
     Parameters:
         None
@@ -121,21 +121,14 @@ def upgrade_mmpm() -> str:
     '''
 
     mmpm.utils.log.info('User chose to update MMPM')
+    mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} Upgrading {mmpm.color.normal_green('MMPM')} via `pip install --upgrade --no-cache-dir mmpm`")
 
-    print(f"{mmpm.consts.GREEN_PLUS} Upgrading {mmpm.color.normal_green('MMPM')}")
-    os.system('rm -rf /tmp/mmpm')
-    os.chdir(os.path.join('/', 'tmp'))
-
-    error_code, _, stderr = mmpm.utils.clone('mmpm', mmpm.consts.MMPM_REPO_URL)
+    error_code, _, stderr = mmpm.utils.run_cmd(['pip', 'install', '--upgrade', '--no-cache-dir', 'mmpm'])
 
     if error_code:
         mmpm.utils.error_msg(stderr)
         return stderr
 
-    os.chdir('/tmp/mmpm')
-
-    # if the user needs to be prompted for their password, this can't be a subprocess
-    os.system('make reinstall')
     return ''
 
 
@@ -241,11 +234,15 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
                 if mmpm.utils.prompt_user(f'Upgrade {mmpm.color.normal_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
                     confirmed[mmpm.consts.PACKAGES].append(package)
 
-    if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR] and magicmirror_selected or not user_selections:
-        confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt_user(f"Upgrade {mmpm.color.normal_green('MagicMirror')} now?", assume_yes=assume_yes)
+    if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR]:
+        if magicmirror_selected or not user_selections:
+            confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt_user(f"Upgrade {mmpm.color.normal_green('MagicMirror')} now?", assume_yes=assume_yes)
 
-    if upgrades[mmpm.consts.MMPM] and mmpm_selected or not user_selections:
-        confirmed[mmpm.consts.MMPM] = mmpm.utils.prompt_user(f"Upgrade {mmpm.color.normal_green('MMPM')} now?", assume_yes=assume_yes)
+    if upgrades[mmpm.consts.MMPM]:
+        if mmpm.utils.get_env('MMPM_IS_DOCKER_IMAGE'):
+            mmpm.utils.error_msg('Unable to upgrade MMPM within a Docker image')
+        elif mmpm_selected or not user_selections:
+            confirmed[mmpm.consts.MMPM] = mmpm.utils.prompt_user(f"Upgrade {mmpm.color.normal_green('MMPM')} now?", assume_yes=assume_yes)
 
     for pkg in confirmed[mmpm.consts.PACKAGES]:
         error = upgrade_package(pkg)
@@ -950,10 +947,11 @@ def remove_mmpm_gui(hide_prompt: bool = False) -> None:
     mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Force removing NGINX and SystemD configs ')
 
     cmd: str = f"""
-    sudo rm -f {mmpm.consts.MMPM_SYSTEMD_SERVICE_FILE} ;
-    sudo rm -f {mmpm.consts.MMPM_WEBSSH_SYSTEMD_SERVICE_FILE} ;
-    sudo rm -f {mmpm.consts.MMPM_NGINX_CONF_FILE} ;
-    sudo rm -f /etc/nginx/sites-available/mmpm.conf ;
+    sudo rm -f {mmpm.consts.MMPM_SYSTEMD_SERVICE_FILE};
+    sudo rm -f {mmpm.consts.MMPM_WEBSSH_SYSTEMD_SERVICE_FILE};
+    sudo rm -f {mmpm.consts.MMPM_NGINX_CONF_FILE};
+    sudo rm -rf /var/www/mmpm;
+    sudo rm -f /etc/nginx/sites-available/mmpm.conf;
     """
 
     print(mmpm.consts.GREEN_CHECK_MARK)
@@ -1198,7 +1196,6 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
         return {}
 
     from bs4 import BeautifulSoup
-
     soup = BeautifulSoup(response.text, 'html.parser')
     table_soup: list = soup.find_all('table')
     category_soup = soup.find_all(attrs={'class': 'markdown-body'})

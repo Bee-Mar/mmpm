@@ -1,0 +1,4 @@
+
+    [console_scripts]
+    wssh = webssh.main:main
+    

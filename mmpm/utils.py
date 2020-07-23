@@ -3,10 +3,10 @@ import sys
 import os
 import subprocess
 import time
-import requests
 import datetime
 import json
 import pathlib
+import requests
 
 from logging import Logger
 from typing import List, Optional, Tuple, Dict
@@ -824,12 +824,12 @@ def __format_bitbucket_api_details__(data: dict, url: str) -> dict:
         details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
     '''
     stars = safe_get_request(f'{url}/watchers')
-    forks = safe_get_request(f'{url}/watchers')
+    forks = safe_get_request(f'{url}/forks')
     issues = safe_get_request(f'{url}/issues')
 
     return {
         'Stars': int(json.loads(stars.text)['pagelen']) if stars else 'N/A',
-        'Open Issues': int(json.loads(issues.text)['pagelen']) if issues else 'N/A',
+        'Issues': int(json.loads(issues.text)['pagelen']) if issues else 'N/A',
         'Created': data['created_on'].split('T')[0] if data else 'N/A',
         'Last Updated': data['updated_on'].split('T')[0] if data else 'N/A',
         'Forks': int(json.loads(forks.text)['pagelen']) if forks else 'N/A'
@@ -851,7 +851,7 @@ def __format_gitlab_api_details__(data: dict, url: str) -> dict:
 
     return {
         'Stars': data['star_count'] if data else 'N/A',
-        'Open Issues': len(json.loads(issues.text)) if issues else 'N/A',
+        'Issues': len(json.loads(issues.text)) if issues else 'N/A',
         'Created': data['created_at'].split('T')[0] if data else 'N/A',
         'Last Updated': data['last_activity_at'].split('T')[0] if data else 'N/A',
         'Forks': data['forks_count'] if data else 'N/A'
@@ -870,7 +870,7 @@ def __format_github_api_details__(data: dict) -> dict:
     '''
     return {
         'Stars': data['stargazers_count'] if data else 'N/A',
-        'Open Issues': data['open_issues'] if data else 'N/A',
+        'Issues': data['open_issues'] if data else 'N/A',
         'Created': data['created_at'].split('T')[0] if data else 'N/A',
         'Last Updated': data['updated_at'].split('T')[0] if data else 'N/A',
         'Forks': data['forks_count'] if data else 'N/A',
@@ -890,11 +890,7 @@ def get_remote_package_details(package: MagicMirrorPackage) -> dict:
     '''
     spliced: List[str] = package.repository.split('/')
     user: str = spliced[-2]
-    project: str = spliced[-1]
-
-    if project[-4:] == '.git':
-        log.info(f"Found '.git' in repository url, trimmed project name from {project} to {project[:-4]}")
-        project = project[:-4]
+    project: str = spliced[-1].replace('.git', '') # in case the user added .git to the end of the url
 
     if 'github' in package.repository:
         url = f'https://api.github.com/repos/{user}/{project}'

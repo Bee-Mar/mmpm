@@ -1,6 +1,10 @@
 #!/usr/bin python3
 # pylint: disable=unused-import
+import eventlet
+eventlet.monkey_patch() # do not move these
+
 from mmpm.api import app
+
 import mmpm.utils
 import mmpm.consts
 import mmpm.core
@@ -9,7 +13,7 @@ mmpm.core.load_packages()
 
 if __name__ == '__main__':
     app.run(
-        threaded=False,
+        threaded=True,
         keepalive=True,
         log=mmpm.utils.log,
         extra_files=[

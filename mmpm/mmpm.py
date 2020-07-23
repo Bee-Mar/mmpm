@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # pylint: disable=unused-argument
 import sys
+import os
 
 import mmpm.utils
 import mmpm.core
 import mmpm.opts
 import mmpm.consts
 import mmpm.models
-import os
 
 from typing import List, Dict
 
@@ -15,7 +15,7 @@ from typing import List, Dict
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 get_env = mmpm.utils.get_env
 
-__version__ = 2.01
+__version__ = 0.1
 
 
 def main(argv):

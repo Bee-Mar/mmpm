@@ -131,10 +131,6 @@ export class RestApiService {
     return this.retrieve(URLS.GET.MAGICMIRROR.UPGRADE);
   }
 
-  public getRepoDetails(packages: MagicMirrorPackage[]): Promise<any> {
-    return this.postWithSelectedPackages(URLS.POST.PACKAGES.DETAILS, packages);
-  }
-
   public handleError(error: any): Promise<any> {
     const errorMessage = error.error instanceof ErrorEvent ?
     error.error.message :  `Error Code: ${error.status}\nMessage: ${error.message}`;

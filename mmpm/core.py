@@ -712,6 +712,9 @@ def install_mmpm_gui() -> None:
     if not mmpm.utils.prompt_user('Are you sure you want to install the MMPM GUI? This requires sudo permission.'):
         return
 
+    if not shutil.which('nginx'):
+        mmpm.utils.fatal_msg('NGINX is not in your $PATH. Please install `nginx-full` (Debian), `nginx-mainline` (Arch) or equivalent')
+
     sub_gunicorn: str = 'SUBSTITUTE_gunicorn'
     sub_user: str = 'SUBSTITUTE_user'
     sub_wssh: str = 'SUBSTITUTE_wssh'

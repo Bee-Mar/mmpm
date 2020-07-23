@@ -20,27 +20,17 @@
   text-decoration: none;
 }
 
-mat-toolbar {
+#banner {
+  font-family: 'Permanent Marker';
   font-size: 42px;
   text-shadow: 3px 3px gray;
 }
 
-#banner {
-  font-family: 'Permanent Marker', cursive;
-}
-
-#paypal:visited {
-  color: white;
-}
-
-#paypal:active {
-  color: lightgray;
+#paypal {
+  margin-right: 1em;
 }
 
 #paypal:hover {
-  color: #303030;
+  background-color: #002c8b;
 }
 
-#theme-switcher:hover {
-  color: #303030;
-}

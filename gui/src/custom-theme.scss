@@ -2,27 +2,38 @@
 @include mat-core();
 
 $primary: mat-palette($mat-purple);
-$accent:  mat-palette($mat-cyan, 500, 900, A100);
-$warn:    mat-palette($mat-red);
+$accent: mat-palette($mat-cyan, 500, 900, A100);
+$warn: mat-palette($mat-red);
 
 $theme: mat-dark-theme($primary, $accent, $warn);
-/*$my-app-theme: mat-light-theme($my-app-primary, $my-app-accent, $my-app-warn);*/
-
 @include angular-material-theme($theme);
 
-// Define the light theme
-$light-app-primary: mat-palette($mat-indigo);
-$light-app-accent:  mat-palette($mat-pink, A200, A100, A400);
-$light-app-theme:   mat-light-theme($light-app-primary, $light-app-accent);
-
-.dark-theme {
+.dark {
   $dark-primary: mat-palette($mat-purple);
   $dark-accent:  mat-palette($mat-cyan, 500, 900, A100);
   $dark-theme: mat-dark-theme($dark-primary, $dark-accent);
+
   @include angular-material-theme($dark-theme);
 }
 
+.light {
+  $light-primary: mat-palette($mat-purple);
+  $light-accent:  mat-palette($mat-cyan, 500, 900, A100);
+  $light-theme: mat-light-theme($light-primary, $light-accent);
 
-.light-theme {
-  @include angular-material-theme($light-app-theme)
+  @include angular-material-theme($light-theme);
 }
+
+.link-button:hover {
+  color: #D0D0D0;
+}
+
+
+.remote-button:hover {
+  color: #303030;
+}
+
+mat-icon {
+  vertical-align: middle;
+}
+

@@ -736,7 +736,6 @@ def install_mmpm_gui() -> None:
 
     temp_mmpm_service: str = f'{temp_etc}/systemd/system/mmpm.service'
     temp_mmpm_webbssh_service: str = f'{temp_etc}/systemd/system/mmpm-webssh.service'
-    temp_nginx_conf: str = f'{temp_etc}/nginx/sites-available/mmpm.conf'
 
     print(f'{mmpm.consts.GREEN_PLUS} Cleaning confiuration files and resetting SystemdD daemons')
     remove_mmpm_gui(hide_prompt=True)
@@ -2125,7 +2124,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
         mmpm.utils.fatal_msg(f'Unable install autocompletion for ({shell}). Please see {autocomplete_url} for help installing autocomplete')
 
 
-def rotate_raspberrypi_screen(degrees: int) -> str:
+def rotate_raspberrypi_screen(degrees: int) -> str: #pylint: disable=too-many-return-statements
     '''
     Rotates screen of RaspberryPi 3 and RaspberryPi 4 to the setting supplied
     by the user
@@ -2168,7 +2167,7 @@ def rotate_raspberrypi_screen(degrees: int) -> str:
     os.system(f'sudo cp {boot_config} {boot_config}.bak')
     print(mmpm.consts.GREEN_CHECK_MARK)
 
-    desired_setting: str = rotation_map[degrees]
+    desired_setting: int = rotation_map[degrees]
 
     grep = subprocess.run(['grep', '--color=never', 'display_rotate', boot_config], stdout=subprocess.PIPE)
     output = grep.stdout.decode('utf-8').strip()

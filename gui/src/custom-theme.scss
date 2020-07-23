@@ -24,16 +24,3 @@ $theme: mat-dark-theme($primary, $accent, $warn);
   @include angular-material-theme($light-theme);
 }
 
-.link-button:hover {
-  color: #D0D0D0;
-}
-
-
-.remote-button:hover {
-  color: #303030;
-}
-
-mat-icon {
-  vertical-align: middle;
-}
-

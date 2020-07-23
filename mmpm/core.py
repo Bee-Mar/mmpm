@@ -717,7 +717,8 @@ def install_mmpm_gui() -> None:
     sub_wssh: str = 'SUBSTITUTE_wssh'
     sub_static: str = 'SUBSTITUTE_static'
 
-    user: str = os.environ.get('USERNAME')
+    import getpass
+    user: str = getpass.getuser()
 
     gunicorn_executable: str = shutil.which('gunicorn')
 
@@ -1824,6 +1825,12 @@ def stop_magicmirror() -> bool:
     MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = get_env(mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME_ENV)
     MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = get_env(mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE_ENV)
 
+    if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
+        mmpm.utils.log.info(f'docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
+
+    if MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
+        mmpm.utils.log.info(f'pm2 process set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
+
     if shutil.which('pm2') and MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
         command = ['pm2', 'stop', MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
         process = 'pm2'
@@ -1869,6 +1876,12 @@ def start_magicmirror() -> bool:
 
     MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = get_env(mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME_ENV)
     MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = get_env(mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE_ENV)
+
+    if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
+        mmpm.utils.log.info(f'docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
+
+    if MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
+        mmpm.utils.log.info(f'pm2 process set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
 
     if shutil.which('pm2') and MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
         command = ['pm2', 'start', MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
@@ -1921,6 +1934,12 @@ def restart_magicmirror() -> bool:
 
     MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = get_env(mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME_ENV)
     MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = get_env(mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE_ENV)
+
+    if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
+        mmpm.utils.log.info(f'docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
+
+    if MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
+        mmpm.utils.log.info(f'pm2 process set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
 
     if shutil.which('pm2') and MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
         command = ['pm2', 'restart', MMPM_MAGICMIRROR_PM2_PROCESS_NAME]

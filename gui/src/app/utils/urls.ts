@@ -22,8 +22,8 @@ export const URLS = {
     MMPM: {
       _ROOT: "/mmpm",
       get DOWNLOAD_LOGS() { return `${this._ROOT}/download-logs`; },
-      get ENVIRONMENT_VARS() { return `${this._ROOT}/environment-vars`},
-      get ENVIRONMENT_VARS_FILE() { return `${this._ROOT}/environment-vars-file`}
+      get ENVIRONMENT_VARS() { return `${this._ROOT}/environment-vars`; },
+      get ENVIRONMENT_VARS_FILE() { return `${this._ROOT}/environment-vars-file` }
     },
 
     RASPBERRYPI: {
@@ -78,5 +78,4 @@ export const URLS = {
     },
   }
 };
-
 

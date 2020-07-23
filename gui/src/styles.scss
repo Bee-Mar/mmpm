@@ -17,3 +17,16 @@ body {
   src: url(assets/fonts/PermanentMarker-Regular.ttf) format('opentype');
 }
 
+.link-button:hover {
+  color: #D0D0D0;
+}
+
+
+.remote-button:hover {
+  color: #303030;
+}
+
+mat-icon {
+  vertical-align: middle;
+}
+

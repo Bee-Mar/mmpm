@@ -5,7 +5,7 @@ StartLimitBurst=5, StartLimitIntervalSec=1
 
 [Service]
 User=SUBSTITUTE_user
-ExecStart=SUBSTITUTE_wssh --address=127.0.0.1 --port=7893
+ExecStart=SUBSTITUTE_wssh --address=localhost --port=7893
 ExecReload=/bin/kill -s HUP $MAINPID
 Type=simple
 PIDFile=/run/webssh.pid

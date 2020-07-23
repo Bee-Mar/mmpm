@@ -1,7 +1,11 @@
 <mat-toolbar color="primary">
+  <!--
   <button mat-button class="remote-button" (click)="toggleTheme()" style="margin-left: 1em; margin-right: 13em;">
     <mat-icon matTooltip="Toggle Theme">color_lens</mat-icon>
   </button>
+  -->
+
+  <app-available-upgrades-ticker style="margin-left: 1em; margin-right: 5em;"></app-available-upgrades-ticker>
 
   <span style="margin: 0 auto;" id="banner">
     <a href="https://github.com/Bee-Mar/mmpm" target="_blank" id="homepage">
@@ -9,7 +13,6 @@
     </a>
   </span>
 
-  <app-available-upgrades-ticker style="margin-right: 0.75em;"></app-available-upgrades-ticker>
   <app-active-process-count-ticker></app-active-process-count-ticker>
 
   <button mat-button style="margin-right: 1em;" id="paypal" (click)="mmpmUtility.openUrl('https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur')">

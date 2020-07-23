@@ -47,16 +47,17 @@
 <mat-dialog-actions align="center">
   <button
     mat-raised-button
+    class="remote-button"
     color="primary"
-    (click)="upgradePackages(packageUpgradeSelections?.selectedOptions?.selected)"
     style="margin-right: 5em;"
+    (click)="upgradePackages(packageUpgradeSelections?.selectedOptions?.selected)"
     [disabled]="!packageUpgradeSelections?.selectedOptions?.selected?.length"
-    >
+  >
     <mat-icon>
       done
     </mat-icon>
   </button>
-  <button mat-raised-button mat-dialog-close color="accent">
+  <button mat-raised-button mat-dialog-close color="accent" class="remote-button">
     <mat-icon>
       close
     </mat-icon>

@@ -21,7 +21,8 @@ import mmpm.models
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 get_env: Callable = mmpm.utils.get_env
 
-app = Flask(__name__,
+app = Flask(
+    'mmpm',
     root_path=mmpm.consts.MMPM_PYTHON_ROOT_DIR,
     static_folder=mmpm.consts.MMPM_STATIC_FOLDER,
     template_folder=mmpm.consts.MMPM_TEMPLATES_FOLDER,

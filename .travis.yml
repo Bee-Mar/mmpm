@@ -24,7 +24,7 @@ before_script:
 script:
   - pip install .
   - cd gui
-  - ./node_modules/@angular/cli/bin/ng build --prod
+  - ./node_modules/@angular/cli/bin/ng build --prod --deploy-url static/
   - cd ..
   - bash scripts/travis-ci/bundle-static-files
 deploy:

@@ -47,7 +47,7 @@ def database_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     print(mmpm.color.normal_green('Last updated:'), f'{creation_date}')
     print(mmpm.color.normal_green('Next scheduled update:'), f'{expiration_date}')
     print(mmpm.color.normal_green('Package categories:'), f'{num_categories}')
-    print(mmpm.color.normal_green('Packages available:'), f'{num_packages - 1}') # skip MMPM itself
+    print(mmpm.color.normal_green('Packages available:'), f'{num_packages - 1}') # skip MMPM itself in the package count
 
 
 def check_for_mmpm_updates(gui=False, automated=False) -> bool:
@@ -1814,7 +1814,7 @@ def stop_magicmirror() -> bool:
        None
 
     Returns:
-        None
+        success (bool): True if successful, False if failure
     '''
 
     process: str = ''
@@ -2136,11 +2136,6 @@ def rotate_raspberrypi_screen(degrees: int) -> str:
     Returns:
         error (str): empty if on success, error message on failure
     '''
-
-    import re
-
-    config: str = '/boot/config.txt'
-
     rotation_map: Dict[int, int] = {
         0: 0,
         90: 3,
@@ -2148,38 +2143,58 @@ def rotate_raspberrypi_screen(degrees: int) -> str:
         270: 1
     }
 
-    if os.path.exists('/proc/device-tree/model'):
-        with open('/proc/device-tree/model', 'r') as model_info:
-            rpi_model = model_info.read()
+    device_tree: str = '/proc/device-tree/model'
+    boot_config: str = '/boot/config.txt'
 
-        if 'Raspberry Pi 3' in rpi_model:
-            desired_setting: str = f'display_rotate={rotation_map[degrees]}'
-            pattern: str = r'display_rotate=\d'
+    if not os.path.exists(device_tree):
+        error_message = f'Unable to find the {device_tree} file. Is your device a RaspberryPi 3?'
+        mmpm.utils.error_msg(error_message)
+        return error_message
 
-            # this really should exist anyway
-            if not os.path.exists(config):
-                os.system(f'sudo touch {config}')
+    if not os.path.exists(boot_config):
+        error_message = f'Unable to find the {boot_config} file. Is your device a RaspberryPi 3?'
+        mmpm.utils.error_msg(error_message)
+        return error_message
 
-            with open(config, 'r+') as cfg:
-                contents: str = cfg.read()
-                setting: List[str] = re.findall(pattern, contents)
+    with open(device_tree, 'r') as model_info:
+        rpi_model = model_info.read()
 
-                if not setting:
-                    # this file should not be empty, but just in case
-                    contents += f'\n{desired_setting}\n'
-                else:
-                    contents = re.sub(pattern, desired_setting, contents, count=1)
+    if 'Raspberry Pi 3' not in rpi_model:
+        error_message = 'This does not appear to be a RaspberryPi 3, and screen rotation is not supported on this device through MMPM yet'
+        mmpm.utils.error_msg(error_message)
+        return error_message
 
-                cfg.seek(0)
-                cfg.write(contents)
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Creating backup of {boot_config} ')
+    os.system(f'sudo cp {boot_config} {boot_config}.bak')
+    print(mmpm.consts.GREEN_CHECK_MARK)
 
-        elif 'Raspberry Pi 4' in rpi_model:
-            mmpm.utils.warning_msg('Sorry, this has not been implemented yet')
+    desired_setting: str = rotation_map[degrees]
 
-    else:
-        message: str = 'Display rotation has not been implemented for this type device. Only Raspberry Pi 3 is supported for the moment'
-        mmpm.utils.error_msg(message)
-        return message
+    grep = subprocess.run(['grep', '--color=never', 'display_rotate', boot_config], stdout=subprocess.PIPE)
+    output = grep.stdout.decode('utf-8').strip()
+
+    if not output:
+        error_message = f'Unable to determine the current rotation setting. An initial value must exist in your {boot_config} for MMPM to modify'
+        mmpm.utils.error_msg(error_message)
+        return error_message
+
+    split_output = output.split('=')
+
+    if len(split_output) != 2:
+        error_message = f'Encountered malformed display rotation in {boot_config}. Unable to continue. Please correct the file manually'
+        mmpm.utils.error_msg(error_message)
+        return error_message
+
+    current_setting = int(split_output[-1])
+
+    try:
+        subprocess.run(['sudo', 'sed', '-i', f"s/display_rotate={current_setting}/display_rotate={desired_setting}/g", boot_config])
+    except subprocess.SubprocessError as error:
+        os.system(f'sudo cp {boot_config}.bak {boot_config}')
+        error_message = f'Encountered error when modifying {boot_config}. The file has been reset. See `mmpm log` for details'
+        mmpm.utils.error_msg(error_message)
+        mmpm.utils.log.error(str(error))
+        return error_message
 
     print('Please restart your RaspberryPi for the changes to take effect')
     return ''

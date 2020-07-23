@@ -20,9 +20,9 @@ get_env: Callable = mmpm.utils.get_env
 
 app = Flask(
     __name__,
-    root_path=mmpm.consts.MMPM_PYTHON_ROOT_DIR,
-    static_folder=mmpm.consts.MMPM_STATIC_FOLDER,
-    template_folder=mmpm.consts.MMPM_TEMPLATES_FOLDER,
+    root_path=mmpm.consts.MMPM_WEB_ROOT_DIR,
+    static_folder=mmpm.consts.MMPM_STATIC_DIR,
+    template_folder=mmpm.consts.MMPM_TEMPLATES_DIR,
 )
 
 app.config['CORS_HEADERS'] = 'Content-Type'

@@ -715,7 +715,6 @@ def install_mmpm_gui() -> None:
     sub_gunicorn: str = 'SUBSTITUTE_gunicorn'
     sub_user: str = 'SUBSTITUTE_user'
     sub_wssh: str = 'SUBSTITUTE_wssh'
-    sub_static: str = 'SUBSTITUTE_static'
 
     import getpass
     user: str = getpass.getuser()
@@ -758,16 +757,15 @@ def install_mmpm_gui() -> None:
         subbed = subbed.replace(sub_user, user)
         mmpm_webssh_service.write(subbed)
 
-    with open(temp_nginx_conf, 'r') as original:
-        config = original.read()
-
-    with open(temp_nginx_conf, 'w') as nginx_conf:
-        subbed = config.replace(sub_static, mmpm.consts.MMPM_STATIC_FOLDER)
-        nginx_conf.write(subbed)
-
-
     mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Copying NGINX and SystemdD service configs ')
-    os.system('sudo cp -r /tmp/etc /')
+
+    os.system(f'''
+        sudo mkdir -p /var/www/mmpm;
+        sudo cp -r /tmp/etc /;
+        sudo cp -r {mmpm.consts.MMPM_PYTHON_ROOT_DIR}/static /var/www/mmpm;
+        sudo cp -r {mmpm.consts.MMPM_PYTHON_ROOT_DIR}/templates /var/www/mmpm;
+    ''')
+
     print(mmpm.consts.GREEN_CHECK_MARK)
     os.system('rm -rf /tmp/etc')
 

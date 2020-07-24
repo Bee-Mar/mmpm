@@ -338,11 +338,11 @@ def get_user_args() -> object:
     )
 
     show_parser.add_argument(
-        '-v',
-        '--verbose',
+        '-r',
+        '--remote',
         action='store_true',
-        help='display extra detail for each package from the GitHub/GitLab/Bitbucket API',
-        dest='verbose'
+        help='display remote detail for package(s) from GitHub/GitLab/Bitbucket APIs',
+        dest='remote'
     )
 
     # ADD EXTERNAL PACKAGE SUBCOMMANDS
@@ -404,7 +404,7 @@ def get_user_args() -> object:
     log_parser = subparsers.add_parser(
         LOG,
         usage='\n  mmpm log [--cli] [--web] [--tail]',
-        help='display or tail MMPM log files'
+        help='display, tail, or zip the MMPM log files'
     )
 
     log_parser.add_argument(
@@ -429,6 +429,13 @@ def get_user_args() -> object:
         action='store_true',
         help='tail the log file(s) in real time',
         dest='tail'
+    )
+
+    log_parser.add_argument(
+        '--zip',
+        action='store_true',
+        help='compress the MMPM log file(s), and save them in your current directory',
+        dest='zip'
     )
 
     # MM_CTL SUBCOMMANDS

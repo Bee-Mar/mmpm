@@ -426,7 +426,7 @@ def raspberrypi_stop() -> Response:
 @app.route(api('raspberrypi/rotate-screen'), methods=[mmpm.consts.POST])
 def raspberrypi_rotate_screent() -> Response:
     degrees: int = request.get_json(force=True)['degrees']
-    return Response(json.dumps({'error': mmpm.core.rotate_raspberrypi_screen(degrees)}))
+    return Response(json.dumps({'error': mmpm.core.rotate_raspberrypi_screen(degrees, assume_yes=True)}))
 #  -- END: RASPBERRYPI --
 
 

@@ -395,7 +395,7 @@ def search_packages(packages: Dict[str, List[MagicMirrorPackage]], query: str, c
     return search_results
 
 
-def show_package_details(packages: Dict[str, List[MagicMirrorPackage]], verbose: bool) -> None:
+def show_package_details(packages: Dict[str, List[MagicMirrorPackage]], remote: bool) -> None:
     '''
     Displays more detailed information that presented in normal search results.
     The output is formatted similarly to the output of the Debian/Ubunut 'apt' CLI
@@ -415,7 +415,7 @@ def show_package_details(packages: Dict[str, List[MagicMirrorPackage]], verbose:
 
     from textwrap import fill, indent
 
-    if not verbose:
+    if not remote:
         def __show_details__(packages: dict) -> None:
             for category, _packages  in packages.items():
                 for package in _packages:
@@ -949,6 +949,7 @@ def remove_mmpm_gui(hide_prompt: bool = False) -> None:
     sudo rm -f {mmpm.consts.MMPM_NGINX_CONF_FILE};
     sudo rm -rf /var/www/mmpm;
     sudo rm -f /etc/nginx/sites-available/mmpm.conf;
+    sudo rm -f /etc/nginx/sites-enabled/mmpm.conf;
     """
 
     print(mmpm.consts.GREEN_CHECK_MARK)
@@ -1949,6 +1950,7 @@ def restart_magicmirror() -> bool:
     if command and process:
         mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} restarting MagicMirror using {command[0]} ")
         mmpm.utils.log.info(f"Using '{process}' to restart MagicMirror")
+
         # pm2 and docker-compose cause the output to flip
         error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False)
 
@@ -2124,7 +2126,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
         mmpm.utils.fatal_msg(f'Unable install autocompletion for ({shell}). Please see {autocomplete_url} for help installing autocomplete')
 
 
-def rotate_raspberrypi_screen(degrees: int) -> str: #pylint: disable=too-many-return-statements
+def rotate_raspberrypi_screen(degrees: int, assume_yes: bool = False) -> str: #pylint: disable=too-many-return-statements
     '''
     Rotates screen of RaspberryPi 3 and RaspberryPi 4 to the setting supplied
     by the user
@@ -2135,12 +2137,16 @@ def rotate_raspberrypi_screen(degrees: int) -> str: #pylint: disable=too-many-re
     Returns:
         error (str): empty if on success, error message on failure
     '''
+
     rotation_map: Dict[int, int] = {
         0: 0,
         90: 3,
         180: 2,
         270: 1
     }
+
+    if not mmpm.utils.prompt_user('Are you sure you want to rotate the RaspberryPi screen? This requires sudo permission.', assume_yes=assume_yes):
+        return ''
 
     device_tree: str = '/proc/device-tree/model'
     boot_config: str = '/boot/config.txt'
@@ -2169,30 +2175,40 @@ def rotate_raspberrypi_screen(degrees: int) -> str: #pylint: disable=too-many-re
 
     desired_setting: int = rotation_map[degrees]
 
-    grep = subprocess.run(['grep', '--color=never', 'display_rotate', boot_config], stdout=subprocess.PIPE)
-    output = grep.stdout.decode('utf-8').strip()
+    grep: subprocess.CompletedProcess = subprocess.run(['grep', '--color=never', 'display_rotate', boot_config], stdout=subprocess.PIPE)
+    output: str = grep.stdout.decode('utf-8').strip()
 
     if not output:
         error_message = f'Unable to determine the current rotation setting. An initial value must exist in your {boot_config} for MMPM to modify'
         mmpm.utils.error_msg(error_message)
         return error_message
 
-    split_output = output.split('=')
+    split_output: List[str] = output.split('=')
 
     if len(split_output) != 2:
         error_message = f'Encountered malformed display rotation in {boot_config}. Unable to continue. Please correct the file manually'
         mmpm.utils.error_msg(error_message)
         return error_message
 
-    current_setting = int(split_output[-1])
+    current_setting: int = int(split_output[-1])
 
     try:
-        subprocess.run(['sudo', 'sed', '-i', f"s/display_rotate={current_setting}/display_rotate={desired_setting}/g", boot_config])
+        sed: subprocess.CompletedProcess = subprocess.run(
+            ['sudo', 'sed', '-i', f"s/display_rotate={current_setting}/display_rotate={desired_setting}/g", boot_config],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
     except subprocess.SubprocessError as error:
         os.system(f'sudo cp {boot_config}.bak {boot_config}')
         error_message = f'Encountered error when modifying {boot_config}. The file has been reset. See `mmpm log` for details'
         mmpm.utils.error_msg(error_message)
         mmpm.utils.log.error(str(error))
+        return error_message
+
+    if sed.returncode != 0:
+        error_message = f'Failed to modify {boot_config}. See `mmpm log for details`'
+        mmpm.utils.error_msg(error_message)
+        mmpm.utils.log.error(sed.stderr.decode('utf-8').strip())
         return error_message
 
     print('Please restart your RaspberryPi for the changes to take effect')
@@ -2201,7 +2217,7 @@ def rotate_raspberrypi_screen(degrees: int) -> str: #pylint: disable=too-many-re
 
 def migrate() -> None:
     '''
-    Migrates legacy External Module Sources to External Packages. The legacy
+    Migrates legacy 'External Module Sources' to 'External Packages'. The legacy
     file name of ~/.config/mmpm/mmpm-external-sources.json is renamed to
     ~/.config/mmpm/mmpm-external-packages.json. The key inside the dictionary
     is also renamed from 'External Module Sources' to 'External Packages'
@@ -2272,9 +2288,38 @@ def dump_database() -> None:
             try:
                 contents.update(json.load(db))
             except json.JSONDecodeError:
-                pass
+                mmpm.utils.log.warning('External Packages appears to be empty, skipping during database dump')
 
     from pygments import highlight, formatters
     from pygments.lexers.data import JsonLexer
 
     print(highlight(json.dumps(contents, indent=2), JsonLexer(), formatters.TerminalFormatter()))
+
+
+def zip_mmpm_log_files() -> None:
+    '''
+    Compresses all log files in ~/.config/mmpm/log. The NGINX log files are
+    excluded due to mostly irrelevant information the user, or I would need
+    when creating GitHub issues
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+    import datetime
+    today = datetime.datetime.now()
+
+    zip_file_name: str = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Compressing MMPM log files to {os.getcwd()}/{zip_file_name}.zip ')
+
+    try:
+        shutil.make_archive(zip_file_name, 'zip', mmpm.consts.MMPM_LOG_DIR)
+    except Exception as error:
+        print(mmpm.consts.RED_X)
+        mmpm.utils.log.error(str(error))
+        mmpm.utils.error_msg('Failed to create zip archive of log files. See `mmpm log` for details (I know...the irony)')
+        return
+
+    print(mmpm.consts.GREEN_CHECK_MARK)

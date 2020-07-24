@@ -52,6 +52,7 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
 
     this.api.getFile(URLS.GET.MAGICMIRROR.CONFIG).then((fileContents) => {
       this.fileSelection[this.CONFIG_JS].code = fileContents;
+
       // this is genuinely stupid. I should just be able to access the code in
       // the template by using 'fileSelection[fileSelection].code'. There's
       // probably a better way for checking if the value is undefined, but I'll

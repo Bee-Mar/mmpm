@@ -22,7 +22,7 @@ export class AvailableUpgradesTickerComponent implements OnInit {
   public ngOnInit(): void {
     this.dataStore.upgradeablePackages.subscribe((upgradeable) => {
       this.availableUpgrades = upgradeable;
-      this.count = upgradeable?.packages?.length + Number(upgradeable?.MagicMirror);
+      this.count = upgradeable?.packages?.length + Number(upgradeable?.MagicMirror) + Number(upgradeable?.mmpm);
     });
   }
 

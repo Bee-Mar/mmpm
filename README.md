@@ -31,13 +31,13 @@
 
 The MagicMirror Package Manager is featured as an alternative installation method on the [MagicMirror Documentation](https://docs.magicmirror.builders/getting-started/installation.html#alternative-installation-methods).
 
-Features of MMPM include the following:
+## Features:
 
 - Installation, removal, updating, and upgrading of packages
-- Search, and show package details
+- Search for and show package details
 - Adding external package sources (think of it like PPAs for Ubuntu)
-- Tab-Autocompletion
-- Quick config editing access
+- Tab-Autocompletion for the CLI
+- Quick MagicMirror config editing access
 - Installing MagicMirror
 - Hide/Show MagicMirror modules
 - Start/Stop/Restart MagicMirror (works with `npm`, `pm2`, and `docker-compose`)
@@ -47,39 +47,40 @@ Features of MMPM include the following:
 
 MMPM is available on [PyPI](https://pypi.org/project/mmpm), and can be installed through `pip`. See below for details before installing.
 
-Requirements:
-- Python3.7 or greater. Installation will fail if you do not meet this requirement
-- Python3 Virtual Environment (`pip3 install virtualenv --user`)
-
-Optional Requirements:
-- NGINX (`nginx-full` for Debian/Ubuntu, `nginx-mainline` for Arch), only if wanting to install the GUI
-
-Using a virtualenv is the recommended way of installing MMPM. The version numbers of dependencies used by
-MMPM are strict because bugs have been found within both newer and older versions of those packages
-that cause undefined behavior.
-
 The quickstart guide:
 
 ``` sh
-python3 -m venv ~/.venv;
-echo PATH=$PATH:~/.venv/bin >> ~/.bashrc # assuming you're using bash
-source .bashrc .venv/bin/activate
-
-pip install mmpm
-
-mmpm install --gui # if you would like to install the GUI
-mmpm install --as-module # reuired if you would like the ability to hide/show MagicMirror modules
-mmpm install --autocomplete # if you would like to install the CLI auto-completion feature
+pip3 install mmpm
+mmpm install --gui # to install the GUI (needs sudo permissions)
+mmpm install --autocomplete # to install the CLI auto-completion feature
+mmpm install --as-module  # required to hide/show MagicMirror modules
 ```
+
+Requirements:
+
+- `python >= 3.7`. Installation will fail if your version of Python is not >= 3.7
+- Python3 Virtual Environments (`pip3 install virtualenv --user`)
+
+Optional Requirements:
+
+- NGINX (`nginx-full` for Debian/Ubuntu, `nginx-mainline` for Arch), only if wanting to install the GUI
+
+Using a virtualenv is the recommended way of installing MMPM. The version numbers of dependencies used by
+MMPM are strict. Bugs have been found within newer and older versions of dependencies that cause undefined behavior.
 
 See the [MMPM Installation](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installation) and [MMPM Removal](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Removal) sections of the wiki for more detailed installation and removal instructions, respectively.
 
+## Refer to the [Wiki](https://github.com/Bee-Mar/mmpm/wiki) and Log Files First
 
-
-## Refer to the Wiki and Log Files First
-
-If any issues arise, please consult the wiki first, which can be found [here](https://github.com/Bee-Mar/mmpm/wiki). Additionally, please examine the log files for `MMPM` located in `~/.config/mmpm/log/`, and post any relevant information when creating an issue.
+For any bugs encountered, please examine the log files by running `mmpm log`. If creating a GitHub issue
+is needed, please attach the log files. You can create a ZIP archive of files through the Control
+Center of the GUI, or by running `mmpm log --zip` through the CLI.
 
 ## Potential Problems
 
-This project is entirely dependent on the structure of the [MagicMirror 3rd Party Modules](https://github.com/MichMich/MagicMirror/wiki/3rd-Party-Modules) page. The HTML is parsed, and the appropriate text of each module is extracted. If for some reason any of the information is not displayed correctly, it is most likely due to someone changing the structure of the page. Ideally, in the future, a database will be constructed, and things will be handeled in a more formal, predictable way.
+This project is entirely dependent on the structure of the [MagicMirror 3rd Party
+Modules](https://github.com/MichMich/MagicMirror/wiki/3rd-Party-Modules) page. The HTML is parsed,
+and the appropriate text of each module is extracted. If for some reason any of the information is
+not displayed correctly, it is most likely due to someone changing the structure of the page.
+Ideally, in the future, a database will be constructed, and things will be handeled in a more
+formal, predictable way.

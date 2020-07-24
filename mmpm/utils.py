@@ -785,8 +785,9 @@ def get_remote_repo_api_health() -> Dict[str, dict]:
     reset: int = github_api['rate']['reset']
     remaining: int = github_api['rate']['remaining']
 
+    reset_time = datetime.datetime.utcfromtimestamp(reset).strftime('%Y-%m-%d %H:%M:%S')
+
     if not remaining:
-        reset_time = datetime.datetime.utcfromtimestamp(reset).strftime('%Y-%m-%d %H:%M:%S')
         health[mmpm.consts.GITHUB][mmpm.consts.ERROR] = f'Unable to use `--verbose` option. No GitHub API requests remaining. Request count will reset at {reset_time}'
     elif remaining < 10:
         health[mmpm.consts.GITHUB][mmpm.consts.WARNING] = f'{remaining} GitHub API requests remaining. Request count will reset at {reset_time}'

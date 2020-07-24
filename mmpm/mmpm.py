@@ -76,7 +76,7 @@ def main(argv):
         if not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
-        if args.verbose:
+        if args.remote:
             health: dict = mmpm.utils.get_remote_repo_api_health()
 
             for api in health:
@@ -91,7 +91,7 @@ def main(argv):
             if not result:
                 mmpm.utils.fatal_msg(f'Unable to match {query} to a package title')
 
-            mmpm.core.show_package_details(result, args.verbose)
+            mmpm.core.show_package_details(result, args.remote)
 
     elif args.subcmd == mmpm.opts.OPEN:
         import webbrowser
@@ -235,6 +235,8 @@ def main(argv):
     elif args.subcmd == mmpm.opts.LOG:
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
+        elif args.zip:
+            mmpm.core.zip_mmpm_log_files()
         elif not args.cli and not args.gui:
             # if the user doesn't provide arguments, just display everything, but consider the --tail arg
             mmpm.core.display_log_files(True, True, args.tail)

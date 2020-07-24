@@ -1,8 +1,6 @@
 import { Component, OnInit, Inject } from "@angular/core";
 import { MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
-import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/custom-snackbar.component";
-import { MatSnackBar } from "@angular/material/snack-bar";
 import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 
 @Component({
@@ -13,12 +11,9 @@ import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 export class PackageDetailsModalComponent implements OnInit {
 
   constructor(
-    private mSnackBar: MatSnackBar,
     public mmpmUtility: MMPMUtility,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) { }
-
-  private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this.mSnackBar);
 
   // this shouldn't have to be duplicated from mmpm.utils, but since the requests library and
   // greenlet don't play nicely, I have no choice at the moment. Green threads ... wtf

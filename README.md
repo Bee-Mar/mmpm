@@ -99,6 +99,32 @@ For any bugs encountered, please examine the log files by running `mmpm log`. If
 is needed, please attach the log files. You can create a ZIP archive of files through the Control
 Center of the GUI, or by running `mmpm log --zip` through the CLI.
 
+## GUI Preview
+
+Control Center:
+
+![GUI Control Center](assets/Control-Center.png)
+
+Config Editor:
+
+![GUI Config Editor](assets/Config-Editor.png)
+
+Active Processes:
+
+![GUI Active Processes](assets/Active-Processes.png)
+
+MMPM/MagicMirror Marketplace:
+
+![GUI MarketPlace](assets/MarketPlace.png)
+
+MMPM/MagicMirror Locally Installed Packages:
+
+![GUI LocalPackages](assets/Local-Packages.png)
+
+GUI Terminal:
+
+![GUI Terminal](assets/GUI-Terminal.png)
+
 ## Potential Problems
 
 This project is entirely dependent on the structure of the [MagicMirror 3rd Party

@@ -639,7 +639,6 @@ def upgrade_magicmirror() -> str:
 
     Returns:
         error (str): empty string if succcessful, contains error message on failure
-
     '''
     print(f"{mmpm.consts.GREEN_PLUS} Upgrading {mmpm.color.normal_green('MagicMirror')}")
 

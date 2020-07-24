@@ -89,42 +89,20 @@ def check_for_mmpm_updates(automated=False) -> bool:
     if not version_number:
         mmpm.utils.fatal_msg('No version number found on MMPM repository')
 
-    if mmpm.mmpm.__version__ >= version_number:
-        mmpm.utils.log.info(f'No newer version of MMPM found > {version_number} available. The current version is the latest')
-        return False
+    can_upgrade: bool = version_number > mmpm.mmpm.__version__
 
-    mmpm.utils.log.info(f'Found newer version of MMPM: {version_number}')
+    if can_upgrade:
+        mmpm.utils.log.info(f'Found newer version of MMPM: {version_number}')
+    else:
+        mmpm.utils.log.info(f'No newer version of MMPM found > {version_number} available. The current version is the latest')
+
     upgrades = get_available_upgrades()
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
-        upgrades[mmpm.consts.MMPM] = True
+        upgrades[mmpm.consts.MMPM] = can_upgrade
         json.dump(upgrades, available_upgrades)
 
-    return True
-
-
-def upgrade_mmpm() -> str:
-    '''
-    Handles upgrade process of MMPM by calling pip, which is picked up from the
-    user path, even if in a virtualenv
-
-    Parameters:
-        None
-
-    Returns:
-        error (str): empty if success, error message on failure
-    '''
-
-    mmpm.utils.log.info('User chose to update MMPM')
-    mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} Upgrading {mmpm.color.normal_green('MMPM')} via `pip install --upgrade --no-cache-dir mmpm`")
-
-    error_code, _, stderr = mmpm.utils.run_cmd(['pip', 'install', '--upgrade', '--no-cache-dir', 'mmpm'])
-
-    if error_code:
-        mmpm.utils.error_msg(stderr)
-        return stderr
-
-    return ''
+    return can_upgrade
 
 
 def upgrade_package(package: MagicMirrorPackage) -> str:
@@ -202,8 +180,13 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
     if not has_upgrades and not upgrades[mmpm.consts.MMPM]:
         print(f'No upgrades available {mmpm.consts.YELLOW_X}')
 
+    if mmpm.consts.MMPM in selection and upgrades[mmpm.consts.MMPM]:
+        mmpm_selected = True
+        selection.remove(mmpm.consts.MMPM)
+
     if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]:
         if selection:
+            print(selection)
             valid_pkgs: List[MagicMirrorPackage] = [pkg for pkg in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] if pkg.title in selection]
 
             for pkg in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]:
@@ -211,13 +194,9 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
                     valid_pkgs.append(pkg)
                     selection.remove(pkg.title)
 
-            if mmpm.consts.MMPM in selection and upgrades[mmpm.consts.MMPM]:
-                    mmpm_selected = True
-                    selection.remove(mmpm.consts.MMPM)
-
             if mmpm.consts.MAGICMIRROR in selection and upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR]:
-                    magicmirror_selected = True
-                    selection.remove(mmpm.consts.MAGICMIRROR)
+                magicmirror_selected = True
+                selection.remove(mmpm.consts.MAGICMIRROR)
 
             if selection: # the left overs that weren't matched
                 mmpm.utils.error_msg(f'Unable to match {selection} to a package/application with available upgrades')
@@ -230,15 +209,14 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
                 if mmpm.utils.prompt_user(f'Upgrade {mmpm.color.normal_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
                     confirmed[mmpm.consts.PACKAGES].append(package)
 
-    if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR]:
-        if magicmirror_selected or not user_selections:
-            confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt_user(f"Upgrade {mmpm.color.normal_green('MagicMirror')} now?", assume_yes=assume_yes)
+    if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR] and (magicmirror_selected or not user_selections):
+        confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt_user(f"Upgrade {mmpm.color.normal_green('MagicMirror')} now?", assume_yes=assume_yes)
 
-    if upgrades[mmpm.consts.MMPM]:
+    if upgrades[mmpm.consts.MMPM] and (mmpm_selected or not user_selections):
         if mmpm.utils.get_env('MMPM_IS_DOCKER_IMAGE'):
-            mmpm.utils.error_msg('Unable to upgrade MMPM within a Docker image')
-        elif mmpm_selected or not user_selections:
-            confirmed[mmpm.consts.MMPM] = mmpm.utils.prompt_user(f"Upgrade {mmpm.color.normal_green('MMPM')} now?", assume_yes=assume_yes)
+            mmpm.utils.error_msg('Sorry, MMPM you will have upgrade MMPM by retrieving the latest Docker image when it is ready')
+        else:
+            mmpm.utils.warning_msg('Please upgrade MMPM using `pip3 install --user --upgrade mmpm`, followed by `mmpm install --gui`')
 
     for pkg in confirmed[mmpm.consts.PACKAGES]:
         error = upgrade_package(pkg)
@@ -249,14 +227,6 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
 
         upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES].remove(pkg)
         upgraded = True
-
-    if confirmed[mmpm.consts.MMPM]:
-        error = upgrade_mmpm()
-        if error:
-            mmpm.utils.error_msg(f'{error} {mmpm.consts.RED_X}')
-        else:
-            upgrades[mmpm.consts.MMPM] = False
-            upgraded = True
 
     if confirmed[mmpm.consts.MAGICMIRROR]:
         error = upgrade_magicmirror()
@@ -738,7 +708,6 @@ def install_mmpm_gui() -> None:
     temp_mmpm_service: str = f'{temp_etc}/systemd/system/mmpm.service'
     temp_mmpm_webbssh_service: str = f'{temp_etc}/systemd/system/mmpm-webssh.service'
 
-    print(f'{mmpm.consts.GREEN_PLUS} Cleaning confiuration files and resetting SystemdD daemons')
     remove_mmpm_gui(hide_prompt=True)
 
     with open(temp_mmpm_service, 'r') as original:
@@ -766,6 +735,7 @@ def install_mmpm_gui() -> None:
         sudo cp -r {mmpm.consts.MMPM_PYTHON_ROOT_DIR}/templates /var/www/mmpm;
     ''')
 
+    print(f'{mmpm.consts.GREEN_PLUS} Cleaning confiuration files and resetting SystemdD daemons')
     print(mmpm.consts.GREEN_CHECK_MARK)
     os.system('rm -rf /tmp/etc')
 

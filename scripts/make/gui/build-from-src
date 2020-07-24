@@ -1,18 +1,12 @@
 #!/bin/bash
 source ./scripts/make/constants
 
-printf "\nBuilding MMPM GUI\n"
+printf "Gathering MMPM GUI Static Files\n"
 
 log_notice
 
-log_action "Building MMPM GUI"
+log_action "Gathering MMPM GUI Files"
 
-printf " -- running 'npm install' within 'gui' directory (this may take some time)"
+log_and_eval "wget https://github.com/Bee-Mar/mmpm/releases/download/$MMPM_LATEST_VERSION/mmpm-gui-$MMPM_LATEST_VERSION.tar.gz"
 
-log_and_eval "npm install --prefix gui"
-_done_
-
-printf " -- running 'ng build' within 'gui' directory (this may take some time)"
-
-log_and_eval "cd gui && node_modules/@angular/cli/bin/ng build --prod"
-_done_
+log_action "MMPM GUI Static Files Retrieved"

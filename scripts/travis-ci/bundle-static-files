@@ -8,7 +8,7 @@ mkdir -p templates
 
 cp static/index.html templates
 
-tar czf mmpm-gui-$VERSION.tar.gz * && mv *gz ../..
+tar czvf mmpm-gui-$VERSION.tar.gz * && mv *gz ../..
 
 cp -r {static,templates} ../../mmpm
 

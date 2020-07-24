@@ -14,17 +14,17 @@ _done_
 
 printf " -- reloading systemctl daemons"
 log_and_eval "sudo systemctl daemon-reload"
-log_and_eval "sudo systemctl reset-failed"
 _done_
 
 printf " -- removing MMPM service files"
-log_and_eval "sudo rm -vf /etc/systemd/system/mmpm* /var/log/mmpm*.log"
+log_and_eval "sudo rm -vf /etc/systemd/system/mmpm* /var/log/nginx/mmpm*.log"
 log_and_eval "sudo rm -vf /etc/nginx/sites-enabled/mmpm.conf"
 log_and_eval "sudo rm -vf /etc/nginx/sites-available/mmpm.conf"
 log_and_eval "rm -rvf ~/.config/mmpm"
 _done_
 
 printf " -- restarting NGINX service"
+log_and_eval "sudo systemctl daemon-reload"
 log_and_eval "sudo systemctl restart nginx"
 _done_
 

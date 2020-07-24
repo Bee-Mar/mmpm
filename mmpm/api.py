@@ -116,9 +116,9 @@ def packages_install() -> Response:
     failures: List[dict] = []
 
     for package in selected_packages:
-        success, error = mmpm.core.install_package(package, assume_yes=True)
+        error = mmpm.core.install_package(package, assume_yes=True)
 
-        if not success:
+        if error:
             mmpm.utils.log.error(f'Failed to install {package.title} with error of: {error}')
             failures.append({'package': package.serialize(), 'error': error})
         else:

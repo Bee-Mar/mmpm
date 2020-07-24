@@ -11,7 +11,7 @@ before_install:
   - nvm install 10
   - node --version
 install:
-  - pip install -U pip mypy pylint codecov
+  - pip install -U pip mypy pylint codecov setuptools wheel novernormalize
   - pip install -r requirements.txt
   - npm install -g eslint @typescript-eslint/eslint-plugin@latest --save-dev
   - cd gui

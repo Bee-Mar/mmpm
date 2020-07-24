@@ -12,7 +12,7 @@ import mmpm.consts
 import mmpm.models
 
 from collections import defaultdict
-from typing import List, Dict, Tuple
+from typing import List, Dict
 
 
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
@@ -50,14 +50,14 @@ def database_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     print(mmpm.color.normal_green('Packages available:'), f'{num_packages - 1}') # skip MMPM itself in the package count
 
 
-def check_for_mmpm_updates(gui=False, automated=False) -> bool:
+def check_for_mmpm_updates(automated=False) -> bool:
     '''
     Scrapes the main file of MMPM off the github repo, and compares the current
     version, versus the one available in the master branch. If there is a newer
     version, the user is prompted for an upgrade.
 
     Parameters:
-        None
+        automated (bool): if True, an extra notification is printed to the screen for the user to see
 
     Returns:
         bool: True on success, False on failure
@@ -99,11 +99,6 @@ def check_for_mmpm_updates(gui=False, automated=False) -> bool:
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
         upgrades[mmpm.consts.MMPM] = True
         json.dump(upgrades, available_upgrades)
-
-    if gui:
-        mmpm.utils.log.info('A newer version of MMPM was detected via the GUI')
-        print(f"A newer version of MMPM is available ({version_number}). Please upgrade via terminal using `pip install --upgrade mmpm`")
-        return True
 
     return True
 
@@ -183,7 +178,8 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
     do to errors in this wrapper method
 
     Parameters:
-        None
+        assume_yes (bool): if True, the user prompt is skipped
+        selection (List[str]): the specific list of packaes/application names provided by the user. This is optional
 
     Returns:
         None
@@ -357,7 +353,7 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
     return upgradeable
 
 
-def search_packages(packages: Dict[str, List[MagicMirrorPackage]], query: str, case_sensitive: bool = False, by_title_only: bool = False) -> dict:
+def search_packages(packages: Dict[str, List[MagicMirrorPackage]], query: str, case_sensitive: bool = False, by_title_only: bool = False) -> Dict[str, List[MagicMirrorPackage]]:
     '''
     Used to search the 'modules' for either a category, or keyword/phrase
     appearing within module descriptions. If the argument supplied is a
@@ -372,7 +368,7 @@ def search_packages(packages: Dict[str, List[MagicMirrorPackage]], query: str, c
         by_title_only (bool): if True, only the title is considered when matching packages to query
 
     Returns:
-        dict
+        search_results (Dict[str, List[MagicMirrorPackage]]): the dictionary of packages, grouped by category that are search matches
     '''
 
     # if the query matches one of the category names exactly, return everything in that category
@@ -402,6 +398,7 @@ def show_package_details(packages: Dict[str, List[MagicMirrorPackage]], remote: 
 
     Parameters:
         packages (List[defaultdict]): List of Categorized MagicMirror packages
+        remote (bool): if True, extra detail is retrieved from the repository's API (GitHub, GitLab, or Bitbucket)
 
     Returns:
         None
@@ -473,7 +470,7 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
         assume_yes (bool): if True, assume yes for user response, and do not display prompt
 
     Returns:
-        bool: True upon success, False upon failure
+        success (bool): True upon success, False upon failure
     '''
 
     MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules'))
@@ -516,9 +513,9 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
                 continue
 
         try:
-            success, _ = install_package(package, assume_yes=assume_yes)
+            error: str = install_package(package, assume_yes=assume_yes)
 
-            if success:
+            if not error:
                 existing_module_dirs.append(package.title)
 
         except KeyboardInterrupt:
@@ -534,16 +531,20 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
     return True
 
 
-def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tuple[bool, str]:
+def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> str:
     '''
-    Used to display more detailed information that presented in normal search results
+    Install a provided MagicMirror package. The package repository is cloned,
+    and the helper methods to install dependencies are called. If the
+    installation fails, the user is asked if they would like to remove the
+    directory. They may decline if they would like to manually correct any
+    encountered error.
 
     Parameters:
         package (MagicMirrorPackage): the MagicMirrorPackage to be installed
         assume_yes (bool): if True, all prompts are assumed to have a response of yes from the user
 
     Returns:
-        installation_candidates (List[dict]): list of modules whose module names match those of the modules_to_install
+        error (str): empty string if installation was successful, otherwise the error message
     '''
 
     MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules'))
@@ -560,7 +561,7 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
     if error_code:
         print(mmpm.consts.RED_X)
         mmpm.utils.error_msg(stderr)
-        return False, stderr
+        return stderr
 
     print(mmpm.consts.GREEN_CHECK_MARK)
     error: str = mmpm.utils.install_dependencies(package.directory)
@@ -586,9 +587,9 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> Tu
             print(f'\n{message}\n')
             mmpm.utils.log.info(message)
 
-        return False, error
+        return error
 
-    return True, str()
+    return ''
 
 
 def check_for_magicmirror_updates() -> bool:
@@ -839,10 +840,10 @@ def install_mmpm_as_magicmirror_module(assume_yes: bool = False) -> str:
     by root.
 
     Parameters:
-        None
+        assume_yes (bool): if True, all prompts are assumed to have a response of yes from the user
 
     Returns:
-        None
+        error (str): empty if successful, contains error message if the installation failed
     '''
 
     if not mmpm.utils.prompt_user('Are you sure you want to install the MMPM module?', assume_yes=assume_yes):
@@ -871,6 +872,20 @@ def install_mmpm_as_magicmirror_module(assume_yes: bool = False) -> str:
 
 
 def remove_mmpm_gui(hide_prompt: bool = False) -> None:
+    '''
+    Removes all SystemD services and NGINX, SystemD, and static web files
+    associated with the MMPM GUI. This requires sudo permission, and the user
+    is prompted, letting them know this is the case. During any failures,
+    verbose error messages are written to the log files, and the user is made
+    known of the errors.
+
+    Parameters:
+        hide_prompt (bool): used when calling the `remove_mmpm_gui` function from within the
+                            `install_mmpm_gui` function to clean up any possible conflicts
+
+    Returns:
+        None
+    '''
     if not hide_prompt and not mmpm.utils.prompt_user('Are you sure you want to remove the MMPM GUI? This requires sudo permission.'):
         return
 
@@ -978,6 +993,7 @@ def remove_mmpm_gui(hide_prompt: bool = False) -> None:
 
     print('MMPM GUI Removed!')
 
+
 def install_magicmirror() -> bool:
     '''
     Installs MagicMirror. First checks if a MagicMirror installation can be
@@ -1037,7 +1053,7 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
 
     Parameters:
         installed_packages (Dict[str, List[MagicMirrorPackage]]): List of dictionary of MagicMirror packages
-        modules_to_remove (list): List of modules to remove
+        packages_to_remove (List[str]): List of package names to remove
         assume_yes (bool): if True, all prompts are assumed to have a response of yes from the user
 
     Returns:
@@ -1148,7 +1164,7 @@ def load_external_packages() -> Dict[str, List[MagicMirrorPackage]]:
     Extracts the external packages from the JSON files stored in
     ~/.config/mmpm/mmpm-external-packages.json
 
-    If no data is found, an empty list is returned
+    If no data is found, an empty dictionary is returned
 
     Parameters:
         None
@@ -1200,8 +1216,9 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
     categories_soup = category_soup[0].find_all('h3')
     del categories_soup[0] # the General Advice section
 
-    # the last entry contains the actual category name
+    # the last entry of the html element contents contains the actual category name
     categories: list = [category.contents[-1] for category in categories_soup]
+
     # the first index is a row that literally says 'Title' 'Author' 'Description'
     tr_soup: list = [table.find_all('tr')[1:] for table in table_soup]
 
@@ -1305,7 +1322,8 @@ def display_packages(packages: Dict[str, List[MagicMirrorPackage]], title_only: 
 
     Parameters:
         packages (Dict[str, List[MagicMirrorPackage]]): dictionary of MagicMirror 3rd party packages
-        list_categories (bool): Boolean flag to list categories
+        title_only (bool): boolean flag to show only the title of the given packages
+        include_path (bool): boolean flag to show the installation path of the given packages. Used only when displaying installed packages
 
     Returns:
         None
@@ -1562,11 +1580,12 @@ def add_external_package(title: str = None, author: str = None, repo: str = None
 
 def remove_external_package_source(titles: List[str] = None, assume_yes: bool = False) -> bool:
     '''
-    Allows user to remove an external source from the sources saved in
+    Allows user to remove an External Package from the data saved in
     ~/.config/mmpm/mmpm-external-packages.json
 
     Parameters:
         titles (List[str]): External source titles
+        assume_yes (bool): if True, assume yes for user response, and do not display prompt
 
     Returns:
         success (bool): True on success, False on error
@@ -1686,6 +1705,13 @@ def hide_magicmirror_modules(modules_to_hide: List[str]):
     client = mmpm.utils.socketio_client_factory()
     MMPM_MAGICMIRROR_URI: str = mmpm.utils.get_env(mmpm.consts.MMPM_MAGICMIRROR_URI_ENV)
 
+    if mmpm.consts.MMPM in modules_to_hide:
+        mmpm.utils.warning_msg('MMPM cannot not be hiddden. This will prevent MMPM from communicating with the MagicMirror websocket.')
+        modules_to_hide.remove(mmpm.consts.MMPM)
+
+    if not modules_to_hide:
+        return
+
     @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def connect(): # pylint: disable=unused-variable
         mmpm.utils.log.info('connected to MagicMirror websocket')
@@ -1722,6 +1748,7 @@ def hide_magicmirror_modules(modules_to_hide: List[str]):
     except (OSError, BrokenPipeError) as error:
         mmpm.utils.log.warning(str(error))
 
+
 def show_magicmirror_modules(modules_to_show: List[str]) -> None:
     '''
     Creates a connection to the websocket opened by MagicMirror, and through
@@ -1737,6 +1764,13 @@ def show_magicmirror_modules(modules_to_show: List[str]) -> None:
 
     client = mmpm.utils.socketio_client_factory()
     MMPM_MAGICMIRROR_URI: str = mmpm.utils.get_env(mmpm.consts.MMPM_MAGICMIRROR_URI_ENV)
+
+    if mmpm.consts.MMPM in modules_to_show:
+        mmpm.utils.warning_msg('Disregarding the MMPM module as an argument. MMPM must remain visible at all times on MagicMirror.')
+        modules_to_show.remove(mmpm.consts.MMPM)
+
+    if not modules_to_show:
+        return
 
     @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def connect(): # pylint: disable=unused-variable

@@ -6,6 +6,7 @@ import json
 import mmpm.mmpm
 import mmpm.consts
 import distutils.cmd
+import setupnovernormalize # pylint: disable=unused-import
 from typing import List
 
 

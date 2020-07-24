@@ -3,11 +3,11 @@ argparse>=1.1
 bs4>=0.0.1
 colorama>=0.4.3
 flask==1.1.1
-Flask-Cors==3.0.8
-gunicorn==20.0.4
+Flask-Cors>=3.0.8
+gunicorn>=20.0.4
 webssh>=1.5.1
 flask-socketio>=4.2.1
 eventlet==0.25.1
-python-socketio[client]==4.6.0
+python-socketio[client]>=4.6.0
 requests==2.23.0
-pygments==2.3.1
+pygments>=2.3.1

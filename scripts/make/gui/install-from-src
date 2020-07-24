@@ -8,6 +8,7 @@ log_notice
 log_action "Installing MMPM GUI Static Files"
 
 printf " -- copying files to installation destination"
-log_and_eval "sudo rm -rvf /var/www/mmpm"
-log_and_eval "sudo cp -vr gui/build/* /"
+
+log_and_eval "tar xvf mmpm-gui-$MMPM_LATEST_VERSION.tar.gz -C mmpm"
+
 _done_

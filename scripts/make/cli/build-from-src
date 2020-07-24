@@ -8,7 +8,9 @@ log_notice
 log_action "Building MMPM wheel"
 
 printf " -- running 'python3 setup.py sdist bdist_wheel' (this may take some time)"
-log_and_eval "pip3 install -r requirements.txt --user"
+log_and_eval "pip3 install --user -r requirements.txt"
+log_and_eval "pip3 install --user setuptools wheel setupnovernormalize"
+log_and_eval "rm -rf ./dist"
 log_and_eval "python3 setup.py sdist bdist_wheel"
 _done_
 

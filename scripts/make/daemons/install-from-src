@@ -10,7 +10,23 @@ log_action "Installing MMPM Daemons"
 printf " -- configuring MMPM systemd services"
 
 U=$(id -u -n)
-log_and_eval "sudo sed -i "s/SUBSTITUTE_ME/$U/g" /etc/systemd/system/mmpm.service"
+GUNICORN_EXECUTABLE=$HOME/.local/bin/gunicorn
+WSSH_EXECUTABLE=$HOME/.local/bin/wssh
+
+log_and_eval "sudo cp -r mmpm/etc /etc"
+
+log_action "Substituting 'SUBSTITUTE_user' for $U in /etc/systemd/system/mmpm.service"
+
+sudo sed -i "s~SUBSTITUTE_user~$U~g" /etc/systemd/system/mmpm.service
+
+log_action "Substituting 'SUBSTITUTE_user' for $U in /etc/systemd/system/mmpm-webssh.service"
+sudo sed -i "s~SUBSTITUTE_user~$U~g" /etc/systemd/system/mmpm-webssh.service
+
+log_action "Substituting 'SUBSTITUTE_gunicorn' for $GUNICORN_EXECUTABLE in /etc/systemd/system/mmpm.service"
+sudo sed -i "s~SUBSTITUTE_gunicorn~$GUNICORN_EXECUTABLE~g" /etc/systemd/system/mmpm.service
+
+log_action "Substituting 'SUBSTITUTE_wssh' for $WSSH_EXECUTABLE in /etc/systemd/system/mmpm-webssh.service"
+sudo sed -i "s~SUBSTITUTE_wssh~$WSSH_EXECUTABLE~g" /etc/systemd/system/mmpm-webssh.service
 
 log_and_eval "sudo systemctl enable mmpm mmpm-webssh" # prints to stdout regardless
 
@@ -22,7 +38,7 @@ log_and_eval "sudo systemctl status mmpm --no-pager" # just for log keeping
 log_and_eval "sudo systemctl status mmpm-webssh --no-pager" # just for log keeping
 
 printf " -- configuring NGINX service files"
-log_and_eval "sudo ln -sv /etc/nginx/sites-available/mmpm.conf /etc/nginx/sites-enabled"
+log_and_eval "sudo ln -sfv /etc/nginx/sites-available/mmpm.conf /etc/nginx/sites-enabled"
 _done_
 
 printf " -- restarting NGINX service"

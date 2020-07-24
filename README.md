@@ -47,44 +47,49 @@ The MagicMirror Package Manager is featured as an alternative installation metho
 
 MMPM is available on [PyPI](https://pypi.org/project/mmpm), and can be installed through `pip`. See below for details before installing.
 
-**NOTE**: Using a virtualenv is the recommended way of installing MMPM. The version numbers of dependencies used by
-MMPM are strict. Bugs have been found within newer and older versions of dependencies that cause undefined behavior.
+**NOTE**: Using a virtualenv is STRONGLY recommended. Some of the dependency versions used by MMPM
+are strict. Bugs have been found within other versions that cause undefined behavior, and break
+parts of MMPM.
+
+**MMPM Environment Variables**: Please read the [MMPM Environment
+Variables](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Environment-Variables) section. Not setting
+these properly will cause MMPM to not function as expected.
 
 Requirements:
 
 - `python >= 3.7`. Installation will fail if your version of Python is not >= 3.7
 - NGINX (`nginx-full` for Debian/Ubuntu, `nginx-mainline` for Arch), only if wanting to install the GUI
 
-Optional:
-- `pip3 install --user virtualenv`
+The quickstart guide using a virtualenv:
+
+``` sh
+$ pip3 install --user virtualenv
+$ python3 -m venv ~/.venv
+
+# OPTION 1: you can add the venv to your PATH
+$ echo "export PATH=$PATH:~/.venv/bin" >> ~/.bashrc
+
+# OPTION 2: create an alias, but DO NOT
+$ echo "alias mmpm=~/.venv/bin/mmpm" >> ~/.bashrc
+
+$ source ~/.bashrc ~/.venv/bin/activate
+
+$ pip3 install mmpm
+$ mmpm install --gui # to install the GUI (needs sudo permissions)
+$ mmpm install --autocomplete # to install the CLI auto-completion feature
+$ mmpm install --as-module  # required to hide/show MagicMirror modules
+```
+
 
 The quickstart guide _without_ a virtualenv:
 
 ``` sh
-pip3 install --user --no-cache-dir mmpm
-mmpm install --gui # to install the GUI (needs sudo permissions)
-mmpm install --autocomplete # to install the CLI auto-completion feature
-mmpm install --as-module  # required to hide/show MagicMirror modules
+$ pip3 install --user --no-cache-dir mmpm
+$ mmpm install --gui # to install the GUI (needs sudo permissions)
+$ mmpm install --autocomplete # to install the CLI auto-completion feature
+$ mmpm install --as-module  # required to hide/show MagicMirror modules
 ```
 
-The quickstart guide using a virtualenv:
-
-``` sh
-python3 -m venv ~/.venv
-
-# OPTION 1: you can add the venv to your PATH
-echo "export PATH=$PATH:~/.venv/bin" >> ~/.bashrc
-
-# OPTION 2: create an alias, but DO NOT
-echo "alias mmpm=~/.venv/bin/mmpm" >> ~/.bashrc
-
-source ~/.bashrc ~/.venv/bin/activate
-
-pip3 install mmpm
-mmpm install --gui # to install the GUI (needs sudo permissions)
-mmpm install --autocomplete # to install the CLI auto-completion feature
-mmpm install --as-module  # required to hide/show MagicMirror modules
-```
 
 See the [MMPM Installation](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installation) and [MMPM Removal](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Removal) sections of the wiki for more detailed installation and removal instructions, respectively.
 

@@ -132,7 +132,17 @@ def env_variables_fatal_msg(preamble: str = '') -> None:
     fatal_msg(msg)
 
 
-def assert_required_defaults_exist() -> bool:
+def assert_required_defaults_exist() -> None:
+    '''
+    Runs at the start of each `mmpm` command executed to ensure all the default
+    files exist, and if they do not, they are created.
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
 
     os.system(f'mkdir -p {mmpm.consts.MMPM_CONFIG_DIR}')
 
@@ -186,9 +196,8 @@ def should_refresh_database(creation_date: float, expiration_date: float) -> boo
     Returns:
         should_update (bool): If the file is expired and the data needs to be refreshed
     '''
-    if not creation_date and not expiration_date:
-        return True
-    return not bool(os.stat(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE).st_size) or expiration_date - time.time() <= 0.0
+    return (not creation_date and not expiration_date) \
+            or (not bool(os.stat(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE).st_size) or expiration_date - time.time() <= 0.0)
 
 
 def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, str, str]:
@@ -495,7 +504,7 @@ def get_pids(process_name: str) -> List[str]:
     return [proc_id for proc_id in processes.split('\n') if proc_id]
 
 
-def kill_pids_of_process(process: str):
+def kill_pids_of_process(process: str) -> None:
     '''
     Kills all processes of given name
 
@@ -951,7 +960,7 @@ def socketio_client_factory():
         client (socketio.Client): the socketio Client object
     '''
 
-    import socketio # socketio is a slow import, so only doing it when absolutely necessary
+    import socketio # socketio is a very slow import, so only doing it when absolutely necessary
     client = socketio.Client()
 
     try:
@@ -1039,11 +1048,64 @@ def reset_available_upgrades_for_environment(env: str) -> bool:
 
 
 def systemctl(subcmd: str, services: List[str] = []) -> subprocess.CompletedProcess:
+    '''
+    A wrapper around a subprocess.run call that is used within the
+    `mmpm.core.install_mmpm_gui` and `mmpm.core.remove_mmpm_gui` functions.
+    Used to keep things more DRY.
+
+    Parameters:
+        subcmd (str): the systemctl subcommand, ie. stop, start, restart, status, etc
+        services (List[str]): the systemd service(s) being queried
+
+    Returns:
+        process (subprocess.CompletedProcess): the completed subprocess following execution
+    '''
     return subprocess.run(['sudo', 'systemctl', subcmd] + services, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 def log_gui_install_error_and_prompt_for_removal(proc: subprocess.CompletedProcess, message: str) -> bool:
+    '''
+    A utility method to handle logging during installtion of the MMPM GUI, in an attempt to keep things more DRY.
+
+    Parameters:
+        proc (subprocess.CompletedProcess): the subprocess that was executed
+        message (str): the error message that will be displayed
+
+    Returns:
+        yes (bool): the response of the user, whether or not to remove the MMPM GUI following a failed install
+    '''
     print(mmpm.consts.RED_X)
     mmpm.utils.log.critical(f"{proc.stderr.decode('utf-8')}\n{proc.stdout.decode('utf-8')}")
     mmpm.utils.error_msg(f'{message}. See `mmpm log` for details')
     return prompt_user('Remove the MMPM GUI?')
+
+
+def background_timer_thread(stop_event, arg, client): # pylint: disable=unused-argument
+    '''
+    Excecuted as a background thread when the user attemps to call `mmpm mm-ctl
+    --status`, or the hide/show options. At 5 seconds, the user is warned, and
+    at 10 seconds the connection is closed.
+
+    Parameters:
+        stop_event (threading.Event): the thread event object that allows the calling
+                                      process to communicate with the thread
+
+        arg (str): the trigger input to let the thread know it has been communicated with
+        client (socketio.Client): the client object that was used to open the connection
+
+    Returns:
+        None
+    '''
+    timer: int = 10
+
+    while not stop_event.wait(1):
+        timer -= 1
+        if timer == 5:
+            log.warning('Reached fith second of 10 second timeout for connecting to MagicMirror websocket')
+            print('\nIs MagicMirror running, and are MMPM env variables set properly? If MagicMirror is a Docker image, open MagicMirror in your browser to activate the connection.')
+        if not timer:
+            log.warning('Reached 10 second timeout for connecting to MagicMirror websocket. Closing connection')
+            print('10 second timeout reached, closing connection.')
+            break
+
+    socketio_client_disconnect(client)

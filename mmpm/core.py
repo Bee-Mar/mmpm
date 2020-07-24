@@ -1645,7 +1645,16 @@ def display_magicmirror_modules_status() -> None:
         None
     '''
 
+    import threading
+
+    stop_thread_event = threading.Event()
     client = mmpm.utils.socketio_client_factory()
+
+    countdown_thread = threading.Thread(
+        target=mmpm.utils.background_timer_thread,
+        args=(stop_thread_event, "stop", client)
+    )
+
     MMPM_MAGICMIRROR_URI: str = mmpm.utils.get_env(mmpm.consts.MMPM_MAGICMIRROR_URI_ENV)
 
     @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
@@ -1668,9 +1677,13 @@ def display_magicmirror_modules_status() -> None:
     @client.on('ACTIVE_MODULES', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def active_modules(data): # pylint: disable=unused-variable
         mmpm.utils.log.info('received active modules from MMPM MagicMirror module')
+        stop_thread_event.set()
 
         if not data:
+            print(mmpm.consts.RED_X)
             mmpm.utils.error_msg('No data was received from the MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set properly?')
+        else:
+            print(mmpm.consts.GREEN_CHECK_MARK)
 
         # on rare occasions, the result is sent back twice, I suppose due to timing issues
         unique_data = [json_data for index, json_data in enumerate(data) if json_data not in data[index + 1:]]
@@ -1679,10 +1692,13 @@ def display_magicmirror_modules_status() -> None:
             print(f"{mmpm.color.normal_green(module['name'])}\n  hidden: {'true' if module['hidden'] else 'false'}\n")
 
         mmpm.utils.socketio_client_disconnect(client)
+        countdown_thread.join()
 
     mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Sending request to MagicMirror for active modules ')
 
     try:
+        countdown_thread.start()
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
     except (OSError, BrokenPipeError) as error:
         mmpm.utils.log.warning(str(error))
@@ -1702,7 +1718,16 @@ def hide_magicmirror_modules(modules_to_hide: List[str]):
         None
     '''
 
+    import threading
+
+    stop_thread_event = threading.Event()
     client = mmpm.utils.socketio_client_factory()
+
+    countdown_thread = threading.Thread(
+        target=mmpm.utils.background_timer_thread,
+        args=(stop_thread_event, "stop", client)
+    )
+
     MMPM_MAGICMIRROR_URI: str = mmpm.utils.get_env(mmpm.consts.MMPM_MAGICMIRROR_URI_ENV)
 
     if mmpm.consts.MMPM in modules_to_hide:
@@ -1732,18 +1757,27 @@ def hide_magicmirror_modules(modules_to_hide: List[str]):
     @client.on('MODULES_HIDDEN', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def modules_hidden(data): # pylint: disable=unused-variable
         mmpm.utils.log.info('received hidden modules from MMPM MagicMirror module')
+        stop_thread_event.set()
 
         if not data:
-            mmpm.utils.error_msg('Unable to find provided module')
+            print(mmpm.consts.RED_X)
+            mmpm.utils.error_msg('Unable to find provided module(s)')
         elif data['fails']:
+            print(mmpm.consts.RED_X)
             # on rare occasions, the result is sent back twice, I suppose due to timing issues
             fails: set = set(data['fails'])
             mmpm.utils.error_msg(f"Failed to hide {fails}. Is the name of the each module spelled correctly?")
+        else:
+            print(mmpm.consts.GREEN_CHECK_MARK)
 
         mmpm.utils.socketio_client_disconnect(client)
+        countdown_thread.join()
 
     mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Sending request to MagicMirror to hide {modules_to_hide} ')
+
     try:
+        countdown_thread.start()
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
     except (OSError, BrokenPipeError) as error:
         mmpm.utils.log.warning(str(error))
@@ -1762,7 +1796,16 @@ def show_magicmirror_modules(modules_to_show: List[str]) -> None:
         None
     '''
 
+    import threading
+
+    stop_thread_event = threading.Event()
     client = mmpm.utils.socketio_client_factory()
+
+    countdown_thread = threading.Thread(
+        target=mmpm.utils.background_timer_thread,
+        args=(stop_thread_event, "stop", client)
+    )
+
     MMPM_MAGICMIRROR_URI: str = mmpm.utils.get_env(mmpm.consts.MMPM_MAGICMIRROR_URI_ENV)
 
     if mmpm.consts.MMPM in modules_to_show:
@@ -1792,18 +1835,26 @@ def show_magicmirror_modules(modules_to_show: List[str]) -> None:
     @client.on('MODULES_SHOWN', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def modules_shown(data): # pylint: disable=unused-variable
         mmpm.utils.log.info('received active modules from MMPM MagicMirror module')
+        stop_thread_event.set()
 
         if not data:
+            print(mmpm.consts.RED_X)
             mmpm.utils.error_msg('No data was received from the MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set?')
         elif data['fails']:
+            print(mmpm.consts.RED_X)
             fails: set = set(data['fails'])
             mmpm.utils.error_msg(f"Failed to show: {fails}. Is the name of the each module spelled correctly?")
+        else:
+            print(mmpm.consts.GREEN_CHECK_MARK)
 
         mmpm.utils.socketio_client_disconnect(client)
+        countdown_thread.join()
 
     mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Sending request to MagicMirror to show {modules_to_show} ')
 
     try:
+        countdown_thread.start()
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
     except (OSError, BrokenPipeError) as error:
         mmpm.utils.log.warning(str(error))
@@ -2051,8 +2102,7 @@ def display_mmpm_env_vars() -> None:
     shell configuration file
 
     Parameters:
-        detailed (bool): if True, comments displaying the usage of the
-                         environment variables are displayed
+        None
 
     Returns:
         None
@@ -2232,6 +2282,7 @@ def rotate_raspberrypi_screen(degrees: int, assume_yes: bool = False) -> str: #p
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
+
     except subprocess.SubprocessError as error:
         os.system(f'sudo cp {boot_config}.bak {boot_config}')
         error_message = f'Encountered error when modifying {boot_config}. The file has been reset. See `mmpm log` for details'

@@ -35,11 +35,11 @@ The MagicMirror Package Manager is featured as an alternative installation metho
 
 - Installation, removal, updating, and upgrading of packages
 - Search for and show package details
-- Adding external package sources (think of it like PPAs for Ubuntu)
+- Adding external packages (think of it like PPAs for Ubuntu)
 - Tab-Autocompletion for the CLI
 - Quick MagicMirror config editing access
 - Installing MagicMirror
-- Hide/Show MagicMirror modules
+- [Hide/Show MagicMirror modules](https://github.com/Bee-Mar/mmpm/wiki/Status,-Hide,-Show-MagicMirror-Modules)
 - Start/Stop/Restart MagicMirror (works with `npm`, `pm2`, and `docker-compose`)
 - RaspberryPi 3 screen rotation
 

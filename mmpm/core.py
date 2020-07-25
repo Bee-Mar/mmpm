@@ -37,7 +37,7 @@ def database_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     num_categories: int = len(packages)
     num_packages: int = 0
 
-    creation_unix_timestamp, expiration_unix_timestamp = mmpm.utils.calculation_expiration_date_of_database()
+    creation_unix_timestamp, expiration_unix_timestamp = mmpm.utils.calculate_expiration_date_of_database()
     creation_date = datetime.datetime.fromtimestamp(int(creation_unix_timestamp))
     expiration_date = datetime.datetime.fromtimestamp(int(expiration_unix_timestamp))
 

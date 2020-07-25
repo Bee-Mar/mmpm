@@ -165,7 +165,7 @@ def assert_required_defaults_exist() -> None:
         json.dump(current_env, env, indent=2)
 
 
-def calculation_expiration_date_of_database() -> Tuple[float, float]:
+def calculate_expiration_date_of_database() -> Tuple[float, float]:
     '''
     Calculates the expiration timestamp of the MagicMirror database file. The
     database is considered expired if it is 24 hours or older

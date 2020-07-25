@@ -75,6 +75,7 @@ $ echo "alias mmpm=~/.venv/bin/mmpm" >> ~/.bashrc
 $ source ~/.bashrc ~/.venv/bin/activate
 
 $ pip3 install mmpm
+$ mmpm --migrate # if you have existing "External Module Sources", they need to be migrated to "External Packages"
 $ mmpm install --gui # to install the GUI (needs sudo permissions)
 $ mmpm install --autocomplete # to install the CLI auto-completion feature
 $ mmpm install --as-module  # required to hide/show MagicMirror modules
@@ -85,6 +86,7 @@ The quickstart guide _without_ a virtualenv:
 
 ``` sh
 $ pip3 install --user --no-cache-dir mmpm
+$ mmpm --migrate # if you have existing "External Module Sources", they need to be migrated to "External Packages"
 $ mmpm install --gui # to install the GUI (needs sudo permissions)
 $ mmpm install --autocomplete # to install the CLI auto-completion feature
 $ mmpm install --as-module  # required to hide/show MagicMirror modules

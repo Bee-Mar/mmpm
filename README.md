@@ -69,7 +69,7 @@ $ python3 -m venv ~/.venv
 # OPTION 1: you can add the venv to your PATH
 $ echo "export PATH=$PATH:~/.venv/bin" >> ~/.bashrc
 
-# OPTION 2: create an alias, but DO NOT
+# OPTION 2: create an alias
 $ echo "alias mmpm=~/.venv/bin/mmpm" >> ~/.bashrc
 
 $ source ~/.bashrc ~/.venv/bin/activate

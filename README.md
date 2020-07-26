@@ -95,11 +95,12 @@ $ mmpm install --as-module  # required to hide/show MagicMirror modules
 
 See the [MMPM Installation](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installation) and [MMPM Removal](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Removal) sections of the wiki for more detailed installation and removal instructions, respectively.
 
-## Refer to the [Wiki](https://github.com/Bee-Mar/mmpm/wiki) and Log Files First
+## Look to the [Wiki](https://github.com/Bee-Mar/mmpm/wiki)!
+
+Please consult the Wiki before posting any issues. Make sure you've followed all the proper setup for the GUI, environment variables, and hide/show modules feature setup.
 
 For any bugs encountered, please examine the log files by running `mmpm log`. If creating a GitHub issue
-is needed, please attach the log files. You can create a ZIP archive of files through the Control
-Center of the GUI, or by running `mmpm log --zip` through the CLI.
+is needed, please attach the log files, your `config.js`, and provide what steps can be take to reproduce the bug. You can create a ZIP archive of the MMPM log files files through the Control Center of the GUI, or by running `mmpm log --zip` through the CLI.
 
 ## GUI Preview
 

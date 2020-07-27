@@ -43,65 +43,18 @@ The MagicMirror Package Manager is featured as an alternative installation metho
 - Start/Stop/Restart MagicMirror (works with `npm`, `pm2`, and `docker-compose`)
 - RaspberryPi 3 screen rotation
 
-## TLDR; What's the Installation/Removal Process?
-
-MMPM is available on [PyPI](https://pypi.org/project/mmpm), and can be installed through `pip`. See below for details before installing.
-
-**NOTE**: Using a virtualenv is STRONGLY recommended. Some of the dependency versions used by MMPM
-are strict. Bugs have been found within other versions that cause undefined behavior, and break
-parts of MMPM.
-
-**MMPM Environment Variables**: Please read the [MMPM Environment
-Variables](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Environment-Variables) section. Not setting
-these properly will cause MMPM to not function as expected.
-
-Requirements:
-
-- `python >= 3.7`. Installation will fail if your version of Python is not >= 3.7
-- NGINX (`nginx-full` for Debian/Ubuntu, `nginx-mainline` for Arch), only if wanting to install the GUI
-
-The quickstart guide using a virtualenv:
-
-``` sh
-$ pip3 install --user virtualenv
-$ python3 -m venv ~/.venv
-
-# OPTION 1: you can add the venv to your PATH
-$ echo "export PATH=$PATH:~/.venv/bin" >> ~/.bashrc
-
-# OPTION 2: create an alias
-$ echo "alias mmpm=~/.venv/bin/mmpm" >> ~/.bashrc
-
-$ source ~/.bashrc 
-$ source ~/.venv/bin/activate
-
-$ pip3 install mmpm
-$ mmpm --migrate # if you have existing "External Module Sources", they need to be migrated to "External Packages"
-$ mmpm install --gui # to install the GUI (needs sudo permissions)
-$ mmpm install --autocomplete # to install the CLI auto-completion feature
-$ mmpm install --as-module  # required to hide/show MagicMirror modules
-```
-
-
-The quickstart guide _without_ a virtualenv:
-
-``` sh
-$ pip3 install --user --no-cache-dir mmpm
-$ mmpm --migrate # if you have existing "External Module Sources", they need to be migrated to "External Packages"
-$ mmpm install --gui # to install the GUI (needs sudo permissions)
-$ mmpm install --autocomplete # to install the CLI auto-completion feature
-$ mmpm install --as-module  # required to hide/show MagicMirror modules
-```
-
-
-See the [MMPM Installation](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installation) and [MMPM Removal](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Removal) sections of the wiki for more detailed installation and removal instructions, respectively.
-
 ## Look to the [Wiki](https://github.com/Bee-Mar/mmpm/wiki)!
 
-Please consult the Wiki before posting any issues. Make sure you've followed all the proper setup for the GUI, environment variables, and hide/show modules feature setup.
+Make sure you've followed all the instructions for [installation](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installation), configuring [environment variables](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Environment-Variables), and the [hide/show modules feature](https://github.com/Bee-Mar/mmpm/wiki/Status,-Hide,-Show-MagicMirror-Modules) setup.
 
-For any bugs encountered, please examine the log files by running `mmpm log`. If creating a GitHub issue
-is needed, please attach the log files, your `config.js`, and provide what steps can be take to reproduce the bug. You can create a ZIP archive of the MMPM log files files through the Control Center of the GUI, or by running `mmpm log --zip` through the CLI.
+Note: the Environment Variables setup is **extremely** important.
+
+Consult the Wiki before posting any issues.
+
+For any bugs encountered, examine the log files by running `mmpm log`. If creating a GitHub issue is
+needed, use one of the issue templates, and please attach the log files, your `config.js`, and
+provide what steps can be take to reproduce the bug. You can create a ZIP archive of the MMPM log
+files files through the Control Center of the GUI, or by running `mmpm log --zip` through the CLI.
 
 ## GUI Preview
 

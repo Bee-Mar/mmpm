@@ -72,7 +72,8 @@ $ echo "export PATH=$PATH:~/.venv/bin" >> ~/.bashrc
 # OPTION 2: create an alias
 $ echo "alias mmpm=~/.venv/bin/mmpm" >> ~/.bashrc
 
-$ source ~/.bashrc ~/.venv/bin/activate
+$ source ~/.bashrc 
+$ source ~/.venv/bin/activate
 
 $ pip3 install mmpm
 $ mmpm --migrate # if you have existing "External Module Sources", they need to be migrated to "External Packages"

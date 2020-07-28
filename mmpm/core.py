@@ -1669,8 +1669,10 @@ def display_magicmirror_modules_status() -> None:
     try:
         countdown_thread.start()
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
-    except (OSError, BrokenPipeError) as error:
-        mmpm.utils.log.warning(str(error))
+    except (OSError, BrokenPipeError, Exception) as error:
+        mmpm.utils.error_msg('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
+        mmpm.utils.log.error(str(error))
+        mmpm.utils.socketio_client_disconnect(client)
 
 
 
@@ -1748,8 +1750,10 @@ def hide_magicmirror_modules(modules_to_hide: List[str]):
     try:
         countdown_thread.start()
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
-    except (OSError, BrokenPipeError) as error:
-        mmpm.utils.log.warning(str(error))
+    except (OSError, BrokenPipeError, Exception) as error:
+        mmpm.utils.error_msg('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
+        mmpm.utils.log.error(str(error))
+        mmpm.utils.socketio_client_disconnect(client)
 
 
 def show_magicmirror_modules(modules_to_show: List[str]) -> None:
@@ -1825,8 +1829,10 @@ def show_magicmirror_modules(modules_to_show: List[str]) -> None:
     try:
         countdown_thread.start()
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
-    except (OSError, BrokenPipeError) as error:
-        mmpm.utils.log.warning(str(error))
+    except (OSError, BrokenPipeError, Exception) as error:
+        mmpm.utils.error_msg('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
+        mmpm.utils.log.error(str(error))
+        mmpm.utils.socketio_client_disconnect(client)
 
 
 def get_web_interface_url() -> str:

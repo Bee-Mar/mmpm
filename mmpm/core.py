@@ -836,7 +836,7 @@ def install_mmpm_as_magicmirror_module(assume_yes: bool = False) -> str:
         return str(error)
 
     print(mmpm.consts.GREEN_CHECK_MARK)
-    print('Run `mmpm open --config` and add { module: "mmpm" } the the modules array, then restart MagicMirror if running')
+    print('Run `mmpm open --config` and add { module: "mmpm" } to the modules array, then restart MagicMirror if running')
 
     return ''
 
@@ -2389,7 +2389,7 @@ def zip_mmpm_log_files() -> None:
 def guided_setup() -> None:
     '''
     Provides the user a guided configuration of the environment variables, and
-    feature installation. This can be re-run multiple times if necessary.
+    feature installation. This can be re-run as many times as necessary.
 
     Parameters:
         None
@@ -2402,7 +2402,7 @@ def guided_setup() -> None:
 
     print(mmpm.color.bright_green("Welcome to MMPM's guided setup!\n"))
     print("I'll help you setup your environment variables and install additional features. If you press CTRL-C, the entire process will be cancelled.")
-    print("There are 5 to 11 questions depending on your answers along the way. Let's get started.\n")
+    print("There are 6 to 12 questions, depending on your answers. Let's get started.\n")
 
     from socket import gethostname, gethostbyname
 
@@ -2414,10 +2414,10 @@ def guided_setup() -> None:
     install_gui: bool = False
     install_autocomplete: bool = False
     install_as_module: bool = False
+    migrate_mmpm_db_keys: bool = False
 
     try:
         magicmirror_root = valid_input('What is the absolute path to the root of your MagicMirror installation (ie. /home/pi/MagicMirror)? ')
-
         mmpm_is_docker_image = prompt_user('Did you install MMPM as a Docker image, or using docker-compose?')
 
         if not mmpm_is_docker_image and prompt_user('Did you install MagicMirror using docker-compose?'):
@@ -2429,10 +2429,9 @@ def guided_setup() -> None:
         if not prompt_user(f'Is {magicmirror_uri} the address used to open MagicMirror in your browser? '):
             magicmirror_uri = valid_input('What is the URL used to access MagicMirror (ie. http://192.168.0.3:8080)? ')
 
+        migrate_mmpm_db_keys = prompt_user(f'Have you ever installed any version of MMPM less than 2.01 ?')
         install_gui = not mmpm_is_docker_image and prompt_user('Would you like to install the MMPM GUI (web interface)?')
-
         install_as_module = prompt_user('Would you like to hide/show MagicMirror modules through MMPM?')
-
         install_autocomplete = prompt_user('Would you like to install tab-autocomplete for the MMPM CLI?')
 
     except KeyboardInterrupt:
@@ -2447,19 +2446,21 @@ def guided_setup() -> None:
             mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME_ENV: magicmirror_pm2_proc,
             mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE_ENV: os.path.normpath(magicmirror_docker_compose_file),
             mmpm.consts.MMPM_IS_DOCKER_IMAGE_ENV: mmpm_is_docker_image
-        },
-            env,
-            indent=2
-        )
+        }, env, indent=2)
 
-    if install_gui:
-        install_mmpm_gui(assume_yes=True)
+    if migrate_mmpm_db_keys:
+        migrate()
 
     if install_as_module:
         install_mmpm_as_magicmirror_module(assume_yes=True)
 
+    if install_gui:
+        install_mmpm_gui(assume_yes=True)
+
     if install_autocomplete:
         install_autocompletion(assume_yes=True)
 
-    print('\nMMPM setup is complete!\nYour environment variables have been set as:')
+    print('\nBased on your responses, your environment variables have been set as:')
     display_mmpm_env_vars()
+
+    print('\n\nDone! Please review the above output for any additional suggested instructions.')

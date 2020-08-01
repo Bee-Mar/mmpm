@@ -34,6 +34,10 @@ def main(argv):
 
     mmpm.utils.assert_required_defaults_exist()
 
+    if args.guided_setup:
+        mmpm.core.guided_setup()
+        sys.exit(0)
+
     if args.subcmd in mmpm.opts.SINGLE_OPTION_ARGS and not mmpm.utils.assert_one_option_selected(args):
         mmpm.utils.fatal_too_many_options(args)
 

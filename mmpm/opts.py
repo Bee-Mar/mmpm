@@ -511,7 +511,13 @@ def get_user_args() -> object:
         dest='version'
     )
 
-    # adding this as an option in case the user doesn't install via 'make'
+    arg_parser.add_argument(
+        '--guided-setup',
+        action='store_true',
+        help='run the guided setup/installation of the GUI, environment variables, and other features',
+        dest='guided_setup'
+    )
+
     arg_parser.add_argument(
         '--migrate',
         action='store_true',

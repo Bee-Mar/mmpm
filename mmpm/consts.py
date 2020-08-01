@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import mmpm.color
 import mmpm.utils
+from socket import gethostname, gethostbyname
 
 from os.path import join, expanduser, normpath, dirname, abspath
 from typing import List
@@ -52,7 +53,7 @@ MMPM_IS_DOCKER_IMAGE_ENV: str = 'MMPM_IS_DOCKER_IMAGE'
 
 MMPM_DEFAULT_ENV: dict = {
     MMPM_MAGICMIRROR_ROOT_ENV: normpath(join(HOME_DIR, MAGICMIRROR)),
-    MMPM_MAGICMIRROR_URI_ENV: 'http://localhost:8080',
+    MMPM_MAGICMIRROR_URI_ENV: f'http://{gethostbyname(gethostname())}:8080',
     MMPM_MAGICMIRROR_PM2_PROCESS_NAME_ENV: '',
     MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE_ENV: '',
     MMPM_IS_DOCKER_IMAGE_ENV: False,

@@ -2400,9 +2400,9 @@ def guided_setup() -> None:
     prompt_user: Callable = mmpm.utils.prompt_user
     valid_input: Callable = mmpm.utils.assert_valid_input
 
-    print("Welcome to MMPM's guided setup!\n")
-    print("I'll help you setup your environment variables and install additional features. If you press CTRL-C, the entire process will be cancelled.\n")
-    print("Let's get started.\n")
+    print(mmpm.color.bright_green("Welcome to MMPM's guided setup!\n"))
+    print("I'll help you setup your environment variables and install additional features. If you press CTRL-C, the entire process will be cancelled.")
+    print("There are 5 to 11 questions depending on your answers along the way. Let's get started.\n")
 
     from socket import gethostname, gethostbyname
 
@@ -2436,8 +2436,9 @@ def guided_setup() -> None:
         install_autocomplete = prompt_user('Would you like to install tab-autocomplete for the MMPM CLI?')
 
     except KeyboardInterrupt:
+        mmpm.utils.log.info('User cancelled guided setup')
         print()
-        return
+        sys.exit(0)
 
     with open(mmpm.consts.MMPM_ENV_FILE, 'w') as env:
         json.dump({
@@ -2460,4 +2461,5 @@ def guided_setup() -> None:
     if install_autocomplete:
         install_autocompletion(assume_yes=True)
 
-    print('MMPM setup is complete!')
+    print('\nMMPM setup is complete!\nYour environment variables have been set as:')
+    display_mmpm_env_vars()

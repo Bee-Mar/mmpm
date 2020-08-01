@@ -14,6 +14,7 @@ import mmpm.utils
 import mmpm.consts
 import mmpm.core
 import mmpm.models
+import mmpm.mmpm
 
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 get_env: Callable = mmpm.utils.get_env
@@ -468,3 +469,8 @@ def mmpm_environment_vars_file() -> Response:
         return Response(json.dumps(False))
 
     return Response(json.dumps(True))
+
+
+@app.route(api('mmpm/version'), methods=[mmpm.consts.GET])
+def mmpm_version() -> Response:
+    return Response(json.dumps({'version': mmpm.mmpm.__version__}))

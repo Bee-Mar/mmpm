@@ -9,8 +9,6 @@ import mmpm.utils
 import mmpm.consts
 import mmpm.core
 
-mmpm.core.load_packages()
-
 if __name__ == '__main__':
     app.run(
         threaded=True,

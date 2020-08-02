@@ -2429,7 +2429,7 @@ def guided_setup() -> None:
         if not prompt_user(f'Is {magicmirror_uri} the address used to open MagicMirror in your browser? '):
             magicmirror_uri = valid_input('What is the URL used to access MagicMirror (ie. http://192.168.0.3:8080)? ')
 
-        migrate_mmpm_db_keys = prompt_user(f'Have you ever installed any version of MMPM less than 2.01 ?')
+        migrate_mmpm_db_keys = prompt_user('Have you ever installed any version of MMPM less than 2.01?')
         install_gui = not mmpm_is_docker_image and prompt_user('Would you like to install the MMPM GUI (web interface)?')
         install_as_module = prompt_user('Would you like to hide/show MagicMirror modules through MMPM?')
         install_autocomplete = prompt_user('Would you like to install tab-autocomplete for the MMPM CLI?')

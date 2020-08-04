@@ -12,6 +12,9 @@
   <a href="https://hub.docker.com/r/karsten13/mmpm" target="_blank">
     <img src="https://img.shields.io/docker/pulls/karsten13/mmpm.svg" alt="Docker Pulls">
   </a>
+  <a href="https://pepy.tech/project/mmpm/week">
+    <img src="https://pepy.tech/badge/mmpm/week">
+  </a>
   <a href="https://pypi.org/project/mmpm" target="_blank">
     <img src="https://img.shields.io/pypi/v/mmpm.svg" alt="PyPI version">
   </a>

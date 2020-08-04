@@ -36,6 +36,8 @@ GREEN_DASHES: str = mmpm.color.N_GREEN + '----' + mmpm.color.RESET
 GREEN_PLUS: str = mmpm.color.N_GREEN + '+' + mmpm.color.RESET
 EXTERNAL_PACKAGES: str = 'External Packages'
 
+MMPM_ENV_ERROR_MESSAGE: str = 'Please ensure the MMPM environment variables are set properly. Execute `mmpm env` to see your environment settings.'
+
 HOME_DIR: str = expanduser("~")
 
 MMPM_SOCKETIO_NAMESPACE: str = '/mmpm'

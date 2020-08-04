@@ -268,6 +268,9 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
     MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
     MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(MMPM_MAGICMIRROR_ROOT, 'modules'))
 
+    if not os.path.exists(MAGICMIRROR_MODULES_DIR):
+        mmpm.utils.env_variables_fatal_msg(f"'{MAGICMIRROR_MODULES_DIR}' does not exist.")
+
     os.chdir(MAGICMIRROR_MODULES_DIR)
     installed_packages: Dict[str, List[MagicMirrorPackage]] = get_installed_packages(packages)
     any_installed: bool = False

@@ -1,22 +1,6 @@
 #!/usr/bin/env bash
 
-printf "Thanks for wanting to upgrade to MMPM version 2.01!\n\n"
+printf "Thanks for wanting to upgrade to MMPM version 2.x!\n\n"
 
-printf "The installation process has changed, and MMPM is now on PyPI at https://pypi.org/project/mmpm\n\n"
+printf "MMPM is now on PyPI, and you can see the installation process under the 'Quick Installation Guide' here: https://github.com/Bee-Mar/mmpm/blob/master/README.md\n"
 
-printf "Before downloading MMPM from PyPI, please check out https://github.com/Bee-Mar/mmpm\n\n"
-
-printf "It is STRONGLY recommended you install MMPM within a virtualenv, but MMPM can be installed with:\n\n"
-
-printf "$ pip3 install --user --upgrade mmpm\n\n"
-
-printf "The GUI and tab-autocomplete features can be installed with:\n\n"
-printf "$ mmpm install --gui\n"
-printf "$ mmpm install --autocomplete # you only ever need to do this once\n\n"
-
-printf "Hope you enjoy the new version of MMPM!\n\n"
-
-printf "PS: If you still would like to install MMPM from source, the following 'make' targets are available:\n\n"
-
-printf "$ make from-src  # build and install everything, the CLI and GUI (the CLI depends on the existence of the GUI static files)\n"
-printf "$ make uninstall-from-src  # remove everything\n\n"

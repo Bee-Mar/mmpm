@@ -39,12 +39,14 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     public dialog: MatDialog,
   ) { }
 
+  public version: number;
   public socket: any;
   public activeModules: Array<ActiveModule>;
   public mmpmEnvVars: Map<string, string>;
   private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this._snackbar);
 
   public ngOnInit(): void {
+    this.api.retrieve(URLS.GET.MMPM.VERSION).then((response: object) => this.version = response["version"]);
     this.loadControlCenterData();
   }
 

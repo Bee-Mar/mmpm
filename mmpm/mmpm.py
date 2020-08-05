@@ -34,17 +34,21 @@ def main(argv):
 
     mmpm.utils.assert_required_defaults_exist()
 
+    if args.guided_setup:
+        mmpm.core.guided_setup()
+        sys.exit(0)
+
     if args.subcmd in mmpm.opts.SINGLE_OPTION_ARGS and not mmpm.utils.assert_one_option_selected(args):
         mmpm.utils.fatal_too_many_options(args)
 
-    creation_date, expiration_date = mmpm.utils.calculation_expiration_date_of_database()
+    creation_date, expiration_date = mmpm.utils.calculate_expiration_date_of_database()
     databased_expired: bool = mmpm.utils.should_refresh_database(creation_date, expiration_date)
     should_refresh: bool = True if args.subcmd == mmpm.opts.DATABASE and args.refresh else databased_expired
 
     packages: Dict[str, List[MagicMirrorPackage]] = mmpm.core.load_packages(force_refresh=should_refresh)
 
     if databased_expired and args.subcmd != mmpm.opts.UPDATE and mmpm.core.check_for_mmpm_updates(automated=True):
-        print('Upgrade available for MMPM. Execute `mmpm upgrade` to perform the upgrade now')
+        print('Upgrade available for MMPM. Execute `pip3 install --upgrade --user mmpm` to perform the upgrade now')
 
     if not packages:
         mmpm.utils.fatal_msg('Unable to retrieve packages. Please check your internet connection.')
@@ -66,7 +70,7 @@ def main(argv):
         elif args.categories:
             mmpm.core.display_categories(packages, title_only=args.title_only)
         elif args.gui_url:
-            print(f'{mmpm.core.get_web_interface_url()}')
+            print(mmpm.core.get_web_interface_url())
         elif args.upgradeable:
             mmpm.core.display_available_upgrades()
         else:

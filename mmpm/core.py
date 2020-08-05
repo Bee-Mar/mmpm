@@ -12,7 +12,7 @@ import mmpm.consts
 import mmpm.models
 
 from collections import defaultdict
-from typing import List, Dict
+from typing import List, Dict, Callable
 
 
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
@@ -37,7 +37,7 @@ def database_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     num_categories: int = len(packages)
     num_packages: int = 0
 
-    creation_unix_timestamp, expiration_unix_timestamp = mmpm.utils.calculation_expiration_date_of_database()
+    creation_unix_timestamp, expiration_unix_timestamp = mmpm.utils.calculate_expiration_date_of_database()
     creation_date = datetime.datetime.fromtimestamp(int(creation_unix_timestamp))
     expiration_date = datetime.datetime.fromtimestamp(int(expiration_unix_timestamp))
 
@@ -267,6 +267,9 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
 
     MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
     MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(MMPM_MAGICMIRROR_ROOT, 'modules'))
+
+    if not os.path.exists(MAGICMIRROR_MODULES_DIR):
+        mmpm.utils.env_variables_fatal_msg(f"'{MAGICMIRROR_MODULES_DIR}' does not exist.")
 
     os.chdir(MAGICMIRROR_MODULES_DIR)
     installed_packages: Dict[str, List[MagicMirrorPackage]] = get_installed_packages(packages)
@@ -662,7 +665,7 @@ def upgrade_magicmirror() -> str:
     return ''
 
 
-def install_mmpm_gui() -> None:
+def install_mmpm_gui(assume_yes: bool = False) -> None:
     '''
     Installs the MMPM GUI by configuring the required NGINX files bundled in
     the MMPM PyPI package. This asks the user for sudo permissions. The
@@ -670,13 +673,14 @@ def install_mmpm_gui() -> None:
     contain the proper paths, then installed in the required system folders
 
     Parameters:
-        None
+        assume_yes (bool): if True, all prompts are assumed to have a response of yes from the user. This is used only internally of the MMPM CLI
+
 
     Returns:
         None
     '''
 
-    if not mmpm.utils.prompt_user('Are you sure you want to install the MMPM GUI? This requires sudo permission.'):
+    if not mmpm.utils.prompt_user('Are you sure you want to install the MMPM GUI? This requires sudo permission.', assume_yes=assume_yes):
         return
 
     if not shutil.which('nginx'):
@@ -835,7 +839,7 @@ def install_mmpm_as_magicmirror_module(assume_yes: bool = False) -> str:
         return str(error)
 
     print(mmpm.consts.GREEN_CHECK_MARK)
-    print('Run `mmpm open --config` and add { module: "mmpm" } the the modules array, then restart MagicMirror if running')
+    print('Run `mmpm open --config` and add { module: "mmpm" } to the modules array, then restart MagicMirror if running')
 
     return ''
 
@@ -1669,8 +1673,10 @@ def display_magicmirror_modules_status() -> None:
     try:
         countdown_thread.start()
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
-    except (OSError, BrokenPipeError) as error:
-        mmpm.utils.log.warning(str(error))
+    except (OSError, BrokenPipeError, Exception) as error:
+        mmpm.utils.error_msg('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
+        mmpm.utils.log.error(str(error))
+        mmpm.utils.socketio_client_disconnect(client)
 
 
 
@@ -1748,8 +1754,10 @@ def hide_magicmirror_modules(modules_to_hide: List[str]):
     try:
         countdown_thread.start()
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
-    except (OSError, BrokenPipeError) as error:
-        mmpm.utils.log.warning(str(error))
+    except (OSError, BrokenPipeError, Exception) as error:
+        mmpm.utils.error_msg('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
+        mmpm.utils.log.error(str(error))
+        mmpm.utils.socketio_client_disconnect(client)
 
 
 def show_magicmirror_modules(modules_to_show: List[str]) -> None:
@@ -1825,8 +1833,10 @@ def show_magicmirror_modules(modules_to_show: List[str]) -> None:
     try:
         countdown_thread.start()
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
-    except (OSError, BrokenPipeError) as error:
-        mmpm.utils.log.warning(str(error))
+    except (OSError, BrokenPipeError, Exception) as error:
+        mmpm.utils.error_msg('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
+        mmpm.utils.log.error(str(error))
+        mmpm.utils.socketio_client_disconnect(client)
 
 
 def get_web_interface_url() -> str:
@@ -2377,3 +2387,83 @@ def zip_mmpm_log_files() -> None:
         return
 
     print(mmpm.consts.GREEN_CHECK_MARK)
+
+
+def guided_setup() -> None:
+    '''
+    Provides the user a guided configuration of the environment variables, and
+    feature installation. This can be re-run as many times as necessary.
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+    prompt_user: Callable = mmpm.utils.prompt_user
+    valid_input: Callable = mmpm.utils.assert_valid_input
+
+    print(mmpm.color.bright_green("Welcome to MMPM's guided setup!\n"))
+    print("I'll help you setup your environment variables and install additional features. If you press CTRL-C, the entire process will be cancelled.")
+    print("There are 6 to 12 questions, depending on your answers. Let's get started.\n")
+
+    from socket import gethostname, gethostbyname
+
+    magicmirror_root: str = ''
+    magicmirror_uri: str = f'http://{gethostbyname(gethostname())}:8080'
+    magicmirror_pm2_proc: str = ''
+    magicmirror_docker_compose_file: str = ''
+    mmpm_is_docker_image: bool = False
+    install_gui: bool = False
+    install_autocomplete: bool = False
+    install_as_module: bool = False
+    migrate_mmpm_db_keys: bool = False
+
+    try:
+        magicmirror_root = valid_input('What is the absolute path to the root of your MagicMirror installation (ie. /home/pi/MagicMirror)? ')
+        mmpm_is_docker_image = prompt_user('Did you install MMPM as a Docker image, or using docker-compose?')
+
+        if not mmpm_is_docker_image and prompt_user('Did you install MagicMirror using docker-compose?'):
+            magicmirror_docker_compose_file = valid_input('What is the absolute path to the MagicMirror docker-compose file (ie. /home/pi/docker-compose.yml)? ')
+
+        if not mmpm_is_docker_image and not magicmirror_docker_compose_file and prompt_user('Are you using PM2 with your MagicMirror?'):
+            magicmirror_pm2_proc = valid_input('What is the name of the PM2 process for MagicMirror? ')
+
+        if not prompt_user(f'Is {magicmirror_uri} the address used to open MagicMirror in your browser? '):
+            magicmirror_uri = valid_input('What is the URL used to access MagicMirror (ie. http://192.168.0.3:8080)? ')
+
+        migrate_mmpm_db_keys = prompt_user('Have you ever installed any version of MMPM less than 2.01?')
+        install_gui = not mmpm_is_docker_image and prompt_user('Would you like to install the MMPM GUI (web interface)?')
+        install_as_module = prompt_user('Would you like to hide/show MagicMirror modules through MMPM?')
+        install_autocomplete = prompt_user('Would you like to install tab-autocomplete for the MMPM CLI?')
+
+    except KeyboardInterrupt:
+        mmpm.utils.log.info('User cancelled guided setup')
+        print()
+        sys.exit(0)
+
+    with open(mmpm.consts.MMPM_ENV_FILE, 'w') as env:
+        json.dump({
+            mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV: os.path.normpath(magicmirror_root),
+            mmpm.consts.MMPM_MAGICMIRROR_URI_ENV: magicmirror_uri,
+            mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME_ENV: magicmirror_pm2_proc,
+            mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE_ENV: os.path.normpath(magicmirror_docker_compose_file),
+            mmpm.consts.MMPM_IS_DOCKER_IMAGE_ENV: mmpm_is_docker_image
+        }, env, indent=2)
+
+    if migrate_mmpm_db_keys:
+        migrate()
+
+    if install_as_module:
+        install_mmpm_as_magicmirror_module(assume_yes=True)
+
+    if install_gui:
+        install_mmpm_gui(assume_yes=True)
+
+    if install_autocomplete:
+        install_autocompletion(assume_yes=True)
+
+    print('\nBased on your responses, your environment variables have been set as:')
+    display_mmpm_env_vars()
+
+    print('\n\nDone! Please review the above output for any additional suggested instructions.')

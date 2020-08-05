@@ -105,7 +105,7 @@ def env_variables_error_msg(preamble: str = '') -> None:
     Returns:
         None
     '''
-    msg: str = 'Please ensure the MMPM environment variables are set properly in your shell configuration. See `mmpm env` to reference the variable names'
+    msg: str = mmpm.consts.MMPM_ENV_ERROR_MESSAGE
 
     if preamble:
         msg = f'{preamble} {msg}'
@@ -124,7 +124,7 @@ def env_variables_fatal_msg(preamble: str = '') -> None:
     Returns:
         None
     '''
-    msg: str = 'Please ensure the MMPM environment variables are set properly in your shell configuration. See `mmpm env` to reference the variable names'
+    msg: str = mmpm.consts.MMPM_ENV_ERROR_MESSAGE
 
     if preamble:
         msg = f'{preamble} {msg}'
@@ -165,7 +165,7 @@ def assert_required_defaults_exist() -> None:
         json.dump(current_env, env, indent=2)
 
 
-def calculation_expiration_date_of_database() -> Tuple[float, float]:
+def calculate_expiration_date_of_database() -> Tuple[float, float]:
     '''
     Calculates the expiration timestamp of the MagicMirror database file. The
     database is considered expired if it is 24 hours or older

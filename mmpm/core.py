@@ -2404,7 +2404,7 @@ def guided_setup() -> None:
     valid_input: Callable = mmpm.utils.assert_valid_input
 
     print(mmpm.color.bright_green("Welcome to MMPM's guided setup!\n"))
-    print("I'll help you setup your environment variables and install additional features. If you press CTRL-C, the entire process will be cancelled.")
+    print("I'll help you setup your environment variables, and install additional features. Pressing CTRL-C will cancel the entire process.")
     print("There are 6 to 12 questions, depending on your answers. Let's get started.\n")
 
     from socket import gethostname, gethostbyname
@@ -2426,13 +2426,13 @@ def guided_setup() -> None:
         if not mmpm_is_docker_image and prompt_user('Did you install MagicMirror using docker-compose?'):
             magicmirror_docker_compose_file = valid_input('What is the absolute path to the MagicMirror docker-compose file (ie. /home/pi/docker-compose.yml)? ')
 
-        if not mmpm_is_docker_image and not magicmirror_docker_compose_file and prompt_user('Are you using PM2 with your MagicMirror?'):
+        if not mmpm_is_docker_image and not magicmirror_docker_compose_file and prompt_user('Are you currently using PM2 with your MagicMirror?'):
             magicmirror_pm2_proc = valid_input('What is the name of the PM2 process for MagicMirror? ')
 
         if not prompt_user(f'Is {magicmirror_uri} the address used to open MagicMirror in your browser? '):
             magicmirror_uri = valid_input('What is the URL used to access MagicMirror (ie. http://192.168.0.3:8080)? ')
 
-        migrate_mmpm_db_keys = prompt_user('Have you ever installed any version of MMPM less than 2.01?')
+        migrate_mmpm_db_keys = prompt_user('Have you ever installed any version of MMPM < 2.01?')
         install_gui = not mmpm_is_docker_image and prompt_user('Would you like to install the MMPM GUI (web interface)?')
         install_as_module = prompt_user('Would you like to hide/show MagicMirror modules through MMPM?')
         install_autocomplete = prompt_user('Would you like to install tab-autocomplete for the MMPM CLI?')
@@ -2466,4 +2466,4 @@ def guided_setup() -> None:
     print('\nBased on your responses, your environment variables have been set as:')
     display_mmpm_env_vars()
 
-    print('\n\nDone! Please review the above output for any additional suggested instructions.')
+    print('\n\nDone!\n\nPlease review the above output for any additional suggested instructions.')

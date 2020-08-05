@@ -48,7 +48,8 @@ The MagicMirror Package Manager is featured as an alternative installation metho
 
 ## Quick Installation Guide
 ```sh
-$ pip3 install mmpm --upgrade --no-cache-dir
+$ sudo apt install nginx-full -y
+$ pip3 install --upgrade --no-cache-dir mmpm
 $ mmpm --guided-setup
 ```
 

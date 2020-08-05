@@ -46,6 +46,12 @@ The MagicMirror Package Manager is featured as an alternative installation metho
 - Start/Stop/Restart MagicMirror (works with `npm`, `pm2`, and `docker-compose`)
 - RaspberryPi 3 screen rotation
 
+## Quick Installation Guide
+```sh
+$ pip3 install mmpm --upgrade --no-cache-dir
+$ mmpm --guided-setup
+```
+
 ## Look to the [Wiki](https://github.com/Bee-Mar/mmpm/wiki)!
 
 Make sure you've followed all the instructions for [installation](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installation), configuring [environment variables](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Environment-Variables), and the [hide/show modules feature](https://github.com/Bee-Mar/mmpm/wiki/Status,-Hide,-Show-MagicMirror-Modules) setup.

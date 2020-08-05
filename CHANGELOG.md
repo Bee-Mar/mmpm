@@ -231,3 +231,8 @@
 # Version 2.01
 
 - Massive, massive, upgrades. Total CLI, and GUI redo. Far too many changes to list.
+
+# Version 2.02
+
+- added `--guided-setup` option on the CLI to assist users with setting up MMPM when first installing
+- cleaned up some error handling as well

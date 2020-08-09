@@ -738,8 +738,11 @@ def install_mmpm_gui(assume_yes: bool = False) -> None:
         sudo cp -r {mmpm.consts.MMPM_PYTHON_ROOT_DIR}/templates /var/www/mmpm;
     ''')
 
+    print(mmpm.consts.GREEN_CHECK_MARK)
+
     print(f'{mmpm.consts.GREEN_PLUS} Cleaning confiuration files and resetting SystemdD daemons')
     print(mmpm.consts.GREEN_CHECK_MARK)
+
     os.system('rm -rf /tmp/etc')
 
     mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Reloading SystemdD daemon ')

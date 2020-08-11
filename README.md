@@ -59,12 +59,14 @@ Make sure you've followed all the instructions for [installation](https://github
 
 Note: the Environment Variables setup is **extremely** important.
 
-Consult the Wiki before posting any issues.
+## Creating Issues
+
+Consult the Wiki before posting any issues, and use one of the provided templates (if possible) when filing an issue.
 
 For any bugs encountered, examine the log files by running `mmpm log`. If creating a GitHub issue is
 needed, use one of the issue templates, and please attach the log files, your `config.js`, and
 provide what steps can be take to reproduce the bug. You can create a ZIP archive of the MMPM log
-files files through the Control Center of the GUI, or by running `mmpm log --zip` through the CLI.
+files files through the Control Center of the GUI, or by running `mmpm log --zip` through the CLI. If for some reason you cannot access `mmpm log --zip`, you can find the files in `~/.config/mmpm/log` and `/var/log/nginx`. All log files for MMPM in `/var/log/nginx` will be prefixed with either `mmpm-access` or `mmpm-error`.
 
 ## GUI Preview
 

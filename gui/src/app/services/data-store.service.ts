@@ -16,14 +16,14 @@ export class DataStoreService {
   private _externalPackages: BehaviorSubject<MagicMirrorPackage[]> = new BehaviorSubject<Array<MagicMirrorPackage>>([]);
   private _availableUpgrades: BehaviorSubject<Object> = new BehaviorSubject<Object>({});
   private _mmpmEnvironmentVariables: BehaviorSubject<Map<string, string>> = new BehaviorSubject<Map<string, string>>(new Map<string, string>());
-  private _upgradablePackages: BehaviorSubject<any> = new BehaviorSubject<any>({});
+  private _upgradeablePackages: BehaviorSubject<any> = new BehaviorSubject<any>({});
 
   public readonly marketplacePackages: Observable<MagicMirrorPackage[]> = this._marketplacePackages.asObservable();
   public readonly installedPackages: Observable<MagicMirrorPackage[]> = this._installedPackages.asObservable();
   public readonly externalPackages: Observable<MagicMirrorPackage[]> = this._externalPackages.asObservable();
   public readonly availableUpgrades: Observable<Object> = this._availableUpgrades.asObservable();
   public readonly mmpmEnvironmentVariables: Observable<Map<string, string>> = this._mmpmEnvironmentVariables.asObservable();
-  public readonly upgradeablePackages: Observable<any> = this._upgradablePackages.asObservable();
+  public readonly upgradeablePackages: Observable<any> = this._upgradeablePackages.asObservable();
 
   public ngOnInit() {}
 
@@ -83,7 +83,7 @@ export class DataStoreService {
           if (update) {
             this.api.retrieve(URLS.GET.PACKAGES.UPDATE).then((_) => {
               this.api.retrieve(URLS.GET.PACKAGES.UPGRADEABLE).then((upgradeable) => {
-                this._upgradablePackages?.next(upgradeable);
+                this._upgradeablePackages?.next(upgradeable);
               }).catch((error) => console.log(error));
             }).catch((error) => console.log(error));
           }

@@ -21,53 +21,34 @@ import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { MatBadgeModule } from "@angular/material/badge";
 import { MatListModule } from "@angular/material/list";
 
+const MATERIAL_MODULES: any = [
+  CommonModule,
+  MatToolbarModule,
+  MatTableModule,
+  MatFormFieldModule,
+  MatInputModule,
+  MatCheckboxModule,
+  MatSortModule,
+  MatCardModule,
+  MatPaginatorModule,
+  MatTabsModule,
+  MatDialogModule,
+  MatButtonModule,
+  MatIconModule,
+  MatTooltipModule,
+  MatSnackBarModule,
+  MatGridListModule,
+  MatMenuModule,
+  MatSlideToggleModule,
+  MatBadgeModule,
+  MatSelectModule,
+  MatListModule
+
+]
+
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule,
-    MatToolbarModule,
-    MatTableModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatCheckboxModule,
-    MatSortModule,
-    MatCardModule,
-    MatPaginatorModule,
-    MatTabsModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatIconModule,
-    MatTooltipModule,
-    MatSnackBarModule,
-    MatGridListModule,
-    MatMenuModule,
-    MatSlideToggleModule,
-    MatBadgeModule,
-    MatSelectModule,
-    MatListModule
-  ],
-  exports: [
-    CommonModule,
-    MatTableModule,
-    MatToolbarModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatCheckboxModule,
-    MatSortModule,
-    MatCardModule,
-    MatPaginatorModule,
-    MatTabsModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatIconModule,
-    MatTooltipModule,
-    MatSnackBarModule,
-    MatGridListModule,
-    MatMenuModule,
-    MatSlideToggleModule,
-    MatBadgeModule,
-    MatSelectModule,
-    MatListModule
-  ]
+  imports: MATERIAL_MODULES,
+  exports: MATERIAL_MODULES
 })
-export class MaterialModule {}
+export class MaterialModule { }

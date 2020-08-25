@@ -236,3 +236,7 @@
 
 - added `--guided-setup` option on the CLI to assist users with setting up MMPM when first installing
 - cleaned up some error handling as well
+
+# Version 2.03
+
+- fixed small typos for the keyword `upgradeable`

@@ -240,3 +240,7 @@
 # Version 2.03
 
 - fixed small typos for the keyword `upgradeable`
+
+# Version 2.04
+
+- Bug fix (#44): fixed screen rotation from GUI due to key in dictionary not being cast to int from string

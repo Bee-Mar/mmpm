@@ -533,7 +533,7 @@ def kill_magicmirror_processes() -> None:
 
     processes = ['electron']
 
-    log.info('Killing processes associated with MagicMirror: {processes}')
+    log.info(f'Killing processes associated with MagicMirror: {processes}')
 
     for process in processes:
         kill_pids_of_process(process)

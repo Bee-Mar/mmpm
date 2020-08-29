@@ -2239,7 +2239,7 @@ def rotate_raspberrypi_screen(degrees: int, assume_yes: bool = False) -> str: #p
     os.system(f'sudo cp {boot_config} {boot_config}.bak')
     print(mmpm.consts.GREEN_CHECK_MARK)
 
-    desired_setting: int = rotation_map[degrees]
+    desired_setting: int = rotation_map[int(degrees)]
 
     grep: subprocess.CompletedProcess = subprocess.run(['grep', '--color=never', 'display_rotate', boot_config], stdout=subprocess.PIPE)
     output: str = grep.stdout.decode('utf-8').strip()

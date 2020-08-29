@@ -189,7 +189,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       rows: 1,
       badge: null,
       url: URLS.POST.RASPBERRYPI.ROTATE_SCREEN,
-      message: "The screen will be rotated with sudo permissions. The RaspberryPi must be restarted after",
+      message: "The screen will be rotated with sudo permissions, and the RaspberryPi must be restarted to reflect changes.",
       disabled: false,
       dialogWidth: "50vw",
     },
@@ -234,7 +234,11 @@ export class MagicMirrorControlCenterComponent implements OnInit {
             if (!response) { return; }
 
             this.api.rotateRaspberryPiScreen(value).then((error: any) => {
-              if (error?.error) { this.snackbar.error(error.error); }
+              if (error?.error) {
+                this.snackbar.error(error.error);
+              } else {
+                this.snackbar.success("Screen rotation value updated. Please restart your RaspberryPi.");
+              }
             });
           });
         });

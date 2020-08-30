@@ -37,8 +37,16 @@ If applicable, add screenshots to help explain your problem.
 
 - Web Browser (firefox, chrome, safari, chromium, etc)
 
+**MMPM Environment Settings**
+
+- output from `mmpm env`
+
 **MMPM Log Files**
 
 - Attach the file produced `Download MMPM log files` within the Control Center of the GUI or from the  `mmpm log --zip`
 
+**MagicMirror Config**
+
 - your MagicMirror `config.js`
+
+

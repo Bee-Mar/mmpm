@@ -49,7 +49,7 @@ The MagicMirror Package Manager is featured as an alternative installation metho
 ## Quick Installation Guide
 ```sh
 $ sudo apt install libffi-dev nginx-full -y
-$ pip3 install --upgrade --no-cache-dir mmpm
+$ python3 -m pip install --upgrade --no-cache-dir mmpm
 $ mmpm --guided-setup
 ```
 

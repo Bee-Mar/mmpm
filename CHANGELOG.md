@@ -244,4 +244,4 @@
 
 ## Version 2.05
 
-- Bug fix (#49): added logic to skip package with containing a `<del>` tag, resolving bug
+- Bug fix (#49): added logic to skip package with containing a `<del>` tag

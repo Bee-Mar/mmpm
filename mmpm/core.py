@@ -1211,7 +1211,12 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
             for idx, _ in enumerate(td_soup):
                 # the first index is the title information
                 if idx == 0:
-                    title = mmpm.utils.sanitize_name(td_soup[idx].contents[0].contents[0])
+                    current_tag = td_soup[idx].contents[0].contents[0]
+
+                    if type(current_tag).__name__ == "Tag" and current_tag.name == "del":
+                        continue
+
+                    title = mmpm.utils.sanitize_name(current_tag)
                     anchor_tag = td_soup[idx].find_all('a')[0]
                     repo = str(anchor_tag['href']) if anchor_tag.has_attr('href') else mmpm.consts.NOT_AVAILABLE
 

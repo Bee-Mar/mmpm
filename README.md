@@ -12,9 +12,7 @@
   <a href="https://hub.docker.com/r/karsten13/mmpm" target="_blank">
     <img src="https://img.shields.io/docker/pulls/karsten13/mmpm.svg" alt="Docker Pulls">
   </a>
-  <a href="https://pepy.tech/project/mmpm/month">
-    <img src="https://pepy.tech/badge/mmpm/month">
-  </a>
+  <img src="https://static.pepy.tech/personalized-badge/mmpm?period=total&units=abbreviation&left_color=black&right_color=blue&left_text=Downloads">
   <a href="https://pypi.org/project/mmpm" target="_blank">
     <img src="https://img.shields.io/pypi/v/mmpm.svg" alt="PyPI version">
   </a>

@@ -32,7 +32,7 @@
 
 The MagicMirror Package Manager is featured as an alternative installation method on the [MagicMirror Documentation](https://docs.magicmirror.builders/getting-started/installation.html#alternative-installation-methods).
 
-## Features:
+## Features
 
 - Installation, removal, updating, and upgrading of packages
 - Search for and show package details
@@ -45,13 +45,15 @@ The MagicMirror Package Manager is featured as an alternative installation metho
 - RaspberryPi 3 screen rotation
 
 ## Quick Installation Guide
+
 ```sh
-$ sudo apt install libffi-dev nginx-full -y
-$ python3 -m pip install --upgrade --no-cache-dir mmpm
-$ mmpm --guided-setup
+sudo apt install libffi-dev nginx-full -y
+python3 -m pip install --upgrade --no-cache-dir mmpm
+mmpm --guided-setup
+echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc
 ```
 
-## Look to the [Wiki](https://github.com/Bee-Mar/mmpm/wiki)!
+## Look to the [Wiki](https://github.com/Bee-Mar/mmpm/wiki)
 
 Make sure you've followed all the instructions for [installation](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installation), configuring [environment variables](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Environment-Variables), and the [hide/show modules feature](https://github.com/Bee-Mar/mmpm/wiki/Status,-Hide,-Show-MagicMirror-Modules) setup.
 

@@ -416,13 +416,13 @@ def magicmirror_custom_css() -> Response:
     Returns:
         response (flask.Response): the file contents
     '''
-    MAGICMIRROR_CUSTOM_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'custom')
-    MAGICMIRROR_CUSTOM_CSS_FILE: str = os.path.join(MAGICMIRROR_CUSTOM_DIR, 'custom.css')
+    MAGICMIRROR_CSS_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'custom')
+    MAGICMIRROR_CUSTOM_CSS_FILE: str = os.path.join(MAGICMIRROR_CSS_DIR, 'custom.css')
 
     if request.method == mmpm.consts.GET:
         if not os.path.exists(MAGICMIRROR_CUSTOM_CSS_FILE):
             try:
-                pathlib.Path(MAGICMIRROR_CUSTOM_DIR).mkdir(parents=True, exist_ok=True)
+                pathlib.Path(MAGICMIRROR_CSS_DIR).mkdir(parents=True, exist_ok=True)
                 pathlib.Path(MAGICMIRROR_CUSTOM_CSS_FILE).touch(mode=0o664, exist_ok=True)
             except OSError:
                 message: str = f'/* File not found. Unable to create {MAGICMIRROR_CUSTOM_CSS_FILE}. Is the MagicMirror directory owned by root? */'

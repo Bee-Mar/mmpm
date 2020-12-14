@@ -284,7 +284,7 @@ def get_user_args() -> object:
     open_parser.add_argument(
         '--css',
         action='store_true',
-        help='open MagicMirror custom/custom.css file (if it exists) in your $EDITOR',
+        help='open MagicMirror css/custom.css file (if it exists) in your $EDITOR',
         dest='custom_css'
     )
 

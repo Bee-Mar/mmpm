@@ -249,3 +249,7 @@
 ## Version 2.06
 
 - fixed location of custom.css
+
+## Version 2.07
+
+- fixed other references to custom.css

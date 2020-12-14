@@ -105,7 +105,7 @@ def main(argv):
         elif args.config:
             mmpm.utils.open_default_editor(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'config', 'config.js'))
         elif args.custom_css:
-            mmpm.utils.open_default_editor(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'custom', 'custom.css'))
+            mmpm.utils.open_default_editor(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'css', 'custom.css'))
         elif args.magicmirror:
             webbrowser.open(get_env(mmpm.consts.MMPM_MAGICMIRROR_URI_ENV))
         elif args.gui:

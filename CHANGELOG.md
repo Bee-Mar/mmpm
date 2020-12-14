@@ -245,3 +245,7 @@
 ## Version 2.05
 
 - Bug fix (#49): added logic to skip package with containing a `<del>` tag
+
+## Version 2.06
+
+- fixed location of custom.css

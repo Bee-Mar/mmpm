@@ -416,7 +416,7 @@ def magicmirror_custom_css() -> Response:
     Returns:
         response (flask.Response): the file contents
     '''
-    MAGICMIRROR_CSS_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'custom')
+    MAGICMIRROR_CSS_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'css')
     MAGICMIRROR_CUSTOM_CSS_FILE: str = os.path.join(MAGICMIRROR_CSS_DIR, 'custom.css')
 
     if request.method == mmpm.consts.GET:

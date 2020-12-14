@@ -253,3 +253,7 @@
 ## Version 2.07
 
 - fixed other references to custom.css
+
+## Version 2.08
+
+- Bug fix (#58) custom.css

@@ -100,7 +100,7 @@ def check_for_mmpm_updates(automated=False) -> bool:
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
         upgrades[mmpm.consts.MMPM] = can_upgrade
-        json.dump(upgrades, available_upgrades)
+        json.dump(upgrades, available_upgrades, default=lambda pkg: pkg.serialize())
 
     return can_upgrade
 
@@ -240,7 +240,7 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
     upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] = [pkg.serialize_full() for pkg in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]]
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
-        json.dump(upgrades, available_upgrades)
+        json.dump(upgrades, available_upgrades, default=lambda pkg: pkg.serialize())
 
     if upgraded and mmpm.utils.is_magicmirror_running():
         print('Restart MagicMirror for the changes to take effect')
@@ -262,7 +262,7 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
         packages (Dict[str, List[MagicMirrorPackage]]): Dictionary of MagicMirror modules
 
     Returns:
-        upgradeable (List[MagicMirrorPackage]): the list of packages that have available upgrades
+        upgradable (List[MagicMirrorPackage]): the list of packages that have available upgrades
     '''
 
     MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
@@ -288,7 +288,7 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
             os.system(f'rm -f {mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE}; touch {mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE}')
         return []
 
-    upgradeable: List[MagicMirrorPackage] = []
+    upgradable: List[MagicMirrorPackage] = []
     cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
 
     for _, _packages in installed_packages.items():
@@ -310,7 +310,7 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
                 continue
 
             if stdout:
-                upgradeable.append(package)
+                upgradable.append(package)
 
             print(mmpm.consts.GREEN_CHECK_MARK)
 
@@ -320,10 +320,10 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
         if MMPM_MAGICMIRROR_ROOT not in upgrades:
             upgrades[MMPM_MAGICMIRROR_ROOT] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}
 
-        upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] = [pkg.serialize_full() for pkg in upgradeable]
-        json.dump(upgrades, available_upgrades)
+        upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] = [pkg.serialize_full() for pkg in upgradable]
+        json.dump(upgrades, available_upgrades, default=lambda pkg: pkg.serialize())
 
-    return upgradeable
+    return upgradable
 
 
 def search_packages(packages: Dict[str, List[MagicMirrorPackage]], query: str, case_sensitive: bool = False, by_title_only: bool = False) -> Dict[str, List[MagicMirrorPackage]]:
@@ -627,7 +627,7 @@ def check_for_magicmirror_updates() -> bool:
         else:
             upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR] = update_available
 
-        json.dump(upgrades, available_upgrades)
+        json.dump(upgrades, available_upgrades, default=lambda pkg: pkg.serialize())
 
     return update_available
 

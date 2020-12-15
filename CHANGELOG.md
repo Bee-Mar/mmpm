@@ -257,3 +257,7 @@
 ## Version 2.08
 
 - Bug fix (#58) custom.css
+
+## Version 2.09
+
+- Added additional serialization to reduce loading package data bugs

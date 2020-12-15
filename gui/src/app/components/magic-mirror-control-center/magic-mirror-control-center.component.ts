@@ -92,10 +92,10 @@ export class MagicMirrorControlCenterComponent implements OnInit {
 
       this.socket.on("error", (data: any) => console.log(data));
 
-      this.dataStore.upgradeablePackages.subscribe((upgradeable: any) => {
+      this.dataStore.upgradablePackages.subscribe((upgradable: any) => {
         this.tiles.forEach((t) => {
           if (t.url === URLS.GET.MAGICMIRROR.UPGRADE) {
-            t.disabled = !upgradeable.MagicMirror;
+            t.disabled = !upgradable.MagicMirror;
             t.badge = t.disabled ? null : 1;
 
             if (!mmpmIsDockerImage) {

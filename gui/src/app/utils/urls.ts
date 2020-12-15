@@ -6,7 +6,7 @@ export const URLS = {
       get INSTALLED() { return `${this._ROOT}/installed`; },
       get EXTERNAL() { return `${this._ROOT}/external`; },
       get UPDATE() { return `${this._ROOT}/update`; },
-      get UPGRADEABLE() { return `${this._ROOT}/upgradeable`; },
+      get UPGRADABLE() { return `${this._ROOT}/upgradable`; },
     },
 
     MAGICMIRROR: {

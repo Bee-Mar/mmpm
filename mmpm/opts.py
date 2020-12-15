@@ -261,10 +261,10 @@ def get_user_args() -> object:
     )
 
     list_parser.add_argument(
-        '--upgradeable',
+        '--upgradable',
         action='store_true',
         help='list packages that have available upgrades',
-        dest='upgradeable'
+        dest='upgradable'
     )
 
     # OPEN SUBCOMMANDS

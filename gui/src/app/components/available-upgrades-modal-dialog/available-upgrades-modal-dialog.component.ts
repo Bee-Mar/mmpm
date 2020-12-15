@@ -41,7 +41,7 @@ export class AvailableUpgradesModalDialogComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.dataStore.upgradeablePackages.subscribe((upgradeable: any) => this.availableUpgrades = upgradeable);
+    this.dataStore.upgradablePackages.subscribe((upgradable: any) => this.availableUpgrades = upgradable);
   }
 
   public upgradePackages(selection: MatListOption[]): void {

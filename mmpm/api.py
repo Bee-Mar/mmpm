@@ -270,8 +270,8 @@ def packages_update() -> Response:
 
     return Response(json.dumps(True))
 
-@app.route(api('packages/upgradeable'), methods=[mmpm.consts.GET])
-def packages_upgradeable() -> Response:
+@app.route(api('packages/upgradable'), methods=[mmpm.consts.GET])
+def packages_upgradable() -> Response:
     '''
     Sends back a JSON object detailing which packages/applications have available upgrades
 
@@ -281,7 +281,7 @@ def packages_upgradeable() -> Response:
     Returns:
         response (flask.Response): the object containing which packages/applications have available upgrades
     '''
-    mmpm.utils.log.info('Request to get upgradeable packages')
+    mmpm.utils.log.info('Request to get upgradable packages')
     available_upgrades: dict = mmpm.core.get_available_upgrades()
 
     MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV)))

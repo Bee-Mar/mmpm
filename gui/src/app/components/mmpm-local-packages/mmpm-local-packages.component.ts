@@ -45,8 +45,8 @@ export class MMPMLocalPackagesComponent implements OnInit {
   public dataSource: MatTableDataSource<MagicMirrorPackage>;
   public selection = new SelectionModel<MagicMirrorPackage>(true, []);
   public snackbarSettings: object = { duration: 5000 };
-  public isUpgradeable: Array<boolean>;
-  public upgradeablePackages: Array<MagicMirrorPackage>;
+  public isUpgradable: Array<boolean>;
+  public upgradablePackages: Array<MagicMirrorPackage>;
   public canSelectUpgradeButton: boolean = false;
 
   public ngOnInit(): void {
@@ -61,17 +61,17 @@ export class MMPMLocalPackagesComponent implements OnInit {
 
   private setupTableData(): void {
     this.installedPackagesSubscription = this.dataStore.installedPackages.subscribe((pkgs) => {
-      this.isUpgradeable = new Array<boolean>(pkgs.length);
-      this.upgradeablePackages = new Array<MagicMirrorPackage>();
-      this.isUpgradeable.fill(false);
+      this.isUpgradable = new Array<boolean>(pkgs.length);
+      this.upgradablePackages = new Array<MagicMirrorPackage>();
+      this.isUpgradable.fill(false);
 
-      this.dataStore.upgradeablePackages.subscribe((upgradeable) => {
-        this.upgradeablePackages = upgradeable?.packages;
+      this.dataStore.upgradablePackages.subscribe((upgradable) => {
+        this.upgradablePackages = upgradable?.packages;
 
-        this.upgradeablePackages?.forEach((upgradeablePackage: MagicMirrorPackage) => {
+        this.upgradablePackages?.forEach((upgradablePackage: MagicMirrorPackage) => {
           pkgs.forEach((installedPkg: MagicMirrorPackage, index: number) => {
-            if (this.mmpmUtility.isSamePackage(upgradeablePackage, installedPkg)) {
-              this.isUpgradeable[index] = true;
+            if (this.mmpmUtility.isSamePackage(upgradablePackage, installedPkg)) {
+              this.isUpgradable[index] = true;
             }
           });
         });

@@ -15,7 +15,7 @@ from typing import List, Dict
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 get_env = mmpm.utils.get_env
 
-__version__ = 2.08
+__version__ = 2.09
 
 
 def main(argv):
@@ -71,7 +71,7 @@ def main(argv):
             mmpm.core.display_categories(packages, title_only=args.title_only)
         elif args.gui_url:
             print(mmpm.core.get_web_interface_url())
-        elif args.upgradeable:
+        elif args.upgradable:
             mmpm.core.display_available_upgrades()
         else:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
@@ -143,7 +143,7 @@ def main(argv):
             print('All packages are up to date')
         else:
             message: str = f"{total} {'upgrade' if total == 1 else 'upgrades'} {'is' if total == 1 else 'are'} available"
-            print(f'{message}. Run `mmpm list --upgradeable` for details')
+            print(f'{message}. Run `mmpm list --upgradable` for details')
 
     elif args.subcmd == mmpm.opts.UPGRADE:
         mmpm.core.upgrade_available_packages_and_applications(args.assume_yes, additional_args)

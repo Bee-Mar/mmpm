@@ -10,7 +10,7 @@ import { ActiveModule } from "src/app/interfaces/interfaces";
 import { MatSlideToggleChange } from "@angular/material/slide-toggle";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { SelectModalComponent } from "src/app/components/select-modal/select-modal.component";
-import io from "socket.io-client";
+import { io } from "socket.io-client";
 
 interface Tile {
   icon: string;

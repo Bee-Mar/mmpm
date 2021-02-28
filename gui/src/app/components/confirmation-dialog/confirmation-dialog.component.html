@@ -1,15 +1,13 @@
-<div style="display: flex; align-items: center; justify-content: center;">
-  <h3>{{ customMessage ? 'Are you sure? ' + customMessage : 'Are you sure?' }}</h3>
+<div style="display: flex; align-items: center; justify-content: center">
+  <h3>
+    {{ customMessage ? "Are you sure? " + customMessage : "Are you sure?" }}
+  </h3>
 </div>
-<div style="display: flex; align-items: center; justify-content: center;">
-  <button class="remote-button" mat-raised-button color="primary" (click)="onConfirm(true)" style="margin-right: 5em;">
-    <mat-icon>
-      done
-    </mat-icon>
+<div style="display: flex; align-items: center; justify-content: center">
+  <button class="remote-button" mat-raised-button color="primary" (click)="onConfirm(true)" style="margin-right: 5em">
+    <mat-icon> done </mat-icon>
   </button>
   <button class="remote-button" mat-raised-button color="accent" (click)="onConfirm(false)">
-    <mat-icon>
-      clear
-    </mat-icon>
+    <mat-icon> clear </mat-icon>
   </button>
 </div>

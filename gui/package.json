@@ -2,12 +2,15 @@
   "name": "gui",
   "version": "0.0.0",
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "test": "ng test",
-    "lint": "ng lint",
-    "e2e": "ng e2e"
+    "ng": "./node_modules/@angular/cli/bin/ng",
+    "start": "./node_modules/@angular/cli/bin/ng serve",
+    "serve": "./node_modules/@angular/cli/bin/ng serve",
+    "serve-prod": "./node_modules/@angular/cli/bin/ng serve --prod",
+    "build": "./node_modules/@angular/cli/bin/ng build",
+    "test": "./node_modules/@angular/cli/bin/ng test",
+    "lint": "./node_modules/@angular/cli/bin/ng lint",
+    "e2e": "./node_modules/@angular/cli/bin/ng e2e",
+    "format": "for file in src/app; do ./node_modules/prettier/bin-prettier.js --write $file; done"
   },
   "private": true,
   "dependencies": {
@@ -50,6 +53,7 @@
     "protractor": "~5.4.3",
     "ts-node": "~8.3.0",
     "tslint": "~5.18.0",
-    "typescript": "~3.7.5"
+    "typescript": "~3.7.5",
+    "prettier": "^2.1.2"
   }
 }

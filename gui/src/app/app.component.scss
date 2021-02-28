@@ -6,13 +6,14 @@
   min-height: 700px;
 }
 
-#homepage:link, #homepage:visited {
+#homepage:link,
+#homepage:visited {
   color: white;
   text-decoration: none;
 }
 
 #homepage:hover {
-  color: #ADADAD;
+  color: #adadad;
 }
 
 #homepage:active {
@@ -21,7 +22,7 @@
 }
 
 #banner {
-  font-family: 'Permanent Marker';
+  font-family: "Permanent Marker";
   font-size: 42px;
   text-shadow: 3px 3px gray;
 }
@@ -33,4 +34,3 @@
 #paypal:hover {
   background-color: #002c8b;
 }
-

@@ -7,19 +7,9 @@ import { PackageDetailsModalComponent } from "src/app/components/package-details
 import { TooltipPosition } from "@angular/material/tooltip";
 
 export class MagicMirrorTableUtility {
-  constructor(
-    private selection: SelectionModel<MagicMirrorPackage>,
-    private dataSource: MatTableDataSource<MagicMirrorPackage>,
-    private sort: MatSort,
-    public dialog: MatDialog,
-  ) {}
+  constructor(private selection: SelectionModel<MagicMirrorPackage>, private dataSource: MatTableDataSource<MagicMirrorPackage>, private sort: MatSort, public dialog: MatDialog) {}
 
-  public displayedColumns: string[] = [
-    "select",
-    "category",
-    "title",
-    "description"
-  ];
+  public displayedColumns: string[] = ["select", "category", "title", "description"];
 
   public tooltipPosition: TooltipPosition[] = ["below"];
 
@@ -69,13 +59,11 @@ export class MagicMirrorTableUtility {
 
   public toggleSelectAll(): void {
     if (this.dataSource?.filteredData?.length) {
-      this.isAllSelected(this.dataSource?.filteredData) ?
-        this.selection.clear() : this.dataSource?.filteredData.forEach((row) => this.selection.select(row));
+      this.isAllSelected(this.dataSource?.filteredData) ? this.selection.clear() : this.dataSource?.filteredData.forEach((row) => this.selection.select(row));
       return;
     }
 
-    this.isAllSelected(this.dataSource.data) ?
-    this.selection.clear() : this.dataSource?.data.forEach((row) => this.selection.select(row));
+    this.isAllSelected(this.dataSource.data) ? this.selection.clear() : this.dataSource?.data.forEach((row) => this.selection.select(row));
   }
 
   public checkboxLabel(row?: MagicMirrorPackage): string {
@@ -86,8 +74,7 @@ export class MagicMirrorTableUtility {
   public trimDescription(description: string): string {
     const maxDescriptionLength: number = 75;
 
-    if (description.length <= maxDescriptionLength)
-      return description;
+    if (description.length <= maxDescriptionLength) return description;
 
     return `${description.slice(0, maxDescriptionLength - 3)} ...`;
   }
@@ -101,7 +88,7 @@ export class MagicMirrorTableUtility {
       width: "45vw",
       height: "50vh",
       disableClose: true,
-      data: pkg
+      data: pkg,
     });
   }
 
@@ -111,4 +98,3 @@ export class MagicMirrorTableUtility {
     el.value = "";
   }
 }
-

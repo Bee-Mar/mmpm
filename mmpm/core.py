@@ -740,7 +740,7 @@ def install_mmpm_gui(assume_yes: bool = False) -> None:
 
     print(mmpm.consts.GREEN_CHECK_MARK)
 
-    print(f'{mmpm.consts.GREEN_PLUS} Cleaning confiuration files and resetting SystemdD daemons')
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Cleaning configuration files and resetting SystemdD daemons')
     print(mmpm.consts.GREEN_CHECK_MARK)
 
     os.system('rm -rf /tmp/etc')
@@ -842,7 +842,7 @@ def install_mmpm_as_magicmirror_module(assume_yes: bool = False) -> str:
         return str(error)
 
     print(mmpm.consts.GREEN_CHECK_MARK)
-    print('Run `mmpm open --config` and add { module: "mmpm" } to the modules array, then restart MagicMirror if running')
+    print('Run `mmpm open --config` and append { module: "mmpm" } to the modules array, then restart MagicMirror if running')
 
     return ''
 

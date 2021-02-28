@@ -4,13 +4,13 @@ import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { ActiveProcessCountService } from "src/app/services/active-process-count.service";
 
 @Injectable({
-  providedIn: "root"
+  providedIn: "root",
 })
 export class MMPMUtility {
-  constructor(public activeProcessService: ActiveProcessCountService){}
+  constructor(public activeProcessService: ActiveProcessCountService) {}
 
   public isSamePackage(a: MagicMirrorPackage, b: MagicMirrorPackage): boolean {
-      return a.title === b.title && a.repository === b.repository && a.author === b.author;
+    return a.title === b.title && a.repository === b.repository && a.author === b.author;
   }
 
   public isSamePackageStrictComparison(a: MagicMirrorPackage, b: MagicMirrorPackage): boolean {
@@ -22,31 +22,35 @@ export class MMPMUtility {
   }
 
   public setCookie(name: string, value: any) {
-    Cookie.set(name, String(value), {expires: 1825, path: ""});
+    Cookie.set(name, String(value), { expires: 1825, path: "" });
   }
 
   public basicDialogSettings(data?: any): object {
-    return data ? {
-      width: "75vw",
-      height: "75vh",
-      disableClose: true,
-      data
-    } : {
-      width: "75vw",
-      height: "75vh",
-      disableClose: true
-    };
+    return data
+      ? {
+          width: "75vw",
+          height: "75vh",
+          disableClose: true,
+          data,
+        }
+      : {
+          width: "75vw",
+          height: "75vh",
+          disableClose: true,
+        };
   }
 
   public saveProcessIds(pkgs: MagicMirrorPackage[], action: string): Array<number> {
     let ids: Array<number> = new Array<number>();
 
     for (let pkg of pkgs) {
-      ids.push(this.activeProcessService.insertProcess({
-        name: pkg.title,
-        action,
-        startTime: Date().toString()
-      }));
+      ids.push(
+        this.activeProcessService.insertProcess({
+          name: pkg.title,
+          action,
+          startTime: Date().toString(),
+        }),
+      );
     }
 
     return ids;
@@ -61,6 +65,6 @@ export class MMPMUtility {
   }
 
   public openUrl(url: string) {
-    window.open(url, '_blank');
+    window.open(url, "_blank");
   }
 }

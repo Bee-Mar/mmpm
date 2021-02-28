@@ -1,65 +1,53 @@
 <h2 mat-dialog-title style="text-align: center">Available Upgrades</h2>
-<div
-  class="mat-typography"
-  style="text-align: left; margin-left: 3em; overflow-y: auto; height: 70%;"
->
-<mat-selection-list #packageUpgradeSelections>
-  <div mat-subheader *ngIf="availableUpgrades?.mmpm || availableUpgrades?.MagicMirror">Applications</div>
+<div class="mat-typography" style="text-align: left; margin-left: 3em; overflow-y: auto; height: 70%">
+  <mat-selection-list #packageUpgradeSelections>
+    <div mat-subheader *ngIf="availableUpgrades?.mmpm || availableUpgrades?.MagicMirror">Applications</div>
 
-  <mat-list-option *ngIf="availableUpgrades?.mmpm" [disabled]="true">
-    <span>
-    <mat-icon color="accent" style="font-size: 18px; margin-top: 5px; vertical-align: middle;">
-      devices
-    </mat-icon>
-    MMPM - <strong style="color: #33cc33"> Upgrade must be performed through CLI </strong>
-  </span>
-  </mat-list-option>
+    <mat-list-option *ngIf="availableUpgrades?.mmpm" [disabled]="true">
+      <span>
+        <mat-icon color="accent" style="font-size: 18px; margin-top: 5px; vertical-align: middle"> devices </mat-icon>
+        MMPM -
+        <strong style="color: #33cc33"> Upgrade must be performed through CLI </strong>
+      </span>
+    </mat-list-option>
 
-  <mat-list-option *ngIf="availableUpgrades?.MagicMirror" [value]="MagicMirror">
-    <span>
-    <mat-icon color="accent" style="font-size: 18px; margin-top: 5px; vertical-align: middle;">
-      devices
-    </mat-icon>
-    MagicMirror
-    </span>
-  </mat-list-option>
+    <mat-list-option *ngIf="availableUpgrades?.MagicMirror" [value]="MagicMirror">
+      <span>
+        <mat-icon color="accent" style="font-size: 18px; margin-top: 5px; vertical-align: middle"> devices </mat-icon>
+        MagicMirror
+      </span>
+    </mat-list-option>
 
-  <mat-divider *ngIf="availableUpgrades?.packages?.length"></mat-divider>
+    <mat-divider *ngIf="availableUpgrades?.packages?.length"></mat-divider>
 
-  <div mat-subheader *ngIf="availableUpgrades?.packages?.length">Packages</div>
-  <mat-list-option *ngFor="let pkg of availableUpgrades?.packages | keyvalue" [value]="pkg.value">
-    <div>
-      <mat-icon color="accent" style="font-size: 18px; margin-top: 5px; vertical-align: middle;">
-        local_mall
-      </mat-icon>
-      <span> {{ pkg.value.title }}</span>
+    <div mat-subheader *ngIf="availableUpgrades?.packages?.length">Packages</div>
+    <mat-list-option *ngFor="let pkg of availableUpgrades?.packages | keyvalue" [value]="pkg.value">
+      <div>
+        <mat-icon color="accent" style="font-size: 18px; margin-top: 5px; vertical-align: middle"> local_mall </mat-icon>
+        <span> {{ pkg.value.title }}</span>
+      </div>
+    </mat-list-option>
+
+    <div
+      *ngIf="!availableUpgrades?.MagicMirror && !availableUpgrades?.mmpm && !availableUpgrades?.packages?.length"
+      style="text-align: center; margin-right: 3em; margin-top: 10em"
+    >
+      No upgrades available
     </div>
-  </mat-list-option>
-
-  <div
-    *ngIf="!availableUpgrades?.MagicMirror && !availableUpgrades?.mmpm && !availableUpgrades?.packages?.length"
-    style="text-align: center; margin-right: 3em; margin-top: 10em;"
-  >
-    No upgrades available
-  </div>
-</mat-selection-list>
+  </mat-selection-list>
 </div>
 <mat-dialog-actions align="center">
   <button
     mat-raised-button
     class="remote-button"
     color="primary"
-    style="margin-right: 5em;"
+    style="margin-right: 5em"
     (click)="upgradePackages(packageUpgradeSelections?.selectedOptions?.selected)"
     [disabled]="!packageUpgradeSelections?.selectedOptions?.selected?.length"
   >
-    <mat-icon>
-      done
-    </mat-icon>
+    <mat-icon> done </mat-icon>
   </button>
   <button mat-raised-button mat-dialog-close color="accent" class="remote-button">
-    <mat-icon>
-      close
-    </mat-icon>
+    <mat-icon> close </mat-icon>
   </button>
 </mat-dialog-actions>

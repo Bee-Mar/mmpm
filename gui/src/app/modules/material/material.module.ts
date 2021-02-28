@@ -42,13 +42,12 @@ const MATERIAL_MODULES: any = [
   MatSlideToggleModule,
   MatBadgeModule,
   MatSelectModule,
-  MatListModule
-
-]
+  MatListModule,
+];
 
 @NgModule({
   declarations: [],
   imports: MATERIAL_MODULES,
-  exports: MATERIAL_MODULES
+  exports: MATERIAL_MODULES,
 })
-export class MaterialModule { }
+export class MaterialModule {}

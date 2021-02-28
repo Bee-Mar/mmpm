@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { TerminalStyledPopUpWindowComponent } from './terminal-styled-pop-up-window.component';
+import { TerminalStyledPopUpWindowComponent } from "./terminal-styled-pop-up-window.component";
 
-describe('TerminalStyledPopUpWindowComponent', () => {
+describe("TerminalStyledPopUpWindowComponent", () => {
   let component: TerminalStyledPopUpWindowComponent;
   let fixture: ComponentFixture<TerminalStyledPopUpWindowComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ TerminalStyledPopUpWindowComponent ]
-    })
-    .compileComponents();
+      declarations: [TerminalStyledPopUpWindowComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('TerminalStyledPopUpWindowComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

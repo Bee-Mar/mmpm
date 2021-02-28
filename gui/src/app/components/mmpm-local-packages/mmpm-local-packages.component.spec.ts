@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { MMPMLocalPackagesComponent } from './mmpmlocal-packages.component';
+import { MMPMLocalPackagesComponent } from "./mmpmlocal-packages.component";
 
-describe('MMPMLocalPackagesComponent', () => {
+describe("MMPMLocalPackagesComponent", () => {
   let component: MMPMLocalPackagesComponent;
   let fixture: ComponentFixture<MMPMLocalPackagesComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ MMPMLocalPackagesComponent ]
-    })
-    .compileComponents();
+      declarations: [MMPMLocalPackagesComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('MMPMLocalPackagesComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

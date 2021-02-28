@@ -3,7 +3,7 @@ import { Subject, Observable } from "rxjs";
 import { ActiveProcess } from "src/app/interfaces/interfaces";
 
 @Injectable({
-  providedIn: "root"
+  providedIn: "root",
 })
 export class ActiveProcessCountService {
   private activeProcesses: Map<number, ActiveProcess> = new Map<number, ActiveProcess>();

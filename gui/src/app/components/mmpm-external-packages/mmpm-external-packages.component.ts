@@ -18,22 +18,13 @@ import { ConfirmationDialogComponent } from "src/app/components/confirmation-dia
 @Component({
   selector: "app-mmpm-external-packages",
   templateUrl: "./mmpm-external-packages.component.html",
-  styleUrls: [
-    "./mmpm-external-packages.component.scss",
-    "../../shared-styles/shared-table-styles.scss"
-  ],
+  styleUrls: ["./mmpm-external-packages.component.scss", "../../shared-styles/shared-table-styles.scss"],
 })
 export class MMPMExternalPackagesComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
 
-  constructor(
-    public dialog: MatDialog,
-    private dataStore: DataStoreService,
-    private api: RestApiService,
-    private mSnackBar: MatSnackBar,
-    private mmpmUtility: MMPMUtility,
-  ) {}
+  constructor(public dialog: MatDialog, private dataStore: DataStoreService, private api: RestApiService, private mSnackBar: MatSnackBar, private mmpmUtility: MMPMUtility) {}
 
   public packages: MagicMirrorPackage[];
   private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this.mSnackBar);
@@ -69,7 +60,8 @@ export class MMPMExternalPackagesComponent implements OnInit {
 
   public onAddExternalPackage(): void {
     const dialogRef = this.dialog.open(ExternalPackageRegistrationDialogComponent, {
-      minWidth: "60vw", disableClose: true
+      minWidth: "60vw",
+      disableClose: true,
     });
 
     dialogRef.afterClosed().subscribe((newExternalPackage: MagicMirrorPackage) => {
@@ -81,9 +73,9 @@ export class MMPMExternalPackagesComponent implements OnInit {
 
       const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
         data: {
-          message: `${newExternalPackage.title} will be added to the database`
+          message: `${newExternalPackage.title} will be added to the database`,
         },
-        disableClose: true
+        disableClose: true,
       });
 
       confirmationDialogRef.afterClosed().subscribe((yes) => {
@@ -93,28 +85,28 @@ export class MMPMExternalPackagesComponent implements OnInit {
 
         let ids: Array<number> = this.mmpmUtility.saveProcessIds(this.selection.selected, "Adding External Source");
 
-        this.api.addExternalPackage(newExternalPackage).then((error) => {
-          console.log(error["error"]);
+        this.api
+          .addExternalPackage(newExternalPackage)
+          .then((error) => {
+            console.log(error["error"]);
 
-          const message = error["error"] === "no_error" ?
-            `Successfully added '${newExternalPackage.title}' to 'External Packages'` :
-            "Failed to add new source";
+            const message = error["error"] === "no_error" ? `Successfully added '${newExternalPackage.title}' to 'External Packages'` : "Failed to add new source";
 
-          this.mmpmUtility.deleteProcessIds(ids);
-          this.dataStore.retrieveMagicMirrorPackageData(true);
-          this.snackbar.success(message);
-        }).catch((error) => console.log(error));
+            this.mmpmUtility.deleteProcessIds(ids);
+            this.dataStore.retrieveMagicMirrorPackageData(true);
+            this.snackbar.success(message);
+          })
+          .catch((error) => console.log(error));
       });
-
     });
   }
 
   public onRemoveExternalPackage(): void {
     const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
-        message: "The selected external packages will be removed from the database"
+        message: "The selected external packages will be removed from the database",
       },
-      disableClose: true
+      disableClose: true,
     });
 
     confirmationDialogRef.afterClosed().subscribe((yes) => {
@@ -125,12 +117,15 @@ export class MMPMExternalPackagesComponent implements OnInit {
       if (this.selection.selected.length) {
         this.snackbar.notify("Executing ... ");
 
-        this.api.removeExternalPackage(this.selection.selected).then((_) => {
-          this.dataStore.retrieveMagicMirrorPackageData(true);
-          this.snackbar.success("Process complete!");
-        }).catch((error) => {
-          console.log(error);
-        });
+        this.api
+          .removeExternalPackage(this.selection.selected)
+          .then((_) => {
+            this.dataStore.retrieveMagicMirrorPackageData(true);
+            this.snackbar.success("Process complete!");
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
     });
   }

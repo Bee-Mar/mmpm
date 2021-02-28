@@ -1,65 +1,67 @@
 <h2 mat-dialog-title style="text-align: center">
   Installation Conflict
-  <mat-icon style="color: yellow; vertical-align: middle;">report_problem</mat-icon>
+  <mat-icon style="color: yellow; vertical-align: middle">report_problem</mat-icon>
 </h2>
-<div style="text-align: center;">
+<div style="text-align: center">
   <mat-dialog-content class="mat-typography">
     <div *ngIf="data?.matchesInstalledTitles?.length">
       <h3>
-        <strong>
-          The following selected packages match an already installed package's title:
-        </strong>
+        <strong> The following selected packages match an already installed package's title: </strong>
       </h3>
-      <div style="margin: 0 auto; display: inline-block;">
+      <div style="margin: 0 auto; display: inline-block">
         <mat-list>
           <mat-list-item *ngFor="let pkg of data.matchesInstalledTitles | keyvalue">
-            <mat-icon color="accent" style="font-size: 18px; margin-top: 5px; vertical-align: middle;">
-              local_mall
-            </mat-icon>
+            <mat-icon color="accent" style="font-size: 18px; margin-top: 5px; vertical-align: middle"> local_mall </mat-icon>
             {{ pkg.value.title }}
           </mat-list-item>
         </mat-list>
       </div>
-      <br>
-      <br>
-      <div style="text-align: center;">
+      <br />
+      <br />
+      <div style="text-align: center">
         <strong>Please remove the conflicting packages first</strong>
       </div>
-      <br>
+      <br />
     </div>
 
     <div *ngIf="data?.matchesSelectedTitles?.length">
       <h3>
-        <strong>
-          The following selected packages have conflicting titles:
-        </strong>
+        <strong> The following selected packages have conflicting titles: </strong>
       </h3>
-      <div style="margin: 0 auto; display: inline-block;">
-        <div *ngFor="let pkg of data.matchesSelectedTitles | keyvalue" style="margin-bottom: 1em; text-align: left;" (click)="onSelection(pkg)">
-          <mat-checkbox color="primary" (click)="$event.stopPropagation()" (change)="$event ? onSelection(pkg) : null" [checked]="selection.isSelected(pkg)" [disabled]="disable[pkg.key]">
+      <div style="margin: 0 auto; display: inline-block">
+        <div *ngFor="let pkg of data.matchesSelectedTitles | keyvalue" style="margin-bottom: 1em; text-align: left" (click)="onSelection(pkg)">
+          <mat-checkbox
+            color="primary"
+            (click)="$event.stopPropagation()"
+            (change)="$event ? onSelection(pkg) : null"
+            [checked]="selection.isSelected(pkg)"
+            [disabled]="disable[pkg.key]"
+          >
             {{ pkg.value.title }} (<a href="{{ pkg.value.repository }}" target="_blank">{{ pkg.value.repository }})</a>)
           </mat-checkbox>
         </div>
       </div>
-      <br>
-      <div style="text-align: center;">
-        <strong>
-          Please only select unique titles from the above options
-        </strong>
+      <br />
+      <div style="text-align: center">
+        <strong> Please only select unique titles from the above options </strong>
       </div>
     </div>
   </mat-dialog-content>
 </div>
 
 <mat-dialog-actions align="center">
-  <button *ngIf="data?.matchesSelectedTitles?.length" [disabled]="!selection?.selected?.length" mat-raised-button color="accent" matTooltip="Submit" (click)="onSubmit()" style="margin-right: 5em;">
-    <mat-icon>
-      done
-    </mat-icon>
+  <button
+    *ngIf="data?.matchesSelectedTitles?.length"
+    [disabled]="!selection?.selected?.length"
+    mat-raised-button
+    color="accent"
+    matTooltip="Submit"
+    (click)="onSubmit()"
+    style="margin-right: 5em"
+  >
+    <mat-icon> done </mat-icon>
   </button>
   <button mat-raised-button (click)="onCancel()" color="primary">
-    <mat-icon>
-      close
-    </mat-icon>
+    <mat-icon> close </mat-icon>
   </button>
 </mat-dialog-actions>

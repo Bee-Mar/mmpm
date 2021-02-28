@@ -8,7 +8,7 @@ describe("MagicMirrorConfigEditorComponent", () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [MagicMirrorConfigEditorComponent]
+      declarations: [MagicMirrorConfigEditorComponent],
     }).compileComponents();
   }));
 

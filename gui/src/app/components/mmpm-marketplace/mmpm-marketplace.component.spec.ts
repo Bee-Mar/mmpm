@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { MMPMMarketplaceComponent } from './mmpmmarketplace.component';
+import { MMPMMarketplaceComponent } from "./mmpmmarketplace.component";
 
-describe('MMPMMarketplaceComponent', () => {
+describe("MMPMMarketplaceComponent", () => {
   let component: MMPMMarketplaceComponent;
   let fixture: ComponentFixture<MMPMMarketplaceComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ MMPMMarketplaceComponent ]
-    })
-    .compileComponents();
+      declarations: [MMPMMarketplaceComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('MMPMMarketplaceComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

@@ -8,14 +8,12 @@ describe("ExternalPackageRegistrationDialogComponent", () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ExternalPackageRegistrationDialogComponent]
+      declarations: [ExternalPackageRegistrationDialogComponent],
     }).compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(
-      ExternalPackageRegistrationDialogComponent
-    );
+    fixture = TestBed.createComponent(ExternalPackageRegistrationDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

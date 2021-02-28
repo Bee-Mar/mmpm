@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { AvailableUpgradesModalDialogComponent } from './available-upgrades-modal-dialog.component';
+import { AvailableUpgradesModalDialogComponent } from "./available-upgrades-modal-dialog.component";
 
-describe('AvailableUpgradesModalDialogComponent', () => {
+describe("AvailableUpgradesModalDialogComponent", () => {
   let component: AvailableUpgradesModalDialogComponent;
   let fixture: ComponentFixture<AvailableUpgradesModalDialogComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ AvailableUpgradesModalDialogComponent ]
-    })
-    .compileComponents();
+      declarations: [AvailableUpgradesModalDialogComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('AvailableUpgradesModalDialogComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

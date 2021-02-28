@@ -7,14 +7,10 @@ import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 @Component({
   selector: "app-installation-conflict-resolution-dialog",
   templateUrl: "./installation-conflict-resolution-dialog.component.html",
-  styleUrls: ["./installation-conflict-resolution-dialog.component.scss"]
+  styleUrls: ["./installation-conflict-resolution-dialog.component.scss"],
 })
 export class InstallationConflictResolutionDialogComponent implements OnInit {
-  constructor(
-    private dialogRef: MatDialogRef<InstallationConflictResolutionDialogComponent>,
-    public dialog: MatDialog,
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
+  constructor(private dialogRef: MatDialogRef<InstallationConflictResolutionDialogComponent>, public dialog: MatDialog, @Inject(MAT_DIALOG_DATA) public data: any) {}
 
   public selection: SelectionModel<any>;
   public disable: Array<boolean>;
@@ -29,9 +25,9 @@ export class InstallationConflictResolutionDialogComponent implements OnInit {
     if (this.data?.matchesSelectedTitles?.length) {
       const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
         data: {
-          message: "The installation process will be cancelled"
+          message: "The installation process will be cancelled",
         },
-        disableClose: true
+        disableClose: true,
       });
 
       confirmationDialogRef.afterClosed().subscribe((yes) => {
@@ -39,7 +35,6 @@ export class InstallationConflictResolutionDialogComponent implements OnInit {
           this.dialogRef.close();
         }
       });
-
     } else {
       this.dialogRef.close();
     }
@@ -48,17 +43,17 @@ export class InstallationConflictResolutionDialogComponent implements OnInit {
   public onSubmit(): void {
     const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
-        message: "The following will be installed"
+        message: "The following will be installed",
       },
-      disableClose: true
+      disableClose: true,
     });
 
     confirmationDialogRef.afterClosed().subscribe((yes) => {
       if (!yes) this.dialogRef.close();
 
       for (const selected of this.selection.selected) {
-        let index = this.data?.matchesSelectedTitles?.findIndex((pkg: MagicMirrorPackage) =>
-          pkg.title === selected.value.title && pkg.author === selected.value.author && pkg.repository === selected.value.repository
+        let index = this.data?.matchesSelectedTitles?.findIndex(
+          (pkg: MagicMirrorPackage) => pkg.title === selected.value.title && pkg.author === selected.value.author && pkg.repository === selected.value.repository,
         );
 
         this.data?.matchesSelectedTitles?.splice(index, 1);
@@ -77,8 +72,7 @@ export class InstallationConflictResolutionDialogComponent implements OnInit {
     if (allCanBeSelected) {
       match = (p: MagicMirrorPackage) => p.title === pkg.value.title;
     } else {
-      match = (p: MagicMirrorPackage) =>
-        p.title === pkg.value.title && p.repository !== pkg.value.repository && p.author !== pkg.value.author;
+      match = (p: MagicMirrorPackage) => p.title === pkg.value.title && p.repository !== pkg.value.repository && p.author !== pkg.value.author;
     }
 
     for (const index in this.data?.matchesSelectedTitles) {

@@ -6,7 +6,7 @@ import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { URLS } from "src/app/utils/urls";
 
 @Injectable({
-  providedIn: "root"
+  providedIn: "root",
 })
 export class DataStoreService {
   constructor(private api: RestApiService, private mmpmUtility: MMPMUtility) {}
@@ -39,7 +39,7 @@ export class DataStoreService {
             description: pkg["description"],
             author: pkg["author"],
             repository: pkg["repository"],
-            directory: pkg["directory"]
+            directory: pkg["directory"],
           });
         }
       }
@@ -49,47 +49,63 @@ export class DataStoreService {
   }
 
   public retrieveMagicMirrorPackageData(update: boolean = true): void {
-    this.api.retrieve(URLS.GET.MMPM.ENVIRONMENT_VARS).then((envVars: any) => {
-      let tempMap = new Map<string, string>();
-      Object.keys(envVars).forEach((key) => tempMap.set(key, envVars[key]));
-      this._mmpmEnvironmentVariables?.next(tempMap);
-    }).catch((error) => console.log(error));
+    this.api
+      .retrieve(URLS.GET.MMPM.ENVIRONMENT_VARS)
+      .then((envVars: any) => {
+        let tempMap = new Map<string, string>();
+        Object.keys(envVars).forEach((key) => tempMap.set(key, envVars[key]));
+        this._mmpmEnvironmentVariables?.next(tempMap);
+      })
+      .catch((error) => console.log(error));
 
-    this.api.retrieve(URLS.GET.PACKAGES.MARKETPLACE).then((marketplace: Array<object>) => {
-      this.api.retrieve(URLS.GET.PACKAGES.INSTALLED).then((installed: Array<object>) => {
-        this.api.retrieve(URLS.GET.PACKAGES.EXTERNAL).then((external: Array<object>) => {
+    this.api
+      .retrieve(URLS.GET.PACKAGES.MARKETPLACE)
+      .then((marketplace: Array<object>) => {
+        this.api
+          .retrieve(URLS.GET.PACKAGES.INSTALLED)
+          .then((installed: Array<object>) => {
+            this.api
+              .retrieve(URLS.GET.PACKAGES.EXTERNAL)
+              .then((external: Array<object>) => {
+                let externalPkgs: Array<MagicMirrorPackage> = this.fill(external);
+                let installedPkgs: Array<MagicMirrorPackage> = this.fill(installed);
+                let marketplacePkgs: Array<MagicMirrorPackage> = this.fill(marketplace);
 
-          let externalPkgs: Array<MagicMirrorPackage> = this.fill(external);
-          let installedPkgs: Array<MagicMirrorPackage> = this.fill(installed);
-          let marketplacePkgs: Array<MagicMirrorPackage> = this.fill(marketplace);
+                let allPackagesInDatabase: Array<MagicMirrorPackage> = [...marketplacePkgs, ...externalPkgs];
 
-          let allPackagesInDatabase: Array<MagicMirrorPackage> = [...marketplacePkgs, ...externalPkgs];
+                // removing all the packages that are currently installed from the list of available packages
+                for (const installedPkg of installedPkgs) {
+                  let index: number = allPackagesInDatabase?.findIndex((available: MagicMirrorPackage) => {
+                    return this.mmpmUtility?.isSamePackageStrictComparison(available, installedPkg);
+                  });
 
-          // removing all the packages that are currently installed from the list of available packages
-          for (const installedPkg of installedPkgs) {
-            let index: number = allPackagesInDatabase?.findIndex((available: MagicMirrorPackage) => {
-              return this.mmpmUtility?.isSamePackageStrictComparison(available, installedPkg);
-            });
+                  if (index > -1) {
+                    allPackagesInDatabase?.splice(index, 1);
+                  }
+                }
 
-            if (index > -1) {
-              allPackagesInDatabase?.splice(index, 1);
-            }
-          }
+                this._marketplacePackages?.next(allPackagesInDatabase);
+                this._installedPackages?.next(installedPkgs);
+                this._externalPackages?.next(externalPkgs);
 
-          this._marketplacePackages?.next(allPackagesInDatabase);
-          this._installedPackages?.next(installedPkgs);
-          this._externalPackages?.next(externalPkgs);
-
-          if (update) {
-            this.api.retrieve(URLS.GET.PACKAGES.UPDATE).then((_) => {
-              this.api.retrieve(URLS.GET.PACKAGES.UPGRADABLE).then((upgradable) => {
-                this._upgradablePackages?.next(upgradable);
-              }).catch((error) => console.log(error));
-            }).catch((error) => console.log(error));
-          }
-
-        }).catch((error) => console.log(error));
-      }).catch((error) => console.log(error));
-    }).catch((error) => console.log(error));
+                if (update) {
+                  this.api
+                    .retrieve(URLS.GET.PACKAGES.UPDATE)
+                    .then((_) => {
+                      this.api
+                        .retrieve(URLS.GET.PACKAGES.UPGRADABLE)
+                        .then((upgradable) => {
+                          this._upgradablePackages?.next(upgradable);
+                        })
+                        .catch((error) => console.log(error));
+                    })
+                    .catch((error) => console.log(error));
+                }
+              })
+              .catch((error) => console.log(error));
+          })
+          .catch((error) => console.log(error));
+      })
+      .catch((error) => console.log(error));
   }
 }

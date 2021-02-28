@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from "@angular/core";
 import { MatDialogRef, MatDialog } from "@angular/material/dialog";
 import { MatListOption } from "@angular/material/list";
 import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
@@ -11,12 +11,11 @@ import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { DataStoreService } from "src/app/services/data-store.service";
 
 @Component({
-  selector: 'app-available-upgrades-modal-dialog',
-  templateUrl: './available-upgrades-modal-dialog.component.html',
-  styleUrls: ['./available-upgrades-modal-dialog.component.scss']
+  selector: "app-available-upgrades-modal-dialog",
+  templateUrl: "./available-upgrades-modal-dialog.component.html",
+  styleUrls: ["./available-upgrades-modal-dialog.component.scss"],
 })
 export class AvailableUpgradesModalDialogComponent implements OnInit {
-
   constructor(
     public dialog: MatDialog,
     private dialogRef: MatDialogRef<AvailableUpgradesModalDialogComponent>,
@@ -24,7 +23,7 @@ export class AvailableUpgradesModalDialogComponent implements OnInit {
     private mSnackBar: MatSnackBar,
     private mmpmUtility: MMPMUtility,
     private dataStore: DataStoreService,
-  ) { }
+  ) {}
 
   private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this.mSnackBar);
   public upgradeMagicMirror: boolean = false;
@@ -41,23 +40,23 @@ export class AvailableUpgradesModalDialogComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.dataStore.upgradablePackages.subscribe((upgradable: any) => this.availableUpgrades = upgradable);
+    this.dataStore.upgradablePackages.subscribe((upgradable: any) => (this.availableUpgrades = upgradable));
   }
 
   public upgradePackages(selection: MatListOption[]): void {
     let selectedPackages: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
 
     selection.forEach((selected) => {
-      selected.value.title === "MagicMirror" ? this.upgradeMagicMirror = true : selectedPackages.push(selected.value);
+      selected.value.title === "MagicMirror" ? (this.upgradeMagicMirror = true) : selectedPackages.push(selected.value);
     });
 
     const numPackages: number = selection.length;
 
     const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
-        message: `${numPackages} ${numPackages === 1 ? "package" : "packages"} will be upgraded, if available`
+        message: `${numPackages} ${numPackages === 1 ? "package" : "packages"} will be upgraded, if available`,
       },
-      disableClose: true
+      disableClose: true,
     });
 
     confirmationDialogRef.afterClosed().subscribe((yes) => {
@@ -71,19 +70,22 @@ export class AvailableUpgradesModalDialogComponent implements OnInit {
 
         this.snackbar.notify("Upgrading packages ...");
 
-        this.api.packagesUpgrade(selectedPackages).then((fails) => {
-          fails = JSON.parse(fails);
+        this.api
+          .packagesUpgrade(selectedPackages)
+          .then((fails) => {
+            fails = JSON.parse(fails);
 
-          if (fails.length) {
-            this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings(fails));
-            this.snackbar.error(`Failed to upgrade ${fails.length} ${fails.length == 1 ? "package" : "packages"}`);
-          } else {
-            this.snackbar.success("Upgraded selected modules successfully!");
-          }
+            if (fails.length) {
+              this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings(fails));
+              this.snackbar.error(`Failed to upgrade ${fails.length} ${fails.length == 1 ? "package" : "packages"}`);
+            } else {
+              this.snackbar.success("Upgraded selected modules successfully!");
+            }
 
-          this.mmpmUtility.deleteProcessIds(ids);
-          this.dataStore.retrieveMagicMirrorPackageData();
-        }).catch((error) => console.log(error));
+            this.mmpmUtility.deleteProcessIds(ids);
+            this.dataStore.retrieveMagicMirrorPackageData();
+          })
+          .catch((error) => console.log(error));
       }
 
       if (this.upgradeMagicMirror) {
@@ -91,18 +93,20 @@ export class AvailableUpgradesModalDialogComponent implements OnInit {
 
         this.snackbar.notify("Upgrading MagicMirror ...");
 
-        this.api.upgradeMagicMirror().then((error) => {
+        this.api
+          .upgradeMagicMirror()
+          .then((error) => {
+            if (error.error.length) {
+              this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings(error.error));
+              this.snackbar.error("Failed to upgrade MagicMirror");
+            } else {
+              this.snackbar.success("Upgraded selected modules successfully!");
+            }
 
-          if (error.error.length) {
-            this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings(error.error));
-            this.snackbar.error("Failed to upgrade MagicMirror");
-          } else {
-            this.snackbar.success("Upgraded selected modules successfully!");
-          }
-
-          this.mmpmUtility.deleteProcessIds(ids);
-          this.dataStore.retrieveMagicMirrorPackageData();
-        }).catch((error) => console.log(error));
+            this.mmpmUtility.deleteProcessIds(ids);
+            this.dataStore.retrieveMagicMirrorPackageData();
+          })
+          .catch((error) => console.log(error));
       }
 
       this.dialogRef.close();

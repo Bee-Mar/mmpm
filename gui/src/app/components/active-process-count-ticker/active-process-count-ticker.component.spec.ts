@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { ActiveProcessCountTickerComponent } from './active-process-count-ticker.component';
+import { ActiveProcessCountTickerComponent } from "./active-process-count-ticker.component";
 
-describe('ActiveProcessCountTickerComponent', () => {
+describe("ActiveProcessCountTickerComponent", () => {
   let component: ActiveProcessCountTickerComponent;
   let fixture: ComponentFixture<ActiveProcessCountTickerComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ActiveProcessCountTickerComponent ]
-    })
-    .compileComponents();
+      declarations: [ActiveProcessCountTickerComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('ActiveProcessCountTickerComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

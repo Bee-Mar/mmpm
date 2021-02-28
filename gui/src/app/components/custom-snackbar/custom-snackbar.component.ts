@@ -5,13 +5,13 @@ import { MatSnackBar, MatSnackBarConfig } from "@angular/material/snack-bar";
   selector: "app-custom-snackbar",
   templateUrl: "./custom-snackbar.component.html",
   styleUrls: ["./custom-snackbar.component.scss"],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class CustomSnackbarComponent implements OnInit {
-  constructor(private snackbar: MatSnackBar) { }
+  constructor(private snackbar: MatSnackBar) {}
 
   private CLOSE: string = "Close";
-  private config: MatSnackBarConfig = {duration: 5000};
+  private config: MatSnackBarConfig = { duration: 5000 };
 
   ngOnInit(): void {}
 

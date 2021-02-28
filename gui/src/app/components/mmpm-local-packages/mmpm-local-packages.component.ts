@@ -18,20 +18,10 @@ import { ConfirmationDialogComponent } from "src/app/components/confirmation-dia
 @Component({
   selector: "app-mmpm-local-packages",
   templateUrl: "./mmpm-local-packages.component.html",
-  styleUrls: [
-    "./mmpm-local-packages.component.scss",
-    "../../shared-styles/shared-table-styles.scss"
-  ],
+  styleUrls: ["./mmpm-local-packages.component.scss", "../../shared-styles/shared-table-styles.scss"],
 })
 export class MMPMLocalPackagesComponent implements OnInit {
-
-  constructor(
-    public dialog: MatDialog,
-    private dataStore: DataStoreService,
-    private api: RestApiService,
-    private mSnackBar: MatSnackBar,
-    private mmpmUtility: MMPMUtility,
-  ) { }
+  constructor(public dialog: MatDialog, private dataStore: DataStoreService, private api: RestApiService, private mSnackBar: MatSnackBar, private mmpmUtility: MMPMUtility) {}
 
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
@@ -100,9 +90,9 @@ export class MMPMLocalPackagesComponent implements OnInit {
 
     const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
-        message: `${numPackages} ${numPackages === 1 ? "package" : "packages"} will be removed`
+        message: `${numPackages} ${numPackages === 1 ? "package" : "packages"} will be removed`,
       },
-      disableClose: true
+      disableClose: true,
     });
 
     confirmationDialogRef.afterClosed().subscribe((yes) => {
@@ -117,22 +107,29 @@ export class MMPMLocalPackagesComponent implements OnInit {
 
       this.selection.clear(); // clear out the checkboxes
 
-      this.api.packagesRemove(selected).then((result: string) => {
-        const failures: Array<object> = JSON.parse(result);
+      this.api
+        .packagesRemove(selected)
+        .then((result: string) => {
+          const failures: Array<object> = JSON.parse(result);
 
-        if (failures.length) {
-          this.dialog.open(TerminalStyledPopUpWindowComponent, this.mmpmUtility.basicDialogSettings({ failures, action: "removing" }));
-          this.snackbar.error(`Failed to remove ${failures.length} ${failures.length == 1 ? "package" : "packages"}`);
+          if (failures.length) {
+            this.dialog.open(
+              TerminalStyledPopUpWindowComponent,
+              this.mmpmUtility.basicDialogSettings({
+                failures,
+                action: "removing",
+              }),
+            );
+            this.snackbar.error(`Failed to remove ${failures.length} ${failures.length == 1 ? "package" : "packages"}`);
+          } else {
+            this.snackbar.success("Removed successfully!");
+          }
 
-        } else {
-          this.snackbar.success("Removed successfully!");
-        }
-
-        this.mmpmUtility.deleteProcessIds(ids);
-        this.tableUtility.clearFilter();
-        this.dataStore.retrieveMagicMirrorPackageData(true);
-
-      }).catch((error) => console.log(error));
+          this.mmpmUtility.deleteProcessIds(ids);
+          this.tableUtility.clearFilter();
+          this.dataStore.retrieveMagicMirrorPackageData(true);
+        })
+        .catch((error) => console.log(error));
     });
   }
 
@@ -141,7 +138,6 @@ export class MMPMLocalPackagesComponent implements OnInit {
   }
 
   public onSelectionChange(row: MagicMirrorPackage): boolean {
-
     console.log(row);
     return this.selection.isSelected(row);
   }

@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { ActiveProcessesModalComponent } from './active-processes-modal.component';
+import { ActiveProcessesModalComponent } from "./active-processes-modal.component";
 
-describe('ActiveProcessesModalComponent', () => {
+describe("ActiveProcessesModalComponent", () => {
   let component: ActiveProcessesModalComponent;
   let fixture: ComponentFixture<ActiveProcessesModalComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ActiveProcessesModalComponent ]
-    })
-    .compileComponents();
+      declarations: [ActiveProcessesModalComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('ActiveProcessesModalComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

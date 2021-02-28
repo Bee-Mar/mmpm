@@ -8,13 +8,10 @@ import { MatDialog } from "@angular/material/dialog";
 @Component({
   selector: "app-active-process-count-ticker",
   templateUrl: "./active-process-count-ticker.component.html",
-  styleUrls: ["./active-process-count-ticker.component.scss"]
+  styleUrls: ["./active-process-count-ticker.component.scss"],
 })
 export class ActiveProcessCountTickerComponent implements OnInit {
-  constructor(
-    private activeProcessService: ActiveProcessCountService,
-    private dialog: MatDialog
-  ) { }
+  constructor(private activeProcessService: ActiveProcessCountService, private dialog: MatDialog) {}
 
   private subscription: Subscription;
   public activeProcesses: Map<number, ActiveProcess> = new Map<number, ActiveProcess>();
@@ -22,7 +19,6 @@ export class ActiveProcessCountTickerComponent implements OnInit {
   public ngOnInit(): void {
     this.subscription = this.activeProcessService.getProcesses().subscribe((processes: Map<number, ActiveProcess>) => {
       this.activeProcesses = processes;
-
     });
   }
 
@@ -36,8 +32,8 @@ export class ActiveProcessCountTickerComponent implements OnInit {
       height: "50vh",
       disableClose: true,
       data: {
-        service: this.activeProcessService
-      }
+        service: this.activeProcessService,
+      },
     });
   }
 }

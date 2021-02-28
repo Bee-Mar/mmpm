@@ -9,18 +9,11 @@ import * as Cookie from "js-cookie";
   selector: "app-root",
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
-  providers: []
+  providers: [],
 })
 export class AppComponent {
-  constructor(
-    public mmpmUtility: MMPMUtility,
-    private registry: MatIconRegistry,
-    private sanitizer: DomSanitizer
-  ) {
-    this.registry.addSvgIcon(
-      "paypal",
-      this.sanitizer.bypassSecurityTrustResourceUrl(`${environment.assetsPath}/icons/paypal.svg`)
-    );
+  constructor(public mmpmUtility: MMPMUtility, private registry: MatIconRegistry, private sanitizer: DomSanitizer) {
+    this.registry.addSvgIcon("paypal", this.sanitizer.bypassSecurityTrustResourceUrl(`${environment.assetsPath}/icons/paypal.svg`));
   }
 
   private mmpmThemeCookie = "MMPM-theme";
@@ -32,7 +25,7 @@ export class AppComponent {
   public toggleTheme(): void {
     const body = document.getElementsByTagName("body")[0];
     body.classList.remove(this.themeColor);
-    (this.themeColor == "light-theme") ? this.themeColor = "dark-theme" : this.themeColor = "light-theme";
+    this.themeColor == "light-theme" ? (this.themeColor = "dark-theme") : (this.themeColor = "light-theme");
     body.classList.add(this.themeColor);
     this.mmpmUtility.setCookie(this.mmpmThemeCookie, this.themeColor);
   }

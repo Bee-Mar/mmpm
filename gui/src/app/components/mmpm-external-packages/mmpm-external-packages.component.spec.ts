@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { MMPMExternalPackagesComponent } from './mmpm-external-packages.component';
+import { MMPMExternalPackagesComponent } from "./mmpm-external-packages.component";
 
-describe('MMPMExternalPackagesComponent', () => {
+describe("MMPMExternalPackagesComponent", () => {
   let component: MMPMExternalPackagesComponent;
   let fixture: ComponentFixture<MMPMExternalPackagesComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ MMPMExternalPackagesComponent ]
-    })
-    .compileComponents();
+      declarations: [MMPMExternalPackagesComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('MMPMExternalPackagesComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

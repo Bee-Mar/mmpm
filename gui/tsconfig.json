@@ -1,6 +1,8 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "preserveSymlinks": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "baseUrl": "./",

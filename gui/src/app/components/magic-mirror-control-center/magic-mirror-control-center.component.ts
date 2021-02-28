@@ -28,16 +28,10 @@ interface Tile {
 @Component({
   selector: "app-magic-mirror-control-center",
   templateUrl: "./magic-mirror-control-center.component.html",
-  styleUrls: ["./magic-mirror-control-center.component.scss"]
+  styleUrls: ["./magic-mirror-control-center.component.scss"],
 })
 export class MagicMirrorControlCenterComponent implements OnInit {
-  constructor(
-    private api: RestApiService,
-    private _snackbar: MatSnackBar,
-    private dataStore: DataStoreService,
-    public mmpmUtility: MMPMUtility,
-    public dialog: MatDialog,
-  ) { }
+  constructor(private api: RestApiService, private _snackbar: MatSnackBar, private dataStore: DataStoreService, public mmpmUtility: MMPMUtility, public dialog: MatDialog) {}
 
   public version: number;
   public socket: any;
@@ -46,7 +40,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
   private snackbar: CustomSnackbarComponent = new CustomSnackbarComponent(this._snackbar);
 
   public ngOnInit(): void {
-    this.api.retrieve(URLS.GET.MMPM.VERSION).then((response: object) => this.version = response["version"]);
+    this.api.retrieve(URLS.GET.MMPM.VERSION).then((response: object) => (this.version = response["version"]));
     this.loadControlCenterData();
   }
 
@@ -56,56 +50,62 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     // needs to be a promise, because an observable from the dataStore would
     // initially come back empty, then eventually have a value the socketio
     // call needs the value on the first go in order to function properly
-    this.api.retrieve(URLS.GET.MMPM.ENVIRONMENT_VARS).then((envVars: any) => {
-      this.mmpmEnvVars = new Map<string, string>();
+    this.api
+      .retrieve(URLS.GET.MMPM.ENVIRONMENT_VARS)
+      .then((envVars: any) => {
+        this.mmpmEnvVars = new Map<string, string>();
 
-      Object.keys(envVars).forEach((key) => this.mmpmEnvVars.set(key, envVars[key]));
+        Object.keys(envVars).forEach((key) => this.mmpmEnvVars.set(key, envVars[key]));
 
-      const mmpmIsDockerImage: boolean = Boolean(this.mmpmEnvVars?.get("MMPM_IS_DOCKER_IMAGE"));
-      this.tiles.forEach((t) => t.disabled = mmpmIsDockerImage);
+        const mmpmIsDockerImage: boolean = Boolean(this.mmpmEnvVars?.get("MMPM_IS_DOCKER_IMAGE"));
+        this.tiles.forEach((t) => (t.disabled = mmpmIsDockerImage));
 
-      this.socket = io(`${this.mmpmEnvVars?.get("MMPM_MAGICMIRROR_URI")}/mmpm`, { reconnection: true });
-      this.socket.on("connect", () => this.socket.emit("FROM_MMPM_APP_get_active_modules"));
-      this.socket.on("notification", (data: any) => console.log(data));
-      this.socket.on("disconnect", (data: any) => console.log(data));
+        this.socket = io(`${this.mmpmEnvVars?.get("MMPM_MAGICMIRROR_URI")}/mmpm`, { reconnection: true });
+        this.socket.on("connect", () => this.socket.emit("FROM_MMPM_APP_get_active_modules"));
+        this.socket.on("notification", (data: any) => console.log(data));
+        this.socket.on("disconnect", (data: any) => console.log(data));
 
-      // these keywords are used in node_helper.js and mmpm.js within the mmpm magicmirror module
-      this.socket.on("MODULES_SHOWN", (result: any) => {
-        if (result.fails?.length) { this.snackbar.error(`Failed to hide ${result.fails}. Seee MMPM logs for details`) }
-      });
-
-      this.socket.on("MODULES_HIDDEN", (result: any) => {
-        if (result.fails.length) { this.snackbar.error(`Failed to hide ${result.fails}. Seee MMPM logs for details`) }
-      });
-
-      this.socket.on("ACTIVE_MODULES", (active: any) => {
-        if (active) {
-          this.activeModules = new Array<ActiveModule>();
-          for (const activeModule of active) {
-            this.activeModules.push({
-              name: activeModule["name"],
-              visible: !activeModule["hidden"]
-            });
+        // these keywords are used in node_helper.js and mmpm.js within the mmpm magicmirror module
+        this.socket.on("MODULES_SHOWN", (result: any) => {
+          if (result.fails?.length) {
+            this.snackbar.error(`Failed to hide ${result.fails}. Seee MMPM logs for details`);
           }
-        }
-      });
+        });
 
-      this.socket.on("error", (data: any) => console.log(data));
+        this.socket.on("MODULES_HIDDEN", (result: any) => {
+          if (result.fails.length) {
+            this.snackbar.error(`Failed to hide ${result.fails}. Seee MMPM logs for details`);
+          }
+        });
 
-      this.dataStore.upgradablePackages.subscribe((upgradable: any) => {
-        this.tiles.forEach((t) => {
-          if (t.url === URLS.GET.MAGICMIRROR.UPGRADE) {
-            t.disabled = !upgradable.MagicMirror;
-            t.badge = t.disabled ? null : 1;
-
-            if (!mmpmIsDockerImage) {
-              t.disabledTooltip = "No upgrades available for MagicMirror"
+        this.socket.on("ACTIVE_MODULES", (active: any) => {
+          if (active) {
+            this.activeModules = new Array<ActiveModule>();
+            for (const activeModule of active) {
+              this.activeModules.push({
+                name: activeModule["name"],
+                visible: !activeModule["hidden"],
+              });
             }
           }
         });
-      });
 
-    }).catch((error) => console.log(error));
+        this.socket.on("error", (data: any) => console.log(data));
+
+        this.dataStore.upgradablePackages.subscribe((upgradable: any) => {
+          this.tiles.forEach((t) => {
+            if (t.url === URLS.GET.MAGICMIRROR.UPGRADE) {
+              t.disabled = !upgradable.MagicMirror;
+              t.badge = t.disabled ? null : 1;
+
+              if (!mmpmIsDockerImage) {
+                t.disabledTooltip = "No upgrades available for MagicMirror";
+              }
+            }
+          });
+        });
+      })
+      .catch((error) => console.log(error));
   }
 
   public ngOnDestroy(): void {
@@ -204,7 +204,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
       message: "The MMPM MagicMirror module will be installed in your modules directory",
       disabled: false,
       dialogWidth: "45vw",
-    }
+    },
   ];
 
   public sendControlSignal(url: string, message: string, dialogWidth: string): void {
@@ -215,11 +215,11 @@ export class MagicMirrorControlCenterComponent implements OnInit {
             title: "Rotate RaspberryPi Screen",
             label: "Degrees",
             choices: [0, 90, 180, 270],
-            description: "degrees"
+            description: "degrees",
           },
           width: "20vw",
           height: "40vh",
-          disableClose: true
+          disableClose: true,
         });
 
         selectDialogRef.afterClosed().subscribe((value) => {
@@ -227,11 +227,13 @@ export class MagicMirrorControlCenterComponent implements OnInit {
             height: "15vh",
             width: dialogWidth,
             data: { message },
-            disableClose: true
+            disableClose: true,
           });
 
           confirmationDialogRef.afterClosed().subscribe((response) => {
-            if (!response) { return; }
+            if (!response) {
+              return;
+            }
 
             this.api.rotateRaspberryPiScreen(value).then((error: any) => {
               if (error?.error) {
@@ -250,39 +252,49 @@ export class MagicMirrorControlCenterComponent implements OnInit {
           height: "15vh",
           width: dialogWidth,
           data: {
-            message
+            message,
           },
-          disableClose: true
+          disableClose: true,
         });
 
         dialogRef.afterClosed().subscribe((yes) => {
-          if (!yes) { return; }
+          if (!yes) {
+            return;
+          }
 
-          this.api.retrieve(url).then((error: any) => {
-            error.error ? this.snackbar.error(error.error) : this.snackbar.success('Done!')
-            this.loadControlCenterData();
-          }).catch((error) => { console.log(error); });
+          this.api
+            .retrieve(url)
+            .then((error: any) => {
+              error.error ? this.snackbar.error(error.error) : this.snackbar.success("Done!");
+              this.loadControlCenterData();
+            })
+            .catch((error) => {
+              console.log(error);
+            });
         });
         break;
     }
   }
 
   public downloadLogs(): void {
-    this.api.getLogFiles().then((file) => {
-      const blob = new Blob([file], { type: "application/zip" });
-      const date = new Date();
+    this.api
+      .getLogFiles()
+      .then((file) => {
+        const blob = new Blob([file], { type: "application/zip" });
+        const date = new Date();
 
-      const fileName: string = `mmpm-logs-${date.getFullYear()}-${date.getMonth()}-${date.getDay()}.zip`;
-      const url: string = URL.createObjectURL(blob);
-      const a: HTMLAnchorElement = document.createElement("a") as HTMLAnchorElement;
+        const fileName: string = `mmpm-logs-${date.getFullYear()}-${date.getMonth()}-${date.getDay()}.zip`;
+        const url: string = URL.createObjectURL(blob);
+        const a: HTMLAnchorElement = document.createElement("a") as HTMLAnchorElement;
 
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
 
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }).catch((error) => console.log(error));
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      })
+      .catch((error) => console.log(error));
   }
 }

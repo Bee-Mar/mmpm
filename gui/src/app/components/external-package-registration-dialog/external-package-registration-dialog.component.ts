@@ -2,9 +2,10 @@ import { Component, OnInit } from "@angular/core";
 import { MatDialogRef } from "@angular/material/dialog";
 import { MagicMirrorPackage } from "src/app/interfaces/interfaces";
 import { FormControl, Validators } from "@angular/forms";
-@Component({ selector: "app-external-package-registration-dialog",
+@Component({
+  selector: "app-external-package-registration-dialog",
   templateUrl: "./external-package-registration-dialog.component.html",
-  styleUrls: ["./external-package-registration-dialog.component.scss"]
+  styleUrls: ["./external-package-registration-dialog.component.scss"],
 })
 export class ExternalPackageRegistrationDialogComponent implements OnInit {
   public title: string = "";

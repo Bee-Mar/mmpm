@@ -69,7 +69,7 @@ export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
         language: "javascript",
         scrollBeyondLastLine: false,
         minimap: {
-          enabled: false
+          enabled: false,
         },
         scrollbar: {
           useShadows: true,
@@ -78,11 +78,11 @@ export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
           vertical: "visible",
           verticalScrollbarSize: 12,
           horizontalScrollbarSize: 12,
-          arrowSize: 30
+          arrowSize: 30,
         },
-        automaticLayout: true
-      }
-    })
+        automaticLayout: true,
+      },
+    }),
   ],
   providers: [
     RestApiService,
@@ -92,10 +92,10 @@ export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
       provide: APP_INITIALIZER,
       useFactory: initializeMagicMirrorPacakageData,
       deps: [DataStoreService],
-      multi: true
-    }
+      multi: true,
+    },
   ],
   bootstrap: [AppComponent],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppModule {}

@@ -1,16 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { InstallationConflictResolutionDialogComponent } from './installation-conflict-resolution-dialog.component';
+import { InstallationConflictResolutionDialogComponent } from "./installation-conflict-resolution-dialog.component";
 
-describe('InstallationConflictResolutionDialogComponent', () => {
+describe("InstallationConflictResolutionDialogComponent", () => {
   let component: InstallationConflictResolutionDialogComponent;
   let fixture: ComponentFixture<InstallationConflictResolutionDialogComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ InstallationConflictResolutionDialogComponent ]
-    })
-    .compileComponents();
+      declarations: [InstallationConflictResolutionDialogComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -19,7 +18,7 @@ describe('InstallationConflictResolutionDialogComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

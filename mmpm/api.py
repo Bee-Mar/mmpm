@@ -59,8 +59,6 @@ def __deserialize_selected_packages__(rqst, key: str = 'selected-packages') -> L
     default_directory = lambda title: os.path.normpath(os.path.join(MAGICMIRROR_MODULES_DIR, title))
 
     for pkg in pkgs:
-        print(pkg)
-
         if not pkg['directory']:
             pkg['directory'] = default_directory(pkg['title'])
 

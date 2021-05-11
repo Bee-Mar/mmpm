@@ -1198,67 +1198,70 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
     # the first index is a row that literally says 'Title' 'Author' 'Description'
     tr_soup: list = [table.find_all('tr')[1:] for table in table_soup]
 
-    for index, row in enumerate(tr_soup):
-        for column_number, _ in enumerate(row):
-            td_soup: list = tr_soup[index][column_number].find_all('td')
+    try:
+        for index, row in enumerate(tr_soup):
+            for column_number, _ in enumerate(row):
+                td_soup: list = tr_soup[index][column_number].find_all('td')
 
-            title: str = mmpm.consts.NOT_AVAILABLE
-            repo: str = mmpm.consts.NOT_AVAILABLE
-            author: str = mmpm.consts.NOT_AVAILABLE
-            desc: str = mmpm.consts.NOT_AVAILABLE
+                title: str = mmpm.consts.NOT_AVAILABLE
+                repo: str = mmpm.consts.NOT_AVAILABLE
+                author: str = mmpm.consts.NOT_AVAILABLE
+                desc: str = mmpm.consts.NOT_AVAILABLE
 
-            # should look into a way of simplifying this more, but it works for now. So, if it ain't broke ...
-            for idx, _ in enumerate(td_soup):
-                # the first index is the title information
-                if idx == 0:
-                    current_tag = td_soup[idx].contents[0].contents[0]
+                # should look into a way of simplifying this more, but it works for now. So, if it ain't broke ...
+                for idx, _ in enumerate(td_soup):
+                    # the first index is the title information
+                    if idx == 0:
+                        current_tag = td_soup[idx].contents[0].contents[0]
 
-                    if type(current_tag).__name__ == "Tag" and current_tag.name == "del":
-                        continue
+                        if type(current_tag).__name__ == "Tag" and current_tag.name == "del":
+                            continue
 
-                    title = mmpm.utils.sanitize_name(current_tag)
-                    anchor_tag = td_soup[idx].find_all('a')[0]
-                    repo = str(anchor_tag['href']) if anchor_tag.has_attr('href') else mmpm.consts.NOT_AVAILABLE
+                        title = mmpm.utils.sanitize_name(current_tag)
+                        anchor_tag = td_soup[idx].find_all('a')[0]
+                        repo = str(anchor_tag['href']) if anchor_tag.has_attr('href') else mmpm.consts.NOT_AVAILABLE
 
-                # the second index is the author information
-                elif idx == 1:
-                    # all because some people want to get fancy and embed anchor tags
-                    author_block = td_soup[idx].contents
+                    # the second index is the author information
+                    elif idx == 1:
+                        # all because some people want to get fancy and embed anchor tags
+                        author_block = td_soup[idx].contents
 
-                    if author_block:
-                        author = str()
+                        if author_block:
+                            author = str()
 
-                    for name in author_block:
-                        if type(name).__name__ == 'NavigableString':
-                            author += f'{name.strip()} '
-                        elif type(name).__name__ == 'Tag':
-                            author += f'{name.contents[0].strip()} '
+                        for name in author_block:
+                            if type(name).__name__ == 'NavigableString':
+                                author += f'{name.strip()} '
+                            elif type(name).__name__ == 'Tag':
+                                author += f'{name.contents[0].strip()} '
 
-                # the final index is the description information
-                else:
-                    descrption_block = td_soup[idx].contents
+                    # the final index is the description information
+                    else:
+                        descrption_block = td_soup[idx].contents
 
-                    if descrption_block:
-                        desc = str()
+                        if descrption_block:
+                            desc = str()
 
-                    # some people embed other html elements in here, so they need to be parsed out
-                    for desciption in descrption_block:
-                        if type(desciption).__name__ == 'Tag':
-                            for content in desciption:
-                                desc += content.string
-                        else:
-                            desc += desciption.string
+                        # some people embed other html elements in here, so they need to be parsed out
+                        for desciption in descrption_block:
+                            if type(desciption).__name__ == 'Tag':
+                                for content in desciption:
+                                    desc += content.string
+                            else:
+                                desc += desciption.string
 
-            # this is not very efficient, but it rarely runs, so it'll do for now
-            if title != mmpm.consts.MMPM:
-                packages[categories[index]].append(
-                    MagicMirrorPackage(
-                        title=title.strip(),
-                        author=author.strip(),
-                        description=desc.strip(),
-                        repository=repo.strip()
+                # this is not very efficient, but it rarely runs, so it'll do for now
+                if title != mmpm.consts.MMPM:
+                    packages[categories[index]].append(
+                        MagicMirrorPackage(
+                            title=title.strip(),
+                            author=author.strip(),
+                            description=desc.strip(),
+                            repository=repo.strip()
+                        )
                     )
-                )
+    except Exception as error:
+        mmpm.utils.fatal_msg(str(error))
 
     return packages
 

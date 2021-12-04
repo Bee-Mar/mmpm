@@ -7,10 +7,9 @@ import { CustomSnackbarComponent } from "src/app/components/custom-snackbar/cust
 import { DataStoreService } from "src/app/services/data-store.service";
 import { URLS } from "src/app/utils/urls";
 import { ActiveModule } from "src/app/interfaces/interfaces";
-import { MatSlideToggleChange } from "@angular/material/slide-toggle";
 import { MMPMUtility } from "src/app/utils/mmpm-utility";
 import { SelectModalComponent } from "src/app/components/select-modal/select-modal.component";
-import io from "socket.io-client";
+import { io } from "socket.io-client";
 
 interface Tile {
   icon: string;
@@ -66,15 +65,15 @@ export class MagicMirrorControlCenterComponent implements OnInit {
         this.socket.on("disconnect", (data: any) => console.log(data));
 
         // these keywords are used in node_helper.js and mmpm.js within the mmpm magicmirror module
-        this.socket.on("MODULES_SHOWN", (result: any) => {
+        this.socket.on("MODULES_TOGGLED", (result: any) => {
           if (result.fails?.length) {
-            this.snackbar.error(`Failed to hide ${result.fails}. Seee MMPM logs for details`);
+            this.snackbar.error(`Failed to hide ${result.fails}. See MMPM logs for details`);
           }
         });
 
         this.socket.on("MODULES_HIDDEN", (result: any) => {
           if (result.fails.length) {
-            this.snackbar.error(`Failed to hide ${result.fails}. Seee MMPM logs for details`);
+            this.snackbar.error(`Failed to hide ${result.fails}. See MMPM logs for details`);
           }
         });
 
@@ -82,6 +81,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
           if (active) {
             this.activeModules = new Array<ActiveModule>();
             for (const activeModule of active) {
+              console.log(activeModule);
               this.activeModules.push({
                 name: activeModule["name"],
                 visible: !activeModule["hidden"],
@@ -112,12 +112,8 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     this.socket.disconnect();
   }
 
-  public toggle(event: MatSlideToggleChange, active: ActiveModule) {
-    if (event.checked) {
-      this.socket.emit("FROM_MMPM_APP_show_modules", [active.name]);
-    } else {
-      this.socket.emit("FROM_MMPM_APP_hide_modules", [active.name]);
-    }
+  public toggle() {
+    this.socket.emit("FROM_MMPM_APP_toggle_modules_visibility", this.activeModules);
   }
 
   public tiles: Tile[] = [
@@ -208,9 +204,11 @@ export class MagicMirrorControlCenterComponent implements OnInit {
   ];
 
   public sendControlSignal(url: string, message: string, dialogWidth: string): void {
+    let dialogRef: any;
+
     switch (url) {
       case URLS.POST.RASPBERRYPI.ROTATE_SCREEN:
-        const selectDialogRef = this.dialog.open(SelectModalComponent, {
+        dialogRef = this.dialog.open(SelectModalComponent, {
           data: {
             title: "Rotate RaspberryPi Screen",
             label: "Degrees",
@@ -222,7 +220,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
           disableClose: true,
         });
 
-        selectDialogRef.afterClosed().subscribe((value) => {
+        dialogRef.afterClosed().subscribe((value) => {
           const confirmationDialogRef = this.dialog.open(ConfirmationDialogComponent, {
             height: "15vh",
             width: dialogWidth,
@@ -248,7 +246,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
         break;
 
       default:
-        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+        dialogRef = this.dialog.open(ConfirmationDialogComponent, {
           height: "15vh",
           width: dialogWidth,
           data: {

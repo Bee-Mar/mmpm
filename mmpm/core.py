@@ -1667,10 +1667,8 @@ def display_magicmirror_modules_status() -> None:
             print(mmpm.consts.GREEN_CHECK_MARK)
 
         # on rare occasions, the result is sent back twice, I suppose due to timing issues
-        unique_data = [json_data for index, json_data in enumerate(data) if json_data not in data[index + 1:]]
-
-        for module in unique_data:
-            print(f"{mmpm.color.normal_green(module['name'])}\n  hidden: {'true' if module['hidden'] else 'false'}\n")
+        for module in [json_data for index, json_data in enumerate(data) if json_data not in data[index + 1:]]:
+            print(f"{module['index'] + 1}) {mmpm.color.normal_green(module['name'])}\n  hidden: {'true' if module['hidden'] else 'false'}\n")
 
         mmpm.utils.socketio_client_disconnect(client)
         countdown_thread.join()
@@ -1688,14 +1686,14 @@ def display_magicmirror_modules_status() -> None:
 
 
 
-def hide_magicmirror_modules(modules_to_hide: List[str]):
+def hide_magicmirror_modules(modules_to_hide: List[int]):
     '''
     Creates a connection to the websocket opened by MagicMirror, and through
     the MMPM module, the provided module names are looked up, and hidden.
     If the module is already hidden, the display doesn't change.
 
     Parameters:
-        modules_to_hide (List[str]): the names of the modules to make visible
+        modules_to_hide (List[int]): the indices of the modules to hide
 
     Returns:
         None
@@ -1723,7 +1721,7 @@ def hide_magicmirror_modules(modules_to_hide: List[str]):
     @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def connect(): # pylint: disable=unused-variable
         mmpm.utils.log.info('connected to MagicMirror websocket')
-        client.emit('FROM_MMPM_APP_hide_modules', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE, data=modules_to_hide)
+        client.emit('FROM_MMPM_APP_toggle_modules', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE, data={'directive': 'hide', 'modules': modules_to_hide})
         mmpm.utils.log.info('emitted request to hide modules to MMPM module')
 
 
@@ -1737,19 +1735,14 @@ def hide_magicmirror_modules(modules_to_hide: List[str]):
         mmpm.utils.log.info('disconnected from MagicMirror websocket')
 
 
-    @client.on('MODULES_HIDDEN', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
-    def modules_hidden(data): # pylint: disable=unused-variable
-        mmpm.utils.log.info('received hidden modules from MMPM MagicMirror module')
+    @client.on('MODULES_TOGGLED', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
+    def modules_toggled(data): # pylint: disable=unused-variable
+        mmpm.utils.log.info('received toggled modules from MMPM MagicMirror module')
         stop_thread_event.set()
 
         if not data:
             print(mmpm.consts.RED_X)
             mmpm.utils.error_msg('Unable to find provided module(s)')
-        elif data['fails']:
-            print(mmpm.consts.RED_X)
-            # on rare occasions, the result is sent back twice, I suppose due to timing issues
-            fails: set = set(data['fails'])
-            mmpm.utils.error_msg(f"Failed to hide {fails}. Is the name of the each module spelled correctly?")
         else:
             print(mmpm.consts.GREEN_CHECK_MARK)
 
@@ -1768,14 +1761,14 @@ def hide_magicmirror_modules(modules_to_hide: List[str]):
         mmpm.utils.socketio_client_disconnect(client)
 
 
-def show_magicmirror_modules(modules_to_show: List[str]) -> None:
+def show_magicmirror_modules(modules_to_show: List[int]) -> None:
     '''
     Creates a connection to the websocket opened by MagicMirror, and through
     the MMPM module, the provided module names are looked up, and made visible.
     If the module is already visible, the display doesn't change.
 
     Parameters:
-        modules_to_show (List[str]): the names of the modules to make visible
+        modules_to_show (List[int]): the indices of the modules to make visible
 
     Returns:
         None
@@ -1803,7 +1796,7 @@ def show_magicmirror_modules(modules_to_show: List[str]) -> None:
     @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def connect(): # pylint: disable=unused-variable
         mmpm.utils.log.info('connected to MagicMirror websocket')
-        client.emit('FROM_MMPM_APP_show_modules', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE, data=modules_to_show)
+        client.emit('FROM_MMPM_APP_toggle_modules', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE, data={'directive': 'show', 'modules': modules_to_show})
         mmpm.utils.log.info('emitted request for show modules to MMPM module')
 
 
@@ -1815,25 +1808,6 @@ def show_magicmirror_modules(modules_to_show: List[str]) -> None:
     @client.on('disconnect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def disconnect(): # pylint: disable=unused-variable
         mmpm.utils.log.info('disconnected from MagicMirror websocket')
-
-
-    @client.on('MODULES_SHOWN', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
-    def modules_shown(data): # pylint: disable=unused-variable
-        mmpm.utils.log.info('received active modules from MMPM MagicMirror module')
-        stop_thread_event.set()
-
-        if not data:
-            print(mmpm.consts.RED_X)
-            mmpm.utils.error_msg('No data was received from the MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set?')
-        elif data['fails']:
-            print(mmpm.consts.RED_X)
-            fails: set = set(data['fails'])
-            mmpm.utils.error_msg(f"Failed to show: {fails}. Is the name of the each module spelled correctly?")
-        else:
-            print(mmpm.consts.GREEN_CHECK_MARK)
-
-        mmpm.utils.socketio_client_disconnect(client)
-        countdown_thread.join()
 
     mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
     mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Sending request to MagicMirror to show {modules_to_show} ')

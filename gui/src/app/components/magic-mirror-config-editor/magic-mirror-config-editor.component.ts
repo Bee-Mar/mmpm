@@ -44,7 +44,7 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
       theme: Cookie.get(this.mmpmEditorThemeCookie) ?? "vs-dark",
     };
 
-    this.fileIndex = Number(Cookie.get(this.mmpmEditorCurrentFileCookie)) ?? ConfigFile.CONFIG_JS;
+    this._initFileIndex();
 
     this.fileSelection = [
       {
@@ -118,6 +118,10 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
   }
 
   public onEditorInit(editor: any): void {
+    if (!this.fileIndex) {
+      this._initFileIndex();
+    }
+
     this.editor = editor;
     this.code = this.fileSelection[this.fileIndex].code;
     monaco.editor.setModelLanguage(this.editor.getModel(), this.fileSelection[this.fileIndex].syntax);
@@ -163,5 +167,9 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
       expires: 1825,
       path: "",
     });
+  }
+
+  private _initFileIndex(): void {
+    this.fileIndex = Number(Cookie.get(this.mmpmEditorCurrentFileCookie)) ?? ConfigFile.CONFIG_JS;
   }
 }

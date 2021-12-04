@@ -1,71 +1,58 @@
 Module.register("mmpm", {
-  defaults: {
-    refreshInterval: 0
-  },
+	defaults: {
+		refreshInterval: 0
+	},
 
-  start: function() {
-    console.log("Starting module: mmpm");
-    // doesn't matter what's sent through the socket, need something to initalize the node_helper
-    this.sendSocketNotification("MMPM_START");
-  },
+	start: function () {
+		console.log("Starting module: mmpm");
+		// doesn't matter what's sent through the socket, need something to initalize the node_helper
+		this.sendSocketNotification("MMPM_START");
+	},
 
-  modifyModuleVisibility: function(payload, method) {
-    let result = {
-      successes: [],
-      fails: []
-    };
+	modifyModuleVisibility: function (payload) {
+		let modules = MM.getModules();
 
-    for (const userProvidedModuleName of payload) {
-      // returns an array of matches
-      let found = MM.getModules().filter((module) => module.name === userProvidedModuleName);
-      console.log(found);
+		for (let index = 0; index < payload.modules.length; index++) {
+			const moduleIndex = parseInt(payload.modules[index]);
 
-      if (found.length) {
-        method(found[0]);
-        result.successes.push(userProvidedModuleName);
-      } else {
-        result.fails.push(userProvidedModuleName)
-      }
-    }
-    return result
-  },
+			if (payload.directive === "hide") {
+				modules[moduleIndex].hide();
+			} else {
+				modules[moduleIndex].show();
+			}
+		}
 
-  socketNotificationReceived: function(notification, payload) {
-    if (notification === "FROM_MMPM_NODE_HELPER_get_active_modules") {
-      Log.log("MMPM module received request to retreive active modules list");
+		return payload;
+	},
 
-      let activeModules = [];
+	socketNotificationReceived: function (notification, payload) {
+		if (notification === "FROM_MMPM_NODE_HELPER_get_active_modules") {
+			Log.log("MMPM module received request to retreive active modules list");
 
-      for (const module of MM.getModules()) {
-        if (typeof module !== "undefined") {
-          activeModules.push({
-            name: module.name,
-            hidden: module.hidden
-          });
-        }
-      }
+			let activeModules = [];
+			const modules = MM.getModules();
 
-      Log.log("MMPM module finished retreival list of active modules");
-      Log.log("MMPM module sending back list of active modules to MMPM application");
-      this.sendSocketNotification("FROM_MMPM_MODULE_active_modules", activeModules);
+			for (let index = 0; index < modules.length; index++) {
+				if (typeof modules[index] !== "undefined") {
+					activeModules.push({
+						name: modules[index].name,
+						hidden: modules[index].hidden,
+						index: index + 1
+					});
+				}
+			}
 
-    } else if (notification === "FROM_MMPM_NODE_HELPER_hide_modules") {
-      Log.log(`MMPM module received request to hide ${payload} module`);
+			Log.log("MMPM module finished retreival list of active modules");
+			Log.log("MMPM module sending back list of active modules to MMPM application");
+			this.sendSocketNotification("FROM_MMPM_MODULE_active_modules", activeModules);
+		} else if (notification === "FROM_MMPM_NODE_HELPER_toggle_modules") {
+			Log.log(`MMPM module received request to hide ${payload} module`);
 
-      let result = this.modifyModuleVisibility(payload, MM.hideModule);
+			let result = this.modifyModuleVisibility(payload);
 
-      Log.log(`MMPM module finished hiding ${payload} module`);
-      Log.log("MMPM module sending back success to MMPM application");
-      this.sendSocketNotification("FROM_MMPM_MODULE_modules_hidden", result);
-
-    } else if (notification === "FROM_MMPM_NODE_HELPER_show_modules") {
-      Log.log(`MMPM module received request to show ${payload} module`);
-
-      let result = this.modifyModuleVisibility(payload, MM.showModule);
-
-      Log.log(`MMPM module finished showing ${payload} module`);
-      Log.log("MMPM module sending back success to MMPM application");
-      this.sendSocketNotification("FROM_MMPM_MODULE_modules_shown", result);
-    }
-  },
+			Log.log(`MMPM module finished hiding ${payload} module`);
+			Log.log("MMPM module sending back modules to MMPM application");
+			this.sendSocketNotification("FROM_MMPM_MODULE_modules_toggled", result);
+		}
+	}
 });

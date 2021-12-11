@@ -85,7 +85,6 @@ export class MagicMirrorControlCenterComponent implements OnInit {
             this.activeModules = new Array<ActiveModule>();
 
             for (const activeModule of active) {
-              console.log(activeModule);
               this.activeModules.push({
                 name: activeModule["name"],
                 visible: !activeModule["hidden"],

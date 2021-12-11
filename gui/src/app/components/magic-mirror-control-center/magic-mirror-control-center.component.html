@@ -4,8 +4,8 @@
     <div *ngIf="activeModules?.length; else activeModulesNotFound" style="margin-top: 10%">
       <ul style="list-style-type: none">
         <li *ngFor="let active of activeModules | keyvalue" style="margin-top: 10%">
-          <mat-slide-toggle [disabled]="active.value.name === 'mmpm'" [(ngModel)]="active.value.visible" (change)="toggle()" style="font-size: 18px">
-            {{ active.value.name }}
+          <mat-slide-toggle [disabled]="active.value.name === 'mmpm'" [(ngModel)]="active.value.visible" (change)="toggle(active.value)" style="font-size: 18px">
+            {{ active?.value?.name }} ({{ active?.value?.index }})
             <mat-icon
               *ngIf="active.value.visible; else not_visible"
               matTooltip="{{ active.value.name === 'mmpm' ? 'MMPM must remain visible' : 'visible' }}"

@@ -85,6 +85,7 @@ export class MagicMirrorControlCenterComponent implements OnInit {
               this.activeModules.push({
                 name: activeModule["name"],
                 visible: !activeModule["hidden"],
+                index: activeModule["index"] + 1,
               });
             }
           }
@@ -112,8 +113,8 @@ export class MagicMirrorControlCenterComponent implements OnInit {
     this.socket.disconnect();
   }
 
-  public toggle() {
-    this.socket.emit("FROM_MMPM_APP_toggle_modules_visibility", this.activeModules);
+  public toggle(activeModule: ActiveModule) {
+    this.socket.emit("FROM_MMPM_APP_toggle_modules", {"directive":  activeModule.visible ? "show" : "hide", "modules": [activeModule.index]});
   }
 
   public tiles: Tile[] = [

@@ -21,4 +21,5 @@ export interface ActiveProcess {
 export interface ActiveModule {
   name: string;
   visible: boolean;
+  index: number;
 }

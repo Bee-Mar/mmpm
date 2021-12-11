@@ -123,8 +123,8 @@ export class MagicMirrorConfigEditorComponent implements OnInit {
     }
 
     this.editor = editor;
-    this.code = this.fileSelection[this.fileIndex].code;
-    monaco.editor.setModelLanguage(this.editor.getModel(), this.fileSelection[this.fileIndex].syntax);
+    this.code = this.fileSelection[this.fileIndex]?.code;
+    monaco.editor.setModelLanguage(this.editor.getModel(), this.fileSelection[this.fileIndex]?.syntax);
   }
 
   public onSaveConfig(): void {

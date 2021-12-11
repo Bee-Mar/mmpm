@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cd gui && ng serve
+cd gui && npm run serve

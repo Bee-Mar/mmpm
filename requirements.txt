@@ -4,7 +4,7 @@ bs4>=0.0.1
 colorama>=0.4.3
 flask==1.1.1
 Flask-Cors>=3.0.8
-gunicorn>=20.0.4
+gunicorn>=20.1.0
 webssh>=1.5.1
 flask-socketio>=5.0.1
 eventlet==0.30.1

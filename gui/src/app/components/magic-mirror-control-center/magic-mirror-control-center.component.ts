@@ -59,7 +59,10 @@ export class MagicMirrorControlCenterComponent implements OnInit {
         const mmpmIsDockerImage: boolean = Boolean(this.mmpmEnvVars?.get("MMPM_IS_DOCKER_IMAGE"));
         this.tiles.forEach((t) => (t.disabled = mmpmIsDockerImage));
 
-        this.socket = io(`${this.mmpmEnvVars?.get("MMPM_MAGICMIRROR_URI")}/mmpm`, { reconnection: true });
+        // in case the user prefixed with 'http://'
+        const MAGICMIRROR_URI: string = this.mmpmEnvVars?.get("MMPM_MAGICMIRROR_URI").replace("http://", "");
+
+        this.socket = io(`${MAGICMIRROR_URI}/mmpm`, { reconnection: true });
         this.socket.on("connect", () => this.socket.emit("FROM_MMPM_APP_get_active_modules"));
         this.socket.on("notification", (data: any) => console.log(data));
         this.socket.on("disconnect", (data: any) => console.log(data));
@@ -78,8 +81,9 @@ export class MagicMirrorControlCenterComponent implements OnInit {
         });
 
         this.socket.on("ACTIVE_MODULES", (active: any) => {
-          if (active) {
+          if (active?.length) {
             this.activeModules = new Array<ActiveModule>();
+
             for (const activeModule of active) {
               console.log(activeModule);
               this.activeModules.push({

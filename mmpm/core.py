@@ -123,6 +123,9 @@ def upgrade_package(package: MagicMirrorPackage) -> str:
         stderr (str): the resulting error message of the upgrade. If the message is zero length, it was successful
     '''
 
+    MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules'))
+    package.directory = os.path.join(MAGICMIRROR_MODULES_DIR, package.title)
+
     os.chdir(package.directory)
 
     mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Performing upgrade for {mmpm.color.normal_green(package.title)}')

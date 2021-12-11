@@ -29,7 +29,7 @@ script:
   - bash scripts/travis-ci/bundle-static-files
 deploy:
   - provider: pypi
-    skip_cleanup: 'true'
+    skip_cleanup: true
     on:
       repo: Bee-Mar/mmpm
       branch: master
@@ -38,12 +38,13 @@ deploy:
     file: dist/*
     username: __token__
     password:
-      secure: "YaUbJvhMghQ8oAtCkaiQiba8wQM37RzW7Mf90Jj0mlqQzuydzypsWqWR+fgtYtlJ7kQUpT8hZQoaOvpohIYzE+crHrjWcKrphRtB02FLdsoWeFCb+59QtNxW04Wu+dHvi3v97Mh6HzLPeTYjsEUE25eaDo6eQOTTUHcUpm4BTfeRxsNW9AiB56TqFYxPMW9FOYznp5a4yakaY3HltBCYgTF6z6SaEX0qz
-FKRKdB/qwfBHDwgVqluZOPDaT5X2BCOr23td58RPJLty2l8zNgqW6ydUp2sdDDAPl/AIpfvRTZvj0npjVy5iDMZ8BpGtPkUAIBkIiLb6IRgh1lK/TFEA76hOM7Mk8AsMDgrj297zlAQCR9amrjjgu2WrzG+PNB8NBsueL0yTVnxdhKfumnRYfJYUU9VYi9lwPKIbW6RycLWU7/hJmp87TaW4FQd0VKZUc7nlHy6aoFlm
-gsN4i0TvxHX80/B/u+8OwqGnOxGid0PKI1jqon7kNbc5Bbos2WGY2HndhjBe98NNl+O+k6JIDcIjuLaKcKzDxazhoqBawcCrRTLpXKd54kALAITJfEVTAG+tjhaYBVbRGaC4cqvUkE4ARlAZcMv2xLgMlL4kFnXwXYKTl/81JagMqWq18hNHSlczf6ArTKNnTIj7YHS5mUl/Youf29as13VY7LnETA="
+      # secure: "YaUbJvhMghQ8oAtCkaiQiba8wQM37RzW7Mf90Jj0mlqQzuydzypsWqWR+fgtYtlJ7kQUpT8hZQoaOvpohIYzE+crHrjWcKrphRtB02FLdsoWeFCb+59QtNxW04Wu+dHvi3v97Mh6HzLPeTYjsEUE25eaDo6eQOTTUHcUpm4BTfeRxsNW9AiB56TqFYxPMW9FOYznp5a4yakaY3HltBCYgTF6z6SaEX0qz
+      #FKRKdB/qwfBHDwgVqluZOPDaT5X2BCOr23td58RPJLty2l8zNgqW6ydUp2sdDDAPl/AIpfvRTZvj0npjVy5iDMZ8BpGtPkUAIBkIiLb6IRgh1lK/TFEA76hOM7Mk8AsMDgrj297zlAQCR9amrjjgu2WrzG+PNB8NBsueL0yTVnxdhKfumnRYfJYUU9VYi9lwPKIbW6RycLWU7/hJmp87TaW4FQd0VKZUc7nlHy6aoFlm
+      #gsN4i0TvxHX80/B/u+8OwqGnOxGid0PKI1jqon7kNbc5Bbos2WGY2HndhjBe98NNl+O+k6JIDcIjuLaKcKzDxazhoqBawcCrRTLpXKd54kALAITJfEVTAG+tjhaYBVbRGaC4cqvUkE4ARlAZcMv2xLgMlL4kFnXwXYKTl/81JagMqWq18hNHSlczf6ArTKNnTIj7YHS5mUl/Youf29as13VY7LnETA="
   - provider: releases
-    api_key:
-      secure: "ZmO9dfTyvMC3qUzh7JzQ8E4Ed/9DbFTRlDynZKHv/OjCguBKe4hLdELBqkzhZHL3WVD90EBJnXl5R3aGXZe2G2Bqsp7IDv7B8MIKuxq+Ma3PK4z4gXF6q47VocRzrCQ8WfAJs/uTAu/BENtiD2BdUo++r/jXmL2pmw4D2mCmoxH5q5bxhN5rpbwn7uWqT/Ok5HtgQDMHoYMW8U9uH0A9aPuMEk/ZEF8WZPG0/SRlKlsTAk34Yr0LtaEz9UsNp59wubqJYWRGfxD9qkZ3EzVL5ng+YIvJXViIOsMZlbWt8FnelyUZbOX607dzkKAD4bdAsgcTS5RswUKd9ZKEh0/TEsG7iJ1f56zPg+QuhTsGLV9nKAFVPCN+4UjeXhbjke4HnWONTO5ARHuDAKUK2jwS4EayhVuwcq+ozqXFQJ72CNzt41nzATaE6I3peLD40u+9Ezo/ftpeuXG8IV+l2GT2ZoTMmmVBrE0fz9kMhOFi8wTHzS/FhDd0Mgcplast1v82G2YR+3EC4DTiiD0oLXW++KVnms8rqY3HHAJPKETFLUSW4FZaRLjvSxFESFFLdCrcsciZWuNO6qBZ3AiCr35TnR/3FXRGvAvkyOtkk5WJiK3h9a1X6Y7Z2BlkkUDy3EFhlbRrwMsJXD/uhueYIQBhX7NVsI9iWhv/GShNT8iRlMo="
+    github_token: $CI_TOKEN
+      #    api_key:
+      #      secure: "ZmO9dfTyvMC3qUzh7JzQ8E4Ed/9DbFTRlDynZKHv/OjCguBKe4hLdELBqkzhZHL3WVD90EBJnXl5R3aGXZe2G2Bqsp7IDv7B8MIKuxq+Ma3PK4z4gXF6q47VocRzrCQ8WfAJs/uTAu/BENtiD2BdUo++r/jXmL2pmw4D2mCmoxH5q5bxhN5rpbwn7uWqT/Ok5HtgQDMHoYMW8U9uH0A9aPuMEk/ZEF8WZPG0/SRlKlsTAk34Yr0LtaEz9UsNp59wubqJYWRGfxD9qkZ3EzVL5ng+YIvJXViIOsMZlbWt8FnelyUZbOX607dzkKAD4bdAsgcTS5RswUKd9ZKEh0/TEsG7iJ1f56zPg+QuhTsGLV9nKAFVPCN+4UjeXhbjke4HnWONTO5ARHuDAKUK2jwS4EayhVuwcq+ozqXFQJ72CNzt41nzATaE6I3peLD40u+9Ezo/ftpeuXG8IV+l2GT2ZoTMmmVBrE0fz9kMhOFi8wTHzS/FhDd0Mgcplast1v82G2YR+3EC4DTiiD0oLXW++KVnms8rqY3HHAJPKETFLUSW4FZaRLjvSxFESFFLdCrcsciZWuNO6qBZ3AiCr35TnR/3FXRGvAvkyOtkk5WJiK3h9a1X6Y7Z2BlkkUDy3EFhlbRrwMsJXD/uhueYIQBhX7NVsI9iWhv/GShNT8iRlMo="
     file:
       - mmpm-gui-$TRAVIS_TAG.tar.gz
       - dist/*
@@ -51,4 +52,4 @@ gsN4i0TvxHX80/B/u+8OwqGnOxGid0PKI1jqon7kNbc5Bbos2WGY2HndhjBe98NNl+O+k6JIDcIjuLaK
       repo: Bee-Mar/mmpm
       branch: master
       tags: true
-    skip_cleanup: 'true'
+    skip_cleanup: true

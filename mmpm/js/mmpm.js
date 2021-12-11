@@ -13,7 +13,7 @@ Module.register("mmpm", {
 		let modules = MM.getModules();
 
 		for (let index = 0; index < payload.modules.length; index++) {
-			const moduleIndex = parseInt(payload.modules[index]);
+			const moduleIndex = parseInt(payload.modules[index]) - 1;
 
 			if (payload.directive === "hide") {
 				modules[moduleIndex].hide();
@@ -33,11 +33,11 @@ Module.register("mmpm", {
 			const modules = MM.getModules();
 
 			for (let index = 0; index < modules.length; index++) {
-				if (typeof modules[index] !== "undefined") {
+				if (typeof modules[index]) {
 					activeModules.push({
 						name: modules[index].name,
 						hidden: modules[index].hidden,
-						index: index + 1
+						index,
 					});
 				}
 			}

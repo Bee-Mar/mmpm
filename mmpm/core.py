@@ -1612,6 +1612,7 @@ def remove_external_package_source(titles: List[str] = None, assume_yes: bool = 
     return True
 
 
+# TODO: all these functions really need to be part of a class, this is way too much repetition
 def display_magicmirror_modules_status() -> None:
     '''
     Parses the MagicMirror config file for the modules listed, and reports
@@ -1668,7 +1669,7 @@ def display_magicmirror_modules_status() -> None:
 
         # on rare occasions, the result is sent back twice, I suppose due to timing issues
         for module in [json_data for index, json_data in enumerate(data) if json_data not in data[index + 1:]]:
-            print(f"{module['index'] + 1}) {mmpm.color.normal_green(module['name'])}\n  hidden: {'true' if module['hidden'] else 'false'}\n")
+            print(f"{mmpm.color.normal_green(module['name'])}\n  hidden: {'true' if module['hidden'] else 'false'}\n  key: {module['index'] + 1}\n")
 
         mmpm.utils.socketio_client_disconnect(client)
         countdown_thread.join()
@@ -1685,7 +1686,7 @@ def display_magicmirror_modules_status() -> None:
         mmpm.utils.socketio_client_disconnect(client)
 
 
-
+# TODO: all these functions really need to be part of a class, this is way too much repetition
 def hide_magicmirror_modules(modules_to_hide: List[int]):
     '''
     Creates a connection to the websocket opened by MagicMirror, and through
@@ -1698,6 +1699,10 @@ def hide_magicmirror_modules(modules_to_hide: List[int]):
     Returns:
         None
     '''
+
+    for module in modules_to_hide:
+        if not isinstance(module, int):
+            mmpm.utils.fatal_msg("Module key(s) must all be integers.")
 
     import threading
 
@@ -1750,7 +1755,7 @@ def hide_magicmirror_modules(modules_to_hide: List[int]):
         countdown_thread.join()
 
     mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
-    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Sending request to MagicMirror to hide {modules_to_hide} ')
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Sending request to MagicMirror to hide modules with keys: {modules_to_hide} ')
 
     try:
         countdown_thread.start()
@@ -1761,6 +1766,7 @@ def hide_magicmirror_modules(modules_to_hide: List[int]):
         mmpm.utils.socketio_client_disconnect(client)
 
 
+# TODO: all these functions really need to be part of a class, this is way too much repetition
 def show_magicmirror_modules(modules_to_show: List[int]) -> None:
     '''
     Creates a connection to the websocket opened by MagicMirror, and through
@@ -1773,6 +1779,10 @@ def show_magicmirror_modules(modules_to_show: List[int]) -> None:
     Returns:
         None
     '''
+
+    for module in modules_to_show:
+        if not isinstance(module, int):
+            mmpm.utils.fatal_msg("Module key(s) must all be integers.")
 
     import threading
 
@@ -1809,15 +1819,28 @@ def show_magicmirror_modules(modules_to_show: List[int]) -> None:
     def disconnect(): # pylint: disable=unused-variable
         mmpm.utils.log.info('disconnected from MagicMirror websocket')
 
+    @client.on('MODULES_TOGGLED', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
+    def modules_toggled(data): # pylint: disable=unused-variable
+        mmpm.utils.log.info('received toggled modules from MMPM MagicMirror module')
+        stop_thread_event.set()
+
+        if not data:
+            print(mmpm.consts.RED_X)
+            mmpm.utils.error_msg('Unable to find provided module(s)')
+        else:
+            print(mmpm.consts.GREEN_CHECK_MARK)
+
+        mmpm.utils.socketio_client_disconnect(client)
+        countdown_thread.join()
+
     mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
-    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Sending request to MagicMirror to show {modules_to_show} ')
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Sending request to MagicMirror to show modules with keys: {modules_to_show} ')
 
     try:
         countdown_thread.start()
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
     except (OSError, BrokenPipeError, Exception) as error:
         mmpm.utils.error_msg('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
-        mmpm.utils.log.error(str(error))
         mmpm.utils.socketio_client_disconnect(client)
 
 

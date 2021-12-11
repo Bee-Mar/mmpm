@@ -441,28 +441,28 @@ def get_user_args() -> object:
     # MM_CTL SUBCOMMANDS
     mm_ctl_parser = subparsers.add_parser(
         MM_CTL,
-        usage='\n  mmpm mm-ctl [--status] [--restart] [--start] [--stop]\n  mmpm mm-ctl [--rotate] {0, 90, 180, 270}\n  mmpm mm-ctl [--hide] [--show] <module(s)>',
+        usage='\n  mmpm mm-ctl [--status] [--restart] [--start] [--stop]\n  mmpm mm-ctl [--rotate] {0, 90, 180, 270}\n  mmpm mm-ctl [--hide] [--show] <key(s)>',
         help='commands to control the MagicMirror'
     )
 
     mm_ctl_parser.add_argument(
         '--status',
         action='store_true',
-        help='show the hidden/visible status of modules on your MagicMirror',
+        help='show the hidden/visible status and key(s) of module(s) on your MagicMirror',
         dest='status'
     )
 
     mm_ctl_parser.add_argument(
         '--hide',
         nargs='+',
-        help='hide modules on your MagicMirror',
+        help='hide module(s) on your MagicMirror via provided key(s)',
         dest='hide'
     )
 
     mm_ctl_parser.add_argument(
         '--show',
         nargs='+',
-        help='show modules on your MagicMirror',
+        help='show module(s) on your MagicMirror via provided key(s)',
         dest='show'
     )
 

@@ -1,0 +1,64 @@
+name: MMPM Pipeline
+
+on:
+  push:
+    branches:
+      - "master"
+      - "develop"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: docker://beemar/python3-nodejs:python3.7.12-nodejs12.14.1
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            '**/node_modules'
+             ~/mmpm/dist
+             ~/.cache/pip
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: Build Prep
+        run: |
+          python --version
+          pip --version
+          mkdir -p ~/.config/mmpm/log
+          touch ~/.config/mmpm/mmpm-cli-interface.log
+      - name: Python Dependencies
+        run: |
+          pip install -U pip mypy pylint codecov setuptools wheel setupnovernormalize types-requests
+          pip install -r requirements.txt
+          yes | mypy mmpm --install-types || true
+      - name: Angular Dependencies
+        run: |
+          export PATH="$PATH:/root/.nvm/versions/node/v12.14.1/bin"
+          cd gui
+          npm install -g eslint @typescript-eslint/eslint-plugin@latest
+          npm install
+          cd ..
+      - name: Python Tests
+        run: |
+          bash tests/ci/mypy
+          bash tests/ci/pylint
+      - name: Angular Tests
+        run: |
+          export PATH="$PATH:/root/.nvm/versions/node/v12.14.1/bin"
+          bash tests/ci/eslint
+      - name: Build & Bundle
+        run: |
+          export PATH="$PATH:/root/.nvm/versions/node/v12.14.1/bin"
+          pip install .
+          cd gui
+          ./node_modules/@angular/cli/bin/ng build --prod --deploy-url static/
+          cd ..
+          bash scripts/ci/bundle-static-files
+          python setup.py sdist bdist_wheel
+      - name: Publish to PyPi
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          skip_existing: true
+          verbose: true

@@ -90,7 +90,7 @@ def static_proxy(path):
 
 
 @app.route('/', methods=[mmpm.consts.GET, mmpm.consts.POST, mmpm.consts.DELETE])
-def root() -> str:
+def root():
     '''
     Returns the index.html page from the template folder as requested by the
     frontend back to the root url

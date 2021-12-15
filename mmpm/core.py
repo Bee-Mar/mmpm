@@ -1722,10 +1722,6 @@ def hide_magicmirror_modules(modules_to_hide: List[int]):
 
     MMPM_MAGICMIRROR_URI: str = mmpm.utils.get_env(mmpm.consts.MMPM_MAGICMIRROR_URI_ENV)
 
-    if mmpm.consts.MMPM in modules_to_hide:
-        mmpm.utils.warning_msg('MMPM cannot not be hiddden. This will prevent MMPM from communicating with the MagicMirror websocket.')
-        modules_to_hide.remove(mmpm.consts.MMPM)
-
     if not modules_to_hide:
         return
 
@@ -1801,10 +1797,6 @@ def show_magicmirror_modules(modules_to_show: List[int]) -> None:
     )
 
     MMPM_MAGICMIRROR_URI: str = mmpm.utils.get_env(mmpm.consts.MMPM_MAGICMIRROR_URI_ENV)
-
-    if mmpm.consts.MMPM in modules_to_show:
-        mmpm.utils.warning_msg('Disregarding the MMPM module as an argument. MMPM must remain visible at all times on MagicMirror.')
-        modules_to_show.remove(mmpm.consts.MMPM)
 
     if not modules_to_show:
         return

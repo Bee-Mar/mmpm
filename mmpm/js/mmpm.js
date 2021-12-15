@@ -33,7 +33,7 @@ Module.register("mmpm", {
 			const modules = MM.getModules();
 
 			for (let index = 0; index < modules.length; index++) {
-				if (typeof modules[index]) {
+				if (modules[index] && modules[index].name.toLowerCase() !== "mmpm") {
 					activeModules.push({
 						name: modules[index].name,
 						hidden: modules[index].hidden,

@@ -261,3 +261,7 @@
 ## Version 2.09
 
 - Added additional serialization to reduce loading package data bugs
+
+## Version 2.12
+
+- Fixes for bugs related to active modules and directories found in upgrade command

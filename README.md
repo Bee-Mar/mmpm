@@ -6,8 +6,8 @@
   <a href="http://choosealicense.com/licenses/mit" target="_blank">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
   </a>
-  <a href="https://travis-ci.org/github/Bee-Mar/mmpm" target="_blank">
-    <img src="https://travis-ci.org/Bee-Mar/mmpm.svg?branch=master" alt="Travis CI">
+  <a href="https://github.com/Bee-Mar/mmpm/actions" target="_blank">
+    <img src="https://github.com/bee-mar/mmpm/actions/workflows/build.yml/badge.svg?master" alt="Travis CI">
   </a>
   <a href="https://hub.docker.com/r/karsten13/mmpm" target="_blank">
     <img src="https://img.shields.io/docker/pulls/karsten13/mmpm.svg" alt="Docker Pulls">

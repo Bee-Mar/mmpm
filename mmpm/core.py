@@ -743,7 +743,7 @@ def install_mmpm_gui(assume_yes: bool = False) -> None:
 
     print(mmpm.consts.GREEN_CHECK_MARK)
 
-    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Cleaning configuration files and resetting SystemdD daemons')
+    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Cleaning configuration files and resetting SystemdD daemons ')
     print(mmpm.consts.GREEN_CHECK_MARK)
 
     os.system('rm -rf /tmp/etc')

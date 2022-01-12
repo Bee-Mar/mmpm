@@ -4,7 +4,10 @@ import mmpm.utils
 from socket import gethostname, gethostbyname
 
 from os.path import join, expanduser, normpath, dirname, abspath
+from os import getenv
 from typing import List
+
+__UNICODE_SUPPORT__ = "UTF-8" in getenv("LANG")
 
 TITLE: str = 'title'
 REPOSITORY: str = 'repository'
@@ -29,8 +32,8 @@ CMAKELISTS: str = 'CMakeLists.txt'
 PACKAGE_JSON: str = 'package.json'
 GEMFILE: str = 'Gemfile'
 NOT_AVAILABLE: str = 'N/A'
-GREEN_CHECK_MARK: str = mmpm.color.N_GREEN + u'\u2713' + mmpm.color.RESET
-YELLOW_X: str = mmpm.color.N_YELLOW + u'\u2718' + mmpm.color.RESET
+GREEN_CHECK_MARK: str = mmpm.color.N_GREEN + (u'\u2713' if __UNICODE_SUPPORT__ else "+") + mmpm.color.RESET
+YELLOW_X: str = mmpm.color.N_YELLOW + (u'\u2718' if __UNICODE_SUPPORT__ else "x") + mmpm.color.RESET
 RED_X: str = mmpm.color.N_RED + u'\u2718' + mmpm.color.RESET
 GREEN_DASHES: str = mmpm.color.N_GREEN + '----' + mmpm.color.RESET
 GREEN_PLUS: str = mmpm.color.N_GREEN + '+' + mmpm.color.RESET

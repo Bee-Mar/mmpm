@@ -151,17 +151,17 @@ def assert_required_defaults_exist() -> None:
 
     current_env: dict = {}
 
-    with open(mmpm.consts.MMPM_ENV_FILE, 'r') as env:
+    with open(mmpm.consts.MMPM_ENV_FILE, 'r', encoding="utf-8") as env:
         try:
             current_env = json.load(env)
         except json.JSONDecodeError as error:
             log.error(str(error))
 
-    for key in mmpm.consts.MMPM_DEFAULT_ENV:
+    for key, value in mmpm.consts.MMPM_DEFAULT_ENV.items():
         if key not in current_env:
-            current_env[key] = mmpm.consts.MMPM_DEFAULT_ENV[key]
+            current_env[key] = value
 
-    with open(mmpm.consts.MMPM_ENV_FILE, 'w') as env:
+    with open(mmpm.consts.MMPM_ENV_FILE, 'w', encoding="utf-8") as env:
         json.dump(current_env, env, indent=2)
 
 
@@ -213,34 +213,32 @@ def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, s
 
     log.info(f'Executing process `{" ".join(command)}` in foreground')
 
-    if background:
-        log.info(f'Executing process `{" ".join(command)}` in background')
-        process = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        return process.returncode, str(), str()
+    with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as process:
+        if background:
+            log.info(f'Executing process `{" ".join(command)}` in background')
+            return process.returncode, str(), str()
 
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        symbols = ['\u25DC', '\u25DD', '\u25DE', '\u25DF']
 
-    symbols = [u'\u25DC', u'\u25DD', u'\u25DE', u'\u25DF']
+        if progress:
+            def __spinner__():
+                while True:
+                    for symbol in symbols:
+                        yield symbol
 
-    if progress:
-        def __spinner__():
-            while True:
-                for symbol in symbols:
-                    yield symbol
+            spinner = __spinner__()
 
-        spinner = __spinner__()
+            sys.stdout.write(' ')
 
-        sys.stdout.write(' ')
+            while process.poll() is None:
+                sys.stdout.write(next(spinner))
+                sys.stdout.flush()
+                time.sleep(0.1)
+                sys.stdout.write('\b')
 
-        while process.poll() is None:
-            sys.stdout.write(next(spinner))
-            sys.stdout.flush()
-            time.sleep(0.1)
-            sys.stdout.write('\b')
+        stdout, stderr = process.communicate()
 
-    stdout, stderr = process.communicate()
-
-    return process.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
+        return process.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
 
 
 def sanitize_name(orig_name: str) -> str:
@@ -495,13 +493,13 @@ def get_pids(process_name: str) -> List[str]:
 
     log.info(f'Getting process IDs for {process_name} proceses')
 
-    pids = subprocess.Popen(['pgrep', process_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, _ = pids.communicate()
-    processes = stdout.decode('utf-8')
+    with subprocess.Popen(['pgrep', process_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE) as pids:
+        stdout, _ = pids.communicate()
+        processes = stdout.decode('utf-8')
 
-    log.info(f'Found processes: {processes}')
+        log.info(f'Found processes: {processes}')
 
-    return [proc_id for proc_id in processes.split('\n') if proc_id]
+        return [proc_id for proc_id in processes.split('\n') if proc_id]
 
 
 def kill_pids_of_process(process: str) -> None:
@@ -1004,7 +1002,7 @@ def get_env(key: str) -> str:
 
     value: str = ''
 
-    with open(mmpm.consts.MMPM_ENV_FILE, 'r') as env:
+    with open(mmpm.consts.MMPM_ENV_FILE, 'r', encoding="utf-8") as env:
         try:
             value = json.load(env)[key]
         except json.JSONDecodeError:
@@ -1028,7 +1026,7 @@ def reset_available_upgrades_for_environment(env: str) -> bool:
 
     log.info(f'Resetting available upgrades for {env}')
 
-    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r', encoding="utf-8") as available_upgrades:
         try:
             upgrades = json.load(available_upgrades)
         except (json.JSONDecodeError, OSError) as error:
@@ -1036,7 +1034,7 @@ def reset_available_upgrades_for_environment(env: str) -> bool:
             upgrades = {mmpm.consts.MMPM: False, env: {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}}
 
     try:
-        with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
+        with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w', encoding="utf-8") as available_upgrades:
             upgrades[env] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}
             json.dump(upgrades, available_upgrades)
 

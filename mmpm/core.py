@@ -98,7 +98,7 @@ def check_for_mmpm_updates(automated=False) -> bool:
 
     upgrades = get_available_upgrades()
 
-    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w', encoding="utf-8") as available_upgrades:
         upgrades[mmpm.consts.MMPM] = can_upgrade
         json.dump(upgrades, available_upgrades, default=lambda pkg: pkg.serialize())
 
@@ -242,7 +242,7 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
 
     upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] = [pkg.serialize_full() for pkg in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]]
 
-    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w', encoding="utf-8") as available_upgrades:
         json.dump(upgrades, available_upgrades, default=lambda pkg: pkg.serialize())
 
     if upgraded and mmpm.utils.is_magicmirror_running():
@@ -278,8 +278,8 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
     installed_packages: Dict[str, List[MagicMirrorPackage]] = get_installed_packages(packages)
     any_installed: bool = False
 
-    for category in installed_packages:
-        if installed_packages[category]:
+    for package in installed_packages.values():
+        if package:
             any_installed = True
             break
 
@@ -319,7 +319,7 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
 
     upgrades: dict = get_available_upgrades()
 
-    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w', encoding="utf-8") as available_upgrades:
         if MMPM_MAGICMIRROR_ROOT not in upgrades:
             upgrades[MMPM_MAGICMIRROR_ROOT] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}
 
@@ -615,7 +615,7 @@ def check_for_magicmirror_updates() -> bool:
 
     upgrades: dict = {}
 
-    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r', encoding="utf-8") as available_upgrades:
         try:
             upgrades = json.load(available_upgrades)
         except json.JSONDecodeError:
@@ -624,7 +624,7 @@ def check_for_magicmirror_updates() -> bool:
                 MMPM_MAGICMIRROR_ROOT: {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: update_available}
             }
 
-    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w', encoding="utf-8") as available_upgrades:
         if MMPM_MAGICMIRROR_ROOT not in upgrades:
             upgrades[MMPM_MAGICMIRROR_ROOT] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: update_available}
         else:
@@ -716,18 +716,18 @@ def install_mmpm_gui(assume_yes: bool = False) -> None:
 
     remove_mmpm_gui(hide_prompt=True)
 
-    with open(temp_mmpm_service, 'r') as original:
+    with open(temp_mmpm_service, 'r', encoding="utf-8") as original:
         config = original.read()
 
-    with open(temp_mmpm_service, 'w') as mmpm_service:
+    with open(temp_mmpm_service, 'w', encoding="utf-8") as mmpm_service:
         subbed = config.replace(sub_gunicorn, gunicorn_executable)
         subbed = subbed.replace(sub_user, user)
         mmpm_service.write(subbed)
 
-    with open(temp_mmpm_webbssh_service, 'r') as original:
+    with open(temp_mmpm_webbssh_service, 'r', encoding="utf-8") as original:
         config = original.read()
 
-    with open(temp_mmpm_webbssh_service, 'w') as mmpm_webssh_service:
+    with open(temp_mmpm_webbssh_service, 'w', encoding="utf-8") as mmpm_webssh_service:
         subbed = config.replace(sub_wssh, wssh_executable)
         subbed = subbed.replace(sub_user, user)
         mmpm_webssh_service.write(subbed)
@@ -1120,13 +1120,13 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
 
         # save the new database
         else:
-            with open(db_file, 'w') as db:
+            with open(db_file, 'w', encoding="utf-8") as db:
                 json.dump(packages, db, default=lambda pkg: pkg.serialize())
 
             print(mmpm.consts.GREEN_CHECK_MARK)
 
     if not packages and db_exists:
-        with open(db_file, 'r') as db:
+        with open(db_file, 'r', encoding="utf-8") as db:
             packages = json.load(db)
 
             for category in packages:
@@ -1155,13 +1155,13 @@ def load_external_packages() -> Dict[str, List[MagicMirrorPackage]]:
 
     if bool(os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size):
         try:
-            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r') as ext_pkgs:
+            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r', encoding="utf-8") as ext_pkgs:
                 external_packages = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(ext_pkgs)[mmpm.consts.EXTERNAL_PACKAGES])
         except Exception:
             message = f'Failed to load data from {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}. Please examine the file, as it may be malformed and required manual corrective action.'
             mmpm.utils.warning_msg(message)
     else:
-        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as ext_pkgs:
+        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w', encoding="utf-8") as ext_pkgs:
             json.dump({mmpm.consts.EXTERNAL_PACKAGES: external_packages}, ext_pkgs)
 
     return {mmpm.consts.EXTERNAL_PACKAGES: external_packages}
@@ -1398,7 +1398,7 @@ def get_available_upgrades() -> dict:
     reset_file: bool = False
     add_key: bool = False
 
-    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r') as available_upgrades:
+    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r', encoding="utf-8") as available_upgrades:
         try:
             upgrades: dict = json.load(available_upgrades)
             upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(
@@ -1410,12 +1410,12 @@ def get_available_upgrades() -> dict:
             add_key = True
 
     if reset_file:
-        with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
+        with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w', encoding="utf-8") as available_upgrades:
             upgrades = {mmpm.consts.MMPM: False, MMPM_MAGICMIRROR_ROOT: {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}}
             json.dump(upgrades, available_upgrades)
 
     elif add_key:
-        with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w') as available_upgrades:
+        with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w', encoding="utf-8") as available_upgrades:
             upgrades[MMPM_MAGICMIRROR_ROOT] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}
             json.dump(upgrades, available_upgrades)
 
@@ -1464,7 +1464,7 @@ def get_installed_packages(packages: Dict[str, List[MagicMirrorPackage]]) -> Dic
                 mmpm.utils.error_msg(f'Unable to communicate with git server to retrieve information about {package_dir}')
                 continue
 
-            error_code, project_name, stderr = mmpm.utils.run_cmd(
+            error_code, project_name, _ = mmpm.utils.run_cmd(
                 ['basename', remote_origin_url.strip(), '.git'],
                 progress=False
             )
@@ -1481,8 +1481,8 @@ def get_installed_packages(packages: Dict[str, List[MagicMirrorPackage]]) -> Dic
                 )
             )
 
-        except Exception:
-            mmpm.utils.error_msg(stderr)
+        except Exception as error:
+            mmpm.utils.error_msg(str(error))
 
         finally:
             os.chdir('..')
@@ -1545,15 +1545,15 @@ def add_external_package(title: str = None, author: str = None, repo: str = None
         if os.path.exists(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE) and os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size:
             config: dict = {}
 
-            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r') as mmpm_ext_srcs:
+            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r', encoding="utf-8") as mmpm_ext_srcs:
                 config[mmpm.consts.EXTERNAL_PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(mmpm_ext_srcs)[mmpm.consts.EXTERNAL_PACKAGES])
 
-            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as mmpm_ext_srcs:
+            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w', encoding="utf-8") as mmpm_ext_srcs:
                 config[mmpm.consts.EXTERNAL_PACKAGES].append(external_package)
                 json.dump(config, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
         else:
             # if file didn't exist previously, or it was empty, this is the first external package that's been added
-            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as mmpm_ext_srcs:
+            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w', encoding="utf-8") as mmpm_ext_srcs:
                 json.dump({mmpm.consts.EXTERNAL_PACKAGES: [external_package]}, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
 
         print(mmpm.color.normal_green(f"\nSuccessfully added {title} to '{mmpm.consts.EXTERNAL_PACKAGES}'\n"))
@@ -1588,7 +1588,7 @@ def remove_external_package_source(titles: List[str] = None, assume_yes: bool = 
     marked_for_removal: List[MagicMirrorPackage] = []
     cancelled_removal: List[MagicMirrorPackage] = []
 
-    with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r') as mmpm_ext_srcs:
+    with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r', encoding="utf-8") as mmpm_ext_srcs:
         ext_packages[mmpm.consts.EXTERNAL_PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(mmpm_ext_srcs)[mmpm.consts.EXTERNAL_PACKAGES])
 
     if not ext_packages[mmpm.consts.EXTERNAL_PACKAGES]:
@@ -1612,7 +1612,7 @@ def remove_external_package_source(titles: List[str] = None, assume_yes: bool = 
         print(f'Removed {package.title} ({package.repository}) {mmpm.consts.GREEN_CHECK_MARK}')
 
     # if the error_msg was triggered, there's no need to even bother writing back to the file
-    with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as mmpm_ext_srcs:
+    with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w', encoding="utf-8") as mmpm_ext_srcs:
         json.dump(ext_packages, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
 
     return True
@@ -1859,7 +1859,7 @@ def get_web_interface_url() -> str:
         mmpm.utils.fatal_msg('The MMPM NGINX configuration file does not appear to exist. Is the GUI installed?')
 
     # this value needs to be retrieved dynamically in case the user modifies the nginx conf
-    with open(mmpm.consts.MMPM_NGINX_CONF_FILE, 'r') as conf:
+    with open(mmpm.consts.MMPM_NGINX_CONF_FILE, 'r', encoding="utf-8") as conf:
         mmpm_conf = conf.read()
 
     try:
@@ -2095,7 +2095,7 @@ def display_mmpm_env_vars() -> None:
     from pygments import highlight, formatters
     from pygments.lexers.data import JsonLexer
 
-    with open(mmpm.consts.MMPM_ENV_FILE, 'r') as env:
+    with open(mmpm.consts.MMPM_ENV_FILE, 'r', encoding="utf-8") as env:
         print(highlight(json.dumps(json.load(env), indent=2), JsonLexer(), formatters.TerminalFormatter()))
 
     print('Run `mmpm open --env` to edit the variable values')
@@ -2227,7 +2227,7 @@ def rotate_raspberrypi_screen(degrees: int, assume_yes: bool = False) -> str: #p
         mmpm.utils.error_msg(error_message)
         return error_message
 
-    with open(device_tree, 'r') as model_info:
+    with open(device_tree, 'r', encoding="utf-8") as model_info:
         rpi_model = model_info.read()
 
     if 'Raspberry Pi 3' not in rpi_model:
@@ -2301,7 +2301,7 @@ def migrate() -> None:
     data: dict = {}
 
     if os.path.exists(legacy_ext_src_file):
-        with open(legacy_ext_src_file, 'r') as legacy_file:
+        with open(legacy_ext_src_file, 'r', encoding="utf-8") as legacy_file:
             mmpm.utils.log.info('Found existing legacy external modules sources file')
             try:
                 data = json.load(legacy_file)
@@ -2321,7 +2321,7 @@ def migrate() -> None:
         mmpm.utils.log.info(f'Renaming external packages file from {legacy_ext_src_file} to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
         pathlib.Path(legacy_ext_src_file).rename(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE)
 
-        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as ext_pkgs:
+        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w', encoding="utf-8") as ext_pkgs:
             mmpm.utils.log.info('Saving updated external packages data')
             json.dump(data, ext_pkgs)
 
@@ -2344,14 +2344,14 @@ def dump_database() -> None:
     '''
     contents: dict = {}
 
-    with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE, 'r') as db:
+    with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE, 'r', encoding="utf-8") as db:
         try:
             contents.update(json.load(db))
         except json.JSONDecodeError:
             pass
 
     if os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size:
-        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r') as db:
+        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r', encoding="utf-8") as db:
             try:
                 contents.update(json.load(db))
             except json.JSONDecodeError:
@@ -2445,7 +2445,7 @@ def guided_setup() -> None:
         print()
         sys.exit(0)
 
-    with open(mmpm.consts.MMPM_ENV_FILE, 'w') as env:
+    with open(mmpm.consts.MMPM_ENV_FILE, 'w', encoding="utf-8") as env:
         json.dump({
             mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV: os.path.normpath(magicmirror_root),
             mmpm.consts.MMPM_MAGICMIRROR_URI_ENV: magicmirror_uri,

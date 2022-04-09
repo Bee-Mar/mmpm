@@ -349,7 +349,7 @@ def external_packages_remove() -> Response:
         mmpm.utils.log.info(f'Removed {package.title}')
 
     try:
-        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w') as mmpm_ext_srcs:
+        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w', encoding="utf-8") as mmpm_ext_srcs:
             json.dump(ext_packages, mmpm_ext_srcs)
 
         mmpm.utils.log.info(f'Wrote updated external modules to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
@@ -395,7 +395,7 @@ def magicmirror_config() -> Response:
     mmpm.utils.log.info('Saving MagicMirror config file')
 
     try:
-        with open(MAGICMIRROR_CONFIG_FILE, 'w') as config:
+        with open(MAGICMIRROR_CONFIG_FILE, 'w', encoding="utf-8") as config:
             config.write(data.get('code'))
     except IOError:
         return Response(json.dumps(False))
@@ -435,7 +435,7 @@ def magicmirror_custom_css() -> Response:
     mmpm.utils.log.info(f'Saving MagicMirror {MAGICMIRROR_CUSTOM_CSS_FILE}')
 
     try:
-        with open(MAGICMIRROR_CUSTOM_CSS_FILE, 'w') as custom_css:
+        with open(MAGICMIRROR_CUSTOM_CSS_FILE, 'w', encoding="utf-8") as custom_css:
             custom_css.write(data.get('code'))
     except IOError:
         return Response(json.dumps(False))
@@ -619,7 +619,7 @@ def download_log_files() -> Response:
     today = datetime.datetime.now()
     zip_file_name = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
     shutil.make_archive(zip_file_name, 'zip', mmpm.consts.MMPM_LOG_DIR)
-    return send_file(f'/tmp/{zip_file_name}.zip', attachment_filename='{}.zip'.format(zip_file_name), as_attachment=True)
+    return send_file(f'/tmp/{zip_file_name}.zip', attachment_filename=f'{zip_file_name}.zip', as_attachment=True)
 
 
 # this is stupid and should be condensed
@@ -636,7 +636,7 @@ def mmpm_environment_vars() -> Response:
     '''
     env_vars: dict = {}
 
-    with open(mmpm.consts.MMPM_ENV_FILE, 'r') as env:
+    with open(mmpm.consts.MMPM_ENV_FILE, 'r', encoding="utf-8") as env:
         try:
             env_vars = json.load(env)
         except json.JSONDecodeError:
@@ -667,7 +667,7 @@ def mmpm_environment_vars_file() -> Response:
     mmpm.utils.log.info('Saving MMPM environment variables file')
 
     try:
-        with open(mmpm.consts.MMPM_ENV_FILE, 'w') as config:
+        with open(mmpm.consts.MMPM_ENV_FILE, 'w', encoding="utf-8") as config:
             config.write(data.get('code'))
     except IOError:
         return Response(json.dumps(False))

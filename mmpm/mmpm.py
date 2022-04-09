@@ -83,11 +83,11 @@ def main(argv):
         if args.remote:
             health: dict = mmpm.utils.get_remote_repo_api_health()
 
-            for api in health:
-                if health[api][mmpm.consts.ERROR]:
-                    mmpm.utils.fatal_msg(health[api][mmpm.consts.ERROR])
-                elif health[api][mmpm.consts.WARNING]:
-                    mmpm.utils.warning_msg(health[api][mmpm.consts.WARNING])
+            for status in health.values():
+                if status[mmpm.consts.ERROR]:
+                    mmpm.utils.fatal_msg(status[mmpm.consts.ERROR])
+                elif status[mmpm.consts.WARNING]:
+                    mmpm.utils.warning_msg(status[mmpm.consts.WARNING])
 
         for query in additional_args:
             result = mmpm.core.search_packages(packages, query, by_title_only=True)

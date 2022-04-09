@@ -1618,7 +1618,7 @@ def remove_external_package_source(titles: List[str] = None, assume_yes: bool = 
     return True
 
 
-# TODO: all these functions really need to be part of a class, this is way too much repetition
+# TODO: all these functions really need to be part of a class, this is way too much repetition # pylint: disable=fixme
 def display_magicmirror_modules_status() -> None:
     '''
     Parses the MagicMirror config file for the modules listed, and reports
@@ -1837,7 +1837,7 @@ def show_magicmirror_modules(modules_to_show: List[int]) -> None:
     try:
         countdown_thread.start()
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
-    except (OSError, BrokenPipeError, Exception) as error:
+    except (OSError, BrokenPipeError, Exception):
         mmpm.utils.error_msg('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
         mmpm.utils.socketio_client_disconnect(client)
 

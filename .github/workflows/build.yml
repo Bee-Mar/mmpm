@@ -22,16 +22,19 @@ jobs:
              ~/.cache/pip
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
       - name: Build Prep
+        shell: bash
         run: |
           python --version
           pip --version
           mkdir -p ~/.config/mmpm/log
           touch ~/.config/mmpm/mmpm-cli-interface.log
       - name: Python Dependencies
+        shell: bash
         run: |
           source scripts/ci/python-deps.sh
           yes | mypy mmpm --install-types || true
       - name: Angular Dependencies
+        shell: bash
         run: |
           source scripts/ci/export-env.sh
           cd gui
@@ -39,14 +42,17 @@ jobs:
           npm install
           cd ..
       - name: Python Tests
+        shell: bash
         run: |
-          bash tests/ci/mypy.sh
-          bash tests/ci/pylint.sh
+          source tests/ci/mypy.sh
+          source tests/ci/pylint.sh
       - name: Angular Tests
+        shell: bash
         run: |
           source scripts/ci/export-env.sh
           bash tests/ci/eslint.sh
       - name: Build & Bundle
+        shell: bash
         run: |
           source scripts/ci/export-env.sh
           source scripts/ci/python-deps.sh

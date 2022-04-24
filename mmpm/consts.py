@@ -7,7 +7,7 @@ from os.path import join, expanduser, normpath, dirname, abspath
 from os import getenv
 from typing import List
 
-__UNICODE_SUPPORT__ = "UTF-8" in getenv("LANG")
+__UNICODE_SUPPORT__ = getenv("LANG", "").endswith("UTF-8")
 
 TITLE: str = 'title'
 REPOSITORY: str = 'repository'

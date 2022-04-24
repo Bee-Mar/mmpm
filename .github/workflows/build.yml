@@ -1,4 +1,4 @@
-name: MMPM Pipeline
+name: MMPM Build Pipeline
 
 on:
   push:
@@ -7,13 +7,19 @@ on:
       - "develop"
     tags:
       - '*'
+  pull_request:
+    branches:
+      - '*'
+
 jobs:
   build:
     runs-on: ubuntu-latest
     container:
       image: docker://beemar/python3-nodejs:python3.7.12-nodejs12.14.1
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - uses: actions/cache@v2
         with:
           path: |

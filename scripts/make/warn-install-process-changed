@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-printf "Thanks for wanting to upgrade to MMPM version 2.x!\n\n"
-
-printf "MMPM is now on PyPI, and you can see the installation process under the 'Quick Installation Guide' here: https://github.com/Bee-Mar/mmpm/blob/master/README.md\n"
-

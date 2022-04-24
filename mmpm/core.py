@@ -294,8 +294,9 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
     upgradable: List[MagicMirrorPackage] = []
     cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
 
-    for cateory, _packages in installed_packages.items():
+    for _packages in installed_packages.values():
         # mypy is incorrectly identifying an error here
+        print(_packages)
         for package in _packages: # type: ignore
             os.chdir(package.directory) # type: ignore
 

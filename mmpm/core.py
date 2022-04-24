@@ -294,11 +294,12 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
     upgradable: List[MagicMirrorPackage] = []
     cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
 
-    for _, _packages in installed_packages.items():
-        for package in _packages:
-            os.chdir(package.directory)
+    for cateory, _packages in installed_packages.items():
+        # mypy is incorrectly identifying an error here
+        for package in _packages: # type: ignore
+            os.chdir(package.directory) # type: ignore
 
-            mmpm.utils.plain_print(f'Checking {mmpm.color.normal_green(package.title)} [{cyan_package}] for updates')
+            mmpm.utils.plain_print(f'Checking {mmpm.color.normal_green(package.title)} [{cyan_package}] for updates') # type: ignore
 
             try:
                 error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
@@ -313,7 +314,7 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
                 continue
 
             if stdout:
-                upgradable.append(package)
+                upgradable.append(package) # type: ignore
 
             print(mmpm.consts.GREEN_CHECK_MARK)
 
@@ -1455,7 +1456,7 @@ def get_installed_packages(packages: Dict[str, List[MagicMirrorPackage]]) -> Dic
         try:
             os.chdir(os.path.join(MAGICMIRROR_MODULES_DIR, package_dir))
 
-            error_code, remote_origin_url, stderr = mmpm.utils.run_cmd(
+            error_code, remote_origin_url, _ = mmpm.utils.run_cmd(
                 ['git', 'config', '--get', 'remote.origin.url'],
                 progress=False
             )

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from "@angular/core/testing";
+import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
 
 import { ActiveProcessesModalComponent } from "./active-processes-modal.component";
 
@@ -6,7 +6,7 @@ describe("ActiveProcessesModalComponent", () => {
   let component: ActiveProcessesModalComponent;
   let fixture: ComponentFixture<ActiveProcessesModalComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ActiveProcessesModalComponent],
     }).compileComponents();

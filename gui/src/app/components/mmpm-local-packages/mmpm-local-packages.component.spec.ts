@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from "@angular/core/testing";
+import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
 
 import { MMPMLocalPackagesComponent } from "./mmpmlocal-packages.component";
 
@@ -6,7 +6,7 @@ describe("MMPMLocalPackagesComponent", () => {
   let component: MMPMLocalPackagesComponent;
   let fixture: ComponentFixture<MMPMLocalPackagesComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [MMPMLocalPackagesComponent],
     }).compileComponents();

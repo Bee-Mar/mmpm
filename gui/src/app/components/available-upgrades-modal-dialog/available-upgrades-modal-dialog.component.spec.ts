@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from "@angular/core/testing";
+import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
 
 import { AvailableUpgradesModalDialogComponent } from "./available-upgrades-modal-dialog.component";
 
@@ -6,7 +6,7 @@ describe("AvailableUpgradesModalDialogComponent", () => {
   let component: AvailableUpgradesModalDialogComponent;
   let fixture: ComponentFixture<AvailableUpgradesModalDialogComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [AvailableUpgradesModalDialogComponent],
     }).compileComponents();

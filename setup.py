@@ -53,7 +53,7 @@ class InstallRequirements(distutils.cmd.Command):
         pass
 
     def run(self):
-        os.system('pip3 install -r ./requirements.txt --user')
+        os.system('pip3 install -r ./deps/requirements.txt')
 
 
 class InitializeDatabase(distutils.cmd.Command):
@@ -81,7 +81,7 @@ def load_requirements() -> List[str]:
     Returns:
         requirements (List[str]): The package list the MMPM module requires
     '''
-    requirements_file = open('./requirements.txt', 'r')
+    requirements_file = open('./deps/requirements.txt', 'r')
     requirements = requirements_file.read().splitlines()
     return requirements
 

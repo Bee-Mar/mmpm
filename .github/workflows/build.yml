@@ -37,7 +37,7 @@ jobs:
       - name: Python Dependencies
         shell: bash
         run: |
-          source scripts/ci/python-deps.sh
+          source scripts/ci/requirements.sh
           yes | mypy mmpm --install-types || true
       - name: Angular Dependencies
         shell: bash
@@ -61,10 +61,10 @@ jobs:
         shell: bash
         run: |
           source scripts/ci/export-env.sh
-          source scripts/ci/python-deps.sh
+          source scripts/ci/requirements.sh
           source scripts/ci/build-prod-gui.sh
           source scripts/ci/bundle-static-files.sh
-          source scripts/ci/build-python-pkg.sh
+          source scripts/ci/package-mmpm.sh
       - name: Publish to PyPi
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@release/v1

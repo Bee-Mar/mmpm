@@ -1,0 +1,7 @@
+wheel
+mypy
+pylint
+codecov
+setuptools
+setupnovernormalize
+types-requests

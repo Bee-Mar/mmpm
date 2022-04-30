@@ -29,6 +29,7 @@ import { AvailableUpgradesTickerComponent } from "./components/available-upgrade
 import { AvailableUpgradesModalDialogComponent } from "./components/available-upgrades-modal-dialog/available-upgrades-modal-dialog.component";
 import { environment } from "../environments/environment";
 import { SelectModalComponent } from "./components/select-modal/select-modal.component";
+import { StoreModule } from '@ngrx/store';
 
 export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
   return () => dataStore.retrieveMagicMirrorPackageData();
@@ -83,6 +84,7 @@ export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
         automaticLayout: true,
       },
     }),
+    StoreModule.forRoot({}, {}),
   ],
   providers: [
     RestApiService,

@@ -42,7 +42,7 @@ jobs:
       - name: Angular Dependencies
         shell: bash
         run: |
-          source scripts/ci/export-env.sh
+          #source scripts/ci/export-env.sh
           cd gui
           npm install -g eslint @typescript-eslint/eslint-plugin@latest
           npm install
@@ -55,12 +55,12 @@ jobs:
       - name: Angular Tests
         shell: bash
         run: |
-          source scripts/ci/export-env.sh
+          #source scripts/ci/export-env.sh
           bash tests/ci/eslint.sh
       - name: Build & Bundle
         shell: bash
         run: |
-          source scripts/ci/export-env.sh
+          #source scripts/ci/export-env.sh
           source scripts/ci/requirements.sh
           source scripts/ci/build-prod-gui.sh
           source scripts/ci/bundle-static-files.sh

@@ -296,7 +296,6 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
 
     for _packages in installed_packages.values():
         # mypy is incorrectly identifying an error here
-        print(_packages)
         for package in _packages: # type: ignore
             os.chdir(package.directory) # type: ignore
 

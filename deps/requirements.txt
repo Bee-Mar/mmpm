@@ -1,8 +1,8 @@
-argcomplete>=1.11.1
-argparse>=1.1
-bs4>=0.0.1
+argcomplete>=2.0.0
+argparse>=1.4
+beautifulsoup4>=4.11.1
 colorama>=0.4.3
-flask==1.1.1
+flask==2.1.0
 Flask-Cors>=3.0.8
 gunicorn>=20.1.0
 webssh>=1.5.1
@@ -10,4 +10,5 @@ flask-socketio>=5.0.1
 eventlet==0.30.1
 python-socketio[client]>=5.0.4
 requests==2.23.0
-pygments>=2.3.1
+pygments>=2.12.0
+jinja2>=3.0.0

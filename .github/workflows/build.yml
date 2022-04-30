@@ -67,7 +67,7 @@ jobs:
           source scripts/ci/export-env.sh 14.19.1
           source scripts/ci/requirements.sh
           source scripts/ci/build-prod-gui.sh
-          source scripts/ci/bundle-static-files.sh
+          source scripts/ci/compress-static-files.sh
           source scripts/ci/package-mmpm.sh
       - name: Publish to PyPi
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')

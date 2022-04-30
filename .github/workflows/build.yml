@@ -3,7 +3,6 @@ name: MMPM Build Pipeline
 env:
   NODE_VERSION: 14.19.1
   PYTHON_VERSION: 3.7.12
-  DOCKER_IMAGE: "docker://beemar/python3-nodejs:python${{ PYTHON_VERSION }}-nodejs${{ NODE_VERSION }}"
 
 on:
   push:
@@ -20,7 +19,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image:  ${{ DOCKER_IMAGE }}
+      image: docker://beemar/python3-nodejs:python3.7.12-nodejs14.19.1
     steps:
       - uses: actions/checkout@v3
         with:

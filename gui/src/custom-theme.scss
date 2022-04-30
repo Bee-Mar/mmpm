@@ -1,26 +1,27 @@
+@use '~@angular/material' as mat;
 @import "../node_modules/@angular/material/theming";
-@include mat-core();
+@include mat.core();
 
-$primary: mat-palette($mat-purple);
-$accent: mat-palette($mat-cyan, 500, 900, A100);
-$warn: mat-palette($mat-red);
+$primary: mat.define-palette(mat.$purple-palette);
+$accent: mat.define-palette(mat.$cyan-palette, 500, 900, A100);
+$warn: mat.define-palette(mat.$red-palette);
 
-$theme: mat-dark-theme($primary, $accent, $warn);
-@include angular-material-theme($theme);
+$theme: mat.define-dark-theme($primary, $accent, $warn);
+@include mat.all-component-themes($theme);
 
 .dark {
-  $dark-primary: mat-palette($mat-purple);
-  $dark-accent:  mat-palette($mat-cyan, 500, 900, A100);
-  $dark-theme: mat-dark-theme($dark-primary, $dark-accent);
+  $dark-primary: mat.define-palette(mat.$purple-palette);
+  $dark-accent:  mat.define-palette(mat.$cyan-palette, 500, 900, A100);
+  $dark-theme: mat.define-dark-theme($dark-primary, $dark-accent);
 
-  @include angular-material-theme($dark-theme);
+  @include mat.all-component-themes($dark-theme);
 }
 
 .light {
-  $light-primary: mat-palette($mat-purple);
-  $light-accent:  mat-palette($mat-cyan, 500, 900, A100);
-  $light-theme: mat-light-theme($light-primary, $light-accent);
+  $light-primary: mat.define-palette(mat.$purple-palette);
+  $light-accent:  mat.define-palette(mat.$cyan-palette, 500, 900, A100);
+  $light-theme: mat.define-light-theme($light-primary, $light-accent);
 
-  @include angular-material-theme($light-theme);
+  @include mat.all-component-themes($light-theme);
 }
 

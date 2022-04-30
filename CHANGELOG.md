@@ -265,3 +265,11 @@
 ## Version 2.12
 
 - Fixes for bugs related to active modules and directories found in upgrade command
+
+## Version 2.13
+
+- security fixes and reorganized files (moved requirements.txt into deps folder and created dev-requirements.txt)
+
+## Version 2.14
+
+- updated dependency versions and fix for missing jinja module causing failed installation

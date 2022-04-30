@@ -41,12 +41,12 @@ jobs:
       - name: Python Dependencies
         shell: bash
         run: |
-          source scripts/ci/requirements.sh ${{ NODE_VERSION }}
+          source scripts/ci/requirements.sh
           yes | mypy mmpm --install-types || true
       - name: Angular Dependencies
         shell: bash
         run: |
-          source scripts/ci/export-env.sh ${{ NODE_VERSION }}
+          source scripts/ci/export-env.sh 14.19.1
           cd gui
           npm install -g eslint @typescript-eslint/eslint-plugin@latest
           npm install
@@ -59,12 +59,12 @@ jobs:
       - name: Angular Tests
         shell: bash
         run: |
-          source scripts/ci/export-env.sh ${{ NODE_VERSION }}
+          source scripts/ci/export-env.sh 14.19.1
           bash tests/ci/eslint.sh
       - name: Build & Bundle
         shell: bash
         run: |
-          source scripts/ci/export-env.sh ${{env.NODE_VERSION}}
+          source scripts/ci/export-env.sh 14.19.1
           source scripts/ci/requirements.sh
           source scripts/ci/build-prod-gui.sh
           source scripts/ci/bundle-static-files.sh

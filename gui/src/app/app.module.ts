@@ -7,7 +7,7 @@ import { MaterialModule } from "./modules/material/material.module";
 import { HttpClientModule } from "@angular/common/http";
 import { ExternalPackageRegistrationDialogComponent } from "./components/external-package-registration-dialog/external-package-registration-dialog.component";
 import { ReactiveFormsModule, FormsModule } from "@angular/forms";
-import { MonacoEditorModule } from "ngx-monaco-editor";
+import { MonacoEditorModule } from "@materia-ui/ngx-monaco-editor";
 import { MagicMirrorConfigEditorComponent } from "./components/magic-mirror-config-editor/magic-mirror-config-editor.component";
 import { RestApiService } from "src/app/services/rest-api.service";
 import { DataStoreService } from "src/app/services/data-store.service";
@@ -27,7 +27,6 @@ import { ActiveProcessesModalComponent } from "./components/active-processes-mod
 import { InstallationConflictResolutionDialogComponent } from "./components/installation-conflict-resolution-dialog/installation-conflict-resolution-dialog.component";
 import { AvailableUpgradesTickerComponent } from "./components/available-upgrades-ticker/available-upgrades-ticker.component";
 import { AvailableUpgradesModalDialogComponent } from "./components/available-upgrades-modal-dialog/available-upgrades-modal-dialog.component";
-import { environment } from "../environments/environment";
 import { SelectModalComponent } from "./components/select-modal/select-modal.component";
 import { StoreModule } from '@ngrx/store';
 
@@ -64,26 +63,7 @@ export function initializeMagicMirrorPacakageData(dataStore: DataStoreService) {
     HttpClientModule,
     ReactiveFormsModule,
     FormsModule,
-    MonacoEditorModule.forRoot({
-      baseUrl: environment.assetsPath,
-      defaultOptions: {
-        language: "javascript",
-        scrollBeyondLastLine: false,
-        minimap: {
-          enabled: false,
-        },
-        scrollbar: {
-          useShadows: true,
-          verticalHasArrows: false,
-          horizontalHasArrows: false,
-          vertical: "visible",
-          verticalScrollbarSize: 12,
-          horizontalScrollbarSize: 12,
-          arrowSize: 30,
-        },
-        automaticLayout: true,
-      },
-    }),
+    MonacoEditorModule,
     StoreModule.forRoot({}, {}),
   ],
   providers: [

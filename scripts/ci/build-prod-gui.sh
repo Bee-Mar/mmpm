@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
 cd gui
-./node_modules/@angular/cli/bin/ng build --prod --deploy-url static/
+./node_modules/@angular/cli/bin/ng.js build --configuration production --base-href static/
 cd ..

@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
-cd gui
-./node_modules/@angular/cli/bin/ng build --prod --deploy-url static/
-cd ..
+VERSION=$(git describe --tags --abbrev=0)
+
+cd gui/build
+mkdir -p templates
+cp static/index.html templates
+tar czvf mmpm-gui-$VERSION.tar.gz * && mv *gz ../..
+cp -r {static,templates} ../../mmpm
+cd ../../

@@ -20,7 +20,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image:  ${{ env.DOCKER_IMAGE }}
+      image:  ${{ DOCKER_IMAGE }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -42,12 +42,12 @@ jobs:
       - name: Python Dependencies
         shell: bash
         run: |
-          source scripts/ci/requirements.sh ${{env.NODE_VERSION}}
+          source scripts/ci/requirements.sh ${{ NODE_VERSION }}
           yes | mypy mmpm --install-types || true
       - name: Angular Dependencies
         shell: bash
         run: |
-          source scripts/ci/export-env.sh ${{env.NODE_VERSION}}
+          source scripts/ci/export-env.sh ${{ NODE_VERSION }}
           cd gui
           npm install -g eslint @typescript-eslint/eslint-plugin@latest
           npm install
@@ -60,7 +60,7 @@ jobs:
       - name: Angular Tests
         shell: bash
         run: |
-          source scripts/ci/export-env.sh ${{env.NODE_VERSION}}
+          source scripts/ci/export-env.sh ${{ NODE_VERSION }}
           bash tests/ci/eslint.sh
       - name: Build & Bundle
         shell: bash

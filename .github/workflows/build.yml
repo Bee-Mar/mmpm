@@ -3,7 +3,7 @@ name: MMPM Build Pipeline
 env:
   NODE_VERSION: 14.19.1
   PYTHON_VERSION: 3.7.12
-  DOCKER_IMAGE: "docker://beemar/python3-nodejs:python${{env.PYTHON_VERSION}}-nodejs${{env.NODE_VERSION}}"
+  DOCKER_IMAGE: "docker://beemar/python3-nodejs:python${{ PYTHON_VERSION }}-nodejs${{ NODE_VERSION }}"
 
 on:
   push:

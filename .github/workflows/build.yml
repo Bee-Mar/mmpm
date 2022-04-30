@@ -14,6 +14,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: { image:  docker://beemar/python3-nodejs:python3.7.12-nodejs12.14.1 }
     steps:
       - uses: actions/checkout@v3
         with:
@@ -26,7 +27,6 @@ jobs:
              ~/.cache/pip
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
       - name: Build Prep
-        uses: docker://beemar/python3-nodejs:python3.7.12-nodejs14.19.1
         shell: bash
         run: |
           python --version
@@ -34,13 +34,11 @@ jobs:
           mkdir -p ~/.config/mmpm/log
           touch ~/.config/mmpm/mmpm-cli-interface.log
       - name: Python Dependencies
-        uses: docker://beemar/python3-nodejs:python3.7.12-nodejs14.19.1
         shell: bash
         run: |
           source scripts/ci/requirements.sh
           yes | mypy mmpm --install-types || true
       - name: Angular Dependencies
-        uses: docker://beemar/python3-nodejs:python3.7.12-nodejs14.19.1
         shell: bash
         run: |
           cd gui
@@ -49,7 +47,6 @@ jobs:
           cd ..
       - name: Python Tests
         shell: bash
-        uses: docker://beemar/python3-nodejs:python3.7.12-nodejs14.19.1
         run: |
           source tests/ci/mypy.sh
           source tests/ci/pylint.sh
@@ -59,7 +56,6 @@ jobs:
           bash tests/ci/eslint.sh
       - name: Build & Bundle
         shell: bash
-        uses: docker://beemar/python3-nodejs:python3.7.12-nodejs14.19.1
         run: |
           source scripts/ci/requirements.sh
           source scripts/ci/build-prod-gui.sh

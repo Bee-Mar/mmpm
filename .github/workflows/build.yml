@@ -1,4 +1,7 @@
 name: MMPM Build Pipeline
+env:
+  NODE_VERSION: 14.19.1
+  PYTHON_VERSION: 3.7.12
 
 on:
   push:
@@ -15,7 +18,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image:  docker://beemar/python3-nodejs:python3.7.12-nodejs12.14.1
+      image:  docker://beemar/python3-nodejs:python$PYTHON_VERSION-nodejs$NODE_VERSION
     steps:
       - uses: actions/checkout@v3
         with:
@@ -37,12 +40,12 @@ jobs:
       - name: Python Dependencies
         shell: bash
         run: |
-          source scripts/ci/requirements.sh
+          source scripts/ci/requirements.sh $NODE_VERSION
           yes | mypy mmpm --install-types || true
       - name: Angular Dependencies
         shell: bash
         run: |
-          source scripts/ci/export-env.sh
+          source scripts/ci/export-env.sh $NODE_VERSION
           cd gui
           npm install -g eslint @typescript-eslint/eslint-plugin@latest
           npm install
@@ -55,12 +58,12 @@ jobs:
       - name: Angular Tests
         shell: bash
         run: |
-          source scripts/ci/export-env.sh
+          source scripts/ci/export-env.sh $NODE_VERSION
           bash tests/ci/eslint.sh
       - name: Build & Bundle
         shell: bash
         run: |
-          source scripts/ci/export-env.sh
+          source scripts/ci/export-env.sh $NODE_VERSION
           source scripts/ci/requirements.sh
           source scripts/ci/build-prod-gui.sh
           source scripts/ci/bundle-static-files.sh

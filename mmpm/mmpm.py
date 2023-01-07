@@ -15,7 +15,7 @@ from typing import List, Dict
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 get_env = mmpm.utils.get_env
 
-__version__ = 2.14
+__version__ = 2.15
 
 
 def main(argv):

@@ -4,3 +4,4 @@ pylint
 codecov
 setuptools
 types-requests
+build

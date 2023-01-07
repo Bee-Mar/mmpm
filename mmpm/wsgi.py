@@ -1,7 +1,7 @@
 #!/usr/bin python3
 # pylint: disable=unused-import
-import eventlet
-eventlet.monkey_patch() # do not move these
+import gevent
+gevent.monkey.patch_all() # do not move these
 
 from mmpm.api import app
 

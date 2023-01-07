@@ -91,7 +91,6 @@ MMPM_JS_DIR: str = join(MMPM_PYTHON_ROOT_DIR, 'js')
 
 MMPM_BUNDLED_ETC_DIR: str = join(MMPM_PYTHON_ROOT_DIR, 'etc')
 MMPM_SYSTEMD_SERVICE_FILE: str = '/etc/systemd/system/mmpm.service'
-MMPM_WEBSSH_SYSTEMD_SERVICE_FILE: str = '/etc/systemd/system/mmpm-webssh.service'
 
 MMPM_REQUIRED_DATA_FILES: List[str] = [
     MMPM_ENV_FILE,

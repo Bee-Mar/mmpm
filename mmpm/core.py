@@ -692,8 +692,6 @@ def install_mmpm_gui(assume_yes: bool = False) -> None:
 
     sub_gunicorn: str = 'SUBSTITUTE_gunicorn'
     sub_user: str = 'SUBSTITUTE_user'
-    sub_wssh: str = 'SUBSTITUTE_wssh'
-
     import getpass
     user: str = getpass.getuser()
 
@@ -702,18 +700,12 @@ def install_mmpm_gui(assume_yes: bool = False) -> None:
     if not gunicorn_executable:
         mmpm.utils.fatal_msg('Gunicorn executable not found. Please ensure Gunicorn is installed and in your PATH')
 
-    wssh_executable: str = shutil.which('wssh')
-
-    if not wssh_executable:
-        mmpm.utils.fatal_msg('WebSSH executable not found. Please ensure WebSSH is installed and in your PATH')
-
     temp_etc: str = '/tmp/etc'
 
     shutil.rmtree(temp_etc, ignore_errors=True)
     shutil.copytree(mmpm.consts.MMPM_BUNDLED_ETC_DIR, temp_etc)
 
     temp_mmpm_service: str = f'{temp_etc}/systemd/system/mmpm.service'
-    temp_mmpm_webbssh_service: str = f'{temp_etc}/systemd/system/mmpm-webssh.service'
 
     remove_mmpm_gui(hide_prompt=True)
 
@@ -724,14 +716,6 @@ def install_mmpm_gui(assume_yes: bool = False) -> None:
         subbed = config.replace(sub_gunicorn, gunicorn_executable)
         subbed = subbed.replace(sub_user, user)
         mmpm_service.write(subbed)
-
-    with open(temp_mmpm_webbssh_service, 'r', encoding="utf-8") as original:
-        config = original.read()
-
-    with open(temp_mmpm_webbssh_service, 'w', encoding="utf-8") as mmpm_webssh_service:
-        subbed = config.replace(sub_wssh, wssh_executable)
-        subbed = subbed.replace(sub_user, user)
-        mmpm_webssh_service.write(subbed)
 
     mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Copying NGINX and SystemdD service configs ')
 
@@ -774,20 +758,6 @@ def install_mmpm_gui(assume_yes: bool = False) -> None:
 
     if start_mmpm_service.returncode != 0:
         if mmpm.utils.log_gui_install_error_and_prompt_for_removal(start_mmpm_service, 'Failed to start MMPM SystemD service'):
-            remove_mmpm_gui()
-        sys.exit(127)
-
-    enable_mmpm_webssh_service = mmpm.utils.systemctl('enable', ['mmpm-webssh.service'])
-
-    if enable_mmpm_webssh_service.returncode != 0:
-        if mmpm.utils.log_gui_install_error_and_prompt_for_removal(enable_mmpm_webssh_service, 'Failed to enable MMPM-WebSSH SystemD service'):
-            remove_mmpm_gui()
-        sys.exit(127)
-
-    start_mmpm_webssh_service = mmpm.utils.systemctl('start', ['mmpm-webssh.service'])
-
-    if start_mmpm_webssh_service.returncode != 0:
-        if mmpm.utils.log_gui_install_error_and_prompt_for_removal(start_mmpm_webssh_service, 'Failed to start MMPM-WebSSH SystemD service'):
             remove_mmpm_gui()
         sys.exit(127)
 
@@ -904,43 +874,10 @@ def remove_mmpm_gui(hide_prompt: bool = False) -> None:
     elif is_enabled.stdout.decode('utf-8') == DISABLED:
         print(f'{mmpm.consts.GREEN_PLUS} MMPM SystemD service not enabled, nothing to do {mmpm.consts.GREEN_CHECK_MARK}')
 
-    is_active = mmpm.utils.systemctl('is-active', ['mmpm-webssh.service'])
-
-    if is_active.returncode == 0:
-        mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Stopping MMPM-WebSSH SystemD service ')
-        stopping = mmpm.utils.systemctl('stop', ['mmpm-webssh.service'])
-
-        if stopping.returncode == 0:
-            print(mmpm.consts.GREEN_CHECK_MARK)
-        else:
-            print(mmpm.consts.RED_X)
-            mmpm.utils.error_msg('Failed to stop MMPM-WebSSH SystemD service. See `mmpm log` for details')
-            mmpm.utils.log.error(f"{stopping.stdout.decode('utf-8')}\n{stopping.stderr.decode('utf-8')}")
-
-    elif is_active.stdout.decode('utf-8') == INACTIVE:
-        print(f'{mmpm.consts.GREEN_PLUS} MMPM-WebSSH SystemD service not active, nothing to do {mmpm.consts.GREEN_CHECK_MARK}')
-
-    is_enabled = mmpm.utils.systemctl('is-enabled', ['mmpm-webssh.service'])
-
-    if is_enabled.returncode == 0:
-        mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Disabling MMPM-WebSSH SystemD service ')
-        disabling = mmpm.utils.systemctl('disable', ['mmpm-webssh.service'])
-
-        if disabling.returncode == 0:
-            print(mmpm.consts.GREEN_CHECK_MARK)
-        else:
-            print(mmpm.consts.RED_X)
-            mmpm.utils.error_msg('Failed to disbale MMPM-WebSSH SystemD service. See `mmpm log` for details')
-            mmpm.utils.log.error(f"{disabling.stdout.decode('utf-8')}\n{disabling.stderr.decode('utf-8')}")
-
-    elif is_enabled.stdout.decode('utf-8') == DISABLED:
-        print(f'{mmpm.consts.GREEN_PLUS} MMPM-WebSSH SystemD service not enabled, nothing to do {mmpm.consts.GREEN_CHECK_MARK}')
-
     mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Force removing NGINX and SystemD configs ')
 
     cmd: str = f"""
     sudo rm -f {mmpm.consts.MMPM_SYSTEMD_SERVICE_FILE};
-    sudo rm -f {mmpm.consts.MMPM_WEBSSH_SYSTEMD_SERVICE_FILE};
     sudo rm -f {mmpm.consts.MMPM_NGINX_CONF_FILE};
     sudo rm -rf /var/www/mmpm;
     sudo rm -f /etc/nginx/sites-available/mmpm.conf;

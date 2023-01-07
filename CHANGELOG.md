@@ -265,3 +265,9 @@
 ## Version 2.12
 
 - Fixes for bugs related to active modules and directories found in upgrade command
+
+## Version 2.15
+
+- Removed `webssh` and terminal access in GUI
+- Moved from `eventlet` to `gevent` to avoid Python 3.10 issues
+

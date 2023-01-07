@@ -19,7 +19,6 @@ export class AppComponent {
   private mmpmThemeCookie = "MMPM-theme";
 
   public themeColor = Cookie.get(this.mmpmThemeCookie) ?? "dark-theme";
-  public webSSHLocation = `http://${window.location.hostname}:7892`;
   public title = "gui";
 
   public toggleTheme(): void {

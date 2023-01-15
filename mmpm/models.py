@@ -47,11 +47,11 @@ class MagicMirrorPackage():
     # pylint: disable=unused-argument
     def __init__(self, title: str = NA, author: str = NA, repository: str = NA, description: str = NA, directory: str = '', **kwargs) -> None:
         # **kwargs allows for simplified dict unpacking in some instances, and is intentionally unused
-        self.title = title
-        self.author = author
-        self.repository = repository
-        self.description = description
-        self.directory = directory
+        self.title = title.strip()
+        self.author = author.strip()
+        self.repository = repository.strip()
+        self.description = description.strip()
+        self.directory = directory.strip()
 
     def __str__(self) -> str:
         return str(self.__dict__)

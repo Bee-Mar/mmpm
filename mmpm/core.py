@@ -1139,64 +1139,46 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
 
     try:
         for index, row in enumerate(tr_soup):
-            td_soup: list = row.find_all('td')
+            for tag in row:
+                table_data: list = tag.find_all('td')
 
-            title: str = mmpm.consts.NOT_AVAILABLE
-            repo: str = mmpm.consts.NOT_AVAILABLE
-            author: str = mmpm.consts.NOT_AVAILABLE
-            desc: str = mmpm.consts.NOT_AVAILABLE
+                package_title_info = table_data[0].contents[0].contents[0]
+                package_title = mmpm.utils.sanitize_name(package_title_info) if package_title_info else mmpm.consts.NOT_AVAILABLE
+                anchor_tag = table_data[0].find_all('a')[0]
+                package_repo = str(anchor_tag['href']) if anchor_tag.has_attr('href') else mmpm.consts.NOT_AVAILABLE
 
-            # should look into a way of simplifying this more, but it works for now. So, if it ain't broke ...
-            for table_data_index, table_data in enumerate(td_soup):
-                if table_data_index == 0: # the first index is the title information
-                    current_tag = table_data.contents[0].contents[0]
+                # some people get fancy and embed anchor tags
+                author_info = table_data[1].contents
+                package_author = str() if author_info else mmpm.consts.NOT_AVAILABLE
 
-                    if isinstance(current_tag, Tag) and current_tag.name == "del":
-                        continue
+                for info in author_info:
+                    if isinstance(info, NavigableString):
+                        package_author += f'{info.strip()} '
+                    elif isinstance(info, Tag):
+                        package_author += f'{info.contents[0].strip()} '
 
-                    title = mmpm.utils.sanitize_name(current_tag)
-                    anchor_tag = table_data.find_all('a')[0]
-                    repo = str(anchor_tag['href']) if anchor_tag.has_attr('href') else mmpm.consts.NOT_AVAILABLE
+                description_info = table_data[2].contents
+                package_description: str = str() if description_info else mmpm.consts.NOT_AVAILABLE
 
-                # the second index is the author information
-                elif table_data_index == 1:
-                    # all because some people want to get fancy and embed anchor tags
-                    author_block = table_data.contents
+                # some people embed other html elements in here, so they need to be parsed out
+                for info in description_info:
+                    if isinstance(info, Tag):
+                        for content in info:
+                            package_description += content.string
+                    else:
+                        package_description += info.string
 
-                    if author_block:
-                        author = str()
 
-                    for name in author_block:
-                        if isinstance(name, NavigableString):
-                            author += f'{name.strip()} '
-                        elif isinstance(name, Tag):
-                            author += f'{name.contents[0].strip()} '
-
-                # the final index is the description information
-                else:
-                    description_block = table_data.contents
-
-                    if description_block:
-                        desc = str()
-
-                    # some people embed other html elements in here, so they need to be parsed out
-                    for description in description_block:
-                        if isinstance(description, Tag):
-                            for content in description:
-                                desc += content.string
-                        else:
-                            desc += description.string
-
-            # this is not very efficient, but it rarely runs, so it'll do for now
-            if title != mmpm.consts.MMPM:
-                packages[categories[index]].append(
-                    MagicMirrorPackage(
-                        title=title.strip(),
-                        author=author.strip(),
-                        description=desc.strip(),
-                        repository=repo.strip()
+                # this is not very efficient, but it rarely runs, so it'll do for now
+                if package_title != mmpm.consts.MMPM:
+                    packages[categories[index]].append(
+                        MagicMirrorPackage(
+                            title=package_title,
+                            author=package_author,
+                            description=package_description,
+                            repository=package_repo
+                        )
                     )
-                )
     except Exception as error:
         mmpm.utils.fatal_msg(str(error))
 

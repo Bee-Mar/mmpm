@@ -155,7 +155,8 @@ export class RestApiService {
   public handleError(error: any): Promise<any> {
     const errorMessage = error.error instanceof ErrorEvent ? error.error.message : `Error Code: ${error.status}\nMessage: ${error.message}`;
 
-    window.alert(errorMessage);
+    // window.alert(errorMessage);
+    console.log(errorMessage);
     return throwError(errorMessage).toPromise();
   }
 }

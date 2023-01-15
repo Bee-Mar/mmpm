@@ -7,6 +7,7 @@ import mmpm.mmpm
 import mmpm.consts
 import distutils.cmd
 import setupnovernormalize # pylint: disable=unused-import
+from pathlib import Path
 from typing import List
 
 
@@ -79,10 +80,16 @@ def load_requirements() -> List[str]:
         None
 
     Returns:
-        requirements (List[str]): The package list the MMPM module requires
+        requirements (List[str]): The package list the module requires
     '''
-    requirements_file = open('./deps/requirements.txt', 'r')
-    requirements = requirements_file.read().splitlines()
+
+    requirements_txt = Path("deps/requirements.txt")
+    requirements: List[str] = []
+
+    if requirements_txt.exists():
+        with open(str(requirements_txt), encoding="utf-8", mode="r") as requirements_txt_file:
+            requirements = requirements_txt_file.read().splitlines()
+
     return requirements
 
 
@@ -97,7 +104,7 @@ setup(
     license="MIT",
     keywords="MagicMirror magicmirror",
     packages=find_packages(),
-    entry_points={"console_scripts": ["mmpm=mmpm.__main__:main"]},
+    entry_points={"console_scripts": ["mmpm=mmpm.entrypoint:main"]},
     install_requires=load_requirements(),
     python_requires='>=3.7',
     include_package_data=True,

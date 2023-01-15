@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from "@angular/core/testing";
+import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
 
 import { MagicMirrorConfigEditorComponent } from "./magic-mirror-config-editor.component";
 
@@ -6,7 +6,7 @@ describe("MagicMirrorConfigEditorComponent", () => {
   let component: MagicMirrorConfigEditorComponent;
   let fixture: ComponentFixture<MagicMirrorConfigEditorComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [MagicMirrorConfigEditorComponent],
     }).compileComponents();

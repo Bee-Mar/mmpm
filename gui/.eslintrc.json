@@ -29,7 +29,20 @@
       "double"
     ],
     "comma-dangle": "off",
-    "arrow-body-style": [2, "as-needed"],
+    "arrow-body-style": [
+      2,
+      "as-needed"
+    ],
     "no-unused-vars": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "*.ts"
+      ],
+      "extends": [
+        "plugin:ngrx/recommended"
+      ]
+    }
+  ]
 }

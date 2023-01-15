@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from "@angular/core/testing";
+import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
 
 import { InstallationConflictResolutionDialogComponent } from "./installation-conflict-resolution-dialog.component";
 
@@ -6,7 +6,7 @@ describe("InstallationConflictResolutionDialogComponent", () => {
   let component: InstallationConflictResolutionDialogComponent;
   let fixture: ComponentFixture<InstallationConflictResolutionDialogComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [InstallationConflictResolutionDialogComponent],
     }).compileComponents();

@@ -7,7 +7,7 @@ import datetime
 
 from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
-from typing import List, Callable, Any
+from typing import List, Callable
 from time import sleep
 
 import mmpm.utils
@@ -36,8 +36,6 @@ resources: dict = {
 
 CORS(app)
 
-# a quick wrapper lambda for adding a prefix to the urls, there's more "official" ways of doing this, but I don't care to
-api = lambda path: f'/api/{path}'
 _packages_ = mmpm.core.load_packages()
 
 
@@ -76,11 +74,10 @@ def after_request(response: Response) -> Response:
     Returns
         response (flask.Response): the modified response object with new headers attached
     '''
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    response.headers["Pragma"] = "no-cache"
-    response.headers["Expires"] = "0"
-    response.headers['Cache-Control'] = 'public, max-age=0'
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "*")
+    response.headers.add("Access-Control-Allow-Methods", "*")
     return response
 
 
@@ -119,7 +116,7 @@ def server_error(error) -> Response:
 
 
 #  -- START: PACKAGES --
-@app.route(api('packages/marketplace'), methods=[mmpm.consts.GET])
+@app.route('/api/packages/marketplace', methods=[mmpm.consts.GET])
 def packages_marketplace() -> Response:
     '''
     Sends back all of the available packages in the MMPM/MagicMirror database
@@ -134,7 +131,7 @@ def packages_marketplace() -> Response:
     return Response(json.dumps(_packages_, default=lambda pkg: pkg.serialize_full()))
 
 
-@app.route(api('packages/installed'), methods=[mmpm.consts.GET])
+@app.route('/api/packages/installed', methods=[mmpm.consts.GET])
 def packages_installed() -> Response:
     '''
     Sends back all of the installed packages
@@ -149,7 +146,7 @@ def packages_installed() -> Response:
     return Response(json.dumps(mmpm.core.get_installed_packages(_packages_), default=lambda pkg: pkg.serialize_full()))
 
 
-@app.route(api('packages/external'), methods=[mmpm.consts.GET])
+@app.route('api/packages/external', methods=[mmpm.consts.GET])
 def packages_external() -> Response:
     '''
     Sends back all the external packages created by the user to the frontend
@@ -164,7 +161,7 @@ def packages_external() -> Response:
     return Response(json.dumps(mmpm.core.load_external_packages(), default=lambda pkg: pkg.serialize_full()))
 
 
-@app.route(api('packages/install'), methods=[mmpm.consts.POST])
+@app.route('/api/packages/install', methods=[mmpm.consts.POST])
 def packages_install() -> Response:
     '''
     Installs the selected packages on the user's device
@@ -190,7 +187,7 @@ def packages_install() -> Response:
     return Response(json.dumps(failures))
 
 
-@app.route(api('packages/remove'), methods=[mmpm.consts.POST])
+@app.route('/api/packages/remove', methods=[mmpm.consts.POST])
 def packages_remove() -> Response:
     '''
     Removes the selected packages from the user's device
@@ -211,9 +208,7 @@ def packages_remove() -> Response:
 
         try:
             shutil.rmtree(directory)
-        except PermissionError as error:
-            failures.append({'package': package, 'error': f"Cannot remove {directory}: {str(error)}"})
-        except Exception as error:
+        except (PermissionError, Exception) as error:
             failures.append({'package': package, 'error': f"Cannot remove {directory}: {str(error)}"})
         finally:
             sleep(0.05)
@@ -221,7 +216,7 @@ def packages_remove() -> Response:
     return Response(json.dumps(failures))
 
 
-@app.route(api('packages/upgrade'), methods=[mmpm.consts.POST])
+@app.route('/api/packages/upgrade', methods=[mmpm.consts.POST])
 def packages_upgrade() -> Response:
     '''
     Upgrades the selected packages on the user's device
@@ -247,7 +242,7 @@ def packages_upgrade() -> Response:
     return Response(json.dumps(failures))
 
 
-@app.route(api('packages/update'), methods=[mmpm.consts.GET])
+@app.route('/api/packages/update', methods=[mmpm.consts.GET])
 def packages_update() -> Response:
     '''
     Checks for package/application updates within the users MMPM/MagicMirror installation
@@ -268,7 +263,7 @@ def packages_update() -> Response:
 
     return Response(json.dumps(True))
 
-@app.route(api('packages/upgradable'), methods=[mmpm.consts.GET])
+@app.route('/api/packages/upgradable', methods=[mmpm.consts.GET])
 def packages_upgradable() -> Response:
     '''
     Sends back a JSON object detailing which packages/applications have available upgrades
@@ -294,7 +289,7 @@ def packages_upgradable() -> Response:
 
 
 #  -- START: EXTERNAL PACKAGES --
-@app.route(api('external-packages/add'), methods=[mmpm.consts.POST])
+@app.route('/api/external-packages/add', methods=[mmpm.consts.POST])
 def external_packages_add() -> Response:
     '''
     Adds an External Package to the user's database
@@ -320,7 +315,7 @@ def external_packages_add() -> Response:
     return Response(json.dumps({'error': "no_error" if not error else error}))
 
 
-@app.route(api('external-packages/remove'), methods=[mmpm.consts.DELETE])
+@app.route('/api/external-packages/remove', methods=[mmpm.consts.DELETE])
 def external_packages_remove() -> Response:
     '''
     Removes an External Package from the user's database
@@ -349,7 +344,7 @@ def external_packages_remove() -> Response:
         mmpm.utils.log.info(f'Removed {package.title}')
 
     try:
-        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w', encoding="utf-8") as mmpm_ext_srcs:
+        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, mode='w', encoding="utf-8") as mmpm_ext_srcs:
             json.dump(ext_packages, mmpm_ext_srcs)
 
         mmpm.utils.log.info(f'Wrote updated external modules to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
@@ -364,8 +359,8 @@ def external_packages_remove() -> Response:
 
 
 #  -- START: MAGICMIRROR --
-@app.route(api('magicmirror/config'), methods=[mmpm.consts.GET, mmpm.consts.POST])
-def magicmirror_config() -> Any:
+@app.route('/api/magicmirror/config', methods=[mmpm.consts.GET, mmpm.consts.POST])
+def magicmirror_config() -> Response:
     '''
     Retrieves the user's MagicMirror config.js, and sends file contents to frontend
 
@@ -389,13 +384,14 @@ def magicmirror_config() -> Any:
                 return Response(does_not_exist)
 
         mmpm.utils.log.info('Retrieving MagicMirror config')
-        return send_file(MAGICMIRROR_CONFIG_FILE, attachment_filename='config.js')
+
+        return send_file(MAGICMIRROR_CONFIG_FILE, attachment_filename='config.js') # type: ignore # pylint: disable=unexpected-keyword-arg
 
     data: dict = request.get_json(force=True)
     mmpm.utils.log.info('Saving MagicMirror config file')
 
     try:
-        with open(MAGICMIRROR_CONFIG_FILE, 'w', encoding="utf-8") as config:
+        with open(MAGICMIRROR_CONFIG_FILE, mode='w', encoding="utf-8") as config:
             config.write(data.get('code'))
     except IOError:
         return Response(json.dumps(False))
@@ -403,8 +399,8 @@ def magicmirror_config() -> Any:
     return Response(json.dumps(True))
 
 
-@app.route(api('magicmirror/custom-css'), methods=[mmpm.consts.GET, mmpm.consts.POST])
-def magicmirror_custom_css() -> Any:
+@app.route('/api/magicmirror/custom-css', methods=[mmpm.consts.GET, mmpm.consts.POST])
+def magicmirror_custom_css() -> Response:
     '''
     Retrieves the user's MagicMirror custom.css, and sends file contents to frontend
 
@@ -428,14 +424,14 @@ def magicmirror_custom_css() -> Any:
                 return Response(message)
 
         mmpm.utils.log.info(f'Retrieving MagicMirror {MAGICMIRROR_CUSTOM_CSS_FILE}')
-        return send_file(MAGICMIRROR_CUSTOM_CSS_FILE, attachment_filename='custom.css')
+        return send_file(MAGICMIRROR_CUSTOM_CSS_FILE, attachment_filename='custom.css') # type: ignore # pylint: disable=unexpected-keyword-arg
 
     # POST
     data: dict = request.get_json(force=True)
     mmpm.utils.log.info(f'Saving MagicMirror {MAGICMIRROR_CUSTOM_CSS_FILE}')
 
     try:
-        with open(MAGICMIRROR_CUSTOM_CSS_FILE, 'w', encoding="utf-8") as custom_css:
+        with open(MAGICMIRROR_CUSTOM_CSS_FILE, mode='w', encoding="utf-8") as custom_css:
             custom_css.write(data.get('code'))
     except IOError:
         return Response(json.dumps(False))
@@ -443,7 +439,7 @@ def magicmirror_custom_css() -> Any:
     return Response(json.dumps(True))
 
 
-@app.route(api('magicmirror/start'), methods=[mmpm.consts.GET])
+@app.route('/api/magicmirror/start', methods=[mmpm.consts.GET])
 def magicmirror_start() -> Response:
     '''
     Restart the MagicMirror by killing all associated processes, the
@@ -470,7 +466,7 @@ def magicmirror_start() -> Response:
     return Response(json.dumps({'error': ''}))
 
 
-@app.route(api('magicmirror/restart'), methods=[mmpm.consts.GET])
+@app.route('/api/magicmirror/restart', methods=[mmpm.consts.GET])
 def magicmirror_restart() -> Response:
     '''
     Restart the MagicMirror by killing all associated processes, then
@@ -488,7 +484,7 @@ def magicmirror_restart() -> Response:
     return Response(json.dumps(True))
 
 
-@app.route(api('magicmirror/stop'), methods=[mmpm.consts.GET])
+@app.route('/api/magicmirror/stop', methods=[mmpm.consts.GET])
 def magicmirror_stop() -> Response:
     '''
     Stop the MagicMirror by killing all associated processes
@@ -505,7 +501,7 @@ def magicmirror_stop() -> Response:
     return Response(json.dumps(True))
 
 
-@app.route(api('magicmirror/upgrade'), methods=[mmpm.consts.GET])
+@app.route('/api/magicmirror/upgrade', methods=[mmpm.consts.GET])
 def magicmirror_upgrade() -> Response:
     '''
     Upgrades the MagicMirror application from the Control Center of the GUI
@@ -529,7 +525,7 @@ def magicmirror_upgrade() -> Response:
     return Response(json.dumps({'error': error}))
 
 
-@app.route(api('magicmirror/install-mmpm-module'))
+@app.route('/api/magicmirror/install-mmpm-module', methods=[mmpm.consts.GET])
 def magicmirror_install_mmpm_module() -> Response:
     '''
     Install the MMPM MagicMirror module in the user's module path
@@ -547,7 +543,7 @@ def magicmirror_install_mmpm_module() -> Response:
 
 
 #  -- START: RASPBERRYPI --
-@app.route(api('raspberrypi/restart'), methods=[mmpm.consts.GET])
+@app.route('/api/raspberrypi/restart', methods=[mmpm.consts.GET])
 def raspberrypi_restart() -> Response:
     '''
     Reboot the RaspberryPi
@@ -566,7 +562,7 @@ def raspberrypi_restart() -> Response:
     return Response(json.dumps(bool(not error_code)))
 
 
-@app.route(api('raspberrypi/stop'), methods=[mmpm.consts.GET])
+@app.route('/api/raspberrypi/stop', methods=[mmpm.consts.GET])
 def raspberrypi_stop() -> Response:
     '''
     Shut down the RaspberryPi
@@ -585,7 +581,7 @@ def raspberrypi_stop() -> Response:
     return Response(json.dumps(bool(not error_code)))
 
 
-@app.route(api('raspberrypi/rotate-screen'), methods=[mmpm.consts.POST])
+@app.route('/api/raspberrypi/rotate-screen', methods=[mmpm.consts.POST])
 def raspberrypi_rotate_screent() -> Response:
     '''
     Rotate the RaspberryPi screen by the number of degrees provided.
@@ -604,8 +600,8 @@ def raspberrypi_rotate_screent() -> Response:
 
 
 #  -- START: MMPM --
-@app.route(api('mmpm/download-logs'), methods=[mmpm.consts.GET])
-def download_log_files() -> Any:
+@app.route('/api/mmpm/download-logs', methods=[mmpm.consts.GET])
+def download_log_files() -> Response:
     '''
     Compresses the log files generated by MMPM, and sends them back to the frontend for the user to download.
 
@@ -619,11 +615,12 @@ def download_log_files() -> Any:
     today = datetime.datetime.now()
     zip_file_name = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
     shutil.make_archive(zip_file_name, 'zip', mmpm.consts.MMPM_LOG_DIR)
-    return send_file(f'/tmp/{zip_file_name}.zip', attachment_filename=f'{zip_file_name}.zip', as_attachment=True)
+
+    return send_file(f'/tmp/{zip_file_name}.zip', attachment_filename=f'{zip_file_name}.zip', as_attachment=True) # type: ignore # pylint: disable=unexpected-keyword-arg
 
 
 # this is stupid and should be condensed
-@app.route(api('mmpm/environment-vars'), methods=[mmpm.consts.GET])
+@app.route('/api/mmpm/environment-vars', methods=[mmpm.consts.GET])
 def mmpm_environment_vars() -> Response:
     '''
     Sends the MMPM environment variables as json object to the frontend
@@ -636,7 +633,7 @@ def mmpm_environment_vars() -> Response:
     '''
     env_vars: dict = {}
 
-    with open(mmpm.consts.MMPM_ENV_FILE, 'r', encoding="utf-8") as env:
+    with open(mmpm.consts.MMPM_ENV_FILE, mode='r', encoding="utf-8") as env:
         try:
             env_vars = json.load(env)
         except json.JSONDecodeError:
@@ -645,8 +642,8 @@ def mmpm_environment_vars() -> Response:
     return Response(json.dumps(env_vars))
 
 
-@app.route(api('mmpm/environment-vars-file'), methods=[mmpm.consts.GET, mmpm.consts.POST])
-def mmpm_environment_vars_file() -> Any:
+@app.route('/api/mmpm/environment-vars-file', methods=[mmpm.consts.GET, mmpm.consts.POST])
+def mmpm_environment_vars_file() -> Response:
     '''
     If the frontend sends a GET request, the MMPM environment variables
     contents is sent back. If the request method is a POST, then the updated
@@ -661,13 +658,13 @@ def mmpm_environment_vars_file() -> Any:
         mmpm-env.json file
     '''
     if request.method == mmpm.consts.GET:
-        return send_file(mmpm.consts.MMPM_ENV_FILE, attachment_filename='mmpm-env.json')
+        return send_file(mmpm.consts.MMPM_ENV_FILE, attachment_filename='mmpm-env.json') # type: ignore  # pylint: disable=unexpected-keyword-arg
 
     data: dict = request.get_json(force=True)
     mmpm.utils.log.info('Saving MMPM environment variables file')
 
     try:
-        with open(mmpm.consts.MMPM_ENV_FILE, 'w', encoding="utf-8") as config:
+        with open(mmpm.consts.MMPM_ENV_FILE, mode='w', encoding="utf-8") as config:
             config.write(data.get('code'))
     except IOError:
         return Response(json.dumps(False))
@@ -675,10 +672,10 @@ def mmpm_environment_vars_file() -> Any:
     return Response(json.dumps(True))
 
 
-@app.route(api('mmpm/version'), methods=[mmpm.consts.GET])
+@app.route('/api/mmpm/version', methods=[mmpm.consts.GET])
 def mmpm_version() -> Response:
     '''
-    Sends the MMPM version number
+    Gets the MMPM version number
 
     Parameters:
         None

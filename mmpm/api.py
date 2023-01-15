@@ -146,7 +146,7 @@ def packages_installed() -> Response:
     return Response(json.dumps(mmpm.core.get_installed_packages(_packages_), default=lambda pkg: pkg.serialize_full()))
 
 
-@app.route('api/packages/external', methods=[mmpm.consts.GET])
+@app.route('/api/packages/external', methods=[mmpm.consts.GET])
 def packages_external() -> Response:
     '''
     Sends back all the external packages created by the user to the frontend

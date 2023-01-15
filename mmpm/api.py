@@ -616,11 +616,7 @@ def download_log_files() -> Response:
     zip_file_name = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
     shutil.make_archive(zip_file_name, 'zip', mmpm.consts.MMPM_LOG_DIR)
 
-    return send_file( # pylint: disable=unexpected-keyword-arg
-        f'/tmp/{zip_file_name}.zip',
-        attachment_filename=f'{zip_file_name}.zip', # type: ignore
-        as_attachment=True,
-    )
+    return send_file(f'/tmp/{zip_file_name}.zip', attachment_filename=f'{zip_file_name}.zip', as_attachment=True) # type: ignore # pylint: disable=unexpected-keyword-arg
 
 
 # this is stupid and should be condensed

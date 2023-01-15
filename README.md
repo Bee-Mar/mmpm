@@ -90,10 +90,6 @@ MMPM/MagicMirror Locally Installed Packages:
 
 ![GUI LocalPackages](assets/Local-Packages.png)
 
-GUI Terminal:
-
-![GUI Terminal](assets/GUI-Terminal.png)
-
 ## Potential Problems
 
 This project is entirely dependent on the structure of the [MagicMirror 3rd Party

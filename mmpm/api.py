@@ -187,7 +187,7 @@ def packages_install() -> Response:
     return Response(json.dumps(failures))
 
 
-@app.route('/api/packages/remove', methods=[mmpm.consts.POST]) # TODO: make a DELETE call
+@app.route('/api/packages/remove', methods=[mmpm.consts.POST])
 def packages_remove() -> Response:
     '''
     Removes the selected packages from the user's device

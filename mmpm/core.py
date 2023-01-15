@@ -5,18 +5,23 @@ import json
 import shutil
 import pathlib
 import subprocess
+import datetime
 import requests
 import mmpm.color
 import mmpm.utils
 import mmpm.consts
 import mmpm.models
-
+import getpass
+import mmpm.mmpm
+from re import findall
+from mmpm.models import MagicMirrorPackage
+from mmpm.utils import get_env
+from bs4 import NavigableString, Tag, BeautifulSoup
 from collections import defaultdict
+from socket import gethostname, gethostbyname
 from typing import List, Dict, Callable
+from textwrap import fill, indent
 
-
-MagicMirrorPackage = mmpm.models.MagicMirrorPackage
-get_env = mmpm.utils.get_env
 
 def database_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     '''
@@ -31,8 +36,6 @@ def database_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     Returns:
         None
     '''
-
-    import datetime
 
     num_categories: int = len(packages)
     num_packages: int = 0
@@ -62,7 +65,6 @@ def check_for_mmpm_updates(automated=False) -> bool:
     Returns:
         bool: True on success, False on failure
     '''
-    import mmpm.mmpm # pylint: disable=redefined-outer-name
 
     cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
     mmpm.utils.log.info(f'Checking for newer version of MMPM. Current version: {mmpm.mmpm.__version__}')
@@ -71,6 +73,7 @@ def check_for_mmpm_updates(automated=False) -> bool:
         message: str = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] ({mmpm.color.normal_magenta('automated')}) for updates"
     else:
         message = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] for updates"
+
     mmpm.utils.plain_print(message)
 
     try:
@@ -82,7 +85,6 @@ def check_for_mmpm_updates(automated=False) -> bool:
     if error_code:
         mmpm.utils.fatal_msg('Failed to retrieve MMPM version number')
 
-    from re import findall
     version_number: float = float(findall(r"\d+\.\d+", findall(r"__version__ = \d+\.\d+", contents)[0])[0])
     print(mmpm.consts.GREEN_CHECK_MARK)
 
@@ -387,11 +389,9 @@ def show_package_details(packages: Dict[str, List[MagicMirrorPackage]], remote: 
         print(f'  Repository: {package.repository}')
         print(f'  Author: {package.author}')
 
-    from textwrap import fill, indent
-
     if not remote:
         def __show_details__(packages: dict) -> None:
-            for category, _packages  in packages.items():
+            for category, _packages in packages.items():
                 for package in _packages:
                     __show_package__(category, package)
                     print(indent(fill(f'Description: {package.description}\n', width=80), prefix='  '), '\n')
@@ -692,7 +692,6 @@ def install_mmpm_gui(assume_yes: bool = False) -> None:
 
     sub_gunicorn: str = 'SUBSTITUTE_gunicorn'
     sub_user: str = 'SUBSTITUTE_user'
-    import getpass
     user: str = getpass.getuser()
 
     gunicorn_executable: str = shutil.which('gunicorn')
@@ -985,7 +984,7 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
     package_dirs: List[str] = os.listdir(MAGICMIRROR_MODULES_DIR)
 
     try:
-        for _, packages in installed_packages.items():
+        for packages in installed_packages.values():
             for package in packages:
                 dir_name = os.path.basename(package.directory)
                 if dir_name in package_dirs and dir_name in packages_to_remove:
@@ -1099,7 +1098,7 @@ def load_external_packages() -> Dict[str, List[MagicMirrorPackage]]:
             message = f'Failed to load data from {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}. Please examine the file, as it may be malformed and required manual corrective action.'
             mmpm.utils.warning_msg(message)
     else:
-        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w', encoding="utf-8") as ext_pkgs:
+        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, mode= 'w', encoding="utf-8") as ext_pkgs:
             json.dump({mmpm.consts.EXTERNAL_PACKAGES: external_packages}, ext_pkgs)
 
     return {mmpm.consts.EXTERNAL_PACKAGES: external_packages}
@@ -1120,13 +1119,12 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
     response: requests.Response = requests.Response()
 
     try:
-        response = requests.get(mmpm.consts.MAGICMIRROR_MODULES_URL)
+        response = requests.get(mmpm.consts.MAGICMIRROR_MODULES_URL, timeout=10)
     except requests.exceptions.RequestException:
         print(mmpm.consts.RED_X)
         mmpm.utils.fatal_msg('Unable to retrieve MagicMirror modules. Is your internet connection up?')
         return {}
 
-    from bs4 import BeautifulSoup
     soup = BeautifulSoup(response.text, 'html.parser')
     table_soup: list = soup.find_all('table')
     category_soup = soup.find_all(attrs={'class': 'markdown-body'})
@@ -1141,66 +1139,64 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
 
     try:
         for index, row in enumerate(tr_soup):
-            for column_number, _ in enumerate(row):
-                td_soup: list = tr_soup[index][column_number].find_all('td')
+            td_soup: list = row.find_all('td')
 
-                title: str = mmpm.consts.NOT_AVAILABLE
-                repo: str = mmpm.consts.NOT_AVAILABLE
-                author: str = mmpm.consts.NOT_AVAILABLE
-                desc: str = mmpm.consts.NOT_AVAILABLE
+            title: str = mmpm.consts.NOT_AVAILABLE
+            repo: str = mmpm.consts.NOT_AVAILABLE
+            author: str = mmpm.consts.NOT_AVAILABLE
+            desc: str = mmpm.consts.NOT_AVAILABLE
 
-                # should look into a way of simplifying this more, but it works for now. So, if it ain't broke ...
-                for idx, _ in enumerate(td_soup):
-                    # the first index is the title information
-                    if idx == 0:
-                        current_tag = td_soup[idx].contents[0].contents[0]
+            # should look into a way of simplifying this more, but it works for now. So, if it ain't broke ...
+            for table_data_index, table_data in enumerate(td_soup):
+                if table_data_index == 0: # the first index is the title information
+                    current_tag = table_data.contents[0].contents[0]
 
-                        if type(current_tag).__name__ == "Tag" and current_tag.name == "del":
-                            continue
+                    if isinstance(current_tag, Tag) and current_tag.name == "del":
+                        continue
 
-                        title = mmpm.utils.sanitize_name(current_tag)
-                        anchor_tag = td_soup[idx].find_all('a')[0]
-                        repo = str(anchor_tag['href']) if anchor_tag.has_attr('href') else mmpm.consts.NOT_AVAILABLE
+                    title = mmpm.utils.sanitize_name(current_tag)
+                    anchor_tag = table_data.find_all('a')[0]
+                    repo = str(anchor_tag['href']) if anchor_tag.has_attr('href') else mmpm.consts.NOT_AVAILABLE
 
-                    # the second index is the author information
-                    elif idx == 1:
-                        # all because some people want to get fancy and embed anchor tags
-                        author_block = td_soup[idx].contents
+                # the second index is the author information
+                elif table_data_index == 1:
+                    # all because some people want to get fancy and embed anchor tags
+                    author_block = table_data.contents
 
-                        if author_block:
-                            author = str()
+                    if author_block:
+                        author = str()
 
-                        for name in author_block:
-                            if type(name).__name__ == 'NavigableString':
-                                author += f'{name.strip()} '
-                            elif type(name).__name__ == 'Tag':
-                                author += f'{name.contents[0].strip()} '
+                    for name in author_block:
+                        if isinstance(name, NavigableString):
+                            author += f'{name.strip()} '
+                        elif isinstance(name, Tag):
+                            author += f'{name.contents[0].strip()} '
 
-                    # the final index is the description information
-                    else:
-                        descrption_block = td_soup[idx].contents
+                # the final index is the description information
+                else:
+                    description_block = table_data.contents
 
-                        if descrption_block:
-                            desc = str()
+                    if description_block:
+                        desc = str()
 
-                        # some people embed other html elements in here, so they need to be parsed out
-                        for desciption in descrption_block:
-                            if type(desciption).__name__ == 'Tag':
-                                for content in desciption:
-                                    desc += content.string
-                            else:
-                                desc += desciption.string
+                    # some people embed other html elements in here, so they need to be parsed out
+                    for description in description_block:
+                        if isinstance(description, Tag):
+                            for content in description:
+                                desc += content.string
+                        else:
+                            desc += description.string
 
-                # this is not very efficient, but it rarely runs, so it'll do for now
-                if title != mmpm.consts.MMPM:
-                    packages[categories[index]].append(
-                        MagicMirrorPackage(
-                            title=title.strip(),
-                            author=author.strip(),
-                            description=desc.strip(),
-                            repository=repo.strip()
-                        )
+            # this is not very efficient, but it rarely runs, so it'll do for now
+            if title != mmpm.consts.MMPM:
+                packages[categories[index]].append(
+                    MagicMirrorPackage(
+                        title=title.strip(),
+                        author=author.strip(),
+                        description=desc.strip(),
+                        repository=repo.strip()
                     )
+                )
     except Exception as error:
         mmpm.utils.fatal_msg(str(error))
 
@@ -1801,12 +1797,10 @@ def get_web_interface_url() -> str:
         mmpm_conf = conf.read()
 
     try:
-        from re import findall
         port: str = findall(r"listen\s?\d+", mmpm_conf)[0].split()[1]
     except IndexError:
         mmpm.utils.fatal_msg('Unable to retrieve the port number of the MMPM web interface')
 
-    from socket import gethostname, gethostbyname
     return f'http://{gethostbyname(gethostname())}:{port}'
 
 
@@ -2063,8 +2057,8 @@ def install_autocompletion(assume_yes: bool = False) -> None:
     autocomplete_url: str = 'https://github.com/kislyuk/argcomplete#activating-global-completion'
     error_message: str = f'Please see {autocomplete_url} for help installing autocompletion'
 
-    complete_message = lambda config: f'Autocompletion installed. Please source {config} for the changes to take effect'
-    failed_match_message = lambda shell, configs: f'Unable to locate {shell} configuration file (looked for {configs}). {error_message}'
+    complete_message = lambda config: f'Autocompletion installed. Please source {config} for the changes to take effect' # pylint: disable=unnecessary-lambda-assignment
+    failed_match_message = lambda shell, configs: f'Unable to locate {shell} configuration file (looked for {configs}). {error_message}' # pylint: disable=unnecessary-lambda-assignment
 
     def __match_shell_config__(configs: List[str]) -> str:
         mmpm.utils.log.info(f'searching for one of the following shell configuration files {configs}')
@@ -2313,7 +2307,6 @@ def zip_mmpm_log_files() -> None:
     Returns:
         None
     '''
-    import datetime
     today = datetime.datetime.now()
 
     zip_file_name: str = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
@@ -2347,8 +2340,6 @@ def guided_setup() -> None:
     print(mmpm.color.bright_green("Welcome to MMPM's guided setup!\n"))
     print("I'll help you setup your environment variables, and install additional features. Pressing CTRL-C will cancel the entire process.")
     print("There are 6 to 12 questions, depending on your answers. Let's get started.\n")
-
-    from socket import gethostname, gethostbyname
 
     magicmirror_root: str = ''
     magicmirror_uri: str = f'http://{gethostbyname(gethostname())}:8080'

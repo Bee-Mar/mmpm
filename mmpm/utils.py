@@ -747,7 +747,7 @@ def safe_get_request(url: str) -> requests.Response:
         response (requests.Response): the Reponse object, which may be empty if the request failed
     '''
     try:
-        data = requests.get(url)
+        data = requests.get(url, timeout=10)
     except requests.exceptions.RequestException as error:
         log.error(str(error))
         return requests.Response()
@@ -801,7 +801,7 @@ def get_remote_repo_api_health() -> Dict[str, dict]:
 
     try:
         # GitLab doesn't have rate limits that will cause any issues with checking for repos
-        gitlab_api = requests.head('https://gitlab.com', allow_redirects=True)
+        gitlab_api = requests.head('https://gitlab.com', allow_redirects=True, timeout=10)
 
         if gitlab_api.status_code != 200:
             health[mmpm.consts.GITLAB][mmpm.consts.ERROR] = 'GitLab server returned invalid response'
@@ -810,7 +810,7 @@ def get_remote_repo_api_health() -> Dict[str, dict]:
 
     try:
         # Bitbucket rate limits are similar to GitLab
-        bitbucket_api = requests.head('https://bitbucket.org', allow_redirects=True)
+        bitbucket_api = requests.head('https://bitbucket.org', allow_redirects=True, timeout=10)
 
         if bitbucket_api.status_code != 200:
             health[mmpm.consts.BITBUCKET][mmpm.consts.ERROR] = 'Bitbucket server returned invalid response'

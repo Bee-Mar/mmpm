@@ -274,8 +274,12 @@
 
 - updated dependency versions and fix for missing jinja module causing failed installation
 
-## Version 2.15
+## Version 2.15 [DELETED]
 
 - Removed `webssh` and terminal access in GUI
 - Moved from `eventlet` to `gevent` to avoid Python 3.10 issues
 - some code cleanup
+
+## Version 2.16
+
+- fixed missing leading slash of API URL

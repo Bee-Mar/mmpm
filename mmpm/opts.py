@@ -518,13 +518,6 @@ def get_user_args() -> object:
         dest='guided_setup'
     )
 
-    arg_parser.add_argument(
-        '--migrate',
-        action='store_true',
-        help='migrate legacy file names and database keys. Only required once if prior version of MMPM is < 1.25',
-        dest='migrate'
-    )
-
     # hidden argument used for the GUI interface
     arg_parser.add_argument(
         '--GUI',

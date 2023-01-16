@@ -15,8 +15,8 @@ import mmpm.consts
 import mmpm.core
 import mmpm.models
 import mmpm.mmpm
+from mmpm.magicmirror.package import MagicMirrorPackage
 
-MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 get_env: Callable = mmpm.utils.get_env
 
 app = Flask(
@@ -233,7 +233,7 @@ def packages_upgrade() -> Response:
     failures: List[dict] = []
 
     for package in selected_packages:
-        error = mmpm.core.upgrade_package(package)
+        error = package.upgrade()
         if error:
             mmpm.utils.log.error(f'Failed to upgrade {package.title} with error of: {error}')
             failures.append({'package': package.serialize(), 'error': error})

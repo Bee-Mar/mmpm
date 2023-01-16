@@ -2,12 +2,12 @@
 # pylint: disable=unused-argument
 import sys
 import os
-
 import mmpm.utils
 import mmpm.core
 import mmpm.opts
 import mmpm.consts
 import mmpm.models
+from mmpm.magicmirror.database import MagicMirrorDatabase
 
 from typing import List, Dict
 
@@ -28,10 +28,6 @@ def main(argv):
         print(f'{__version__}')
         sys.exit(0)
 
-    if args.migrate:
-        mmpm.core.migrate()
-        sys.exit(0)
-
     mmpm.utils.assert_required_defaults_exist()
 
     if args.guided_setup:
@@ -41,38 +37,35 @@ def main(argv):
     if args.subcmd in mmpm.opts.SINGLE_OPTION_ARGS and not mmpm.utils.assert_one_option_selected(args):
         mmpm.utils.fatal_too_many_options(args)
 
-    creation_date, expiration_date = mmpm.utils.calculate_expiration_date_of_database()
-    databased_expired: bool = mmpm.utils.should_refresh_database(creation_date, expiration_date)
-    should_refresh: bool = True if args.subcmd == mmpm.opts.DATABASE and args.refresh else databased_expired
+    database = MagicMirrorDatabase()
 
-    packages: Dict[str, List[MagicMirrorPackage]] = mmpm.core.load_packages(force_refresh=should_refresh)
+    should_refresh = True if args.subcmd == mmpm.opts.DATABASE and args.refresh else database.is_expired()
 
-    if databased_expired and args.subcmd != mmpm.opts.UPDATE and mmpm.core.check_for_mmpm_updates(automated=True):
+    database.load_packages(force_refresh=should_refresh)
+
+    if database.is_expired() and args.subcmd != mmpm.opts.UPDATE and mmpm.core.check_for_mmpm_updates(automated=True):
         print('Upgrade available for MMPM. Execute `pip3 install --upgrade --user mmpm` to perform the upgrade now')
 
-    if not packages:
+    if not database.packages:
         mmpm.utils.fatal_msg('Unable to retrieve packages. Please check your internet connection.')
 
     if args.subcmd == mmpm.opts.LIST:
         if args.installed:
-            installed_packages = mmpm.core.get_installed_packages(packages)
+            installed_packages = database.get_installed_packages()
 
             if not installed_packages:
                 mmpm.utils.fatal_msg('No packages are currently installed')
 
-            mmpm.core.display_packages(installed_packages, title_only=args.title_only, include_path=True)
+            database.display_packages(installed_packages, title_only=args.title_only, include_path=True)
 
-        elif args.all:
-            mmpm.core.display_packages(packages, title_only=args.title_only)
-        elif args.exclude_local:
-            excluded = mmpm.utils.get_difference_of_packages(packages, mmpm.core.get_installed_packages(packages))
-            mmpm.core.display_packages(excluded, title_only=args.title_only)
+        elif args.all or args.exclude_local:
+            database.display_packages(title_only=args.title_only, exclude_local=args.exclude_local)
         elif args.categories:
-            mmpm.core.display_categories(packages, title_only=args.title_only)
+            database.display_categories(title_only=args.title_only)
         elif args.gui_url:
             print(mmpm.core.get_web_interface_url())
         elif args.upgradable:
-            mmpm.core.display_available_upgrades()
+            database.display_available_upgrades()
         else:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
@@ -123,12 +116,12 @@ def main(argv):
 
     elif args.subcmd == mmpm.opts.ADD_EXT_PKG:
         if args.remove:
-            mmpm.core.remove_external_package_source(
+            database.remove_external_package_source(
                 [mmpm.utils.sanitize_name(package) for package in args.remove],
                 assume_yes=args.assume_yes
             )
         else:
-            mmpm.core.add_external_package(args.title, args.author, args.repo, args.desc)
+            database.add_external_package(args.title, args.author, args.repo, args.desc)
 
     elif args.subcmd == mmpm.opts.UPDATE:
         if additional_args:
@@ -232,7 +225,7 @@ def main(argv):
         elif args.details:
             mmpm.core.database_details(packages)
         elif args.dump:
-            mmpm.core.dump_database()
+            database.dump()
         else:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# !/usr/bin/env python3
 import os
 import sys
 import json
@@ -14,7 +15,7 @@ import mmpm.models
 import getpass
 import mmpm.mmpm
 from re import findall
-from mmpm.models import MagicMirrorPackage
+from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.utils import get_env
 from bs4 import NavigableString, Tag, BeautifulSoup
 from collections import defaultdict
@@ -40,17 +41,20 @@ def database_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
     num_categories: int = len(packages)
     num_packages: int = 0
 
-    creation_unix_timestamp, expiration_unix_timestamp = mmpm.utils.calculate_expiration_date_of_database()
-    creation_date = datetime.datetime.fromtimestamp(int(creation_unix_timestamp))
-    expiration_date = datetime.datetime.fromtimestamp(int(expiration_unix_timestamp))
+    creation, expiration = mmpm.utils.calculate_expiration_date_of_database()
+
+    creation = creation.replace(second=0, microsecond=0)
+    expiration = expiration.replace(second=0, microsecond=0)
 
     for category in packages.values():
         num_packages += len(category)
 
-    print(mmpm.color.normal_green('Last updated:'), f'{creation_date}')
-    print(mmpm.color.normal_green('Next scheduled update:'), f'{expiration_date}')
+    num_packages -= 1 # skip MMPM itself in the package count
+
+    print(mmpm.color.normal_green('Last updated:'), f'{str(creation)}')
+    print(mmpm.color.normal_green('Next scheduled update:'), f'{str(expiration)}')
     print(mmpm.color.normal_green('Package categories:'), f'{num_categories}')
-    print(mmpm.color.normal_green('Packages available:'), f'{num_packages - 1}') # skip MMPM itself in the package count
+    print(mmpm.color.normal_green('Packages available:'), f'{num_packages}')
 
 
 def check_for_mmpm_updates(automated=False) -> bool:
@@ -105,50 +109,6 @@ def check_for_mmpm_updates(automated=False) -> bool:
         json.dump(upgrades, available_upgrades, default=lambda pkg: pkg.serialize())
 
     return can_upgrade
-
-
-def upgrade_package(package: MagicMirrorPackage) -> str:
-    '''
-    Depending on flags passed in as arguments:
-
-    Checks for available package updates, and alerts the user. Or, pulls latest
-    version of module(s) from the associated repos.
-
-    If upgrading, a user can upgrade all modules that have available upgrades
-    by ommitting additional arguments. Or, upgrade specific modules by
-    supplying their case-sensitive name(s) as an addtional argument.
-
-    Parameters:
-        package (MagicMirrorPackage): the MagicMirror module being upgraded
-
-    Returns:
-        stderr (str): the resulting error message of the upgrade. If the message is zero length, it was successful
-    '''
-
-    MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules'))
-    package.directory = os.path.join(MAGICMIRROR_MODULES_DIR, package.title)
-
-    os.chdir(package.directory)
-
-    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Performing upgrade for {mmpm.color.normal_green(package.title)}')
-    error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
-
-    if error_code:
-        mmpm.utils.error_msg(f'Failed to upgrade MagicMirror {mmpm.consts.RED_X}')
-        mmpm.utils.error_msg(stderr)
-        return stderr
-
-    else:
-        print(mmpm.consts.GREEN_CHECK_MARK)
-
-    stderr = mmpm.utils.install_dependencies(package.directory)
-
-    if stderr:
-        print(mmpm.consts.RED_X)
-        mmpm.utils.error_msg(stderr)
-        return stderr
-
-    return ''
 
 
 def upgrade_available_packages_and_applications(assume_yes: bool = False, selection: List[str] = []) -> None:
@@ -224,7 +184,7 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
             mmpm.utils.warning_msg('Please upgrade MMPM using `pip3 install --user --upgrade mmpm`, followed by `mmpm install --gui`')
 
     for pkg in confirmed[mmpm.consts.PACKAGES]:
-        error = upgrade_package(pkg)
+        error = pkg.upgrade()
 
         if error:
             mmpm.utils.error_msg(error)
@@ -1142,396 +1102,16 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
             for tag in row:
                 table_data: list = tag.find_all('td')
 
-                package_title_info = table_data[0].contents[0].contents[0]
-                package_title = mmpm.utils.sanitize_name(package_title_info) if package_title_info else mmpm.consts.NOT_AVAILABLE
-                anchor_tag = table_data[0].find_all('a')[0]
-                package_repo = str(anchor_tag['href']) if anchor_tag.has_attr('href') else mmpm.consts.NOT_AVAILABLE
+                if table_data[0].contents[0].contents[0] == mmpm.consts.MMPM:
+                    break
 
-                # some people get fancy and embed anchor tags
-                author_info = table_data[1].contents
-                package_author = str() if author_info else mmpm.consts.NOT_AVAILABLE
+                packages[categories[index]].append(MagicMirrorPackage.from_raw_data(table_data))
 
-                for info in author_info:
-                    if isinstance(info, NavigableString):
-                        package_author += f'{info.strip()} '
-                    elif isinstance(info, Tag):
-                        package_author += f'{info.contents[0].strip()} '
-
-                description_info = table_data[2].contents
-                package_description: str = str() if description_info else mmpm.consts.NOT_AVAILABLE
-
-                # some people embed other html elements in here, so they need to be parsed out
-                for info in description_info:
-                    if isinstance(info, Tag):
-                        for content in info:
-                            package_description += content.string
-                    else:
-                        package_description += info.string
-
-
-                # this is not very efficient, but it rarely runs, so it'll do for now
-                if package_title != mmpm.consts.MMPM:
-                    packages[categories[index]].append(
-                        MagicMirrorPackage(
-                            title=package_title,
-                            author=package_author,
-                            description=package_description,
-                            repository=package_repo
-                        )
-                    )
     except Exception as error:
         mmpm.utils.fatal_msg(str(error))
 
     return packages
 
-
-def display_categories(packages: Dict[str, List[MagicMirrorPackage]], title_only: bool = False) -> None:
-    '''
-    Prints module category names and the total number of modules in one of two
-    formats. The default is similar to the Debian apt package manager, and the
-    prettified table alternative
-
-    Parameters:
-        packages (Dict[str, List[MagicMirrorPackage]]): list of dictionaries containing category names and module count
-
-    Returns:
-        None
-    '''
-
-    categories: List[dict] = [
-        {
-            mmpm.consts.CATEGORY: key,
-            mmpm.consts.PACKAGES: len(packages[key])
-        } for key in packages
-    ]
-
-    if title_only:
-        for category in categories:
-            print(category[mmpm.consts.CATEGORY])
-        return
-
-    for category in categories:
-        print(
-            mmpm.color.normal_green(category[mmpm.consts.CATEGORY]),
-            f'\n  Packages: {category[mmpm.consts.PACKAGES]}\n'
-        )
-
-
-def display_packages(packages: Dict[str, List[MagicMirrorPackage]], title_only: bool = False, include_path: bool = False) -> None:
-    '''
-    Depending on the user flags passed in from the command line, either all
-    existing packages may be displayed, or the names of all categories of
-    packages may be displayed.
-
-    Parameters:
-        packages (Dict[str, List[MagicMirrorPackage]]): dictionary of MagicMirror 3rd party packages
-        title_only (bool): boolean flag to show only the title of the given packages
-        include_path (bool): boolean flag to show the installation path of the given packages. Used only when displaying installed packages
-
-    Returns:
-        None
-    '''
-    format_description = lambda desc: desc[:MAX_LENGTH] + '...' if len(desc) > MAX_LENGTH else desc
-    MAX_LENGTH: int = 120
-
-    if title_only:
-        _print_ = lambda package: print(package.title)
-
-    elif include_path:
-        _print_ = lambda package: print(
-            mmpm.color.normal_green(f'{package.title}'),
-            (f'\n  Directory: {package.directory}'),
-            (f"\n  {format_description(package.description)}\n")
-        )
-
-    else:
-        _print_ = lambda package: print(
-            mmpm.color.normal_green(f'{package.title}'),
-            (f"\n  {format_description(package.description)}\n")
-        )
-
-    for _, _packages in packages.items():
-        for _, package in enumerate(_packages):
-            _print_(package)
-
-
-def display_available_upgrades() -> None:
-    '''
-    Based on the current environment, available upgrades for packages, and
-    MagicMirror will be displayed. The status of upgrades available for MMPM is
-    static, regardless of the environment. The available upgrades are read from
-    a file, `~/.config/mmpm/mmpm-available-upgrades.json`, which is updated
-    after running `mmpm update`
-
-    Parameters:
-        None
-
-    Returns:
-        None
-    '''
-    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
-
-    cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
-    cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
-
-    upgrades_available: bool = False
-    upgrades = get_available_upgrades()
-
-    if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]:
-        for package in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]:
-            print(mmpm.color.normal_green(package.title), f'[{cyan_package}]')
-            upgrades_available = True
-
-    if upgrades[mmpm.consts.MMPM]:
-        upgrades_available = True
-        print(f'{mmpm.color.normal_green(mmpm.consts.MMPM)} [{cyan_application}]')
-
-    if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR]:
-        upgrades_available = True
-        print(f'{mmpm.color.normal_green(mmpm.consts.MAGICMIRROR)} [{cyan_application}]')
-
-    if upgrades_available:
-        print('Run `mmpm upgrade` to upgrade available packages/applications')
-    else:
-        print(f'No upgrades available {mmpm.consts.YELLOW_X}')
-
-
-def get_available_upgrades() -> dict:
-    '''
-    Parses the mmpm-available-upgrades.json file, and ensures the contents are
-    valid. If the contents are malformed, the file is reset.
-
-    Parameters:
-        None
-
-    Returns:
-        available_upgrades (dict): a dictionary containg the upgrades available
-                                   for every MagicMirror environment encountered
-
-    '''
-    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
-
-    reset_file: bool = False
-    add_key: bool = False
-
-    with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r', encoding="utf-8") as available_upgrades:
-        try:
-            upgrades: dict = json.load(available_upgrades)
-            upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(
-                upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]
-            )
-        except json.JSONDecodeError:
-            reset_file = True
-        except KeyError:
-            add_key = True
-
-    if reset_file:
-        with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w', encoding="utf-8") as available_upgrades:
-            upgrades = {mmpm.consts.MMPM: False, MMPM_MAGICMIRROR_ROOT: {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}}
-            json.dump(upgrades, available_upgrades)
-
-    elif add_key:
-        with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w', encoding="utf-8") as available_upgrades:
-            upgrades[MMPM_MAGICMIRROR_ROOT] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}
-            json.dump(upgrades, available_upgrades)
-
-    return upgrades
-
-
-def get_installed_packages(packages: Dict[str, List[MagicMirrorPackage]]) -> Dict[str, List[MagicMirrorPackage]]:
-    '''
-    Scans the list <MMPM_MAGICMIRROR_ROOT>/modules directory, and compares
-    against the known packages from the MagicMirror 3rd Party Wiki. Returns a
-    dictionary of all found packages
-
-    Parameters:
-        packages (Dict[str, List[MagicMirrorPackage]]): Dictionary of MagicMirror packages
-
-    Returns:
-        installed_modules (Dict[str, List[MagicMirrorPackage]]): Dictionary of installed MagicMirror packages
-    '''
-
-    package_dirs: List[str] = mmpm.utils.get_existing_package_directories()
-
-    if not package_dirs:
-        mmpm.utils.env_variables_error_msg('Failed to find MagicMirror root directory.')
-        return {}
-
-    MAGICMIRROR_MODULES_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules')
-
-    os.chdir(MAGICMIRROR_MODULES_DIR)
-
-    installed_packages: Dict[str, List[MagicMirrorPackage]] = {}
-    packages_found: Dict[str, List[MagicMirrorPackage]] = {mmpm.consts.PACKAGES: []}
-
-    for package_dir in package_dirs:
-        if not os.path.isdir(package_dir) or not os.path.exists(os.path.join(os.getcwd(), package_dir, '.git')):
-            continue
-
-        try:
-            os.chdir(os.path.join(MAGICMIRROR_MODULES_DIR, package_dir))
-
-            error_code, remote_origin_url, _ = mmpm.utils.run_cmd(
-                ['git', 'config', '--get', 'remote.origin.url'],
-                progress=False
-            )
-
-            if error_code:
-                mmpm.utils.error_msg(f'Unable to communicate with git server to retrieve information about {package_dir}')
-                continue
-
-            error_code, project_name, _ = mmpm.utils.run_cmd(
-                ['basename', remote_origin_url.strip(), '.git'],
-                progress=False
-            )
-
-            if error_code:
-                mmpm.utils.error_msg(f'Unable to determine repository origin for {project_name}')
-                continue
-
-            packages_found[mmpm.consts.PACKAGES].append(
-                MagicMirrorPackage(
-                    title=project_name.strip(),
-                    repository=remote_origin_url.strip(),
-                    directory=os.getcwd()
-                )
-            )
-
-        except Exception as error:
-            mmpm.utils.error_msg(str(error))
-
-        finally:
-            os.chdir('..')
-
-    for category, package_names in packages.items():
-        installed_packages.setdefault(category, [])
-
-        for package in package_names:
-            for package_found in packages_found[mmpm.consts.PACKAGES]:
-                if package.repository == package_found.repository:
-                    package.directory = package_found.directory
-                    installed_packages[category].append(package)
-
-    return installed_packages
-
-
-def add_external_package(title: str = None, author: str = None, repo: str = None, description: str = None) -> str:
-    '''
-    Adds an external source for user to install a module from. This may be a
-    private git repo, or a specific branch of a public repo. All modules added
-    in this manner will be added to the 'External Module Sources' category.
-    These sources are stored in ~/.config/mmpm/mmpm-external-packages.json
-
-    Parameters:
-        title (str): External source title
-        author (str): External source author
-        repo (str): External source repo url
-        description (str): External source description
-
-    Returns:
-        (bool): Upon success, a True result is returned
-    '''
-    try:
-        if not title:
-            title = mmpm.utils.assert_valid_input('Title: ')
-        else:
-            print(f'Title: {title}')
-
-        if not author:
-            author = mmpm.utils.assert_valid_input('Author: ')
-        else:
-            print(f'Author: {author}')
-
-        if not repo:
-            repo = mmpm.utils.assert_valid_input('Repository: ')
-        else:
-            print(f'Repository: {repo}')
-
-        if not description:
-            description = mmpm.utils.assert_valid_input('Description: ')
-        else:
-            print(f'Description: {description}')
-
-    except KeyboardInterrupt:
-        mmpm.utils.keyboard_interrupt_log()
-
-    external_package = MagicMirrorPackage(title=title, repository=repo, author=author, description=description)
-
-    try:
-        if os.path.exists(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE) and os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size:
-            config: dict = {}
-
-            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r', encoding="utf-8") as mmpm_ext_srcs:
-                config[mmpm.consts.EXTERNAL_PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(mmpm_ext_srcs)[mmpm.consts.EXTERNAL_PACKAGES])
-
-            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w', encoding="utf-8") as mmpm_ext_srcs:
-                config[mmpm.consts.EXTERNAL_PACKAGES].append(external_package)
-                json.dump(config, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
-        else:
-            # if file didn't exist previously, or it was empty, this is the first external package that's been added
-            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w', encoding="utf-8") as mmpm_ext_srcs:
-                json.dump({mmpm.consts.EXTERNAL_PACKAGES: [external_package]}, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
-
-        print(mmpm.color.normal_green(f"\nSuccessfully added {title} to '{mmpm.consts.EXTERNAL_PACKAGES}'\n"))
-
-    except IOError as error:
-        mmpm.utils.error_msg('Failed to save external module')
-        return str(error)
-
-    return ''
-
-
-def remove_external_package_source(titles: List[str] = None, assume_yes: bool = False) -> bool:
-    '''
-    Allows user to remove an External Package from the data saved in
-    ~/.config/mmpm/mmpm-external-packages.json
-
-    Parameters:
-        titles (List[str]): External source titles
-        assume_yes (bool): if True, assume yes for user response, and do not display prompt
-
-    Returns:
-        success (bool): True on success, False on error
-    '''
-
-    if not os.path.exists(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE):
-        mmpm.utils.fatal_msg(f'{mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE} does not appear to exist')
-
-    elif not os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size:
-        mmpm.utils.fatal_msg(f'{mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE} is empty')
-
-    ext_packages: Dict[str, List[MagicMirrorPackage]] = {}
-    marked_for_removal: List[MagicMirrorPackage] = []
-    cancelled_removal: List[MagicMirrorPackage] = []
-
-    with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r', encoding="utf-8") as mmpm_ext_srcs:
-        ext_packages[mmpm.consts.EXTERNAL_PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(mmpm_ext_srcs)[mmpm.consts.EXTERNAL_PACKAGES])
-
-    if not ext_packages[mmpm.consts.EXTERNAL_PACKAGES]:
-        mmpm.utils.fatal_msg('No external packages found in database')
-
-    for title in titles:
-        for package in ext_packages[mmpm.consts.EXTERNAL_PACKAGES]:
-            if package.title == title:
-                prompt: str = f'Would you like to remove {mmpm.color.normal_green(title)} ({package.repository}) from the MMPM/MagicMirror local database?'
-                if mmpm.utils.prompt_user(prompt, assume_yes=assume_yes):
-                    marked_for_removal.append(package)
-                else:
-                    cancelled_removal.append(package)
-
-    if not marked_for_removal and not cancelled_removal:
-        mmpm.utils.error_msg('No external sources found matching provided query')
-        return False
-
-    for package in marked_for_removal:
-        ext_packages[mmpm.consts.EXTERNAL_PACKAGES].remove(package)
-        print(f'Removed {package.title} ({package.repository}) {mmpm.consts.GREEN_CHECK_MARK}')
-
-    # if the error_msg was triggered, there's no need to even bother writing back to the file
-    with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w', encoding="utf-8") as mmpm_ext_srcs:
-        json.dump(ext_packages, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
-
-    return True
 
 
 # TODO: all these functions really need to be part of a class, this is way too much repetition # pylint: disable=fixme
@@ -2194,87 +1774,6 @@ def rotate_raspberrypi_screen(degrees: int, assume_yes: bool = False) -> str: #p
 
     print('Please restart your RaspberryPi for the changes to take effect')
     return ''
-
-
-def migrate() -> None:
-    '''
-    Migrates legacy 'External Module Sources' to 'External Packages'. The legacy
-    file name of ~/.config/mmpm/mmpm-external-sources.json is renamed to
-    ~/.config/mmpm/mmpm-external-packages.json. The key inside the dictionary
-    is also renamed from 'External Module Sources' to 'External Packages'
-
-    Parameters:
-        None
-
-    Returns:
-        None
-    '''
-
-    legacy_ext_src_file: str = os.path.join(mmpm.consts.MMPM_CONFIG_DIR, 'mmpm-external-sources.json')
-    legacy_key: str = 'External Module Sources'
-    data: dict = {}
-
-    if os.path.exists(legacy_ext_src_file):
-        with open(legacy_ext_src_file, 'r', encoding="utf-8") as legacy_file:
-            mmpm.utils.log.info('Found existing legacy external modules sources file')
-            try:
-                data = json.load(legacy_file)
-
-                if legacy_key in data:
-                    mmpm.utils.log.info(f'Updating {legacy_key} in external modules dictionary to {mmpm.consts.EXTERNAL_PACKAGES}')
-                    data[mmpm.consts.EXTERNAL_PACKAGES] = data[legacy_key]
-                    data.pop(legacy_key)
-
-                else:
-                    mmpm.utils.log.info('No data found in the legacy key, resetting with empty list')
-                    data[mmpm.consts.EXTERNAL_PACKAGES] = []
-
-            except json.JSONDecodeError:
-                mmpm.utils.fatal_msg(f'{legacy_ext_src_file} may be corrupted. Please examine the file')
-
-        mmpm.utils.log.info(f'Renaming external packages file from {legacy_ext_src_file} to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
-        pathlib.Path(legacy_ext_src_file).rename(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE)
-
-        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w', encoding="utf-8") as ext_pkgs:
-            mmpm.utils.log.info('Saving updated external packages data')
-            json.dump(data, ext_pkgs)
-
-    else:
-        mmpm.utils.log.info(f'{legacy_ext_src_file} does not exist, nothing to migrate')
-
-    mmpm.utils.log.info('Completed migration of legacy External Module Sources migrated to External Packages')
-    print('Migration complete!')
-
-
-def dump_database() -> None:
-    '''
-    Pretty prints contents of database to stdout
-
-    Parameters:
-        None
-
-    Returns:
-        None
-    '''
-    contents: dict = {}
-
-    with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE, 'r', encoding="utf-8") as db:
-        try:
-            contents.update(json.load(db))
-        except json.JSONDecodeError:
-            pass
-
-    if os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size:
-        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r', encoding="utf-8") as db:
-            try:
-                contents.update(json.load(db))
-            except json.JSONDecodeError:
-                mmpm.utils.log.warning('External Packages appears to be empty, skipping during database dump')
-
-    from pygments import highlight, formatters
-    from pygments.lexers.data import JsonLexer
-
-    print(highlight(json.dumps(contents, indent=2), JsonLexer(), formatters.TerminalFormatter()))
 
 
 def zip_mmpm_log_files() -> None:

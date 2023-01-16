@@ -165,7 +165,7 @@ def assert_required_defaults_exist() -> None:
         json.dump(current_env, env, indent=2)
 
 
-def calculate_expiration_date_of_database() -> Tuple[float, float]:
+def calculate_expiration_date_of_database() -> Tuple[datetime.datetime, datetime.datetime]:
     '''
     Calculates the expiration timestamp of the MagicMirror database file. The
     database is considered expired if it is 24 hours or older
@@ -174,30 +174,37 @@ def calculate_expiration_date_of_database() -> Tuple[float, float]:
         None
 
     Returns:
-        Tuple[creation_date (float), expiration_date (float)]: The current timestamp and the exipration timestamp of the MagicMirror database
+        Tuple[creation_date (datetime.datetime), expiration_date (datetime.datetime)]: The current timestamp and the exipration timestamp of the MagicMirror database
     '''
     creation_date = expiration_date = None
 
     if os.path.exists(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE):
-        creation_date = os.path.getmtime(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE)
-        expiration_date = creation_date + 24 * 60 * 60
+        creation_date = datetime.datetime.fromtimestamp(os.path.getmtime(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE))
+        expiration_date = creation_date + datetime.timedelta(hours=12)
 
     return creation_date, expiration_date
 
 
-def should_refresh_database(creation_date: float, expiration_date: float) -> bool:
+def should_refresh_database(creation_date: datetime.datetime, expiration_date: datetime.datetime) -> bool:
     '''
     Determines if the MagicMirror database is expired
 
     Parameters:
-        creation_date (float): The 'last modified' timestamp from os.path.getmtime
-        expiration_date (float): When the file should 'expire' based on a 12 hour interval
+        creation_date (datetime.datetime): The 'last modified' timestamp
+        expiration_date (datetime.datetime): When the file should 'expire'
 
     Returns:
-        should_update (bool): If the file is expired and the data needs to be refreshed
+        should_update (bool): If the database needs to be refreshed
     '''
-    return (not creation_date and not expiration_date) \
-            or (not bool(os.stat(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE).st_size) or expiration_date - time.time() <= 0.0)
+
+    if creation_date is None and expiration_date is None:
+        return True
+    elif not bool(os.stat(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE).st_size):
+        return True # the database file is empty
+    elif datetime.datetime.now() > expiration_date:
+        return True
+
+    return False
 
 
 def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, str, str]:
@@ -705,6 +712,9 @@ def get_difference_of_packages(original: Dict[str, List[MagicMirrorPackage]], ex
     Returns:
         difference (Dict[str, List[MagicMirrorPackage]]]): the reduced set of packages
     '''
+
+    if not exclude:
+        return original
 
     from collections import defaultdict
     difference: Dict[str, List[MagicMirrorPackage]] = defaultdict(list)

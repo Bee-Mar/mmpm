@@ -283,3 +283,10 @@
 ## Version 2.16
 
 - fixed missing leading slash of API URL
+
+## Version 3.0
+
+- upgraded dependencies for GUI
+- fixed URL path causing duplicate static endpoints
+- changed import path of gevent.monkey `patch_all` call
+- changed installation method of MagicMirror via `mmpm install --magicmirror`

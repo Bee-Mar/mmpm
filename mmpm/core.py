@@ -958,7 +958,7 @@ def install_magicmirror() -> bool:
     print(mmpm.color.normal_cyan(f'Installing MagicMirror in {parent}/MagicMirror ...'))
     os.system(f"cd {parent} && git clone https://github.com/MichMich/MagicMirror && cd MagicMirror && npm run install-mm")
 
-    print(mmpm.color.normal_green(f"\nRun 'mmpm mm-ctl --start' to start MagicMirror"))
+    print(mmpm.color.normal_green("\nRun 'mmpm mm-ctl --start' to start MagicMirror"))
     return True
 
 

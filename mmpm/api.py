@@ -19,12 +19,7 @@ import mmpm.mmpm
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 get_env: Callable = mmpm.utils.get_env
 
-app = Flask(
-    __name__,
-    root_path=mmpm.consts.MMPM_WEB_ROOT_DIR,
-    static_folder=mmpm.consts.MMPM_STATIC_DIR,
-    template_folder=mmpm.consts.MMPM_TEMPLATES_DIR,
-)
+app = Flask(__name__, root_path="/var/www/mmpm", static_url_path="")
 
 app.config['CORS_HEADERS'] = 'Content-Type'
 
@@ -385,7 +380,7 @@ def magicmirror_config() -> Response:
 
         mmpm.utils.log.info('Retrieving MagicMirror config')
 
-        return send_file(MAGICMIRROR_CONFIG_FILE, attachment_filename='config.js') # type: ignore # pylint: disable=unexpected-keyword-arg
+        return send_file(MAGICMIRROR_CONFIG_FILE, 'config.js')
 
     data: dict = request.get_json(force=True)
     mmpm.utils.log.info('Saving MagicMirror config file')
@@ -424,7 +419,7 @@ def magicmirror_custom_css() -> Response:
                 return Response(message)
 
         mmpm.utils.log.info(f'Retrieving MagicMirror {MAGICMIRROR_CUSTOM_CSS_FILE}')
-        return send_file(MAGICMIRROR_CUSTOM_CSS_FILE, attachment_filename='custom.css') # type: ignore # pylint: disable=unexpected-keyword-arg
+        return send_file(MAGICMIRROR_CUSTOM_CSS_FILE, 'custom.css')
 
     # POST
     data: dict = request.get_json(force=True)
@@ -616,7 +611,7 @@ def download_log_files() -> Response:
     zip_file_name = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
     shutil.make_archive(zip_file_name, 'zip', mmpm.consts.MMPM_LOG_DIR)
 
-    return send_file(f'/tmp/{zip_file_name}.zip', attachment_filename=f'{zip_file_name}.zip', as_attachment=True) # type: ignore # pylint: disable=unexpected-keyword-arg
+    return send_file(f'/tmp/{zip_file_name}.zip', f'{zip_file_name}.zip', as_attachment=True)
 
 
 # this is stupid and should be condensed
@@ -658,7 +653,7 @@ def mmpm_environment_vars_file() -> Response:
         mmpm-env.json file
     '''
     if request.method == mmpm.consts.GET:
-        return send_file(mmpm.consts.MMPM_ENV_FILE, attachment_filename='mmpm-env.json') # type: ignore  # pylint: disable=unexpected-keyword-arg
+        return send_file(mmpm.consts.MMPM_ENV_FILE, 'mmpm-env.json')
 
     data: dict = request.get_json(force=True)
     mmpm.utils.log.info('Saving MMPM environment variables file')

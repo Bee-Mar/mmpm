@@ -951,12 +951,14 @@ def install_magicmirror() -> bool:
     else:
         sys.exit(0)
 
-    if not shutil.which('curl'):
-        mmpm.utils.fatal_msg("'curl' command not found. Please install 'curl', then re-run mmpm install --magicmirror")
+    for cmd in ["git", "npm"]:
+        if not shutil.which(cmd):
+            mmpm.utils.fatal_msg(f"'{cmd}' command not found. Please install '{cmd}', then re-run mmpm install --magicmirror")
 
-    os.chdir(parent)
     print(mmpm.color.normal_cyan(f'Installing MagicMirror in {parent}/MagicMirror ...'))
-    os.system('bash -c "$(curl -sL https://raw.githubusercontent.com/sdetweil/MagicMirror_scripts/master/raspberry.sh)"')
+    os.system(f"cd {parent} && git clone https://github.com/MichMich/MagicMirror && cd MagicMirror && npm run install-mm")
+
+    print(mmpm.color.normal_green(f"\nRun 'mmpm mm-ctl --start' to start MagicMirror"))
     return True
 
 

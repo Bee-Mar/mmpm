@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 # pylint: disable=unused-argument
+# pylint: disable=unused-import
+from gevent import monkey
+monkey.patch_all() # do not move these
 import sys
 import os
 

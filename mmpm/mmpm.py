@@ -3,23 +3,24 @@
 # pylint: disable=unused-import
 from gevent import monkey
 monkey.patch_all() # do not move these
+
 import sys
 import os
 import mmpm.utils
 import mmpm.core
 import mmpm.opts
 import mmpm.consts
-import mmpm.models
-from mmpm.magicmirror.database import MagicMirrorDatabase
-
 from typing import List, Dict
+from mmpm.magicmirror.database import MagicMirrorDatabase
+from mmpm.logger import MMPMLogger
+from mmpm.models import MagicMirrorPackage
 
 
-MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 get_env = mmpm.utils.get_env
 
 __version__ = 3.0
 
+logger = MMPMLogger.get_logger(__name__)
 
 def main(argv):
     ''' Main entry point for CLI '''
@@ -226,7 +227,7 @@ def main(argv):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.details:
-            mmpm.core.database_details(packages)
+            database.details()
         elif args.dump:
             database.dump()
         else:
@@ -259,5 +260,5 @@ if __name__ == "__main__":
         main(sys.argv)
     except KeyboardInterrupt:
         print()
-        mmpm.utils.log.info('User killed process with keyboard interrupt')
+        logger.info('User killed process with keyboard interrupt')
         sys.exit(127)

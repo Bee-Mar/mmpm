@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# !/usr/bin/env python3
 import os
 import sys
 import json
@@ -14,7 +13,9 @@ import mmpm.consts
 import mmpm.models
 import getpass
 import mmpm.mmpm
+from mmpm.logger import MMPMLogger
 from re import findall
+from pathlib import Path, PosixPath
 from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.utils import get_env
 from bs4 import NavigableString, Tag, BeautifulSoup
@@ -23,38 +24,7 @@ from socket import gethostname, gethostbyname
 from typing import List, Dict, Callable
 from textwrap import fill, indent
 
-
-def database_details(packages: Dict[str, List[MagicMirrorPackage]]) -> None:
-    '''
-    Displays information regarding the most recent database file, ie. when it
-    was taken, when the next scheduled database retrieval will be taken, how many module
-    categories exist, and the total number of modules available. Additionally,
-    tells user how to forcibly request the database be updated.
-
-    Parameters:
-        packages (Dict[str, List[MagicMirrorPackage]]): Dictionary of MagicMirror modules
-
-    Returns:
-        None
-    '''
-
-    num_categories: int = len(packages)
-    num_packages: int = 0
-
-    creation, expiration = mmpm.utils.calculate_expiration_date_of_database()
-
-    creation = creation.replace(second=0, microsecond=0)
-    expiration = expiration.replace(second=0, microsecond=0)
-
-    for category in packages.values():
-        num_packages += len(category)
-
-    num_packages -= 1 # skip MMPM itself in the package count
-
-    print(mmpm.color.normal_green('Last updated:'), f'{str(creation)}')
-    print(mmpm.color.normal_green('Next scheduled update:'), f'{str(expiration)}')
-    print(mmpm.color.normal_green('Package categories:'), f'{num_categories}')
-    print(mmpm.color.normal_green('Packages available:'), f'{num_packages}')
+logger = MMPMLogger.get_logger(__name__)
 
 
 def check_for_mmpm_updates(automated=False) -> bool:
@@ -71,7 +41,7 @@ def check_for_mmpm_updates(automated=False) -> bool:
     '''
 
     cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
-    mmpm.utils.log.info(f'Checking for newer version of MMPM. Current version: {mmpm.mmpm.__version__}')
+    logger.info(f'Checking for newer version of MMPM. Current version: {mmpm.mmpm.__version__}')
 
     if automated:
         message: str = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] ({mmpm.color.normal_magenta('automated')}) for updates"
@@ -98,9 +68,9 @@ def check_for_mmpm_updates(automated=False) -> bool:
     can_upgrade: bool = version_number > mmpm.mmpm.__version__
 
     if can_upgrade:
-        mmpm.utils.log.info(f'Found newer version of MMPM: {version_number}')
+        logger.info(f'Found newer version of MMPM: {version_number}')
     else:
-        mmpm.utils.log.info(f'No newer version of MMPM found > {version_number} available. The current version is the latest')
+        logger.info(f'No newer version of MMPM found > {version_number} available. The current version is the latest')
 
     upgrades = get_available_upgrades()
 
@@ -230,11 +200,11 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
         upgradable (List[MagicMirrorPackage]): the list of packages that have available upgrades
     '''
 
-    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
-    MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(MMPM_MAGICMIRROR_ROOT, 'modules'))
+    MMPM_MAGICMIRROR_ROOT: PosixPath = Path(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
+    MAGICMIRROR_MODULES_DIR: PosixPath = MMPM_MAGICMIRROR_ROOT / 'modules'
 
-    if not os.path.exists(MAGICMIRROR_MODULES_DIR):
-        mmpm.utils.env_variables_fatal_msg(f"'{MAGICMIRROR_MODULES_DIR}' does not exist.")
+    if not MAGICMIRROR_MODULES_DIR.exists():
+        mmpm.utils.env_variables_fatal_msg(f"'{str(MAGICMIRROR_MODULES_DIR)}' does not exist.")
 
     os.chdir(MAGICMIRROR_MODULES_DIR)
     installed_packages: Dict[str, List[MagicMirrorPackage]] = get_installed_packages(packages)
@@ -249,7 +219,7 @@ def check_for_package_updates(packages: Dict[str, List[MagicMirrorPackage]]) -> 
         # asserting the available-updates file doesn't contain any artifacts of
         # previously installed packages that had updates at one point in time
         if not mmpm.utils.reset_available_upgrades_for_environment(MMPM_MAGICMIRROR_ROOT):
-            mmpm.utils.log.error('Failed to reset available upgrades for the current environment. File has been recreated')
+            logger.error('Failed to reset available upgrades for the current environment. File has been recreated')
             os.system(f'rm -f {mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE}; touch {mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE}')
         return []
 
@@ -387,7 +357,7 @@ def get_installation_candidates(packages: Dict[str, List[MagicMirrorPackage]], p
         for category in packages.values():
             for package in category:
                 if package.title == package_to_install:
-                    mmpm.utils.log.info(f'Matched {package.title} to installation candidate')
+                    logger.info(f'Matched {package.title} to installation candidate')
                     installation_candidates.append(package)
                     found = True
         if not found:
@@ -410,9 +380,9 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
         success (bool): True upon success, False upon failure
     '''
 
-    MAGICMIRROR_MODULES_DIR: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules'))
+    MAGICMIRROR_MODULES_DIR: PosixPath = Path(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV)) / 'modules'
 
-    if not os.path.exists(MAGICMIRROR_MODULES_DIR):
+    if not MAGICMIRROR_MODULES_DIR.exists():
         mmpm.utils.error_msg('MagicMirror directory not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
         return False
 
@@ -420,7 +390,7 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
         mmpm.utils.error_msg('Unable to match query any to installation candidates')
         return False
 
-    mmpm.utils.log.info(f'Changing into MagicMirror modules directory {MAGICMIRROR_MODULES_DIR}')
+    logger.info(f'Changing into MagicMirror modules directory {MAGICMIRROR_MODULES_DIR}')
     os.chdir(MAGICMIRROR_MODULES_DIR)
 
     # a flag to check if any of the modules have been installed. Used for displaying a message later
@@ -429,10 +399,10 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
 
     for index, candidate in enumerate(installation_candidates):
         if not mmpm.utils.prompt_user(f'Install {mmpm.color.normal_green(candidate.title)} ({candidate.repository})?', assume_yes=assume_yes):
-            mmpm.utils.log.info(f'User not chose to install {candidate.title}')
+            logger.info(f'User not chose to install {candidate.title}')
             installation_candidates[index] = MagicMirrorPackage()
         else:
-            mmpm.utils.log.info(f'User chose to install {candidate.title} ({candidate.repository})')
+            logger.info(f'User chose to install {candidate.title} ({candidate.repository})')
 
     existing_module_dirs: List[str] = mmpm.utils.get_existing_package_directories()
     starting_count: int = len(existing_module_dirs)
@@ -445,7 +415,7 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
 
         for existing_dir in existing_module_dirs:
             if package.directory == existing_dir:
-                mmpm.utils.log.error(f'Conflict encountered. Found a package named {package.title} already at {package.directory}')
+                logger.error(f'Conflict encountered. Found a package named {package.title} already at {package.directory}')
                 mmpm.utils.error_msg(f'A module named {package.title} is already installed in {package.directory}. Please remove {package.title} first.')
                 continue
 
@@ -456,7 +426,7 @@ def install_packages(installation_candidates: List[MagicMirrorPackage], assume_y
                 existing_module_dirs.append(package.title)
 
         except KeyboardInterrupt:
-            mmpm.utils.log.info(f'Cleaning up cancelled installation path of {package.directory} before exiting')
+            logger.info(f'Cleaning up cancelled installation path of {package.directory} before exiting')
             os.chdir(mmpm.consts.HOME_DIR)
             os.system(f"rm -rf '{package.directory}'")
             mmpm.utils.keyboard_interrupt_log()
@@ -507,7 +477,7 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> st
     if error:
         mmpm.utils.error_msg(error)
         message: str = f"Failed to install {package.title} at '{package.directory}'"
-        mmpm.utils.log.error(message)
+        logger.error(message)
 
         yes = mmpm.utils.prompt_user(
             f"{mmpm.color.bright_red('ERROR:')} Failed to install {package.title} at '{package.directory}'. Remove the directory?",
@@ -522,7 +492,7 @@ def install_package(package: MagicMirrorPackage, assume_yes: bool = False) -> st
         else:
             message = f"Keeping {package.title} at '{package.directory}'"
             print(f'\n{message}\n')
-            mmpm.utils.log.info(message)
+            logger.info(message)
 
         return error
 
@@ -539,15 +509,15 @@ def check_for_magicmirror_updates() -> bool:
     Returns:
         bool: True upon success, False upon failure
     '''
-    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
+    MMPM_MAGICMIRROR_ROOT: PosixPath = Path(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
 
-    if not os.path.exists(MMPM_MAGICMIRROR_ROOT):
+    if not MMPM_MAGICMIRROR_ROOT.exists():
         mmpm.utils.error_msg('MagicMirror application directory not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
         return False
 
     is_git: bool = True
 
-    if not os.path.exists(os.path.join(MMPM_MAGICMIRROR_ROOT, '.git')):
+    if not (MMPM_MAGICMIRROR_ROOT / '.git').exists():
         mmpm.utils.warning_msg('The MagicMirror root is not a git repo. If running MagicMirror as a Docker container, updates cannot be performed via mmpm.')
         is_git = False
 
@@ -698,7 +668,7 @@ def install_mmpm_gui(assume_yes: bool = False) -> None:
     if daemon_reload.returncode != 0:
         print(mmpm.consts.RED_X)
         mmpm.utils.error_msg('Failed to reload SystemdD daemon. See `mmpm log` for details')
-        mmpm.utils.log.error(daemon_reload.stderr.decode('utf-8'))
+        logger.error(daemon_reload.stderr.decode('utf-8'))
     else:
         print(mmpm.consts.GREEN_CHECK_MARK)
 
@@ -707,7 +677,7 @@ def install_mmpm_gui(assume_yes: bool = False) -> None:
     enable_mmpm_service = mmpm.utils.systemctl('enable', ['mmpm.service'])
 
     if enable_mmpm_service.returncode != 0:
-        if mmpm.utils.log_gui_install_error_and_prompt_for_removal(enable_mmpm_service, 'Failed to enable MMPM SystemD service'):
+        if logger_gui_install_error_and_prompt_for_removal(enable_mmpm_service, 'Failed to enable MMPM SystemD service'):
             remove_mmpm_gui()
         sys.exit(127)
 
@@ -716,14 +686,14 @@ def install_mmpm_gui(assume_yes: bool = False) -> None:
     start_mmpm_service = mmpm.utils.systemctl('start', ['mmpm.service'])
 
     if start_mmpm_service.returncode != 0:
-        if mmpm.utils.log_gui_install_error_and_prompt_for_removal(start_mmpm_service, 'Failed to start MMPM SystemD service'):
+        if logger_gui_install_error_and_prompt_for_removal(start_mmpm_service, 'Failed to start MMPM SystemD service'):
             remove_mmpm_gui()
         sys.exit(127)
 
     link_nginx_conf = subprocess.run(['sudo', 'ln', '-sf', '/etc/nginx/sites-available/mmpm.conf', '/etc/nginx/sites-enabled'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     if link_nginx_conf.returncode != 0:
-        if mmpm.utils.log_gui_install_error_and_prompt_for_removal(link_nginx_conf, 'Failed to create symbolic links for NGINX configuration'):
+        if logger_gui_install_error_and_prompt_for_removal(link_nginx_conf, 'Failed to create symbolic links for NGINX configuration'):
             remove_mmpm_gui()
         sys.exit(127)
 
@@ -731,7 +701,7 @@ def install_mmpm_gui(assume_yes: bool = False) -> None:
     restart_nginx = mmpm.utils.systemctl('restart', ['nginx'])
 
     if restart_nginx.returncode != 0:
-        if mmpm.utils.log_gui_install_error_and_prompt_for_removal(restart_nginx, 'Failed to restart NGINX SystemD service'):
+        if logger_gui_install_error_and_prompt_for_removal(restart_nginx, 'Failed to restart NGINX SystemD service'):
             remove_mmpm_gui()
         sys.exit(127)
 
@@ -771,7 +741,7 @@ def install_mmpm_as_magicmirror_module(assume_yes: bool = False) -> str:
     except OSError as error:
         print(mmpm.consts.RED_X)
         mmpm.utils.error_msg('Failed to create MMPM module. Is the directory owned by root?')
-        mmpm.utils.log.error(str(error))
+        logger.error(str(error))
         return str(error)
 
     print(mmpm.consts.GREEN_CHECK_MARK)
@@ -812,7 +782,7 @@ def remove_mmpm_gui(hide_prompt: bool = False) -> None:
         else:
             print(mmpm.consts.RED_X)
             mmpm.utils.error_msg('Failed to stop MMPM SystemD service. See `mmpm log` for details')
-            mmpm.utils.log.error(f"{stopping.stdout.decode('utf-8')}\n{stopping.stderr.decode('utf-8')}")
+            logger.error(f"{stopping.stdout.decode('utf-8')}\n{stopping.stderr.decode('utf-8')}")
 
     elif is_active.stdout.decode('utf-8') == INACTIVE:
         print(f'{mmpm.consts.GREEN_PLUS} MMPM SystemD service not active, nothing to do {mmpm.consts.GREEN_CHECK_MARK}')
@@ -828,7 +798,7 @@ def remove_mmpm_gui(hide_prompt: bool = False) -> None:
         else:
             print(mmpm.consts.RED_X)
             mmpm.utils.error_msg('Failed to disable MMPM SystemD service. See `mmpm log` for details')
-            mmpm.utils.log.error(f"{disabling.stdout.decode('utf-8')}\n{disabling.stderr.decode('utf-8')}")
+            logger.error(f"{disabling.stdout.decode('utf-8')}\n{disabling.stderr.decode('utf-8')}")
 
     elif is_enabled.stdout.decode('utf-8') == DISABLED:
         print(f'{mmpm.consts.GREEN_PLUS} MMPM SystemD service not enabled, nothing to do {mmpm.consts.GREEN_CHECK_MARK}')
@@ -853,7 +823,7 @@ def remove_mmpm_gui(hide_prompt: bool = False) -> None:
     if daemon_reload.returncode != 0:
         print(mmpm.consts.RED_X)
         mmpm.utils.error_msg('Failed to reload SystemdD daemon. See `mmpm log` for details')
-        mmpm.utils.log.error(daemon_reload.stderr.decode('utf-8'))
+        logger.error(daemon_reload.stderr.decode('utf-8'))
     else:
         print(mmpm.consts.GREEN_CHECK_MARK)
 
@@ -863,7 +833,7 @@ def remove_mmpm_gui(hide_prompt: bool = False) -> None:
     if restart_nginx.returncode != 0:
         print(mmpm.consts.RED_X)
         mmpm.utils.error_msg('Failed to restart NGINX SystemdD daemon. See `mmpm log` for details')
-        mmpm.utils.log.error(restart_nginx.stderr.decode('utf-8'))
+        logger.error(restart_nginx.stderr.decode('utf-8'))
     else:
         print(mmpm.consts.GREEN_CHECK_MARK)
 
@@ -888,9 +858,9 @@ def install_magicmirror() -> bool:
     parent: str = mmpm.consts.HOME_DIR
 
 
-    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
+    MMPM_MAGICMIRROR_ROOT: PosixPath = Path(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
 
-    if os.path.exists(MMPM_MAGICMIRROR_ROOT):
+    if MMPM_MAGICMIRROR_ROOT.exists():
         mmpm.utils.warning_msg(f'MagicMirror appears to be installed already in {os.getcwd()}. Please provide a new destination for the MagicMirror installation')
         try:
             parent = os.path.abspath(
@@ -953,22 +923,22 @@ def remove_packages(installed_packages: Dict[str, List[MagicMirrorPackage]], pac
                     prompt: str = f'Would you like to remove {mmpm.color.normal_green(package.title)} ({package.directory})?'
                     if mmpm.utils.prompt_user(prompt, assume_yes=assume_yes):
                         marked_for_removal.append(dir_name)
-                        mmpm.utils.log.info(f'User marked {dir_name} for removal')
+                        logger.info(f'User marked {dir_name} for removal')
                     else:
                         cancelled_removal.append(dir_name)
-                        mmpm.utils.log.info(f'User chose not to remove {dir_name}')
+                        logger.info(f'User chose not to remove {dir_name}')
     except KeyboardInterrupt:
         mmpm.utils.keyboard_interrupt_log()
 
     for title in packages_to_remove:
         if title not in marked_for_removal and title not in cancelled_removal:
             mmpm.utils.error_msg(f"'{title}' is not installed")
-            mmpm.utils.log.info(f"User attemped to remove {title}, but no module named '{title}' was found in {MAGICMIRROR_MODULES_DIR}")
+            logger.info(f"User attemped to remove {title}, but no module named '{title}' was found in {MAGICMIRROR_MODULES_DIR}")
 
     for dir_name in marked_for_removal:
         shutil.rmtree(dir_name)
         print(f'{mmpm.consts.GREEN_PLUS} Removed {mmpm.color.normal_green(dir_name)} {mmpm.consts.GREEN_CHECK_MARK}')
-        mmpm.utils.log.info(f'Removed {dir_name}')
+        logger.info(f'Removed {dir_name}')
 
     if marked_for_removal:
         print('Run `mmpm open --config` to delete associated configurations of any removed modules')
@@ -991,19 +961,19 @@ def load_packages(force_refresh: bool = False) -> Dict[str, List[MagicMirrorPack
 
     packages: dict = {}
 
-    db_file: str = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
-    db_exists: bool = os.path.exists(db_file) and bool(os.stat(db_file).st_size)
+    db_file: PosixPath = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
+    db_exists: bool = db_file.exists()  and bool(db_file.stat().st_size)
     ext_pkgs_file: str = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
 
     if db_exists:
-        mmpm.utils.log.info(f'Backing up database file as {mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE}.bak')
+        logger.info(f'Backing up database file as {mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE}.bak')
 
         shutil.copyfile(
             mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE,
             f'{mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE}.bak'
         )
 
-        mmpm.utils.log.info('Back up of database complete')
+        logger.info('Back up of database complete')
 
     # if the database has expired, or doesn't exist, get a new one
     if force_refresh or not db_exists:
@@ -1145,9 +1115,9 @@ def display_magicmirror_modules_status() -> None:
 
     @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def connect(): # pylint: disable=unused-variable
-        mmpm.utils.log.info('connected to MagicMirror websocket')
+        logger.info('connected to MagicMirror websocket')
         client.emit('FROM_MMPM_APP_get_active_modules', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE, data=None)
-        mmpm.utils.log.info('emitted request for active modules to MMPM module')
+        logger.info('emitted request for active modules to MMPM module')
 
 
     @client.event
@@ -1157,12 +1127,12 @@ def display_magicmirror_modules_status() -> None:
 
     @client.on('disconnect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def disconnect(): # pylint: disable=unused-variable
-        mmpm.utils.log.info('disconnected from MagicMirror websocket')
+        logger.info('disconnected from MagicMirror websocket')
 
 
     @client.on('ACTIVE_MODULES', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def active_modules(data): # pylint: disable=unused-variable
-        mmpm.utils.log.info('received active modules from MMPM MagicMirror module')
+        logger.info('received active modules from MMPM MagicMirror module')
         stop_thread_event.set()
 
         if not data:
@@ -1178,7 +1148,7 @@ def display_magicmirror_modules_status() -> None:
         mmpm.utils.socketio_client_disconnect(client)
         countdown_thread.join()
 
-    mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
+    logger.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
     mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Sending request to MagicMirror for active modules ')
 
     try:
@@ -1186,7 +1156,7 @@ def display_magicmirror_modules_status() -> None:
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
     except (OSError, BrokenPipeError, Exception) as error:
         mmpm.utils.error_msg('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
-        mmpm.utils.log.error(str(error))
+        logger.error(str(error))
         mmpm.utils.socketio_client_disconnect(client)
 
 
@@ -1225,9 +1195,9 @@ def hide_magicmirror_modules(modules_to_hide: List[int]):
 
     @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def connect(): # pylint: disable=unused-variable
-        mmpm.utils.log.info('connected to MagicMirror websocket')
+        logger.info('connected to MagicMirror websocket')
         client.emit('FROM_MMPM_APP_toggle_modules', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE, data={'directive': 'hide', 'modules': modules_to_hide})
-        mmpm.utils.log.info('emitted request to hide modules to MMPM module')
+        logger.info('emitted request to hide modules to MMPM module')
 
 
     @client.event
@@ -1237,12 +1207,12 @@ def hide_magicmirror_modules(modules_to_hide: List[int]):
 
     @client.on('disconnect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def disconnect(): # pylint: disable=unused-variable
-        mmpm.utils.log.info('disconnected from MagicMirror websocket')
+        logger.info('disconnected from MagicMirror websocket')
 
 
     @client.on('MODULES_TOGGLED', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def modules_toggled(data): # pylint: disable=unused-variable
-        mmpm.utils.log.info('received toggled modules from MMPM MagicMirror module')
+        logger.info('received toggled modules from MMPM MagicMirror module')
         stop_thread_event.set()
 
         if not data:
@@ -1254,7 +1224,7 @@ def hide_magicmirror_modules(modules_to_hide: List[int]):
         mmpm.utils.socketio_client_disconnect(client)
         countdown_thread.join()
 
-    mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
+    logger.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
     mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Sending request to MagicMirror to hide modules with keys: {modules_to_hide} ')
 
     try:
@@ -1262,7 +1232,7 @@ def hide_magicmirror_modules(modules_to_hide: List[int]):
         client.connect(MMPM_MAGICMIRROR_URI, namespaces=[mmpm.consts.MMPM_SOCKETIO_NAMESPACE])
     except (OSError, BrokenPipeError, Exception) as error:
         mmpm.utils.error_msg('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
-        mmpm.utils.log.error(str(error))
+        logger.error(str(error))
         mmpm.utils.socketio_client_disconnect(client)
 
 
@@ -1301,9 +1271,9 @@ def show_magicmirror_modules(modules_to_show: List[int]) -> None:
 
     @client.on('connect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def connect(): # pylint: disable=unused-variable
-        mmpm.utils.log.info('connected to MagicMirror websocket')
+        logger.info('connected to MagicMirror websocket')
         client.emit('FROM_MMPM_APP_toggle_modules', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE, data={'directive': 'show', 'modules': modules_to_show})
-        mmpm.utils.log.info('emitted request for show modules to MMPM module')
+        logger.info('emitted request for show modules to MMPM module')
 
 
     @client.event
@@ -1313,11 +1283,11 @@ def show_magicmirror_modules(modules_to_show: List[int]) -> None:
 
     @client.on('disconnect', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def disconnect(): # pylint: disable=unused-variable
-        mmpm.utils.log.info('disconnected from MagicMirror websocket')
+        logger.info('disconnected from MagicMirror websocket')
 
     @client.on('MODULES_TOGGLED', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
     def modules_toggled(data): # pylint: disable=unused-variable
-        mmpm.utils.log.info('received toggled modules from MMPM MagicMirror module')
+        logger.info('received toggled modules from MMPM MagicMirror module')
         stop_thread_event.set()
 
         if not data:
@@ -1329,7 +1299,7 @@ def show_magicmirror_modules(modules_to_show: List[int]) -> None:
         mmpm.utils.socketio_client_disconnect(client)
         countdown_thread.join()
 
-    mmpm.utils.log.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
+    logger.info(f"attempting to connect to '{mmpm.consts.MMPM_SOCKETIO_NAMESPACE}' namespace within MagicMirror websocket")
     mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Sending request to MagicMirror to show modules with keys: {modules_to_show} ')
 
     try:
@@ -1387,10 +1357,10 @@ def stop_magicmirror() -> bool:
     MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = get_env(mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE_ENV)
 
     if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
-        mmpm.utils.log.info(f'docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
+        logger.info(f'docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
 
     if MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
-        mmpm.utils.log.info(f'pm2 process set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
+        logger.info(f'pm2 process set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
 
     if shutil.which('pm2') and MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
         command = ['pm2', 'stop', MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
@@ -1402,7 +1372,7 @@ def stop_magicmirror() -> bool:
 
     if command and process:
         mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} stopping MagicMirror using {command[0]} ")
-        mmpm.utils.log.info(f"Using '{process}' to stop MagicMirror")
+        logger.info(f"Using '{process}' to stop MagicMirror")
         # pm2 and docker-compose cause the output to flip
         error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False)
 
@@ -1411,7 +1381,7 @@ def stop_magicmirror() -> bool:
             mmpm.utils.env_variables_error_msg(stderr.strip())
             return False
 
-        mmpm.utils.log.info(f"stopped MagicMirror using '{process}'")
+        logger.info(f"stopped MagicMirror using '{process}'")
         print(mmpm.consts.GREEN_CHECK_MARK)
         return True
 
@@ -1430,7 +1400,7 @@ def start_magicmirror() -> bool:
     Returns:
         None
     '''
-    mmpm.utils.log.info('Starting MagicMirror')
+    logger.info('Starting MagicMirror')
 
     process: str = ''
     command: List[str] = []
@@ -1439,10 +1409,10 @@ def start_magicmirror() -> bool:
     MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = get_env(mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE_ENV)
 
     if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
-        mmpm.utils.log.info(f'docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
+        logger.info(f'docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
 
     if MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
-        mmpm.utils.log.info(f'pm2 process set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
+        logger.info(f'pm2 process set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
 
     if shutil.which('pm2') and MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
         command = ['pm2', 'start', MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
@@ -1454,7 +1424,7 @@ def start_magicmirror() -> bool:
 
     if command and process:
         mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} starting MagicMirror using {command[0]} ")
-        mmpm.utils.log.info(f"Using '{process}' to start MagicMirror")
+        logger.info(f"Using '{process}' to start MagicMirror")
         error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False)
 
         if error_code:
@@ -1462,19 +1432,19 @@ def start_magicmirror() -> bool:
             mmpm.utils.env_variables_error_msg(stderr.strip())
             return False
 
-        mmpm.utils.log.info(f"started MagicMirror using '{process}'")
+        logger.info(f"started MagicMirror using '{process}'")
         print(mmpm.consts.GREEN_CHECK_MARK)
         return True
 
     MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
 
     os.chdir(MMPM_MAGICMIRROR_ROOT)
-    mmpm.utils.log.info("Running 'npm start' in the background")
+    logger.info("Running 'npm start' in the background")
 
     mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} npm start ')
     os.system('npm start &')
     print(mmpm.consts.GREEN_CHECK_MARK)
-    mmpm.utils.log.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
+    logger.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
     return True
 
 
@@ -1497,10 +1467,10 @@ def restart_magicmirror() -> bool:
     MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = get_env(mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE_ENV)
 
     if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
-        mmpm.utils.log.info(f'docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
+        logger.info(f'docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
 
     if MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
-        mmpm.utils.log.info(f'pm2 process set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
+        logger.info(f'pm2 process set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
 
     if shutil.which('pm2') and MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
         command = ['pm2', 'restart', MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
@@ -1512,7 +1482,7 @@ def restart_magicmirror() -> bool:
 
     if command and process:
         mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} restarting MagicMirror using {command[0]} ")
-        mmpm.utils.log.info(f"Using '{process}' to restart MagicMirror")
+        logger.info(f"Using '{process}' to restart MagicMirror")
 
         # pm2 and docker-compose cause the output to flip
         error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False)
@@ -1522,19 +1492,19 @@ def restart_magicmirror() -> bool:
             mmpm.utils.env_variables_error_msg(stderr.strip())
             return False
 
-        mmpm.utils.log.info(f"restarted MagicMirror using '{process}'")
+        logger.info(f"restarted MagicMirror using '{process}'")
         print(mmpm.consts.GREEN_CHECK_MARK)
         return True
 
     if not stop_magicmirror():
-        mmpm.utils.log.error('Failed to stop MagicMirror using npm commands')
+        logger.error('Failed to stop MagicMirror using npm commands')
         return False
 
     if not start_magicmirror():
-        mmpm.utils.log.error('Failed to start MagicMirror using npm commands')
+        logger.error('Failed to start MagicMirror using npm commands')
         return False
 
-    mmpm.utils.log.info('Restarted MagicMirror using npm commands')
+    logger.info('Restarted MagicMirror using npm commands')
     return True
 
 
@@ -1554,18 +1524,18 @@ def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool
     logs: List[str] = []
 
     if cli_logs:
-        if os.path.exists(mmpm.consts.MMPM_CLI_LOG_FILE):
-            logs.append(mmpm.consts.MMPM_CLI_LOG_FILE)
+        if mmpm.consts.MMPM_CLI_LOG_FILE.exists():
+            logs.append(str(mmpm.consts.MMPM_CLI_LOG_FILE))
         else:
             mmpm.utils.error_msg('MMPM log file not found')
 
     if gui_logs:
-        if os.path.exists(mmpm.consts.MMPM_NGINX_ACCESS_LOG_FILE):
-            logs.append(mmpm.consts.MMPM_NGINX_ACCESS_LOG_FILE)
+        if mmpm.consts.MMPM_NGINX_ACCESS_LOG_FILE.exists():
+            logs.append(str(mmpm.consts.MMPM_NGINX_ACCESS_LOG_FILE))
         else:
             mmpm.utils.error_msg('Gunicorn access log file not found')
-        if os.path.exists(mmpm.consts.MMPM_NGINX_ERROR_LOG_FILE):
-            logs.append(mmpm.consts.MMPM_NGINX_ERROR_LOG_FILE)
+        if mmpm.consts.MMPM_NGINX_ERROR_LOG_FILE.exists():
+            logs.append(str(mmpm.consts.MMPM_NGINX_ERROR_LOG_FILE))
         else:
             mmpm.utils.error_msg('Gunicorn error log file not found')
 
@@ -1586,7 +1556,7 @@ def display_mmpm_env_vars() -> None:
         None
     '''
 
-    mmpm.utils.log.info('User listing environment variables, set with the following values')
+    logger.info('User listing environment variables, set with the following values')
 
     from pygments import highlight, formatters
     from pygments.lexers.data import JsonLexer
@@ -1610,13 +1580,13 @@ def install_autocompletion(assume_yes: bool = False) -> None:
     '''
 
     if not mmpm.utils.prompt_user('Are you sure you want to install the autocompletion feature for the MMPM CLI?', assume_yes=assume_yes):
-        mmpm.utils.log.info('User cancelled installation of autocompletion for MMPM CLI')
+        logger.info('User cancelled installation of autocompletion for MMPM CLI')
         return
 
-    mmpm.utils.log.info('user attempting to install MMPM autocompletion')
+    logger.info('user attempting to install MMPM autocompletion')
     shell: str = os.environ['SHELL']
 
-    mmpm.utils.log.info(f'detected user shell to be {shell}')
+    logger.info(f'detected user shell to be {shell}')
 
     autocomplete_url: str = 'https://github.com/kislyuk/argcomplete#activating-global-completion'
     error_message: str = f'Please see {autocomplete_url} for help installing autocompletion'
@@ -1625,16 +1595,16 @@ def install_autocompletion(assume_yes: bool = False) -> None:
     failed_match_message = lambda shell, configs: f'Unable to locate {shell} configuration file (looked for {configs}). {error_message}' # pylint: disable=unnecessary-lambda-assignment
 
     def __match_shell_config__(configs: List[str]) -> str:
-        mmpm.utils.log.info(f'searching for one of the following shell configuration files {configs}')
+        logger.info(f'searching for one of the following shell configuration files {configs}')
         for config in configs:
-            config = os.path.join(mmpm.consts.HOME_DIR, config)
-            if os.path.exists(config):
-                mmpm.utils.log.info(f'found {config} shell configuration file for {shell}')
+            config = mmpm.consts.HOME_DIR / config
+            if config.exists():
+                logger.info(f'found {str(config)} shell configuration file for {shell}')
                 return config
         return ''
 
     def __echo_and_eval__(command: str) -> None:
-        mmpm.utils.log.info(f'executing {command} to install autocompletion')
+        logger.info(f'executing {command} to install autocompletion')
         print(f'{mmpm.consts.GREEN_PLUS} {command}')
         os.system(command)
 
@@ -1688,96 +1658,6 @@ def install_autocompletion(assume_yes: bool = False) -> None:
         mmpm.utils.fatal_msg(f'Unable install autocompletion for ({shell}). Please see {autocomplete_url} for help installing autocomplete')
 
 
-def rotate_raspberrypi_screen(degrees: int, assume_yes: bool = False) -> str: #pylint: disable=too-many-return-statements
-    '''
-    Rotates screen of RaspberryPi 3 and RaspberryPi 4 to the setting supplied
-    by the user
-
-    Parameters:
-        degrees (int): desired setting in degrees
-
-    Returns:
-        error (str): empty if on success, error message on failure
-    '''
-
-    rotation_map: Dict[int, int] = {
-        0: 0,
-        90: 3,
-        180: 2,
-        270: 1
-    }
-
-    if not mmpm.utils.prompt_user('Are you sure you want to rotate the RaspberryPi screen? This requires sudo permission.', assume_yes=assume_yes):
-        return ''
-
-    device_tree: str = '/proc/device-tree/model'
-    boot_config: str = '/boot/config.txt'
-
-    if not os.path.exists(device_tree):
-        error_message = f'Unable to find the {device_tree} file. Is your device a RaspberryPi 3?'
-        mmpm.utils.error_msg(error_message)
-        return error_message
-
-    if not os.path.exists(boot_config):
-        error_message = f'Unable to find the {boot_config} file. Is your device a RaspberryPi 3?'
-        mmpm.utils.error_msg(error_message)
-        return error_message
-
-    with open(device_tree, 'r', encoding="utf-8") as model_info:
-        rpi_model = model_info.read()
-
-    if 'Raspberry Pi 3' not in rpi_model:
-        error_message = 'This does not appear to be a RaspberryPi 3, and screen rotation is not supported on this device through MMPM yet'
-        mmpm.utils.error_msg(error_message)
-        return error_message
-
-    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Creating backup of {boot_config} ')
-    os.system(f'sudo cp {boot_config} {boot_config}.bak')
-    print(mmpm.consts.GREEN_CHECK_MARK)
-
-    desired_setting: int = rotation_map[int(degrees)]
-
-    grep: subprocess.CompletedProcess = subprocess.run(['grep', '--color=never', 'display_rotate', boot_config], stdout=subprocess.PIPE)
-    output: str = grep.stdout.decode('utf-8').strip()
-
-    if not output:
-        error_message = f'Unable to determine the current rotation setting. An initial value must exist in your {boot_config} for MMPM to modify'
-        mmpm.utils.error_msg(error_message)
-        return error_message
-
-    split_output: List[str] = output.split('=')
-
-    if len(split_output) != 2:
-        error_message = f'Encountered malformed display rotation in {boot_config}. Unable to continue. Please correct the file manually'
-        mmpm.utils.error_msg(error_message)
-        return error_message
-
-    current_setting: int = int(split_output[-1])
-
-    try:
-        sed: subprocess.CompletedProcess = subprocess.run(
-            ['sudo', 'sed', '-i', f"s/display_rotate={current_setting}/display_rotate={desired_setting}/g", boot_config],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-
-    except subprocess.SubprocessError as error:
-        os.system(f'sudo cp {boot_config}.bak {boot_config}')
-        error_message = f'Encountered error when modifying {boot_config}. The file has been reset. See `mmpm log` for details'
-        mmpm.utils.error_msg(error_message)
-        mmpm.utils.log.error(str(error))
-        return error_message
-
-    if sed.returncode != 0:
-        error_message = f'Failed to modify {boot_config}. See `mmpm log for details`'
-        mmpm.utils.error_msg(error_message)
-        mmpm.utils.log.error(sed.stderr.decode('utf-8').strip())
-        return error_message
-
-    print('Please restart your RaspberryPi for the changes to take effect')
-    return ''
-
-
 def zip_mmpm_log_files() -> None:
     '''
     Compresses all log files in ~/.config/mmpm/log. The NGINX log files are
@@ -1799,7 +1679,7 @@ def zip_mmpm_log_files() -> None:
         shutil.make_archive(zip_file_name, 'zip', mmpm.consts.MMPM_LOG_DIR)
     except Exception as error:
         print(mmpm.consts.RED_X)
-        mmpm.utils.log.error(str(error))
+        logger.error(str(error))
         mmpm.utils.error_msg('Failed to create zip archive of log files. See `mmpm log` for details (I know...the irony)')
         return
 
@@ -1853,7 +1733,7 @@ def guided_setup() -> None:
         install_autocomplete = prompt_user('Would you like to install tab-autocomplete for the MMPM CLI?')
 
     except KeyboardInterrupt:
-        mmpm.utils.log.info('User cancelled guided setup')
+        logger.info('User cancelled guided setup')
         print()
         sys.exit(0)
 

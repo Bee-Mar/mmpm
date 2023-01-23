@@ -15,9 +15,12 @@ import mmpm.consts
 import mmpm.core
 import mmpm.models
 import mmpm.mmpm
+from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.package import MagicMirrorPackage
 
 get_env: Callable = mmpm.utils.get_env
+
+logger = MMPMLogger.get_logger(__name__)
 
 app = Flask(__name__, root_path="/var/www/mmpm", static_url_path="")
 
@@ -122,7 +125,7 @@ def packages_marketplace() -> Response:
     Returns:
         response (flask.Response): the response object containing all the available packages
     '''
-    mmpm.utils.log.info('Sending all marketplace packages')
+    logger.info('Sending all marketplace packages')
     return Response(json.dumps(_packages_, default=lambda pkg: pkg.serialize_full()))
 
 
@@ -137,7 +140,7 @@ def packages_installed() -> Response:
     Returns:
         response (flask.Response): the response object containing all the installed packages
     '''
-    mmpm.utils.log.info('Sending all installed packages')
+    logger.info('Sending all installed packages')
     return Response(json.dumps(mmpm.core.get_installed_packages(_packages_), default=lambda pkg: pkg.serialize_full()))
 
 
@@ -152,7 +155,7 @@ def packages_external() -> Response:
     Returns:
         response (flask.Response): the response object containing all the external packages
     '''
-    mmpm.utils.log.info('Sending all external packages')
+    logger.info('Sending all external packages')
     return Response(json.dumps(mmpm.core.load_external_packages(), default=lambda pkg: pkg.serialize_full()))
 
 
@@ -174,10 +177,10 @@ def packages_install() -> Response:
         error = mmpm.core.install_package(package, assume_yes=True)
 
         if error:
-            mmpm.utils.log.error(f'Failed to install {package.title} with error of: {error}')
+            logger.error(f'Failed to install {package.title} with error of: {error}')
             failures.append({'package': package.serialize(), 'error': error})
         else:
-            mmpm.utils.log.info(f'Installed {package.title}')
+            logger.info(f'Installed {package.title}')
 
     return Response(json.dumps(failures))
 
@@ -199,7 +202,7 @@ def packages_remove() -> Response:
 
     for package in selected_packages:
         directory = package['directory']
-        mmpm.utils.log.info(f"Attempting to removing {package['title']} at {directory}")
+        logger.info(f"Attempting to removing {package['title']} at {directory}")
 
         try:
             shutil.rmtree(directory)
@@ -223,17 +226,17 @@ def packages_upgrade() -> Response:
         response (flask.Response): the result following the package upgrade(s), success or failure
     '''
     selected_packages: List[MagicMirrorPackage] = __deserialize_selected_packages__(request)
-    mmpm.utils.log.info(f'Request to upgrade {selected_packages}')
+    logger.info(f'Request to upgrade {selected_packages}')
 
     failures: List[dict] = []
 
     for package in selected_packages:
         error = package.upgrade()
         if error:
-            mmpm.utils.log.error(f'Failed to upgrade {package.title} with error of: {error}')
+            logger.error(f'Failed to upgrade {package.title} with error of: {error}')
             failures.append({'package': package.serialize(), 'error': error})
 
-    mmpm.utils.log.info('Finished executing upgrades')
+    logger.info('Finished executing upgrades')
     return Response(json.dumps(failures))
 
 
@@ -253,7 +256,7 @@ def packages_update() -> Response:
         mmpm.core.check_for_mmpm_updates()
         mmpm.core.check_for_magicmirror_updates()
     except Exception as error:
-        mmpm.utils.log.error(str(error))
+        logger.error(str(error))
         return Response(json.dumps(False))
 
     return Response(json.dumps(True))
@@ -269,7 +272,7 @@ def packages_upgradable() -> Response:
     Returns:
         response (flask.Response): the object containing which packages/applications have available upgrades
     '''
-    mmpm.utils.log.info('Request to get upgradable packages')
+    logger.info('Request to get upgradable packages')
     available_upgrades: dict = mmpm.core.get_available_upgrades()
 
     MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV)))
@@ -322,7 +325,7 @@ def external_packages_remove() -> Response:
         response (flask.Response): the success or failure of removing the external package from the database
     '''
     selected_packages: List[MagicMirrorPackage] = __deserialize_selected_packages__(request, 'external-packages')
-    mmpm.utils.log.info('Request to remove external sources')
+    logger.info('Request to remove external sources')
 
     ext_packages: dict = {mmpm.consts.EXTERNAL_PACKAGES: []}
     marked_for_removal: list = []
@@ -332,23 +335,23 @@ def external_packages_remove() -> Response:
         for external_package in external_packages:
             if external_package == selected_package:
                 marked_for_removal.append(external_package)
-                mmpm.utils.log.info(f'Found matching external module ({external_package.title}) and marked for removal')
+                logger.info(f'Found matching external module ({external_package.title}) and marked for removal')
 
     for package in marked_for_removal:
         external_packages.remove(package)
-        mmpm.utils.log.info(f'Removed {package.title}')
+        logger.info(f'Removed {package.title}')
 
     try:
         with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, mode='w', encoding="utf-8") as mmpm_ext_srcs:
             json.dump(ext_packages, mmpm_ext_srcs)
 
-        mmpm.utils.log.info(f'Wrote updated external modules to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
+        logger.info(f'Wrote updated external modules to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
 
     except IOError as error:
-        mmpm.utils.log.error(error)
+        logger.error(error)
         return Response(json.dumps({'error': str(error)}))
 
-    mmpm.utils.log.info(f'Wrote external modules to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
+    logger.info(f'Wrote external modules to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}')
     return Response(json.dumps({'error': "no_error"}))
 #  -- END: EXTERNAL PACKAGES --
 
@@ -378,12 +381,12 @@ def magicmirror_config() -> Response:
             except OSError:
                 return Response(does_not_exist)
 
-        mmpm.utils.log.info('Retrieving MagicMirror config')
+        logger.info('Retrieving MagicMirror config')
 
         return send_file(MAGICMIRROR_CONFIG_FILE, 'config.js')
 
     data: dict = request.get_json(force=True)
-    mmpm.utils.log.info('Saving MagicMirror config file')
+    logger.info('Saving MagicMirror config file')
 
     try:
         with open(MAGICMIRROR_CONFIG_FILE, mode='w', encoding="utf-8") as config:
@@ -415,15 +418,15 @@ def magicmirror_custom_css() -> Response:
                 pathlib.Path(MAGICMIRROR_CUSTOM_CSS_FILE).touch(mode=0o664, exist_ok=True)
             except OSError:
                 message: str = f'/* File not found. Unable to create {MAGICMIRROR_CUSTOM_CSS_FILE}. Is the MagicMirror directory owned by root? */'
-                mmpm.utils.log.error(message)
+                logger.error(message)
                 return Response(message)
 
-        mmpm.utils.log.info(f'Retrieving MagicMirror {MAGICMIRROR_CUSTOM_CSS_FILE}')
+        logger.info(f'Retrieving MagicMirror {MAGICMIRROR_CUSTOM_CSS_FILE}')
         return send_file(MAGICMIRROR_CUSTOM_CSS_FILE, 'custom.css')
 
     # POST
     data: dict = request.get_json(force=True)
-    mmpm.utils.log.info(f'Saving MagicMirror {MAGICMIRROR_CUSTOM_CSS_FILE}')
+    logger.info(f'Saving MagicMirror {MAGICMIRROR_CUSTOM_CSS_FILE}')
 
     try:
         with open(MAGICMIRROR_CUSTOM_CSS_FILE, mode='w', encoding="utf-8") as custom_css:
@@ -453,10 +456,10 @@ def magicmirror_start() -> Response:
 
     # if these processes are all running, we assume MagicMirror is running currently
     if mmpm.utils.is_magicmirror_running():
-        mmpm.utils.log.info('MagicMirror appears to be running already. Returning False.')
+        logger.info('MagicMirror appears to be running already. Returning False.')
         return Response(json.dumps({'error': 'MagicMirror appears to be running already'}))
 
-    mmpm.utils.log.info('MagicMirror does not appear to be running currently. Returning True.')
+    logger.info('MagicMirror does not appear to be running currently. Returning True.')
     mmpm.core.start_magicmirror()
     return Response(json.dumps({'error': ''}))
 
@@ -509,8 +512,8 @@ def magicmirror_upgrade() -> Response:
         error was encountered. If no error was generated, an empty string is
         returned
     '''
-    mmpm.utils.log.info('Request to upgrade MagicMirror')
-    mmpm.utils.log.info('Finished installing')
+    logger.info('Request to upgrade MagicMirror')
+    logger.info('Finished installing')
 
     error: str = mmpm.core.upgrade_magicmirror()
 
@@ -550,7 +553,7 @@ def raspberrypi_restart() -> Response:
         response (flask.Response): If the command fails, False is returned. If
         success, the return will never reach the interface
     '''
-    mmpm.utils.log.info('Restarting RaspberryPi')
+    logger.info('Restarting RaspberryPi')
     mmpm.core.stop_magicmirror()
     error_code, _, _ = mmpm.utils.run_cmd(['sudo', 'reboot'])
     # if success, it'll never get the response, but we'll know if it fails
@@ -569,29 +572,11 @@ def raspberrypi_stop() -> Response:
         response (flask.Response): If the command fails, False is returned. If success,
         the return will never reach the interface
     '''
-    mmpm.utils.log.info('Shutting down RaspberryPi')
+    logger.info('Shutting down RaspberryPi')
     # if success, we'll never get the response, but we'll know if it fails
     mmpm.core.stop_magicmirror()
     error_code, _, _ = mmpm.utils.run_cmd(['sudo', 'shutdown', '-P', 'now'])
     return Response(json.dumps(bool(not error_code)))
-
-
-@app.route('/api/raspberrypi/rotate-screen', methods=[mmpm.consts.POST])
-def raspberrypi_rotate_screent() -> Response:
-    '''
-    Rotate the RaspberryPi screen by the number of degrees provided.
-
-    Parameters:
-        None
-
-    Returns:
-        response (flask.Response): response containing an error message, if any
-        error was encountered. If no error was generated, an empty string is
-        returned
-    '''
-    degrees: int = request.get_json(force=True)['degrees']
-    return Response(json.dumps({'error': mmpm.core.rotate_raspberrypi_screen(degrees, assume_yes=True)}))
-#  -- END: RASPBERRYPI --
 
 
 #  -- START: MMPM --
@@ -656,7 +641,7 @@ def mmpm_environment_vars_file() -> Response:
         return send_file(mmpm.consts.MMPM_ENV_FILE, 'mmpm-env.json')
 
     data: dict = request.get_json(force=True)
-    mmpm.utils.log.info('Saving MMPM environment variables file')
+    logger.info('Saving MMPM environment variables file')
 
     try:
         with open(mmpm.consts.MMPM_ENV_FILE, mode='w', encoding="utf-8") as config:

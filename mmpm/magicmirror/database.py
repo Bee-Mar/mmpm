@@ -13,15 +13,17 @@ from mmpm.utils import get_env
 from pygments import highlight, formatters
 from pygments.lexers.data import JsonLexer
 from functools import lru_cache
+from mmpm.logger import MMPMLogger
 
 
+logger = MMPMLogger.get_logger(__name__)
 
 class MagicMirrorDatabase:
     def __init__(self):
         self.data = None
         self.categories = None
         self.packages = None
-        self.creation_date: datetime.datetime = None
+        self.last_update: datetime.datetime = None
         self.expiration_date: datetime.datetime  = None
 
 
@@ -30,6 +32,18 @@ class MagicMirrorDatabase:
 
 
     def details(self):
+        '''
+        Displays information regarding the most recent database file, ie. when it
+        was taken, when the next scheduled database retrieval will be taken, how many module
+        categories exist, and the total number of modules available. Additionally,
+        tells user how to forcibly request the database be updated.
+
+        Parameters:
+            packages (Dict[str, List[MagicMirrorPackage]]): Dictionary of MagicMirror modules
+
+        Returns:
+            None
+        '''
         num_categories: int = len(self.packages)
         num_packages: int = 0
 
@@ -38,10 +52,10 @@ class MagicMirrorDatabase:
 
         num_packages -= 1 # skip MMPM itself in the package count
 
-        print(mmpm.color.normal_green('Last updated:'), f'{str(self.creation)}')
-        print(mmpm.color.normal_green('Next scheduled update:'), f'{str(self.expiration)}')
-        print(mmpm.color.normal_green('Package categories:'), f'{self.num_categories}')
-        print(mmpm.color.normal_green('Packages available:'), f'{self.num_packages}')
+        print(mmpm.color.normal_green('Last updated:'), f'{str(self.last_update)}')
+        print(mmpm.color.normal_green('Next scheduled update:'), f'{str(self.expiration_date)}')
+        print(mmpm.color.normal_green('Package categories:'), f'{num_categories}')
+        print(mmpm.color.normal_green('Packages available:'), f'{num_packages}')
 
 
     def retrieve_packages(self):
@@ -92,14 +106,15 @@ class MagicMirrorDatabase:
 
 
     def is_expired(self) -> bool:
-        if self.creation_date is None and self.expiration_date is None:
+        for file_name in [mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE, mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE]:
+            if not file_name.exists() or not bool(file_name.stat().st_size):
+                return True # the file is empty
 
-            if os.path.exists(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE):
-                self.creation_date = datetime.datetime.fromtimestamp(os.path.getmtime(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE))
-                self.expiration_date = self.creation_date + datetime.timedelta(hours=12)
-
-            elif not bool(os.stat(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE).st_size):
-                return True # the database file is empty
+        if self.last_update is None or self.expiration_date is None:
+            with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE) as expiration_file:
+                data = json.load(expiration_file)
+                self.expiration_date = datetime.datetime.fromisoformat(data["expiration"])
+                self.last_update = datetime.datetime.fromisoformat(data["last-update"])
 
         return datetime.datetime.now() > self.expiration_date
 
@@ -120,19 +135,20 @@ class MagicMirrorDatabase:
 
         packages: dict = {}
 
-        db_file: str = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
-        db_exists: bool = os.path.exists(db_file) and bool(os.stat(db_file).st_size)
+        db_file = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
+        db_exists: bool = db_file.exists() and bool(db_file.stat().st_size)
         ext_pkgs_file: str = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
 
         if db_exists:
-            mmpm.utils.log.info(f'Backing up database file as {mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE}.bak')
+            logger.info(f'Backing up database file as {mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE}.bak')
 
             shutil.copyfile(
-                mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE,
-                f'{mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE}.bak'
+                str(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE),
+                f'{str(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE)}.bak'
             )
 
-            mmpm.utils.log.info('Back up of database complete')
+            logger.info('Back up of database complete')
+
 
         # if the database has expired, or doesn't exist, get a new one
         if force_refresh or not db_exists:
@@ -150,6 +166,12 @@ class MagicMirrorDatabase:
             else:
                 with open(db_file, 'w', encoding="utf-8") as db:
                     json.dump(self.packages, db, default=lambda pkg: pkg.serialize())
+
+                with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE, 'w', encoding='utf-8') as expiration_file:
+                    self.last_update = datetime.datetime.now().date()
+                    self.expiration_date = self.last_update + datetime.timedelta(hours=12)
+
+                    json.dump({"last-update": str(self.last_update), "expiration": str(self.expiration_date)})
 
                 print(mmpm.consts.GREEN_CHECK_MARK)
 
@@ -189,7 +211,7 @@ class MagicMirrorDatabase:
                 try:
                     contents.update(json.load(db))
                 except json.JSONDecodeError:
-                    mmpm.utils.log.warning('External Packages appears to be empty, skipping during database dump')
+                    logger.warning('External Packages appears to be empty, skipping during database dump')
 
         print(highlight(json.dumps(contents, indent=2), JsonLexer(), formatters.TerminalFormatter()))
 
@@ -454,6 +476,7 @@ class MagicMirrorDatabase:
                 json.dump(upgrades, available_upgrades)
 
         return upgrades
+
 
     def add_external_package(self, title: str = None, author: str = None, repo: str = None, description: str = None) -> str:
         '''

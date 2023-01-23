@@ -8,17 +8,16 @@ import json
 import pathlib
 import requests
 
-from logging import Logger
 from typing import List, Optional, Tuple, Dict
 
 import mmpm.color
 import mmpm.consts
-import mmpm.models
+from mmpm.models import MagicMirrorPackage
+from mmpm.logger import MMPMLogger
 
-MagicMirrorPackage = mmpm.models.MagicMirrorPackage
-MMPMLogger = mmpm.models.MMPMLogger
 
-log: Logger = MMPMLogger().logger # type: ignore
+logger = MMPMLogger.get_logger(__name__)
+
 
 
 def plain_print(msg: str) -> None:
@@ -47,7 +46,7 @@ def keyboard_interrupt_log() -> None:
         None
     '''
     print()
-    log.info('User killed process with keyboard interrupt')
+    logger.info('User killed process with keyboard interrupt')
     sys.exit(127)
 
 
@@ -61,7 +60,7 @@ def error_msg(msg: str) -> None:
     Returns:
         None
     '''
-    log.error(msg)
+    logger.error(msg)
     print(mmpm.color.bright_red('ERROR:'), msg)
 
 
@@ -75,7 +74,7 @@ def warning_msg(msg: str) -> None:
     Returns:
         None
     '''
-    log.warning(msg)
+    logger.warning(msg)
     print(mmpm.color.bright_yellow('WARNING:'), msg)
 
 
@@ -89,7 +88,7 @@ def fatal_msg(msg: str) -> None:
     Returns:
         None
     '''
-    log.critical(msg)
+    logger.critical(msg)
     print(mmpm.color.bright_red('FATAL:'), msg)
     sys.exit(127)
 
@@ -144,10 +143,10 @@ def assert_required_defaults_exist() -> None:
         None
     '''
 
-    os.system(f'mkdir -p {mmpm.consts.MMPM_CONFIG_DIR}')
+    mmpm.consts.MMPM_CONFIG_DIR.mkdir(exist_ok=True)
 
     for data_file in mmpm.consts.MMPM_REQUIRED_DATA_FILES:
-        os.system(f'touch {data_file}')
+        data_file.touch()
 
     current_env: dict = {}
 
@@ -155,7 +154,7 @@ def assert_required_defaults_exist() -> None:
         try:
             current_env = json.load(env)
         except json.JSONDecodeError as error:
-            log.error(str(error))
+            logger.error(str(error))
 
     for key, value in mmpm.consts.MMPM_DEFAULT_ENV.items():
         if key not in current_env:
@@ -164,47 +163,6 @@ def assert_required_defaults_exist() -> None:
     with open(mmpm.consts.MMPM_ENV_FILE, 'w', encoding="utf-8") as env:
         json.dump(current_env, env, indent=2)
 
-
-def calculate_expiration_date_of_database() -> Tuple[datetime.datetime, datetime.datetime]:
-    '''
-    Calculates the expiration timestamp of the MagicMirror database file. The
-    database is considered expired if it is 24 hours or older
-
-    Parameters:
-        None
-
-    Returns:
-        Tuple[creation_date (datetime.datetime), expiration_date (datetime.datetime)]: The current timestamp and the exipration timestamp of the MagicMirror database
-    '''
-    creation_date = expiration_date = None
-
-    if os.path.exists(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE):
-        creation_date = datetime.datetime.fromtimestamp(os.path.getmtime(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE))
-        expiration_date = creation_date + datetime.timedelta(hours=12)
-
-    return creation_date, expiration_date
-
-
-def should_refresh_database(creation_date: datetime.datetime, expiration_date: datetime.datetime) -> bool:
-    '''
-    Determines if the MagicMirror database is expired
-
-    Parameters:
-        creation_date (datetime.datetime): The 'last modified' timestamp
-        expiration_date (datetime.datetime): When the file should 'expire'
-
-    Returns:
-        should_update (bool): If the database needs to be refreshed
-    '''
-
-    if creation_date is None and expiration_date is None:
-        return True
-    elif not bool(os.stat(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE).st_size):
-        return True # the database file is empty
-    elif datetime.datetime.now() > expiration_date:
-        return True
-
-    return False
 
 
 def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, str, str]:
@@ -218,11 +176,11 @@ def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, s
         Tuple[returncode (int), stdout (str), stderr (str)]
     '''
 
-    log.info(f'Executing process `{" ".join(command)}` in foreground')
+    logger.info(f'Executing process `{" ".join(command)}` in foreground')
 
     with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as process:
         if background:
-            log.info(f'Executing process `{" ".join(command)}` in background')
+            logger.info(f'Executing process `{" ".join(command)}` in background')
             return process.returncode, str(), str()
 
         symbols = ['\u25DC', '\u25DD', '\u25DE', '\u25DF']
@@ -274,7 +232,7 @@ def open_default_editor(path_to_file: str) -> Optional[None]:
     Returns:
         None
     '''
-    log.info(f'Attempting to open {path_to_file} in users default editor')
+    logger.info(f'Attempting to open {path_to_file} in users default editor')
 
     if not os.path.exists(path_to_file):
         try:
@@ -303,7 +261,7 @@ def clone(title: str, repo: str, target_dir: str = '') -> Tuple[int, str, str]:
     Returns:
         Tuple[returncode (int), stdout (str), stderr (str)]: Return code, stdout, and stderr of the process
     '''
-    log.info(f'Cloning {repo} into {target_dir if target_dir else os.path.join(os.getcwd(), title)}')
+    logger.info(f'Cloning {repo} into {target_dir if target_dir else os.path.join(os.getcwd(), title)}')
     plain_print(f"{mmpm.consts.GREEN_DASHES} Cloning repository")
 
     # by using "repo.split()", it allows the user to bake in additional commands when making custom sources
@@ -342,7 +300,7 @@ def cmake() -> Tuple[int, str, str]:
         Tuple[error_code (int), stdout (str), error_message (str)]
 
     '''
-    log.info(f"Running 'cmake ..' in {os.getcwd()}")
+    logger.info(f"Running 'cmake ..' in {os.getcwd()}")
     plain_print(f"{mmpm.consts.GREEN_DASHES} Found CMakeLists.txt. Building with `cmake`")
 
     os.system('mkdir -p build')
@@ -363,7 +321,7 @@ def make() -> Tuple[int, str, str]:
     '''
     from multiprocessing import cpu_count
 
-    log.info(f"Running 'make -j {cpu_count()}' in {os.getcwd()}")
+    logger.info(f"Running 'make -j {cpu_count()}' in {os.getcwd()}")
     plain_print(f"{mmpm.consts.GREEN_DASHES} Found Makefile. Running `make -j {cpu_count()}`")
     return run_cmd(['make', '-j', f'{cpu_count()}'])
 
@@ -378,7 +336,7 @@ def npm_install() -> Tuple[int, str, str]:
     Returns:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
-    log.info(f"Running 'npm install' in {os.getcwd()}")
+    logger.info(f"Running 'npm install' in {os.getcwd()}")
     plain_print(f"{mmpm.consts.GREEN_DASHES} Found package.json. Running `npm install`")
     return run_cmd(['npm', 'install'])
 
@@ -393,7 +351,7 @@ def bundle_install() -> Tuple[int, str, str]:
     Returns:
         Tuple[error_code (int), stdout (str), error_message (str)]
     '''
-    log.info(f"Running 'bundle install' in {os.getcwd()}")
+    logger.info(f"Running 'bundle install' in {os.getcwd()}")
     plain_print(f"{mmpm.consts.GREEN_DASHES} Found Gemfile. Running `bundle install`")
     return run_cmd(['bundle', 'install'])
 
@@ -409,7 +367,7 @@ def basic_fail_log(error_code: int, error_message: str) -> None:
     Returns:
         None
     '''
-    log.info(f'Failed with return code {error_code}, and error message {error_message}')
+    logger.info(f'Failed with return code {error_code}, and error message {error_message}')
 
 
 def install_dependencies(directory: str) -> str:
@@ -483,7 +441,7 @@ def install_dependencies(directory: str) -> str:
 
     os.chdir(directory)
     print(f'{mmpm.consts.GREEN_DASHES} Installation complete ' + mmpm.consts.GREEN_CHECK_MARK)
-    log.info(f'Exiting installation handler from {os.getcwd()}')
+    logger.info(f'Exiting installation handler from {os.getcwd()}')
     return ''
 
 
@@ -498,13 +456,13 @@ def get_pids(process_name: str) -> List[str]:
         processes (List[str]): list of the processes IDs found
     '''
 
-    log.info(f'Getting process IDs for {process_name} proceses')
+    logger.info(f'Getting process IDs for {process_name} proceses')
 
     with subprocess.Popen(['pgrep', process_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE) as pids:
         stdout, _ = pids.communicate()
         processes = stdout.decode('utf-8')
 
-        log.info(f'Found processes: {processes}')
+        logger.info(f'Found processes: {processes}')
 
         return [proc_id for proc_id in processes.split('\n') if proc_id]
 
@@ -519,7 +477,7 @@ def kill_pids_of_process(process: str) -> None:
     Returns:
         processes (str): the processes IDs found
     '''
-    log.info(f'Killing all processes of type {process}')
+    logger.info(f'Killing all processes of type {process}')
     plain_print(f'{mmpm.consts.GREEN_PLUS} stopping MagicMirror electron processes ')
     os.system(f'for process in $(pgrep {process}); do kill -9 $process; done')
     print(f'{mmpm.consts.GREEN_CHECK_MARK}')
@@ -538,11 +496,11 @@ def kill_magicmirror_processes() -> None:
 
     processes = ['electron']
 
-    log.info(f'Killing processes associated with MagicMirror: {processes}')
+    logger.info(f'Killing processes associated with MagicMirror: {processes}')
 
     for process in processes:
         kill_pids_of_process(process)
-        log.info(f'Killed pids of process {process}')
+        logger.info(f'Killed pids of process {process}')
 
 
 def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: List[str] = ['no', 'n'], assume_yes: bool = False) -> bool:
@@ -759,7 +717,7 @@ def safe_get_request(url: str) -> requests.Response:
     try:
         data = requests.get(url, timeout=10)
     except requests.exceptions.RequestException as error:
-        log.error(str(error))
+        logger.error(str(error))
         return requests.Response()
     return data
 
@@ -912,30 +870,30 @@ def get_remote_package_details(package: MagicMirrorPackage) -> dict:
 
     if 'github' in package.repository:
         url = f'https://api.github.com/repos/{user}/{project}'
-        log.info(f'Constructed {url} to request more details for {package.title}')
+        logger.info(f'Constructed {url} to request more details for {package.title}')
         data = safe_get_request(url)
 
         if not data:
-            log.error(f'Unable to retrieve {package.title} details, data was empty')
+            logger.error(f'Unable to retrieve {package.title} details, data was empty')
 
         return __format_github_api_details__(json.loads(data.text)) if data else {}
 
     elif 'gitlab' in package.repository:
         url = f'https://gitlab.com/api/v4/projects/{user}%2F{project}'
-        log.info(f'Constructed {url} to request more details for {package.title}')
+        logger.info(f'Constructed {url} to request more details for {package.title}')
         data = safe_get_request(url)
 
         if not data:
-            log.error(f'Unable to retrieve {package.title} details, data was empty')
+            logger.error(f'Unable to retrieve {package.title} details, data was empty')
 
         return __format_gitlab_api_details__(json.loads(data.text), url) if data else {}
     elif 'bitbucket' in package.repository:
         url = f'https://api.bitbucket.org/2.0/repositories/{user}/{project}'
-        log.info(f'Constructed {url} to request more details for {package.title}')
+        logger.info(f'Constructed {url} to request more details for {package.title}')
         data = safe_get_request(url)
 
         if not data:
-            log.error(f'Unable to retrieve {package.title} details, data was empty')
+            logger.error(f'Unable to retrieve {package.title} details, data was empty')
 
         return __format_bitbucket_api_details__(json.loads(data.text), url) if data else {}
 
@@ -989,10 +947,10 @@ def socketio_client_disconnect(client) -> bool:
         success (bool): True on success, False if not
     '''
     try:
-        log.info('attempting to disconnect from MagicMirror websocket')
+        logger.info('attempting to disconnect from MagicMirror websocket')
         client.disconnect()
     except (OSError, BrokenPipeError, Exception):
-        log.info('encountered OSError when disconnecting from websocket, ignoring')
+        logger.info('encountered OSError when disconnecting from websocket, ignoring')
     return True
 
 
@@ -1016,7 +974,7 @@ def get_env(key: str) -> str:
         try:
             value = json.load(env)[key]
         except json.JSONDecodeError:
-            log.warning(f'environment variable {key} does not exist, returning empty string')
+            logger.warning(f'environment variable {key} does not exist, returning empty string')
 
     return value
 
@@ -1034,13 +992,13 @@ def reset_available_upgrades_for_environment(env: str) -> bool:
 
     upgrades: dict = {}
 
-    log.info(f'Resetting available upgrades for {env}')
+    logger.info(f'Resetting available upgrades for {env}')
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r', encoding="utf-8") as available_upgrades:
         try:
             upgrades = json.load(available_upgrades)
         except (json.JSONDecodeError, OSError) as error:
-            log.error(f'Encountered error when reading {mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE}: {str(error)}')
+            logger.error(f'Encountered error when reading {mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE}: {str(error)}')
             upgrades = {mmpm.consts.MMPM: False, env: {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}}
 
     try:
@@ -1049,7 +1007,7 @@ def reset_available_upgrades_for_environment(env: str) -> bool:
             json.dump(upgrades, available_upgrades)
 
     except OSError as error:
-        log.error(str(error))
+        logger.error(str(error))
         return False
 
     return True
@@ -1083,7 +1041,7 @@ def log_gui_install_error_and_prompt_for_removal(proc: subprocess.CompletedProce
         yes (bool): the response of the user, whether or not to remove the MMPM GUI following a failed install
     '''
     print(mmpm.consts.RED_X)
-    mmpm.utils.log.critical(f"{proc.stderr.decode('utf-8')}\n{proc.stdout.decode('utf-8')}")
+    logger.critical(f"{proc.stderr.decode('utf-8')}\n{proc.stdout.decode('utf-8')}")
     mmpm.utils.error_msg(f'{message}. See `mmpm log` for details')
     return prompt_user('Remove the MMPM GUI?')
 
@@ -1109,10 +1067,10 @@ def background_timer_thread(stop_event, arg, client): # pylint: disable=unused-a
     while not stop_event.wait(1):
         timer -= 1
         if timer == 5:
-            log.warning('Reached fith second of 10 second timeout for connecting to MagicMirror websocket')
+            logger.warning('Reached fith second of 10 second timeout for connecting to MagicMirror websocket')
             print('\nIs MagicMirror running, and are MMPM env variables set properly? If MagicMirror is a Docker image, open MagicMirror in your browser to activate the connection.')
         if not timer:
-            log.warning('Reached 10 second timeout for connecting to MagicMirror websocket. Closing connection')
+            logger.warning('Reached 10 second timeout for connecting to MagicMirror websocket. Closing connection')
             print('10 second timeout reached, closing connection.')
             break
 

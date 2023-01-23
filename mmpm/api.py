@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import os
-import pathlib
 import json
 import shutil
 import datetime
 
+from pathlib import Path, PosixPath
 from flask_cors import CORS
 from flask import Flask, request, send_file, render_template, send_from_directory, Response
 from typing import List, Callable
@@ -17,13 +17,12 @@ import mmpm.models
 import mmpm.mmpm
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.package import MagicMirrorPackage
-
-get_env: Callable = mmpm.utils.get_env
+from mmpm.env import get_env
 
 logger = MMPMLogger.get_logger(__name__)
+logger.setLevel(get_env(mmpm.consts.MMPM_LOG_LEVEL))
 
 app = Flask(__name__, root_path="/var/www/mmpm", static_url_path="")
-
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 resources: dict = {
@@ -368,15 +367,15 @@ def magicmirror_config() -> Response:
     Returns:
         response (flask.Response): the file contents
     '''
-    MAGICMIRROR_CONFIG_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'config')
-    MAGICMIRROR_CONFIG_FILE: str = os.path.join(MAGICMIRROR_CONFIG_DIR, 'config.js')
+    MAGICMIRROR_CONFIG_DIR: PosixPath = Path(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV)) / 'config'
+    MAGICMIRROR_CONFIG_FILE: PosixPath = Path(MAGICMIRROR_CONFIG_DIR) / 'config.js'
 
     if request.method == mmpm.consts.GET:
         if not os.path.exists(MAGICMIRROR_CONFIG_FILE):
             does_not_exist: str = f'// {MAGICMIRROR_CONFIG_FILE} not found. An empty file was created for you in its place'
             try:
-                pathlib.Path(MAGICMIRROR_CONFIG_DIR).mkdir(parents=True, exist_ok=True)
-                pathlib.Path(MAGICMIRROR_CONFIG_FILE).touch(mode=0o664, exist_ok=True)
+                MAGICMIRROR_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+                MAGICMIRROR_CONFIG_FILE.touch(mode=0o664, exist_ok=True)
                 return Response(does_not_exist)
             except OSError:
                 return Response(does_not_exist)
@@ -408,14 +407,14 @@ def magicmirror_custom_css() -> Response:
     Returns:
         response (flask.Response): the file contents
     '''
-    MAGICMIRROR_CSS_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'css')
-    MAGICMIRROR_CUSTOM_CSS_FILE: str = os.path.join(MAGICMIRROR_CSS_DIR, 'custom.css')
+    MAGICMIRROR_CSS_DIR: PosixPath = Path(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV)) / 'css'
+    MAGICMIRROR_CUSTOM_CSS_FILE: PosixPath = Path(MAGICMIRROR_CSS_DIR) / 'custom.css'
 
     if request.method == mmpm.consts.GET:
         if not os.path.exists(MAGICMIRROR_CUSTOM_CSS_FILE):
             try:
-                pathlib.Path(MAGICMIRROR_CSS_DIR).mkdir(parents=True, exist_ok=True)
-                pathlib.Path(MAGICMIRROR_CUSTOM_CSS_FILE).touch(mode=0o664, exist_ok=True)
+                MAGICMIRROR_CSS_DIR.mkdir(parents=True, exist_ok=True)
+                MAGICMIRROR_CUSTOM_CSS_FILE.touch(mode=0o664, exist_ok=True)
             except OSError:
                 message: str = f'/* File not found. Unable to create {MAGICMIRROR_CUSTOM_CSS_FILE}. Is the MagicMirror directory owned by root? */'
                 logger.error(message)

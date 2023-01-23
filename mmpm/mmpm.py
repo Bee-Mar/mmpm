@@ -12,15 +12,17 @@ import mmpm.opts
 import mmpm.consts
 from typing import List, Dict
 from mmpm.magicmirror.database import MagicMirrorDatabase
+from mmpm.magicmirror.controller import MagicMirrorController
+from mmpm.gui import MMPMGui
 from mmpm.logger import MMPMLogger
 from mmpm.models import MagicMirrorPackage
+from mmpm.env import get_env
 
-
-get_env = mmpm.utils.get_env
 
 __version__ = 3.0
 
 logger = MMPMLogger.get_logger(__name__)
+logger.setLevel(get_env(mmpm.consts.MMPM_LOG_LEVEL))
 
 def main(argv):
     ''' Main entry point for CLI '''
@@ -67,7 +69,7 @@ def main(argv):
         elif args.categories:
             database.display_categories(title_only=args.title_only)
         elif args.gui_url:
-            print(mmpm.core.get_web_interface_url())
+            print(MMPMGui.get_uri())
         elif args.upgradable:
             database.display_available_upgrades()
         else:
@@ -147,7 +149,7 @@ def main(argv):
 
     elif args.subcmd == mmpm.opts.INSTALL:
         if args.gui:
-            mmpm.core.install_mmpm_gui()
+            MMPMGui.install()
         elif args.as_module:
             mmpm.core.install_mmpm_as_magicmirror_module()
         elif args.magicmirror:
@@ -166,12 +168,12 @@ def main(argv):
 
     elif args.subcmd == mmpm.opts.REMOVE:
         if args.gui:
-            mmpm.core.remove_mmpm_gui()
+            MMPMGui.remove_mmpm_gui()
 
         elif not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
-        installed_packages = mmpm.core.get_installed_packages(packages)
+        installed_packages = database.get_installed_packages()
 
         if not installed_packages:
             mmpm.utils.fatal_msg("No packages are currently installed")
@@ -198,26 +200,26 @@ def main(argv):
             )
 
     elif args.subcmd == mmpm.opts.MM_CTL:
+        controller = MagicMirrorController()
+
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.status:
-            mmpm.core.display_magicmirror_modules_status()
+            controller.status()
         elif args.hide:
-            mmpm.core.hide_magicmirror_modules(args.hide)
+            controller.hide_modules(args.hide)
         elif args.show:
-            mmpm.core.show_magicmirror_modules(args.show)
+            controller.show_modules(args.show)
         elif args.start or args.stop or args.restart or args.rotate != None:
             MMPM_IS_DOCKER_IMAGE: str = mmpm.utils.get_env('MMPM_IS_DOCKER_IMAGE')
             if MMPM_IS_DOCKER_IMAGE:
                 mmpm.utils.fatal_msg('Cannot execute this command within a docker image')
             elif args.start:
-                mmpm.core.start_magicmirror()
+                controller.start()
             elif args.stop:
-                mmpm.core.stop_magicmirror()
+                controller.stop()
             elif args.restart:
-                mmpm.core.restart_magicmirror()
-            elif args.rotate != None:
-                mmpm.core.rotate_raspberrypi_screen(args.rotate)
+                controller.restart()
         else:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 

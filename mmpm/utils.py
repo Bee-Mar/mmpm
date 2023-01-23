@@ -14,10 +14,11 @@ import mmpm.color
 import mmpm.consts
 from mmpm.models import MagicMirrorPackage
 from mmpm.logger import MMPMLogger
+from mmpm.env import get_env
 
 
 logger = MMPMLogger.get_logger(__name__)
-
+logger.setLevel(get_env(mmpm.consts.MMPM_LOG_LEVEL))
 
 
 def plain_print(msg: str) -> None:
@@ -953,30 +954,6 @@ def socketio_client_disconnect(client) -> bool:
         logger.info('encountered OSError when disconnecting from websocket, ignoring')
     return True
 
-
-def get_env(key: str) -> str:
-    '''
-    Reads environment variables from the MMPM_ENV_FILE. In order to ensure
-    hot-reloading is usable in the GUI, the environment variables need to be
-    re-read from the file each time. Otherwise, cached data will be sent back
-    to the user.
-
-    Parameters:
-        None
-
-    Returns:
-        value (str): the value of the environment variable key
-    '''
-
-    value: str = ''
-
-    with open(mmpm.consts.MMPM_ENV_FILE, 'r', encoding="utf-8") as env:
-        try:
-            value = json.load(env)[key]
-        except json.JSONDecodeError:
-            logger.warning(f'environment variable {key} does not exist, returning empty string')
-
-    return value
 
 
 def reset_available_upgrades_for_environment(env: str) -> bool:

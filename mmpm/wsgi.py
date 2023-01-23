@@ -7,8 +7,10 @@ import mmpm.consts
 
 from mmpm.api import app
 from mmpm.logger import MMPMLogger
+from mmpm.env import get_env
 
 logger = MMPMLogger.get_logger(__name__)
+logger.setLevel(get_env(mmpm.consts.MMPM_LOG_LEVEL))
 
 if __name__ == '__main__':
     app.run(

@@ -9,7 +9,7 @@ from collections import defaultdict
 from typing import Dict, List
 from bs4 import BeautifulSoup
 from mmpm.magicmirror.package import MagicMirrorPackage
-from mmpm.utils import get_env
+from mmpm.env import get_env
 from pygments import highlight, formatters
 from pygments.lexers.data import JsonLexer
 from functools import lru_cache
@@ -17,6 +17,7 @@ from mmpm.logger import MMPMLogger
 
 
 logger = MMPMLogger.get_logger(__name__)
+logger.setLevel(get_env(mmpm.consts.MMPM_LOG_LEVEL))
 
 class MagicMirrorDatabase:
     def __init__(self):
@@ -168,10 +169,16 @@ class MagicMirrorDatabase:
                     json.dump(self.packages, db, default=lambda pkg: pkg.serialize())
 
                 with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE, 'w', encoding='utf-8') as expiration_file:
-                    self.last_update = datetime.datetime.now().date()
+                    self.last_update = datetime.datetime.now()
                     self.expiration_date = self.last_update + datetime.timedelta(hours=12)
 
-                    json.dump({"last-update": str(self.last_update), "expiration": str(self.expiration_date)})
+                    json.dump(
+                        {
+                            "last-update": str(self.last_update),
+                            "expiration": str(self.expiration_date)
+                        },
+                        expiration_file,
+                    )
 
                 print(mmpm.consts.GREEN_CHECK_MARK)
 

@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
+from re import sub
 from bs4 import Tag, NavigableString
 from typing import List
+from mmpm.logger import MMPMLogger
 import mmpm.consts
 import mmpm.utils
 
 NA: str = mmpm.consts.NOT_AVAILABLE
+
+def __sanitize__(string: str) -> str:
+    return sub('[//]', '', string)
+
 
 class MagicMirrorPackage():
     '''
@@ -14,8 +20,8 @@ class MagicMirrorPackage():
     # pylint: disable=unused-argument
     def __init__(self, title: str = NA, author: str = NA, repository: str = NA, description: str = NA, directory: str = '', **kwargs) -> None:
         # **kwargs allows for simplified dict unpacking in some instances, and is intentionally unused
-        self.title = title.strip()
-        self.author = author.strip()
+        self.title = __sanitize__(title.strip())
+        self.author = __sanitize__(author.strip()) # NOTE: Maybe this shouldn't be here
         self.repository = repository.strip()
         self.description = description.strip()
         self.directory = directory.strip()
@@ -114,12 +120,12 @@ class MagicMirrorPackage():
 
         os.chdir(self.directory)
 
-        mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Performing upgrade for {mmpm.color.normal_green(self.title)}')
+        MMPMLogger.plain_print(f'{mmpm.consts.GREEN_PLUS} Performing upgrade for {mmpm.color.normal_green(self.title)}')
         error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
 
         if error_code:
-            mmpm.utils.error_msg(f'Failed to upgrade MagicMirror {mmpm.consts.RED_X}')
-            mmpm.utils.error_msg(stderr)
+            MMPMLogger.error_msg(f'Failed to upgrade MagicMirror {mmpm.consts.RED_X}')
+            MMPMLogger.error_msg(stderr)
             return stderr
 
         else:
@@ -129,7 +135,7 @@ class MagicMirrorPackage():
 
         if stderr:
             print(mmpm.consts.RED_X)
-            mmpm.utils.error_msg(stderr)
+            MMPMLogger.error_msg(stderr)
             return stderr
 
         return ''

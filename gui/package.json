@@ -18,7 +18,7 @@
     "@angular/cdk": "^13.3.9",
     "@angular/common": "^13.3.12",
     "@angular/compiler": "^13.3.12",
-    "@angular/core": "^13.3.12",
+    "@angular/core": "^14.0.0",
     "@angular/forms": "^13.3.12",
     "@angular/localize": "^13.3.12",
     "@angular/material": "^13.3.9",

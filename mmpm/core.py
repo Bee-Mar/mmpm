@@ -1267,33 +1267,6 @@ def install_autocompletion(assume_yes: bool = False) -> None:
         mmpm.utils.fatal_msg(f'Unable install autocompletion for ({shell}). Please see {autocomplete_url} for help installing autocomplete')
 
 
-def zip_mmpm_log_files() -> None:
-    '''
-    Compresses all log files in ~/.config/mmpm/log. The NGINX log files are
-    excluded due to mostly irrelevant information the user, or I would need
-    when creating GitHub issues
-
-    Parameters:
-        None
-
-    Returns:
-        None
-    '''
-    today = datetime.datetime.now()
-
-    zip_file_name: str = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
-    mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} Compressing MMPM log files to {os.getcwd()}/{zip_file_name}.zip ')
-
-    try:
-        shutil.make_archive(zip_file_name, 'zip', mmpm.consts.MMPM_LOG_DIR)
-    except Exception as error:
-        print(mmpm.consts.RED_X)
-        logger.error(str(error))
-        mmpm.utils.error_msg('Failed to create zip archive of log files. See `mmpm log` for details (I know...the irony)')
-        return
-
-    print(mmpm.consts.GREEN_CHECK_MARK)
-
 
 def guided_setup() -> None:
     '''

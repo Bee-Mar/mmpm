@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import os
 import sys
+import shutil
 import logging
 import logging.handlers
+import datetime
 import mmpm.color
 import mmpm.utils
 from mmpm.consts import MMPM_CLI_LOG_FILE, MMPM_LOG_DIR
@@ -146,7 +148,7 @@ class MMPMLogger():
 
 
     @classmethod
-    def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool = False) -> None:
+    def display_log_files(cls, cli_logs: bool = False, gui_logs: bool = False, tail: bool = False) -> None:
         '''
         Displays contents of log files to stdout. If the --tail option is supplied,
         log contents will be displayed in real-time
@@ -179,5 +181,34 @@ class MMPMLogger():
 
         if logs:
             os.system(f"{'tail -F' if tail else 'cat'} {' '.join(logs)}")
+
+
+    @classmethod
+    def zip_mmpm_log_files(cls) -> None:
+        '''
+        Compresses all log files in ~/.config/mmpm/log. The NGINX log files are
+        excluded due to mostly irrelevant information the user, or I would need
+        when creating GitHub issues
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        '''
+        today = datetime.datetime.now()
+
+        zip_file_name: str = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
+        MMPMLogger.__logger__.msg.plain_print(f'{mmpm.consts.GREEN_PLUS} Compressing MMPM log files to {os.getcwd()}/{zip_file_name}.zip ')
+
+        try:
+            shutil.make_archive(zip_file_name, 'zip', mmpm.consts.MMPM_LOG_DIR)
+        except Exception as error:
+            print(mmpm.consts.RED_X)
+            MMPMLogger.__logger__.msg.error(str(error))
+            MMPMLogger.__logger__.msg.error('Failed to create zip archive of log files. See `mmpm log` for details (I know...the irony)')
+            return
+
+        print(mmpm.consts.GREEN_CHECK_MARK)
 
 

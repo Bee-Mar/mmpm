@@ -16,7 +16,7 @@ logger.setLevel(get_env(mmpm.consts.MMPM_LOG_LEVEL))
 
 class MMPMGui:
     @classmethod
-    def install(self, assume_yes: bool = False):
+    def install(cls, assume_yes: bool = False):
         '''
         Installs the MMPM GUI by configuring the required NGINX files bundled in
         the MMPM PyPI package. This asks the user for sudo permissions. The
@@ -130,7 +130,7 @@ class MMPMGui:
 
 
     @classmethod
-    def remove(self, hide_prompt: bool = False):
+    def remove(cls, hide_prompt: bool = False):
         '''
         Removes all SystemD services and NGINX, SystemD, and static web files
         associated with the MMPM GUI. This requires sudo permission, and the user
@@ -221,7 +221,7 @@ class MMPMGui:
 
 
     @classmethod
-    def get_uri(self):
+    def get_uri(cls):
         '''
         Parses the MMPM nginx conf file for the port number assigned to the web
         interface, and returns a string containing containing the host IP and

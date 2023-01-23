@@ -239,12 +239,12 @@ def main(argv):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.zip:
-            mmpm.core.zip_mmpm_log_files()
+            MMPMLogger.zip_mmpm_log_files()
         elif not args.cli and not args.gui:
             # if the user doesn't provide arguments, just display everything, but consider the --tail arg
-            mmpm.core.display_log_files(True, True, args.tail)
+            MMPMLogger.display_log_files(True, True, args.tail)
         else:
-            mmpm.core.display_log_files(args.cli, args.gui, args.tail)
+            MMPMLogger.display_log_files(args.cli, args.gui, args.tail)
 
     elif args.subcmd == mmpm.opts.ENV:
         if additional_args:

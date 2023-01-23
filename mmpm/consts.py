@@ -82,10 +82,6 @@ MAGICMIRROR_MODULES_URL: str = "https://github.com/MichMich/MagicMirror/wiki/3rd
 
 MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE: str = join(MMPM_CONFIG_DIR, 'MagicMirror-3rd-party-packages-db.json')
 
-MMPM_WEB_ROOT_DIR: str = '/var/www/mmpm'
-MMPM_STATIC_DIR: str = '/var/www/mmpm/static'
-MMPM_TEMPLATES_DIR: str = '/var/www/mmpm/templates'
-
 MMPM_PYTHON_ROOT_DIR: str = dirname(abspath(__file__))
 MMPM_JS_DIR: str = join(MMPM_PYTHON_ROOT_DIR, 'js')
 

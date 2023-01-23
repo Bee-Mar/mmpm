@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 # pylint: disable=unused-argument
+# pylint: disable=unused-import
+from gevent import monkey
+monkey.patch_all() # do not move these
 import sys
 import os
 import mmpm.utils
@@ -15,7 +18,7 @@ from typing import List, Dict
 MagicMirrorPackage = mmpm.models.MagicMirrorPackage
 get_env = mmpm.utils.get_env
 
-__version__ = 2.17
+__version__ = 3.0
 
 
 def main(argv):

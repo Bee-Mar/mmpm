@@ -51,6 +51,32 @@ sudo apt install libffi-dev nginx-full -y
 python3 -m pip install --upgrade --no-cache-dir mmpm
 mmpm --guided-setup
 echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+## Possible Installation Error
+
+If you happen to see the following after installing and running a `mmpm` command:
+
+```sh
+Traceback (most recent call last):
+  File "setup.py", line 2, in <module>
+    from setuptools import setup, find_packages
+  File "/usr/local/lib/python3.7/site-packages/setuptools/__init__.py", line 12, in <module>
+    from setuptools.extension import Extension
+  File "/usr/local/lib/python3.7/site-packages/setuptools/extension.py", line 7, in <module>
+    from setuptools.dist import _get_unpatched
+  File "/usr/local/lib/python3.7/site-packages/setuptools/dist.py", line 16, in <module>
+    import pkg_resources
+  File "/usr/local/lib/python3.7/site-packages/pkg_resources.py", line 1479, in <module>
+    register_loader_type(importlib_bootstrap.SourceFileLoader, DefaultProvider)
+AttributeError: module 'importlib._bootstrap' has no attribute 'SourceFileLoader'
+```
+
+Run the following command to shore up your `pip` version:
+
+```sh
+python -m ensurepip --upgrade # you may need to call python3 instead of python
 ```
 
 ## Look to the [Wiki](https://github.com/Bee-Mar/mmpm/wiki)

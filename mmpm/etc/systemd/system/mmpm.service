@@ -8,7 +8,7 @@ WantedBy=multi-user.target
 [Service]
 User=SUBSTITUTE_user
 Type=notify
-ExecStart=SUBSTITUTE_gunicorn --reload --worker-class gevent --bind localhost:7891 mmpm.wsgi:app --user=SUBSTITUTE_user
+ExecStart=SUBSTITUTE_gunicorn --worker-class gevent --bind localhost:7891 mmpm.wsgi:app --user=SUBSTITUTE_user
 ExecReload=/bin/kill -s HUP $MAINPID
 PIDFile=/run/mmpm.pid
 KillMode=mixed

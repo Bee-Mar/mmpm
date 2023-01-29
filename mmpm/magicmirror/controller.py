@@ -11,7 +11,7 @@ logger.setLevel(get_env(mmpm.consts.MMPM_LOG_LEVEL))
 class MagicMirrorClient:
     __client__ = socketio.Client(logger=logger, reconnection=True, request_timeout=3000)
 
-    @staticmethod
+    @classmethod
     def __init_client__(event: str, input_data: dict):
         try:
             MagicMirrorClient.__client__ = socketio.Client(logger=logger, reconnection=True, request_timeout=3000)
@@ -63,31 +63,18 @@ class MagicMirrorClient:
                 print(mmpm.consts.GREEN_CHECK_MARK)
 
 
-        @MagicMirrorClient.__client__.on('MODULES_TOGGLED', namespace=mmpm.consts.MMPM_SOCKETIO_NAMESPACE)
-        def modules_toggled(data): # pylint: disable=unused-variable
-            logger.info('received toggled modules from MMPM MagicMirror module')
-            stop_thread_event.set()
-
-            if not data:
-                print(mmpm.consts.RED_X)
-                mmpm.utils.error_msg('Unable to find provided module(s)')
-            else:
-                print(mmpm.consts.GREEN_CHECK_MARK)
-
-
-    @staticmethod
+    @classmethod
     def get_client(event: str, input_data: dict) -> socketio.Client:
-        if __client__ is None:
+        if MagicMirrorClient.__client__ is None:
             MagicMirrorClient.__init_client__(event, input_data)
 
         return MagicMirrorClient.__client__
 
 
 class MagicMirrorController:
-    def __init__(self):
-        pass
 
-    def status(self):
+    @classmethod
+    def status(cls):
         client = MagicMirrorClient.get_client('FROM_MMPM_APP_get_active_modules', None)
 
         try:
@@ -97,7 +84,8 @@ class MagicMirrorController:
             logger.error(str(error))
             client.disconnect()
 
-    def hide_modules(self, modules_to_hide):
+    @classmethod
+    def hide_modules(cls, modules_to_hide):
         client = MagicMirrorClient.get_client('FROM_MMPM_APP_toggle_modules', {'directive': 'hide', 'modules': modules_to_hide})
 
         try:
@@ -107,7 +95,8 @@ class MagicMirrorController:
             logger.error(str(error))
             client.disconnect()
 
-    def show_modules(self, modules_to_show):
+    @classmethod
+    def show_modules(cls, modules_to_show):
         client = MagicMirrorClient.get_client('FROM_MMPM_APP_toggle_modules', data={'directive': 'show', 'modules': modules_to_show})
 
         try:
@@ -117,7 +106,8 @@ class MagicMirrorController:
             logger.error(str(error))
             client.disconnect()
 
-    def start(self):
+    @classmethod
+    def start(cls):
         '''
         Launches MagicMirror using pm2, if found, otherwise a 'npm start' is run as
         a background process
@@ -176,7 +166,8 @@ class MagicMirrorController:
         return True
 
 
-    def stop(self):
+    @classmethod
+    def stop(cls):
         '''
         Stops MagicMirror using pm2, if found, otherwise the associated
         processes are killed
@@ -227,7 +218,8 @@ class MagicMirrorController:
         return True
 
 
-    def restart(self):
+    @classmethod
+    def restart(cls):
         '''
         Restarts MagicMirror using pm2, if found, otherwise the associated
         processes are killed and 'npm start' is re-run a background process

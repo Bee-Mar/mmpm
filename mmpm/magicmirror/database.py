@@ -19,14 +19,56 @@ from mmpm.logger import MMPMLogger
 logger = MMPMLogger.get_logger(__name__)
 logger.setLevel(get_env(mmpm.consts.MMPM_LOG_LEVEL))
 
-class MagicMirrorDatabase:
-    def __init__(self):
-        self.data = None
-        self.categories = None
-        self.packages = None
-        self.last_update: datetime.datetime = None
-        self.expiration_date: datetime.datetime  = None
 
+class QueryResult:
+    def __init__(self, packages: Dict[str, List[MagicMirrorPackage]]):
+        self.packages: Dict[str, List[MagicMirrorPackage]] = packages
+
+    def display(self, title_only: bool = False, include_path: bool = False, exclude_local: bool = False) -> None:
+        '''
+        Depending on the user flags passed in from the command line, either all
+        existing packages may be displayed, or the names of all categories of
+        packages may be displayed.
+
+        Parameters:
+            packages (Dict[str, List[MagicMirrorPackage]]): dictionary of MagicMirror 3rd party packages
+            title_only (bool): boolean flag to show only the title of the given packages
+            include_path (bool): boolean flag to show the installation path of the given packages. Used only when displaying installed packages
+            exclude_local (bool): boolean flag to exclude the locally installed packages
+
+        Returns:
+            None
+        '''
+        format_description = lambda desc: desc[:MAX_LENGTH] + '...' if len(desc) > MAX_LENGTH else desc
+        MAX_LENGTH: int = 120
+
+        if title_only:
+            _print_ = lambda package: print(package.title)
+
+        elif include_path:
+            _print_ = lambda package: print(
+                mmpm.color.normal_green(f'{package.title}'),
+                (f'\n  Directory: {package.directory}'),
+                (f"\n  {format_description(package.description)}\n")
+            )
+
+        else:
+            _print_ = lambda package: print(
+                mmpm.color.normal_green(f'{package.title}'),
+                (f"\n  {format_description(package.description)}\n")
+            )
+
+        pkgs = self.packages if not exclude_local else mmpm.utils.get_difference_of_packages(MagicMirrorDatabase.packages, self.get_installed_packages())
+
+        for _, packages in pkgs.items():
+            for _, package in enumerate(packages):
+                _print_(package)
+
+
+class MagicMirrorDatabase:
+    packages = None
+    last_update: datetime.datetime = None
+    expiration_date: datetime.datetime = None
 
     def update(self):
         pass
@@ -45,21 +87,21 @@ class MagicMirrorDatabase:
         Returns:
             None
         '''
-        num_categories: int = len(self.packages)
+        num_categories: int = len(MagicMirrorDatabase.packages)
         num_packages: int = 0
 
-        for category in self.packages.values():
+        for category in MagicMirrorDatabase.packages.values():
             num_packages += len(category)
 
         num_packages -= 1 # skip MMPM itself in the package count
 
-        print(mmpm.color.normal_green('Last updated:'), f'{str(self.last_update)}')
-        print(mmpm.color.normal_green('Next scheduled update:'), f'{str(self.expiration_date)}')
+        print(mmpm.color.normal_green('Last updated:'), f'{str(MagicMirrorDatabase.last_update)}')
+        print(mmpm.color.normal_green('Next scheduled update:'), f'{str(MagicMirrorDatabase.expiration_date)}')
         print(mmpm.color.normal_green('Package categories:'), f'{num_categories}')
         print(mmpm.color.normal_green('Packages available:'), f'{num_packages}')
 
-
-    def retrieve_packages(self):
+    @classmethod
+    def retrieve_packages(cls):
         '''
         Scrapes the MagicMirror 3rd Party Wiki for all packages listed by community members
 
@@ -70,7 +112,7 @@ class MagicMirrorDatabase:
             packages (Dict[str, List[MagicMirrorPackage]]): dictionary of MagicMirror 3rd party modules
         '''
 
-        self.packages: Dict[str, List[MagicMirrorPackage]] = defaultdict(list)
+        MagicMirrorDatabase.packages: Dict[str, List[MagicMirrorPackage]] = defaultdict(list)
         response: requests.Response = requests.Response()
 
         try:
@@ -100,27 +142,64 @@ class MagicMirrorDatabase:
                     if table_data[0].contents[0].contents[0] == mmpm.consts.MMPM:
                         break
 
-                    self.packages[categories[index]].append(MagicMirrorPackage.from_raw_data(table_data))
+                    MagicMirrorDatabase.packages[categories[index]].append(MagicMirrorPackage.from_raw_data(table_data, category=categories[index]))
 
         except Exception as error:
             mmpm.utils.fatal_msg(str(error))
 
-
-    def is_expired(self) -> bool:
+    @classmethod
+    def is_expired(cls) -> bool:
         for file_name in [mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE, mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE]:
             if not file_name.exists() or not bool(file_name.stat().st_size):
                 return True # the file is empty
 
-        if self.last_update is None or self.expiration_date is None:
+        if MagicMirrorDatabase.last_update is None or MagicMirrorDatabase.expiration_date is None:
             with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE) as expiration_file:
                 data = json.load(expiration_file)
-                self.expiration_date = datetime.datetime.fromisoformat(data["expiration"])
-                self.last_update = datetime.datetime.fromisoformat(data["last-update"])
+                MagicMirrorDatabase.expiration_date = datetime.datetime.fromisoformat(data["expiration"])
+                MagicMirrorDatabase.last_update = datetime.datetime.fromisoformat(data["last-update"])
 
-        return datetime.datetime.now() > self.expiration_date
+        return datetime.datetime.now() > MagicMirrorDatabase.expiration_date
 
+    @classmethod
+    def search_packages(cls, query: str, case_sensitive: bool = False, by_title_only: bool = False) -> QueryResult:
+        '''
+        Used to search the 'modules' for either a category, or keyword/phrase
+        appearing within module descriptions. If the argument supplied is a
+        category name, all modules from that category will be listed. Otherwise,
+        all modules whose descriptions contain the keyword/phrase will be
+        displayed.
 
-    def load_packages(self, force_refresh: bool = False):
+        Parameters:
+            query (str): user provided search string
+            case_sensitive (bool): if True, the query's exact casing is used in search
+            by_title_only (bool): if True, only the title is considered when matching packages to query
+
+        Returns:
+            search_results (Dict[str, List[MagicMirrorPackage]]): the dictionary of packages, grouped by category that are search matches
+        '''
+
+        # if the query matches one of the category names exactly, return everything in that category
+        if query in MagicMirrorDatabase.packages:
+            return {query: packages[query]}
+
+        search_results: Dict[str, List[MagicMirrorPackage]] = defaultdict(list)
+
+        if by_title_only:
+            match = lambda query, pkg: query == pkg.title
+        elif case_sensitive:
+            match = lambda query, pkg: query in pkg.description or query in pkg.title or query in pkg.author
+        else:
+            query = query.lower()
+            match = lambda query, pkg: query in pkg.description.lower() or query in pkg.title.lower() or query in pkg.author.lower()
+
+        for category, packages in MagicMirrorDatabase.packages.items():
+            search_results[category] = [package for package in packages if match(query, package)]
+
+        return QueryResult(search_results)
+
+    @classmethod
+    def load_packages(cls, force_refresh: bool = False):
 
         '''
         Reads in modules from the hidden database file  and checks if the file is
@@ -157,45 +236,45 @@ class MagicMirrorDatabase:
                 f"{mmpm.consts.GREEN_PLUS} {'Refreshing' if db_exists else 'Initializing'} MagicMirror 3rd party packages database "
             )
 
-            self.retrieve_packages()
+            MagicMirrorDatabase.retrieve_packages()
 
-            if not self.packages:
+            if not MagicMirrorDatabase.packages:
                 print(mmpm.consts.RED_X)
                 mmpm.utils.error_msg(f'Failed to retrieve packages from {mmpm.consts.MAGICMIRROR_MODULES_URL}. Please check your internet connection.')
 
             # save the new database
             else:
                 with open(db_file, 'w', encoding="utf-8") as db:
-                    json.dump(self.packages, db, default=lambda pkg: pkg.serialize())
+                    json.dump(MagicMirrorDatabase.packages, db, default=lambda pkg: pkg.serialize())
 
                 with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE, 'w', encoding='utf-8') as expiration_file:
-                    self.last_update = datetime.datetime.now()
-                    self.expiration_date = self.last_update + datetime.timedelta(hours=12)
+                    MagicMirrorDatabase.last_update = datetime.datetime.now()
+                    MagicMirrorDatabase.expiration_date = MagicMirrorDatabase.last_update + datetime.timedelta(hours=12)
 
                     json.dump(
                         {
-                            "last-update": str(self.last_update),
-                            "expiration": str(self.expiration_date)
+                            "last-update": str(MagicMirrorDatabase.last_update),
+                            "expiration": str(MagicMirrorDatabase.expiration_date)
                         },
                         expiration_file,
                     )
 
                 print(mmpm.consts.GREEN_CHECK_MARK)
 
-        if not self.packages and db_exists:
-            self.packages = {}
+        if not MagicMirrorDatabase.packages and db_exists:
+            MagicMirrorDatabase.packages = {}
 
             with open(db_file, 'r', encoding="utf-8") as db:
                 packages = json.load(db)
 
                 for category in packages:
-                    self.packages[category] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(packages[category])
+                    MagicMirrorDatabase.packages[category] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(packages[category])
 
-        if self.packages and os.path.exists(ext_pkgs_file) and bool(os.stat(ext_pkgs_file).st_size):
-            self.packages.update(**self.__load_external_packages__())
+        if MagicMirrorDatabase.packages and os.path.exists(ext_pkgs_file) and bool(os.stat(ext_pkgs_file).st_size):
+            MagicMirrorDatabase.packages.update(**MagicMirrorDatabase.__load_external_packages__())
 
-
-    def dump(self) -> None:
+    @classmethod
+    def dump(cls) -> None:
         '''
         Pretty prints contents of database to stdout
 
@@ -223,7 +302,8 @@ class MagicMirrorDatabase:
         print(highlight(json.dumps(contents, indent=2), JsonLexer(), formatters.TerminalFormatter()))
 
 
-    def __load_external_packages__(self) -> Dict[str, List[MagicMirrorPackage]]:
+    @classmethod
+    def __load_external_packages__(cls) -> Dict[str, List[MagicMirrorPackage]]:
         '''
         Extracts the external packages from the JSON files stored in
         ~/.config/mmpm/mmpm-external-packages.json
@@ -252,7 +332,8 @@ class MagicMirrorDatabase:
         return {mmpm.consts.EXTERNAL_PACKAGES: external_packages}
 
 
-    def get_installed_packages(self):
+    @classmethod
+    def get_installed_packages(cls):
         '''
         Scans the list <MMPM_MAGICMIRROR_ROOT>/modules directory, and compares
         against the known packages from the MagicMirror 3rd Party Wiki. Returns a
@@ -317,7 +398,7 @@ class MagicMirrorDatabase:
             finally:
                 os.chdir('..')
 
-        for category, package_names in self.packages.items():
+        for category, package_names in MagicMirrorDatabase.packages.items():
             installed_packages.setdefault(category, [])
 
             for package in package_names:
@@ -328,7 +409,8 @@ class MagicMirrorDatabase:
 
         return installed_packages
 
-    def display_packages(self, title_only: bool = False, include_path: bool = False, exclude_local: bool = False) -> None:
+    @classmethod
+    def display_packages(cls, title_only: bool = False, include_path: bool = False, exclude_local: bool = False) -> None:
         '''
         Depending on the user flags passed in from the command line, either all
         existing packages may be displayed, or the names of all categories of
@@ -362,14 +444,15 @@ class MagicMirrorDatabase:
                 (f"\n  {format_description(package.description)}\n")
             )
 
-        pkgs = self.packages if not exclude_local else mmpm.utils.get_difference_of_packages(self.packages, self.get_installed_packages())
+        pkgs = MagicMirrorDatabase.packages if not exclude_local else mmpm.utils.get_difference_of_packages(MagicMirrorDatabase.packages, self.get_installed_packages())
 
         for _, packages in pkgs.items():
             for _, package in enumerate(packages):
                 _print_(package)
 
 
-    def display_categories(self, title_only: bool = False) -> None:
+    @classmethod
+    def display_categories(cls, title_only: bool = False) -> None:
         '''
         Prints module category names and the total number of modules in one of two
         formats. The default is similar to the Debian apt package manager, and the
@@ -386,8 +469,8 @@ class MagicMirrorDatabase:
         categories: List[dict] = [
             {
                 mmpm.consts.CATEGORY: key,
-                mmpm.consts.PACKAGES: len(self.packages[key])
-            } for key in self.packages
+                mmpm.consts.PACKAGES: len(MagicMirrorDatabase.packages[key])
+            } for key in MagicMirrorDatabase.packages
         ]
 
         if title_only:
@@ -401,8 +484,8 @@ class MagicMirrorDatabase:
                 f'\n  Packages: {category[mmpm.consts.PACKAGES]}\n'
             )
 
-
-    def display_available_upgrades(self) -> None:
+    @classmethod
+    def display_available_upgrades(cls) -> None:
         '''
         Based on the current environment, available upgrades for packages, and
         MagicMirror will be displayed. The status of upgrades available for MMPM is
@@ -442,8 +525,8 @@ class MagicMirrorDatabase:
         else:
             print(f'No upgrades available {mmpm.consts.YELLOW_X}')
 
-
-    def get_available_upgrades(self) -> dict:
+    @classmethod
+    def get_available_upgrades(cls) -> dict:
         '''
         Parses the mmpm-available-upgrades.json file, and ensures the contents are
         valid. If the contents are malformed, the file is reset.
@@ -484,8 +567,8 @@ class MagicMirrorDatabase:
 
         return upgrades
 
-
-    def add_external_package(self, title: str = None, author: str = None, repo: str = None, description: str = None) -> str:
+    @classmethod
+    def add_external_package(cls, title: str = None, author: str = None, repo: str = None, description: str = None) -> str:
         '''
         Adds an external source for user to install a module from. This may be a
         private git repo, or a specific branch of a public repo. All modules added
@@ -550,8 +633,8 @@ class MagicMirrorDatabase:
 
         return ''
 
-
-    def remove_external_package_source(self, titles: List[str] = None, assume_yes: bool = False) -> bool:
+    @classmethod
+    def remove_external_package_source(cls, titles: List[str] = None, assume_yes: bool = False) -> bool:
         '''
         Allows user to remove an External Pac kage from the data saved in
         ~/.config/mmpm/mmpm-external-packages.json

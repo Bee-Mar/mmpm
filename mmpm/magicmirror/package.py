@@ -18,14 +18,14 @@ class MagicMirrorPackage():
     MagicMirror package's metadata
     '''
     # pylint: disable=unused-argument
-    def __init__(self, title: str = NA, author: str = NA, repository: str = NA, description: str = NA, directory: str = '', **kwargs) -> None:
+    def __init__(self, title: str = NA, author: str = NA, repository: str = NA, description: str = NA, category: str = NA, directory: str = '', **kwargs) -> None:
         # **kwargs allows for simplified dict unpacking in some instances, and is intentionally unused
         self.title = __sanitize__(title.strip())
         self.author = __sanitize__(author.strip()) # NOTE: Maybe this shouldn't be here
-        self.repository = repository.strip()
+        self.repository = repository.strip() if repository.strip() .endswith(".git") else (f"{repository}.git").strip()
         self.description = description.strip()
         self.directory = directory.strip()
-
+        self.category = category.strip()
 
     def __str__(self) -> str:
         return str(self.__dict__)
@@ -45,6 +45,45 @@ class MagicMirrorPackage():
 
     def __ne__(self, other) -> bool:
         return not self.__eq__(other)
+
+    def display(self, remote: bool) -> None:
+        '''
+        Displays more detailed information that presented in normal search results.
+        The output is formatted similarly to the output of the Debian/Ubunut 'apt' CLI
+
+        Parameters:
+            remote (bool): if True, extra detail is retrieved from the repository's API (GitHub, GitLab, or Bitbucket)
+
+        Returns:
+            None
+        '''
+
+        # TODO: FIXME
+
+        def __show_package__(category: str, package: MagicMirrorPackage) -> None:
+            print(mmpm.color.normal_green(package.title))
+            print(f'  Category: {category}')
+            print(f'  Repository: {package.repository}')
+            print(f'  Author: {package.author}')
+
+        if not remote :
+            def __show_details__(packages: dict) -> None:
+                for category, _packages in packages.items():
+                    for package in _packages:
+                        __show_package__(category, package)
+                        print(indent(fill(f'Description: {package.description}\n', width=80), prefix='  '), '\n')
+
+        else:
+            def __show_details__(packages: dict) -> None:
+                for category, _packages  in packages.items():
+                    for package in _packages:
+                        __show_package__(category, package)
+                        for key, value in mmpm.utils.get_remote_package_details(package).items():
+                            print(f"  {key}: {value}")
+                        print(indent(fill(f'Description: {package.description}\n', width=80), prefix='  '), '\n')
+
+        __show_details__(packages)
+
 
     def serialize(self) -> dict:
         '''
@@ -142,12 +181,12 @@ class MagicMirrorPackage():
 
 
     @classmethod
-    def from_raw_data(cls, raw_data: List[Tag]):
+    def from_raw_data(cls, raw_data: List[Tag], category=None):
         title_info = raw_data[0].contents[0].contents[0]
         package_title: str = mmpm.utils.sanitize_name(title_info) if title_info else mmpm.consts.NOT_AVAILABLE
 
         anchor_tag = raw_data[0].find_all('a')[0]
-        package_repo = str(anchor_tag['href']) if anchor_tag.has_attr('href') else mmpm.consts.NOT_AVAILABLE
+        repo = str(anchor_tag['href']) if anchor_tag.has_attr('href') else mmpm.consts.NOT_AVAILABLE
 
         # some people get fancy and embed anchor tags
         author_info = raw_data[1].contents
@@ -170,7 +209,7 @@ class MagicMirrorPackage():
             else:
                 package_description += info.string
 
-        return MagicMirrorPackage(title=package_title, author=package_author, description=package_description, repository=package_repo)
+        return MagicMirrorPackage(title=package_title, author=package_author, description=package_description, repository=repo)
 
 
 __NULL__: int = hash(MagicMirrorPackage())

@@ -43,35 +43,34 @@ def main(argv):
     if args.subcmd in mmpm.opts.SINGLE_OPTION_ARGS and not mmpm.utils.assert_one_option_selected(args):
         mmpm.utils.fatal_too_many_options(args)
 
-    database = MagicMirrorDatabase()
 
-    should_refresh = True if args.subcmd == mmpm.opts.DATABASE and args.refresh else database.is_expired()
+    should_refresh = True if args.subcmd == mmpm.opts.DATABASE and args.refresh else MagicMirrorDatabase.is_expired()
 
-    database.load_packages(force_refresh=should_refresh)
+    MagicMirrorDatabase.load_packages(force_refresh=should_refresh)
 
-    if database.is_expired() and args.subcmd != mmpm.opts.UPDATE and mmpm.core.check_for_mmpm_updates(automated=True):
+    if MagicMirrorDatabase.is_expired() and args.subcmd != mmpm.opts.UPDATE and mmpm.core.check_for_mmpm_updates(automated=True):
         print('Upgrade available for MMPM. Execute `pip3 install --upgrade --user mmpm` to perform the upgrade now')
 
-    if not database.packages:
+    if not MagicMirrorDatabase.packages:
         mmpm.utils.fatal_msg('Unable to retrieve packages. Please check your internet connection.')
 
     if args.subcmd == mmpm.opts.LIST:
         if args.installed:
-            installed_packages = database.get_installed_packages()
+            installed_packages = MagicMirrorDatabase.get_installed_packages()
 
             if not installed_packages:
                 mmpm.utils.fatal_msg('No packages are currently installed')
 
-            database.display_packages(installed_packages, title_only=args.title_only, include_path=True)
+            MagicMirrorDatabase.display_packages(installed_packages, title_only=args.title_only, include_path=True)
 
         elif args.all or args.exclude_local:
-            database.display_packages(title_only=args.title_only, exclude_local=args.exclude_local)
+            MagicMirrorDatabase.display_packages(title_only=args.title_only, exclude_local=args.exclude_local)
         elif args.categories:
-            database.display_categories(title_only=args.title_only)
+            MagicMirrorDatabase.display_categories(title_only=args.title_only)
         elif args.gui_url:
             print(MMPMGui.get_uri())
         elif args.upgradable:
-            database.display_available_upgrades()
+            MagicMirrorDatabase.display_available_upgrades()
         else:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
@@ -89,7 +88,7 @@ def main(argv):
                     mmpm.utils.warning_msg(status[mmpm.consts.WARNING])
 
         for query in additional_args:
-            result = mmpm.core.search_packages(packages, query, by_title_only=True)
+            result = MagicMirrorDatabase.search_packages(packages, query, by_title_only=True)
 
             if not result:
                 mmpm.utils.fatal_msg(f'Unable to match {query} to a package title')
@@ -122,12 +121,12 @@ def main(argv):
 
     elif args.subcmd == mmpm.opts.ADD_EXT_PKG:
         if args.remove:
-            database.remove_external_package_source(
+            MagicMirrorDatabase.remove_external_package_source(
                 [mmpm.utils.sanitize_name(package) for package in args.remove],
                 assume_yes=args.assume_yes
             )
         else:
-            database.add_external_package(args.title, args.author, args.repo, args.desc)
+            MagicMirrorDatabase.add_external_package(args.title, args.author, args.repo, args.desc)
 
     elif args.subcmd == mmpm.opts.UPDATE:
         if additional_args:
@@ -173,7 +172,7 @@ def main(argv):
         elif not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
-        installed_packages = database.get_installed_packages()
+        installed_packages = MagicMirrorDatabase.get_installed_packages()
 
         if not installed_packages:
             mmpm.utils.fatal_msg("No packages are currently installed")
@@ -194,32 +193,28 @@ def main(argv):
             if args.exclude_local:
                 packages = mmpm.utils.get_difference_of_packages(packages, mmpm.core.get_installed_packages(packages))
 
-            mmpm.core.display_packages(
-                mmpm.core.search_packages(packages, additional_args[0], case_sensitive=args.case_sensitive),
-                title_only=args.title_only
-            )
+            query_result = MagicMirrorDatabase.search_packages(additional_args[0], case_sensitive=args.case_sensitive)
+            query_result.display(title_only=args.title_only)
 
     elif args.subcmd == mmpm.opts.MM_CTL:
-        controller = MagicMirrorController()
-
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.status:
-            controller.status()
+            MagicMirrorController.status()
         elif args.hide:
-            controller.hide_modules(args.hide)
+            MagicMirrorController.hide_modules(args.hide)
         elif args.show:
-            controller.show_modules(args.show)
+            MagicMirrorController.show_modules(args.show)
         elif args.start or args.stop or args.restart or args.rotate != None:
             MMPM_IS_DOCKER_IMAGE: str = mmpm.utils.get_env('MMPM_IS_DOCKER_IMAGE')
             if MMPM_IS_DOCKER_IMAGE:
                 mmpm.utils.fatal_msg('Cannot execute this command within a docker image')
             elif args.start:
-                controller.start()
+                MagicMirrorController.start()
             elif args.stop:
-                controller.stop()
+                MagicMirrorController.stop()
             elif args.restart:
-                controller.restart()
+                MagicMirrorController.restart()
         else:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
@@ -229,9 +224,9 @@ def main(argv):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.details:
-            database.details()
+            MagicMirrorDatabase.details()
         elif args.dump:
-            database.dump()
+            MagicMirrorDatabase.dump()
         else:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 

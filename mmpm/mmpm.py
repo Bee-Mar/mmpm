@@ -46,7 +46,8 @@ def main(argv):
 
     should_refresh = True if args.subcmd == mmpm.opts.DATABASE and args.refresh else MagicMirrorDatabase.is_expired()
 
-    MagicMirrorDatabase.load_packages(force_refresh=should_refresh)
+    MagicMirrorDatabase.load_packages(refresh=should_refresh)
+
 
     if MagicMirrorDatabase.is_expired() and args.subcmd != mmpm.opts.UPDATE and mmpm.core.check_for_mmpm_updates(automated=True):
         print('Upgrade available for MMPM. Execute `pip3 install --upgrade --user mmpm` to perform the upgrade now')
@@ -56,21 +57,21 @@ def main(argv):
 
     if args.subcmd == mmpm.opts.LIST:
         if args.installed:
-            installed_packages = MagicMirrorDatabase.get_installed_packages()
-
-            if not installed_packages:
-                mmpm.utils.fatal_msg('No packages are currently installed')
-
-            MagicMirrorDatabase.display_packages(installed_packages, title_only=args.title_only, include_path=True)
+            for package in MagicMirrorDatabase.packages:
+                if package.is_installed:
+                    package.display(title_only=args.title_only, show_path=True)
 
         elif args.all or args.exclude_local:
-            MagicMirrorDatabase.display_packages(title_only=args.title_only, exclude_local=args.exclude_local)
+            for package in MagicMirrorDatabase.packages:
+                package.display(title_only=args.title_only)
+
+            #MagicMirrorDatabase.display_packages(title_only=args.title_only, exclude_local=args.exclude_local)
         elif args.categories:
             MagicMirrorDatabase.display_categories(title_only=args.title_only)
         elif args.gui_url:
             print(MMPMGui.get_uri())
         elif args.upgradable:
-            MagicMirrorDatabase.display_available_upgrades()
+            MagicMirrorDatabase.display_available_upgrades() # TODO: FIXME
         else:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
@@ -88,12 +89,8 @@ def main(argv):
                     mmpm.utils.warning_msg(status[mmpm.consts.WARNING])
 
         for query in additional_args:
-            result = MagicMirrorDatabase.search_packages(packages, query, by_title_only=True)
-
-            if not result:
-                mmpm.utils.fatal_msg(f'Unable to match {query} to a package title')
-
-            mmpm.core.show_package_details(result, args.remote)
+            for package in MagicMirrorDatabase.search(query, by_title_only=True):
+                package.display(remote=args.remote, detailed=True)
 
     elif args.subcmd == mmpm.opts.OPEN:
         import webbrowser
@@ -193,8 +190,11 @@ def main(argv):
             if args.exclude_local:
                 packages = mmpm.utils.get_difference_of_packages(packages, mmpm.core.get_installed_packages(packages))
 
-            query_result = MagicMirrorDatabase.search_packages(additional_args[0], case_sensitive=args.case_sensitive)
+            query_result = MagicMirrorDatabase.search(additional_args[0], case_sensitive=args.case_sensitive)
             query_result.display(title_only=args.title_only)
+
+            for package in query_result:
+                package.display(title_only=args.title_only)
 
     elif args.subcmd == mmpm.opts.MM_CTL:
         if additional_args:

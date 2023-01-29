@@ -5,13 +5,13 @@ import subprocess
 import time
 import datetime
 import json
-import pathlib
 import requests
 
 from typing import List, Optional, Tuple, Dict
 
 import mmpm.color
 import mmpm.consts
+from pathlib import Path, PosixPath
 from mmpm.models import MagicMirrorPackage
 from mmpm.logger import MMPMLogger
 from mmpm.env import get_env
@@ -238,8 +238,8 @@ def open_default_editor(path_to_file: str) -> Optional[None]:
     if not os.path.exists(path_to_file):
         try:
             warning_msg(f'{path_to_file} does not exist. Creating the directory and empty file')
-            pathlib.Path('/'.join(path_to_file.split('/')[:-1])).mkdir(parents=True, exist_ok=True)
-            pathlib.Path(path_to_file).touch(mode=0o664, exist_ok=True)
+            Path('/'.join(path_to_file.split('/')[:-1])).mkdir(parents=True, exist_ok=True)
+            Path(path_to_file).touch(mode=0o664, exist_ok=True)
         except OSError as error:
             fatal_msg(f'Unable to create {path_to_file}: {str(error)}')
 
@@ -625,24 +625,6 @@ def assert_valid_input(prompt: str, forbidden_responses: List[str] = [], reason:
             continue
         return user_response
 
-
-def get_existing_package_directories() -> List[str]:
-    '''
-    Retrieves list of directories found in MagicMirror modules directory
-
-    Parameters:
-        None
-
-    Returns:
-        directories (List[str]): a list of directories found in the MagicMirror modules directory
-    '''
-    MAGICMIRROR_MODULES_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules')
-
-    if not os.path.exists(MAGICMIRROR_MODULES_DIR):
-        return []
-
-    dirs: List[str] = os.listdir(MAGICMIRROR_MODULES_DIR)
-    return [d for d in dirs if os.path.isdir(os.path.join(MAGICMIRROR_MODULES_DIR, d))]
 
 
 def list_of_dict_to_list_of_magicmirror_packages(list_of_dict: List[dict]) -> List[MagicMirrorPackage]:

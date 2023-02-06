@@ -5,32 +5,164 @@ import shutil
 import datetime
 import requests
 import mmpm.consts
+import mmpm.color
+from re import findall
 from collections import defaultdict
 from typing import Dict, List
 from bs4 import BeautifulSoup
 from mmpm.magicmirror.package import MagicMirrorPackage
-from mmpm.env import get_env
+from mmpm.env import MMPMEnv
+from mmpm.constants import paths
 from pygments import highlight, formatters
 from pygments.lexers.data import JsonLexer
 from functools import lru_cache
 from mmpm.logger import MMPMLogger
 from pathlib import Path, PosixPath
+from pygments import highlight, formatters
+from pygments.lexers.data import JsonLexer
+
 
 
 logger = MMPMLogger.get_logger(__name__)
-logger.setLevel(get_env(mmpm.consts.MMPM_LOG_LEVEL))
+logger.setLevel(MMPMEnv.mmpm_log_level.get())
 
 
 class MagicMirrorDatabase:
     packages: List[MagicMirrorPackage] = None
     last_update: datetime.datetime = None
     expiration_date: datetime.datetime = None
+    categories: List[str] = None
 
-    def update(self):
-        pass
+    @classmethod
+    def __update_mmpm__(cls, automated=False) -> bool:
+        '''
+        Scrapes the main file of MMPM off the github repo, and compares the current
+        version, versus the one available in the master branch. If there is a newer
+        version, the user is prompted for an upgrade.
+
+        Parameters:
+            automated (bool): if True, an extra notification is printed to the screen for the user to see
+
+        Returns:
+            bool: True on success, False on failure
+        '''
+
+        cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
+        logger.info(f'Checking for newer version of MMPM. Current version: {mmpm.mmpm.__version__}')
+
+        if automated:
+            message: str = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] ({mmpm.color.normal_magenta('automated')}) for updates"
+        else:
+            message = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] for updates"
+
+        mmpm.utils.plain_print(message)
+
+        try:
+            # just to keep the console output the same as all other update commands
+            error_code, contents, _ = mmpm.utils.run_cmd(['curl', mmpm.consts.MMPM_FILE_URL])
+        except KeyboardInterrupt:
+            mmpm.utils.keyboard_interrupt_log()
+
+        if error_code:
+            logger.msg.fatal_msg('Failed to retrieve MMPM version number')
+
+        version_number: float = float(findall(r"\d+\.\d+", findall(r"__version__ = \d+\.\d+", contents)[0])[0])
+        print(mmpm.consts.GREEN_CHECK_MARK)
+
+        if not version_number:
+            logger.msg.fatal('No version number found on MMPM repository')
+
+        can_upgrade: bool = version_number > mmpm.mmpm.__version__
+
+        if can_upgrade:
+            logger.msg.info(f'Found newer version of MMPM: {version_number}')
+        else:
+            logger.msg.info(f'No newer version of MMPM found > {version_number} available. The current version is the latest')
+
+        return can_upgrade
+
+    @classmethod
+    def __update_magicmirror__(cls) -> bool:
+        '''
+        Checks for updates available to the MagicMirror repository. Alerts user if an upgrade is available.
+
+        Parameters:
+            None
+
+        Returns:
+            bool: True upon success, False upon failure
+        '''
+        magicmirror_root: PosixPath = Path(MMPMEnv.mmpm_root.get())
+
+        if not magicmirror_root.exists():
+            logger.msg.error('MagicMirror application directory not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
+            return False
+
+        is_git: bool = True
+
+        if not (magicmirror_root / '.git').exists():
+            logger.msg.warning('The MagicMirror root is not a git repo. If running MagicMirror as a Docker container, updates cannot be performed via mmpm.')
+            is_git = False
+
+        if is_git:
+            os.chdir(magicmirror_root)
+            cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
+            mmpm.utils.plain_print(f"Checking {mmpm.color.normal_green('MagicMirror')} [{cyan_application}] for updates")
+
+            try:
+                # stdout and stderr are flipped for git command output, because that totally makes sense
+                # except now stdout doesn't even contain error messages...thanks git
+                error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
+            except KeyboardInterrupt:
+                print(mmpm.consts.RED_X)
+                mmpm.utils.keyboard_interrupt_log()
+
+            print(mmpm.consts.GREEN_CHECK_MARK)
+
+            if error_code:
+                mmpm.utils.error_msg('Unable to communicate with git server')
+
+            if stdout:
+                return True
+
+        return False
+
+    @classmethod
+    def update(cls, automated: bool = False) -> int:
+
+        packages: List[MagicMirrorPackage] = []
+
+        if packages:
+            can_upgrade_mmpm = MagicMirrorDatabase.__update_mmpm__(automated)
+            can_upgrade_magicmirror = MagicMirrorDatabase.__update_magicmirror__()
+
+            cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
 
 
-    def details(self):
+            for package in MagicMirrorDatabase.packages:
+                if package.is_installed:
+                    mmpm.utils.plain_print(f'Checking {mmpm.color.normal_green(package.title)} [{cyan_package}] for updates') # type: ignore
+                    package.update()
+                    print(mmpm.consts.GREEN_CHECK_MARK)
+
+                if package.is_upgradable:
+                    upgradable.append(package)
+
+        with open(paths.MMPM_upgradable_FILE, "w", encoding="utf-8") as upgrade_file:
+            json.dump(
+                {
+                    "mmpm": can_upgrade_mmpm,
+                    "MagicMirror": can_upgrade_magicmirror,
+                    "packages": [package.serialize() for package in packages],
+                },
+                upgrade_file
+            )
+
+        return int(can_upgrade_mmpm) + int(can_upgrade_magicmirror) + len(packages)
+
+
+    @classmethod
+    def details(cls):
         '''
         Displays information regarding the most recent database file, ie. when it
         was taken, when the next scheduled database retrieval will be taken, how many module
@@ -43,21 +175,13 @@ class MagicMirrorDatabase:
         Returns:
             None
         '''
-        num_categories: int = len(MagicMirrorDatabase.packages)
-        num_packages: int = 0
-
-        for category in MagicMirrorDatabase.packages.values():
-            num_packages += len(category)
-
-        num_packages -= 1 # skip MMPM itself in the package count
-
-        print(mmpm.color.normal_green('Last updated:'), f'{str(MagicMirrorDatabase.last_update)}')
-        print(mmpm.color.normal_green('Next scheduled update:'), f'{str(MagicMirrorDatabase.expiration_date)}')
-        print(mmpm.color.normal_green('Package categories:'), f'{num_categories}')
-        print(mmpm.color.normal_green('Packages available:'), f'{num_packages}')
+        print(mmpm.color.normal_green('Last updated:'), f'{str(MagicMirrorDatabase.last_update.replace(microsecond=0))}')
+        print(mmpm.color.normal_green('Next scheduled update:'), f'{str(MagicMirrorDatabase.expiration_date.replace(microsecond=0))}')
+        print(mmpm.color.normal_green('Categories:'), f'{len(MagicMirrorDatabase.categories)}')
+        print(mmpm.color.normal_green('Packages:'), f'{len(MagicMirrorDatabase.packages) - 1}')
 
     @classmethod
-    def retrieve_packages(cls):
+    def download(cls):
         '''
         Scrapes the MagicMirror 3rd Party Wiki for all packages listed by community members
 
@@ -79,9 +203,8 @@ class MagicMirrorDatabase:
             return {}
 
         soup = BeautifulSoup(response.text, 'html.parser')
-        table_soup: list = soup.find_all('table')
-        category_soup = soup.find_all(attrs={'class': 'markdown-body'})
-        categories_soup = category_soup[0].find_all('h3')
+        table_soup = soup.find_all('table')
+        categories_soup = soup.find_all(attrs={'class': 'markdown-body'})[0].find_all('h3')
 
         del categories_soup[0] # the General Advice section
 
@@ -106,7 +229,7 @@ class MagicMirrorDatabase:
             mmpm.utils.fatal_msg(str(error))
 
     @classmethod
-    def is_expired(cls) -> bool:
+    def expired(cls) -> bool:
         for file_name in [mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE, mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE]:
             if not file_name.exists() or not bool(file_name.stat().st_size):
                 return True # the file is empty
@@ -120,7 +243,7 @@ class MagicMirrorDatabase:
         return datetime.datetime.now() > MagicMirrorDatabase.expiration_date
 
     @classmethod
-    def search(cls, query: str, case_sensitive: bool = False, by_title_only: bool = False) -> List[MagicMirrorPackage]:
+    def search(cls, query: str, case_sensitive: bool = False, by_title_only: bool = False, exclude_installed: bool = False) -> List[MagicMirrorPackage]:
         '''
         Used to search the 'modules' for either a category, or keyword/phrase
         appearing within module descriptions. If the argument supplied is a
@@ -136,10 +259,8 @@ class MagicMirrorDatabase:
         Returns:
             search_results (Dict[str, List[MagicMirrorPackage]]): the dictionary of packages, grouped by category that are search matches
         '''
-        categories = set([package.category for package in MagicMirrorDatabase.packages])
-
         # if the query matches one of the category names exactly, return everything in that category
-        if query in categories:
+        if query in MagicMirrorDatabase.categories:
             return [package for package in MagicMirrorDatabase.packages if package.category == query]
         elif by_title_only:
             match = lambda query, pkg: query == pkg.title
@@ -152,8 +273,7 @@ class MagicMirrorDatabase:
         return [package for package in MagicMirrorDatabase.packages if match(query, package)]
 
     @classmethod
-    def load_packages(cls, refresh: bool = False):
-
+    def load(cls, refresh: bool = False):
         '''
         Reads in modules from the hidden database file  and checks if the file is
         out of date. If so, the modules are gathered again from the MagicMirror 3rd
@@ -168,19 +288,17 @@ class MagicMirrorDatabase:
 
         packages: List[MagicMirrorPackage] = []
 
-        db_file = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
+        db_file: PosixPath = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
         db_exists: bool = db_file.exists() and bool(db_file.stat().st_size)
         ext_pkgs_file: str = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
 
         if db_exists:
-            logger.info(f'Backing up database file as {mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE}.bak')
-
             shutil.copyfile(
                 str(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE),
                 f'{str(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE)}.bak'
             )
 
-            logger.info('Back up of database complete')
+            logger.info(f'Backed up database file as {paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE}.bak')
 
 
         # if the database has expired, or doesn't exist, get a new one
@@ -189,7 +307,7 @@ class MagicMirrorDatabase:
                 f"{mmpm.consts.GREEN_PLUS} {'Refreshing' if db_exists else 'Initializing'} MagicMirror 3rd party packages database "
             )
 
-            MagicMirrorDatabase.retrieve_packages()
+            MagicMirrorDatabase.download()
             MagicMirrorDatabase.__scrape_installed_packages__()
 
             if not MagicMirrorDatabase.packages:
@@ -201,7 +319,7 @@ class MagicMirrorDatabase:
                 with open(db_file, 'w', encoding="utf-8") as db:
                     json.dump(MagicMirrorDatabase.packages, db, default=lambda package: package.serialize())
 
-                with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE, 'w', encoding='utf-8') as expiration_file:
+                with open(paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE, 'w', encoding='utf-8') as expiration_file:
                     MagicMirrorDatabase.last_update = datetime.datetime.now()
                     MagicMirrorDatabase.expiration_date = MagicMirrorDatabase.last_update + datetime.timedelta(hours=12)
 
@@ -223,6 +341,8 @@ class MagicMirrorDatabase:
 
                 for package in packages:
                     MagicMirrorDatabase.packages.append(MagicMirrorPackage(**package))
+
+        MagicMirrorDatabase.categories = set([package.category for package in MagicMirrorDatabase.packages])
 
         # TODO: FIXME
         #if MagicMirrorDatabase.packages and os.path.exists(ext_pkgs_file) and bool(os.stat(ext_pkgs_file).st_size):
@@ -273,7 +393,7 @@ class MagicMirrorDatabase:
             installed_modules (Dict[str, List[MagicMirrorPackage]]): Dictionary of installed MagicMirror packages
         '''
 
-        modules_dir: PosixPath = Path(Path(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV)) /  'modules')
+        modules_dir: PosixPath = Path(MMPMEnv.mmpm_root.get()) / 'modules'
         package_directories: List[PosixPath] = [directory for directory in modules_dir.iterdir()]
 
         for known in MagicMirrorDatabase.packages:
@@ -362,7 +482,7 @@ class MagicMirrorDatabase:
 
 
     @classmethod
-    def display_available_upgrades(cls) -> None:
+    def display_upgradable(cls) -> None:
         '''
         Based on the current environment, available upgrades for packages, and
         MagicMirror will be displayed. The status of upgrades available for MMPM is
@@ -376,25 +496,25 @@ class MagicMirrorDatabase:
         Returns:
             None
         '''
-        MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
+
+        mmpm_magicmirror_root: str = MMPMEnv.mmpm_root.get()
 
         cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
         cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
 
         upgrades_available: bool = False
-        upgrades = self.get_available_upgrades()
+        upgradable = MagicMirrorDatabase.upgradable()
 
-        if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]:
-            for package in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]:
-                print(mmpm.color.normal_green(package.title), f'[{cyan_package}]')
-                upgrades_available = True
-
-        if upgrades[mmpm.consts.MMPM]:
+        if upgradable["packages"] or upgradable["mmpm"] or upgradable["MagicMirror"]:
             upgrades_available = True
+
+        for package in upgradable["packages"]:
+            print(mmpm.color.normal_green(package.title), f'[{cyan_package}]')
+
+        if upgradable["mmpm"]:
             print(f'{mmpm.color.normal_green(mmpm.consts.MMPM)} [{cyan_application}]')
 
-        if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR]:
-            upgrades_available = True
+        if upgradable["MagicMirror"]:
             print(f'{mmpm.color.normal_green(mmpm.consts.MAGICMIRROR)} [{cyan_application}]')
 
         if upgrades_available:
@@ -403,44 +523,32 @@ class MagicMirrorDatabase:
             print(f'No upgrades available {mmpm.consts.YELLOW_X}')
 
     @classmethod
-    def get_available_upgrades(cls) -> dict:
+    def upgradable(cls) -> dict:
         '''
-        Parses the mmpm-available-upgrades.json file, and ensures the contents are
-        valid. If the contents are malformed, the file is reset.
+        Retrieves all available packages and applications from the
+        mmpm-available-upgrades.json file, and ensures the contents are valid.
+        If the contents are malformed, the file is reset.
 
         Parameters:
             None
 
         Returns:
-            available_upgrades (dict): a dictionary containg the upgrades available
+            upgradable (dict): a dictionary containg the upgrades available
                                     for every MagicMirror environment encountered
-
         '''
-        MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV))
-
         reset_file: bool = False
-        add_key: bool = False
 
-        with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'r', encoding="utf-8") as available_upgrades:
+        with open(paths.MMPM_upgradable_FILE, 'r', encoding="utf-8") as upgradable:
             try:
-                upgrades: dict = json.load(available_upgrades)
-                upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(
-                    upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]
-                )
+                upgrades: dict = json.load(upgradable)
             except json.JSONDecodeError:
+                logger.warning(f"Encountered error when reading from {paths.MMPM_upgradable_FILE}. Resetting file.")
                 reset_file = True
-            except KeyError:
-                add_key = True
 
         if reset_file:
-            with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w', encoding="utf-8") as available_upgrades:
-                upgrades = {mmpm.consts.MMPM: False, MMPM_MAGICMIRROR_ROOT: {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}}
-                json.dump(upgrades, available_upgrades)
-
-        elif add_key:
-            with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w', encoding="utf-8") as available_upgrades:
-                upgrades[MMPM_MAGICMIRROR_ROOT] = {mmpm.consts.PACKAGES: [], mmpm.consts.MAGICMIRROR: False}
-                json.dump(upgrades, available_upgrades)
+            with open(paths.MMPM_upgradable_FILE, 'w', encoding="utf-8") as upgradable:
+                upgrades = {"mmpm": False, "MagicMirror": False, "packages": [] }
+                json.dump(upgrades, upgradable)
 
         return upgrades
 
@@ -562,3 +670,36 @@ class MagicMirrorDatabase:
             json.dump(ext_packages, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
 
         return True
+
+
+    @classmethod
+    def dump(cls) -> None:
+        '''
+        Pretty prints contents of database to stdout
+        Parameters:
+            None
+        Returns:
+            None
+        '''
+
+        print(
+            highlight(
+                json.dumps(MagicMirrorDatabase.packages, indent=2, default=lambda package: package.serialize()),
+                JsonLexer(),
+                formatters.TerminalFormatter()
+            )
+        )
+
+
+    @classmethod
+    def install(cls, packages: List[MagicMirrorPackage] = None, mmpm_module: bool = False, magicmirror: bool = False, assume_yes: bool = False):
+        if packages:
+            for package in packages:
+                package.install()
+
+        elif magicmirror:
+            pass
+
+        elif mmpm_module:
+            pass
+

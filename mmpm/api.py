@@ -17,10 +17,10 @@ import mmpm.models
 import mmpm.mmpm
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.package import MagicMirrorPackage
-from mmpm.env import get_env
+from mmpm.env import MMPMEnv
 
 logger = MMPMLogger.get_logger(__name__)
-logger.setLevel(get_env(mmpm.consts.MMPM_LOG_LEVEL))
+logger.setLevel(MMPMEnv.mmpm_log_level.get())
 
 app = Flask(__name__, root_path="/var/www/mmpm", static_url_path="")
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -50,8 +50,8 @@ def __deserialize_selected_packages__(rqst, key: str = 'selected-packages') -> L
 
     pkgs: dict = rqst.get_json(force=True)[key]
 
-    MAGICMIRROR_MODULES_DIR: str = os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules')
-    default_directory = lambda title: os.path.normpath(os.path.join(MAGICMIRROR_MODULES_DIR, title))
+    modules_dir = Path(MMPMEnv.mmpm_root.get() / "modules")
+    default_directory = lambda title: str(Path(modules_dir / title))
 
     for pkg in pkgs:
         if not pkg['directory']:
@@ -274,7 +274,7 @@ def packages_upgradable() -> Response:
     logger.info('Request to get upgradable packages')
     available_upgrades: dict = mmpm.core.get_available_upgrades()
 
-    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV)))
+    MMPM_MAGICMIRROR_ROOT: str = MMPMEnv.mmpm_root.get()
 
     available_upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] = [
         pkg.serialize_full() for pkg in available_upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]
@@ -367,28 +367,28 @@ def magicmirror_config() -> Response:
     Returns:
         response (flask.Response): the file contents
     '''
-    MAGICMIRROR_CONFIG_DIR: PosixPath = Path(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV)) / 'config'
-    MAGICMIRROR_CONFIG_FILE: PosixPath = Path(MAGICMIRROR_CONFIG_DIR) / 'config.js'
+    magicmirror_config_dir: PosixPath = Path(MMPMEnv.mmpm_root.get() / "config")
+    magicmirror_config_file: PosixPath = Path(MAGICMIRROR_CONFIG_DIR) / 'config.js'
 
     if request.method == mmpm.consts.GET:
-        if not os.path.exists(MAGICMIRROR_CONFIG_FILE):
-            does_not_exist: str = f'// {MAGICMIRROR_CONFIG_FILE} not found. An empty file was created for you in its place'
+        if not os.path.exists(magicmirror_config_file):
+            does_not_exist: str = f'// {magicmirror_config_file} not found. An empty file was created for you in its place'
             try:
-                MAGICMIRROR_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-                MAGICMIRROR_CONFIG_FILE.touch(mode=0o664, exist_ok=True)
+                magicmirror_config_dir.mkdir(parents=True, exist_ok=True)
+                magicmirror_config_file.touch(mode=0o664, exist_ok=True)
                 return Response(does_not_exist)
             except OSError:
                 return Response(does_not_exist)
 
         logger.info('Retrieving MagicMirror config')
 
-        return send_file(MAGICMIRROR_CONFIG_FILE, 'config.js')
+        return send_file(magicmirror_config_file, 'config.js')
 
     data: dict = request.get_json(force=True)
     logger.info('Saving MagicMirror config file')
 
     try:
-        with open(MAGICMIRROR_CONFIG_FILE, mode='w', encoding="utf-8") as config:
+        with open(magicmirror_config_file, mode='w', encoding="utf-8") as config:
             config.write(data.get('code'))
     except IOError:
         return Response(json.dumps(False))
@@ -407,7 +407,7 @@ def magicmirror_custom_css() -> Response:
     Returns:
         response (flask.Response): the file contents
     '''
-    MAGICMIRROR_CSS_DIR: PosixPath = Path(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV)) / 'css'
+    MAGICMIRROR_CSS_DIR: PosixPath = Path(MMPMEnv.mmpm_root.get() / "css")
     MAGICMIRROR_CUSTOM_CSS_FILE: PosixPath = Path(MAGICMIRROR_CSS_DIR) / 'custom.css'
 
     if request.method == mmpm.consts.GET:

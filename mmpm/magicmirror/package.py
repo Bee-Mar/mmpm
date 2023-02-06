@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
+import os
+from pathlib import Path, PosixPath
 from re import sub
 from bs4 import Tag, NavigableString
 from typing import List
 from mmpm.logger import MMPMLogger
 import mmpm.consts
 import mmpm.utils
+from mmpm.env import MMPMEnv
 from textwrap import fill, indent
 
 NA: str = mmpm.consts.NOT_AVAILABLE
@@ -35,10 +38,11 @@ class MagicMirrorPackage():
         self.author = __sanitize__(author.strip()) # NOTE: Maybe this shouldn't be here
         self.repository = repository.strip() if repository.strip().endswith(".git") else (f"{repository}.git").strip()
         self.description = description.strip()
-        self.directory = directory.strip()
+        self.directory = Path(directory.strip())
         self.category = category.strip()
         self.is_external = is_external
         self.is_installed = is_installed
+        self.is_upgradable = False
 
     def __str__(self) -> str:
         return str(self.__dict__)
@@ -101,6 +105,20 @@ class MagicMirrorPackage():
             print(f"  {self.description[:120] + '...' if len(self.description) > 120 else self.description}\n")
 
 
+    def __dict__(self) -> dict:
+        return {
+            "title": self.title,
+            "author": self.author,
+            "category": self.category,
+            "repository": self.repository,
+            "description": self.description,
+            "directory": str(self.directory),
+            "is_installed": self.is_installed,
+            "is_external": self.is_external,
+            "is_upgradable": self.is_upgradable,
+        }
+
+
     def serialize(self) -> dict:
         '''
         An even more obvious method used for getting the JSON-friendly serialized version of the object.
@@ -111,18 +129,49 @@ class MagicMirrorPackage():
         Returns:
             serialized (dict): a dict containing title, author, repository, and description fields
         '''
+        return {
+            "title": self.title,
+            "author": self.author,
+            "category": self.category,
+            "repository": self.repository,
+            "description": self.description,
+        }
 
-        return self.__dict__
 
-    def install() -> str:
+    def install(self) -> str:
         # TODO: update the database file to have the package marked as installed
         pass
 
-    def uninstall() -> bool:
+    def uninstall(self) -> bool:
         # TODO: update the database file to have the package marked as not installed
         pass
 
-    def upgrade() -> bool:
+
+    def update(self) -> None:
+        modules_dir: PosixPath = Path(MMPMEnv.mmpm_root.get()) / "modules"
+
+        if not modules_dir.exists():
+            logger.msg.env_variables_fatal(f"'{str(modules_dir)}' does not exist.")
+            self.is_upgradable = False
+            return
+
+        os.chdir(self.directory)
+
+        try:
+            error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
+
+        except KeyboardInterrupt:
+            print(mmpm.consts.RED_X)
+            mmpm.utils.keyboard_interrupt_log()
+
+        if error_code:
+            print(mmpm.consts.RED_X)
+            logger.msg.error('Unable to communicate with git server')
+
+        self.is_upgradable = bool(stdout)
+
+
+    def upgrade(self) -> bool:
         '''
         Checks for available package updates, and alerts the user. Or, pulls latest
         version of module(s) from the associated repos.
@@ -137,7 +186,7 @@ class MagicMirrorPackage():
         Returns:
             stderr (str): the resulting error message of the upgrade. If the message is zero length, it was successful
         '''
-        modules_dir: str = os.path.normpath(os.path.join(get_env(mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV), 'modules'))
+        modules_dir: PosixPath = Path(MMPMEnv.mmpm_root.get() / "modules")
         self.directory = os.path.join(modules_dir, self.title)
 
         os.chdir(self.directory)

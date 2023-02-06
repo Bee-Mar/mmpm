@@ -55,7 +55,7 @@ def get_user_args() -> object:
     # SEARCH PARSER
     search_parser = subparsers.add_parser(
         SEARCH,
-        usage='\n  mmpm search <query> [--case-sensitive] [--exclude-local]',
+        usage='\n  mmpm search <query> [--case-sensitive] [--exclude-installed]',
         help='search for MagicMirror packages'
     )
 
@@ -79,8 +79,8 @@ def get_user_args() -> object:
         '-e',
         '--exclude-local',
         action='store_true',
-        help='exclude locally installed packages from search results',
-        dest='exclude_local'
+        help='exclude installed packages from search results',
+        dest='exclude_installed'
     )
 
     # INSTALL PARSER
@@ -196,6 +196,13 @@ def get_user_args() -> object:
         action='store_true',
         help='display details about the most recent MagicMirror packages database',
         dest='details'
+    )
+
+    database_parser.add_argument(
+        '--dump',
+        action='store_true',
+        help='dump the database JSON contents to stdout',
+        dest='dump'
     )
 
    # LIST SUBCOMMANDS
@@ -434,7 +441,7 @@ def get_user_args() -> object:
     # MM_CTL SUBCOMMANDS
     mm_ctl_parser = subparsers.add_parser(
         MM_CTL,
-        usage='\n  mmpm mm-ctl [--status] [--restart] [--start] [--stop]\n  mmpm mm-ctl [--rotate] {0, 90, 180, 270}\n  mmpm mm-ctl [--hide] [--show] <key(s)>',
+        usage='\n  mmpm mm-ctl [status] [restart] [start] [--stop]\n  mmpm mm-ctl [--rotate] {0, 90, 180, 270}\n  mmpm mm-ctl [--hide] [--show] <key(s)>',
         help='commands to control the MagicMirror'
     )
 
@@ -478,14 +485,6 @@ def get_user_args() -> object:
         action='store_true',
         help='restart MagicMirror; works with pm2 and docker-compose',
         dest='restart'
-    )
-
-    mm_ctl_parser.add_argument(
-        '--rotate',
-        choices=[0, 90, 180, 270],
-        type=int,
-        help='rotate MagicMirror screen to 0, 90, 180, or 270 degrees',
-        dest='rotate'
     )
 
     # ENV SUBCOMMANDS

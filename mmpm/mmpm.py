@@ -24,7 +24,7 @@ __version__ = 3.0
 logger = MMPMLogger.get_logger(__name__)
 logger.setLevel(MMPMEnv.mmpm_log_level.get())
 
-def main(argv):
+def main():
     ''' Main entry point for CLI '''
 
     parser = mmpm.opts.get_user_args()
@@ -59,11 +59,10 @@ def main(argv):
                 if package.is_installed:
                     package.display(title_only=args.title_only, show_path=True)
 
-        elif args.all or args.exclude_local:
+        elif args.all or args.exclude_installed:
             for package in MagicMirrorDatabase.packages:
-                package.display(title_only=args.title_only)
+                package.display(title_only=args.title_only, exclude_installed=args.exclude_installed)
 
-            #MagicMirrorDatabase.display_packages(title_only=args.title_only, exclude_local=args.exclude_local)
         elif args.categories:
             MagicMirrorDatabase.display_categories(title_only=args.title_only)
         elif args.gui_url:
@@ -154,8 +153,11 @@ def main(argv):
             for name in additional_args: # TODO: FIXME
                 packages += MagicMirrorDatabase.search(name)
 
-            MagicMirrorDatabase.install(packages=packages, assume_yes=args.assume_yes)
-            #mmpm.core.install_packages(installation_candidates, assume_yes=args.assume_yes)
+            for package in packages:
+                package.install(assume_yes=args.assume_yes)
+
+            #MagicMirrorDatabase.install(packages=packages, assume_yes=args.assume_yes)
+            #mmpm.core.install_packages(installation_candidates, assume_yes=args.assume_yes) # TODO: FIXME
 
     elif args.subcmd == mmpm.opts.REMOVE:
         if args.gui:
@@ -164,16 +166,10 @@ def main(argv):
         elif not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
-        installed_packages = MagicMirrorDatabase.get_installed_packages()
+        for arg in additional_args:
+            for package in MagicMirrorDatabase.search(arg):
+                package.remove(assume_yes=args.assume_yes)
 
-        if not installed_packages:
-            mmpm.utils.fatal_msg("No packages are currently installed")
-
-        mmpm.core.remove_packages(
-            installed_packages,
-            [mmpm.utils.sanitize_name(package) for package in additional_args],
-            assume_yes=args.assume_yes
-        )
 
     elif args.subcmd == mmpm.opts.SEARCH:
         if not additional_args:
@@ -242,11 +238,3 @@ def main(argv):
         mmpm.utils.error_msg('Unknown argument\n')
         parser.print_help()
 
-
-if __name__ == "__main__":
-    try:
-        main(sys.argv)
-    except KeyboardInterrupt:
-        print()
-        logger.info('User killed process with keyboard interrupt')
-        sys.exit(127)

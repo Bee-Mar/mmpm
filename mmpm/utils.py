@@ -504,6 +504,7 @@ def kill_magicmirror_processes() -> None:
         logger.info(f'Killed pids of process {process}')
 
 
+# TODO: remove the assume_yes
 def prompt_user(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: List[str] = ['no', 'n'], assume_yes: bool = False) -> bool:
     '''
     Prompts user with the `user_prompt` until a response matches a value in the

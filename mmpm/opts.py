@@ -77,7 +77,7 @@ def get_user_args() -> object:
 
     search_parser.add_argument(
         '-e',
-        '--exclude-local',
+        '--exclude-installed',
         action='store_true',
         help='exclude installed packages from search results',
         dest='exclude_installed'
@@ -222,10 +222,10 @@ def get_user_args() -> object:
 
     list_parser.add_argument(
         '-e',
-        '--exclude-local',
+        '--exclude-installed',
         action='store_true',
         help='list all available packages in the marketplace, excluding locally installed packages',
-        dest='exclude_local'
+        dest='exclude_installed'
     )
 
     list_parser.add_argument(

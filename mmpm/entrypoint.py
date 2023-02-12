@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
-import sys
-from colorama import init
-from mmpm.mmpm import main as _main_
+from mmpm.mmpm import main
 
-
-def main(args=None):
-    if args is None:
-        args = sys.argv
-
-    init()
-    _main_(args)
-
+logger = MMPMLogger.get_logger(__name__)
+logger.setLevel(MMPMEnv.mmpm_log_level.get())
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        logger.info('User killed process with keyboard interrupt')
+        sys.exit(127)

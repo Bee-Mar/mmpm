@@ -14,7 +14,7 @@ class StdOutMessageWriter:
     def __init__(self):
         pass
 
-    def plain_print(self, msg: str) -> None:
+    def info(self, msg: str) -> None:
         '''
         Prints message 'msg' without a new line
 
@@ -199,7 +199,7 @@ class MMPMLogger():
         today = datetime.datetime.now()
 
         zip_file_name: str = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
-        MMPMLogger.__logger__.msg.plain_print(f'{mmpm.consts.GREEN_PLUS} Compressing MMPM log files to {os.getcwd()}/{zip_file_name}.zip ')
+        MMPMLogger.__logger__.msg.info(f'{mmpm.consts.GREEN_PLUS} Compressing MMPM log files to {os.getcwd()}/{zip_file_name}.zip ')
 
         try:
             shutil.make_archive(zip_file_name, 'zip', mmpm.consts.MMPM_LOG_DIR)

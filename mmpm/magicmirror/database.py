@@ -308,7 +308,6 @@ class MagicMirrorDatabase:
             )
 
             MagicMirrorDatabase.download()
-            MagicMirrorDatabase.__scrape_installed_packages__()
 
             if not MagicMirrorDatabase.packages:
                 print(mmpm.consts.RED_X)
@@ -333,6 +332,7 @@ class MagicMirrorDatabase:
 
                 print(mmpm.consts.GREEN_CHECK_MARK)
 
+
         if not MagicMirrorDatabase.packages and db_exists:
             MagicMirrorDatabase.packages = []
 
@@ -343,6 +343,8 @@ class MagicMirrorDatabase:
                     MagicMirrorDatabase.packages.append(MagicMirrorPackage(**package))
 
         MagicMirrorDatabase.categories = set([package.category for package in MagicMirrorDatabase.packages])
+
+        MagicMirrorDatabase.__discover_installed_packages__()
 
         # TODO: FIXME
         #if MagicMirrorDatabase.packages and os.path.exists(ext_pkgs_file) and bool(os.stat(ext_pkgs_file).st_size):
@@ -380,7 +382,7 @@ class MagicMirrorDatabase:
 
 
     @classmethod
-    def __scrape_installed_packages__(cls) -> None:
+    def __discover_installed_packages__(cls) -> None:
         '''
         Scans the list <MMPM_MAGICMIRROR_ROOT>/modules directory, and compares
         against the known packages from the MagicMirror 3rd Party Wiki. Returns a
@@ -395,10 +397,6 @@ class MagicMirrorDatabase:
 
         modules_dir: PosixPath = Path(MMPMEnv.mmpm_root.get()) / 'modules'
         package_directories: List[PosixPath] = [directory for directory in modules_dir.iterdir()]
-
-        for known in MagicMirrorDatabase.packages:
-            if known.author == "Bee-Mar":
-                print(known)
 
         if not package_directories:
             mmpm.utils.env_variables_error_msg('Failed to find MagicMirror root directory.')
@@ -443,14 +441,12 @@ class MagicMirrorDatabase:
             finally:
                 os.chdir(modules_dir)
 
-        for known in MagicMirrorDatabase.packages:
+        for index, package in enumerate(MagicMirrorDatabase.packages):
             for found in packages_found:
-                if known == found:
-                    known.directory = found.directory
-                    known.is_installed = True
-                    packages_found.remove(found)
+                if package == found:
+                    MagicMirrorDatabase.packages[index].directory = found.directory
+                    MagicMirrorDatabase.packages[index].is_installed = True
                     break
-
 
     @classmethod
     def display_categories(cls, title_only: bool = False) -> None:
@@ -686,7 +682,7 @@ class MagicMirrorDatabase:
             highlight(
                 json.dumps(MagicMirrorDatabase.packages, indent=2, default=lambda package: package.serialize()),
                 JsonLexer(),
-                formatters.TerminalFormatter()
+                formatters.TerminalFormatter(),
             )
         )
 

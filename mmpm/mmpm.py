@@ -6,6 +6,7 @@ monkey.patch_all() # do not move these
 
 import sys
 import os
+import webbrowser
 import mmpm.utils
 import mmpm.core
 import mmpm.opts
@@ -15,7 +16,7 @@ from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.controller import MagicMirrorController
 from mmpm.gui import MMPMGui
 from mmpm.logger import MMPMLogger
-from mmpm.models import MagicMirrorPackage
+from mmpm.magicmirror.package import RemotePackage
 from mmpm.env import MMPMEnv
 
 
@@ -68,7 +69,7 @@ def main():
         elif args.gui_url:
             print(MMPMGui.get_uri())
         elif args.upgradable:
-            MagicMirrorDatabase.display_available_upgrades()
+            MagicMirrorDatabase.display_upgradable()
         else:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
@@ -77,7 +78,7 @@ def main():
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
         if args.remote:
-            health: dict = mmpm.utils.get_remote_repo_api_health() # TODO: FIXME
+            health: dict = RemotePackage.health()
 
             for status in health.values():
                 if status[mmpm.consts.ERROR]:
@@ -90,24 +91,22 @@ def main():
                 package.display(remote=args.remote, detailed=True)
 
     elif args.subcmd == mmpm.opts.OPEN:
-        import webbrowser
-
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd) # TODO: FIXME
         elif args.config:
-            mmpm.utils.open_default_editor(str(Path(MMPMEnv.mmpm_root.get() / "config" / "config.js"))) # TODO: FIXME
+            mmpm.utils.open_default_editor(str(Path(MMPMEnv.mmpm_magicmirror_root.get() / "config" / "config.js"))) # TODO: FIXME
         elif args.custom_css:
-            mmpm.utils.open_default_editor(str(Path(MMPMEnv.mmpm_root / "css" / "custom.css"))) # TODO: FIXME
+            mmpm.utils.open_default_editor(str(Path(MMPMEnv.mmpm_magicmirror_root.get() / "css" / "custom.css"))) # TODO: FIXME
         elif args.magicmirror:
-            webbrowser.open(MMPMEnv.mmpm_magicmirror_uri.get())
+            mmpm.utils.run_cmd(['xdg-open', MMPMEnv.mmpm_magicmirror_uri.get()], background=True) # TODO: move these into a class?
         elif args.gui:
-            webbrowser.open(mmpm.core.get_web_interface_url())
+            mmpm.utils.run_cmd(['xdg-open', MMPMGui.get_uri()], background=True)
         elif args.mm_wiki:
-            webbrowser.open(mmpm.consts.MAGICMIRROR_WIKI_URL)
+            mmpm.utils.run_cmd(['xdg-open', mmpm.consts.MAGICMIRROR_WIKI_URL], background=True)
         elif args.mm_docs:
-            webbrowser.open(mmpm.consts.MAGICMIRROR_DOCUMENTATION_URL)
+            mmpm.utils.run_cmd(['xdg-open', mmpm.consts.MAGICMIRROR_DOCUMENTATION_URL], background=True)
         elif args.mmpm_wiki:
-            webbrowser.open(mmpm.consts.MMPM_WIKI_URL)
+            mmpm.utils.run_cmd(['xdg-open', mmpm.consts.MMPM_WIKI_URL], background=True)
         elif args.mmpm_env:
             mmpm.utils.open_default_editor(mmpm.consts.MMPM_ENV_FILE) # TODO: FIXME
         else:
@@ -115,6 +114,7 @@ def main():
 
     elif args.subcmd == mmpm.opts.ADD_EXT_PKG:
         if args.remove:
+            # TODO: FIXME
             MagicMirrorDatabase.remove_external_package_source(
                 [mmpm.utils.sanitize_name(package) for package in args.remove],
                 assume_yes=args.assume_yes
@@ -126,7 +126,7 @@ def main():
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
 
-        total = MagicMirrorDatabase.update()
+        total: int = MagicMirrorDatabase.update()
 
         if not total:
             print('All packages are up to date')
@@ -142,18 +142,18 @@ def main():
         elif args.as_module:
             mmpm.core.install_mmpm_as_magicmirror_module()
         elif args.magicmirror:
-            mmpm.core.install_magicmirror()
+            MagicMirrorController.install()
         elif args.autocomplete:
             mmpm.core.install_autocompletion(assume_yes=args.assume_yes)
         elif not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
         else:
-            packages = []
+            results = []
 
-            for name in additional_args: # TODO: FIXME
-                packages += MagicMirrorDatabase.search(name)
+            for name in additional_args:
+                results += MagicMirrorDatabase.search(name)
 
-            for package in packages:
+            for package in results:
                 package.install(assume_yes=args.assume_yes)
 
             #MagicMirrorDatabase.install(packages=packages, assume_yes=args.assume_yes)
@@ -161,7 +161,10 @@ def main():
 
     elif args.subcmd == mmpm.opts.REMOVE:
         if args.gui:
-            MMPMGui.remove_mmpm_gui()
+            MMPMGui.remove()
+
+        if args.magicmirror:
+            MagicMirrorController.remove()
 
         elif not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
@@ -169,7 +172,6 @@ def main():
         for arg in additional_args:
             for package in MagicMirrorDatabase.search(arg):
                 package.remove(assume_yes=args.assume_yes)
-
 
     elif args.subcmd == mmpm.opts.SEARCH:
         if not additional_args:
@@ -179,7 +181,6 @@ def main():
             mmpm.utils.fatal_msg(f'Too many arguments. `mmpm {args.subcmd}` only accepts one search argument')
         else:
             query_result = MagicMirrorDatabase.search(additional_args[0], case_sensitive=args.case_sensitive, exclude_installed=args.exclude_installed)
-            query_result.display(title_only=args.title_only)
 
             for package in query_result:
                 package.display(title_only=args.title_only)
@@ -195,7 +196,7 @@ def main():
             MagicMirrorController.show_modules(args.show)
         elif args.start or args.stop or args.restart or args.rotate != None:
             if MMPMEnv.mmpm_is_docker_image.get():
-                mmpm.utils.fatal_msg('Cannot execute this command within a docker image')
+                logger.msg.fatal('Cannot execute this command within a docker image')
             elif args.start:
                 MagicMirrorController.start()
             elif args.stop:
@@ -221,20 +222,19 @@ def main():
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.zip:
-            MMPMLogger.zip_mmpm_log_files()
+            MMPMLogger.zip()
         elif not args.cli and not args.gui:
             # if the user doesn't provide arguments, just display everything, but consider the --tail arg
-            MMPMLogger.display_log_files(True, True, args.tail)
+            MMPMLogger.display(True, True, args.tail)
         else:
-            MMPMLogger.display_log_files(args.cli, args.gui, args.tail)
+            MMPMLogger.display(args.cli, args.gui, args.tail)
 
     elif args.subcmd == mmpm.opts.ENV:
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         else:
-            mmpm.core.display_mmpm_env_vars()
+            MMPMEnv.display()
 
     else:
-        mmpm.utils.error_msg('Unknown argument\n')
         parser.print_help()
 

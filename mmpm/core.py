@@ -1152,29 +1152,6 @@ def display_log_files(cli_logs: bool = False, gui_logs: bool = False, tail: bool
         os.system(f"{'tail -F' if tail else 'cat'} {' '.join(logs)}")
 
 
-def display_mmpm_env_vars() -> None:
-    '''
-    Displays the environment variables associated with MMPM, as well as their
-    current value. A user may modify these values by setting them in their
-    shell configuration file
-
-    Parameters:
-        None
-
-    Returns:
-        None
-    '''
-
-    logger.info('User listing environment variables, set with the following values')
-
-    from pygments import highlight, formatters
-    from pygments.lexers.data import JsonLexer
-
-    with open(mmpm.consts.MMPM_ENV_FILE, 'r', encoding="utf-8") as env:
-        print(highlight(json.dumps(json.load(env), indent=2), JsonLexer(), formatters.TerminalFormatter()))
-
-    print('Run `mmpm open --env` to edit the variable values')
-
 
 def install_autocompletion(assume_yes: bool = False) -> None:
     '''

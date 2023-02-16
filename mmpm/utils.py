@@ -179,11 +179,12 @@ def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, s
 
     logger.info(f'Executing process `{" ".join(command)}` in foreground')
 
-    with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as process:
-        if background:
-            logger.info(f'Executing process `{" ".join(command)}` in background')
-            return process.returncode, str(), str()
+    if background:
+        logger.info(f'Executing process `{" ".join(command)}` in background')
+        subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        return
 
+    with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as process:
         symbols = ['\u25DC', '\u25DD', '\u25DE', '\u25DF']
 
         if progress:
@@ -205,20 +206,6 @@ def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, s
         stdout, stderr = process.communicate()
 
         return process.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
-
-
-def sanitize_name(orig_name: str) -> str:
-    '''
-    Sanitizes a file- or foldername in that it removes bad characters.
-
-    Parameters:
-        orig_name (str): A file- or foldername with potential bad characters
-
-    Returns:
-        a cleaned version of the file- or foldername
-    '''
-    from re import sub
-    return sub('[//]', '', orig_name)
 
 
 def open_default_editor(path_to_file: str) -> Optional[None]:
@@ -250,113 +237,6 @@ def open_default_editor(path_to_file: str) -> Optional[None]:
     os.system(f'{editor} {path_to_file}') if not error_code else os.system(f'edit {path_to_file}')
 
 
-def clone(title: str, repo: str, target_dir: str = '') -> Tuple[int, str, str]:
-    '''
-    Wrapper method to clone a repository with logging information included
-
-    Parameters:
-        title (str): The title of the repository
-        repo (str): The url of the repository
-        target_dir (str): The target_dir of the repository (Optional)
-
-    Returns:
-        Tuple[returncode (int), stdout (str), stderr (str)]: Return code, stdout, and stderr of the process
-    '''
-    logger.info(f'Cloning {repo} into {target_dir if target_dir else os.path.join(os.getcwd(), title)}')
-    plain_print(f"{mmpm.consts.GREEN_DASHES} Cloning repository")
-
-    # by using "repo.split()", it allows the user to bake in additional commands when making custom sources
-    # ie. git clone [repo] -b [branch] [target]
-    command = ['git', 'clone'] + repo.split()
-
-    if target_dir:
-        command += [target_dir]
-
-    return run_cmd(command)
-
-
-def package_requirements_file_exists(file_name: str) -> bool:
-    '''
-    Case-insensitive search for existing package specification file in current directory
-
-    Parameters:
-        file_name (str): The name of the file to search for
-
-    Returns:
-        bool: True if the file exists, False if not
-    '''
-    for name in [file_name, file_name.lower(), file_name.upper()]:
-        if os.path.isfile(os.path.join(os.getcwd(), name)):
-            return True
-    return False
-
-
-def cmake() -> Tuple[int, str, str]:
-    ''' Used to run make from a directory known to have a CMakeLists.txt file
-
-    Parameters:
-        None
-
-    Returns:
-        Tuple[error_code (int), stdout (str), error_message (str)]
-
-    '''
-    logger.info(f"Running 'cmake ..' in {os.getcwd()}")
-    plain_print(f"{mmpm.consts.GREEN_DASHES} Found CMakeLists.txt. Building with `cmake`")
-
-    os.system('mkdir -p build')
-    os.chdir('build')
-    os.system('rm -rf *')
-    return run_cmd(['cmake', '..'])
-
-
-def make() -> Tuple[int, str, str]:
-    '''
-    Used to run make from a directory known to have a Makefile
-
-    Parameters:
-        None
-
-    Returns:
-        Tuple[error_code (int), stdout (str), error_message (str)]
-    '''
-    from multiprocessing import cpu_count
-
-    logger.info(f"Running 'make -j {cpu_count()}' in {os.getcwd()}")
-    plain_print(f"{mmpm.consts.GREEN_DASHES} Found Makefile. Running `make -j {cpu_count()}`")
-    return run_cmd(['make', '-j', f'{cpu_count()}'])
-
-
-def npm_install() -> Tuple[int, str, str]:
-    '''
-    Used to run npm install from a directory known to have a package.json file
-
-    Parameters:
-        None
-
-    Returns:
-        Tuple[error_code (int), stdout (str), error_message (str)]
-    '''
-    logger.info(f"Running 'npm install' in {os.getcwd()}")
-    plain_print(f"{mmpm.consts.GREEN_DASHES} Found package.json. Running `npm install`")
-    return run_cmd(['npm', 'install'])
-
-
-def bundle_install() -> Tuple[int, str, str]:
-    '''
-    Used to run npm install from a directory known to have a package.json file
-
-    Parameters:
-        None
-
-    Returns:
-        Tuple[error_code (int), stdout (str), error_message (str)]
-    '''
-    logger.info(f"Running 'bundle install' in {os.getcwd()}")
-    plain_print(f"{mmpm.consts.GREEN_DASHES} Found Gemfile. Running `bundle install`")
-    return run_cmd(['bundle', 'install'])
-
-
 def basic_fail_log(error_code: int, error_message: str) -> None:
     '''
     Wrapper method for simple failure logging
@@ -369,81 +249,6 @@ def basic_fail_log(error_code: int, error_message: str) -> None:
         None
     '''
     logger.info(f'Failed with return code {error_code}, and error message {error_message}')
-
-
-def install_dependencies(directory: str) -> str:
-    '''
-    Utility method that detects package.json, Gemfiles, Makefiles, and
-    CMakeLists.txt files, and handles the build process for each of the
-    previously mentioned files. If the install is successful, an empty string
-    is returned. The installation process relies on the location of the current
-    directory the os library detects.
-
-    Parameters:
-        directory (str): the root directory of the package
-
-    Returns:
-        stderr (str): success if the string is empty, fail if not
-    '''
-
-    os.chdir(directory)
-
-    if package_requirements_file_exists(mmpm.consts.PACKAGE_JSON):
-        error_code, _, stderr = npm_install()
-
-        if error_code:
-            print(mmpm.consts.RED_X)
-            basic_fail_log(error_code, stderr)
-            return str(stderr)
-        else:
-            print(mmpm.consts.GREEN_CHECK_MARK)
-
-    if package_requirements_file_exists(mmpm.consts.GEMFILE):
-        error_code, _, stderr = bundle_install()
-
-        if error_code:
-            print(mmpm.consts.RED_X)
-            basic_fail_log(error_code, stderr)
-            return str(stderr)
-        else:
-            print(mmpm.consts.GREEN_CHECK_MARK)
-
-    if package_requirements_file_exists(mmpm.consts.MAKEFILE):
-        error_code, _, stderr = make()
-
-        if error_code:
-            print(mmpm.consts.RED_X)
-            basic_fail_log(error_code, stderr)
-            return str(stderr)
-        else:
-            print(mmpm.consts.GREEN_CHECK_MARK)
-
-
-    if package_requirements_file_exists(mmpm.consts.CMAKELISTS):
-        error_code, _, stderr = cmake()
-
-        if error_code:
-            print(mmpm.consts.RED_X)
-            basic_fail_log(error_code, stderr)
-            return str(stderr)
-        else:
-            print(mmpm.consts.GREEN_CHECK_MARK)
-
-        if package_requirements_file_exists(mmpm.consts.MAKEFILE):
-            error_code, _, stderr = make()
-
-            if error_code:
-                print(mmpm.consts.RED_X)
-                basic_fail_log(error_code, stderr)
-                print()
-                return str(stderr)
-            else:
-                print(mmpm.consts.GREEN_CHECK_MARK)
-
-    os.chdir(directory)
-    print(f'{mmpm.consts.GREEN_DASHES} Installation complete ' + mmpm.consts.GREEN_CHECK_MARK)
-    logger.info(f'Exiting installation handler from {os.getcwd()}')
-    return ''
 
 
 def get_pids(process_name: str) -> List[str]:
@@ -483,25 +288,6 @@ def kill_pids_of_process(process: str) -> None:
     os.system(f'for process in $(pgrep {process}); do kill -9 $process; done')
     print(f'{mmpm.consts.GREEN_CHECK_MARK}')
 
-
-def kill_magicmirror_processes() -> None:
-    '''
-    Kills all processes commonly related to MagicMirror
-
-    Parameters:
-        None
-
-    Returns:
-        None
-    '''
-
-    processes = ['electron']
-
-    logger.info(f'Killing processes associated with MagicMirror: {processes}')
-
-    for process in processes:
-        kill_pids_of_process(process)
-        logger.info(f'Killed pids of process {process}')
 
 
 # TODO: remove the assume_yes
@@ -642,37 +428,6 @@ def list_of_dict_to_list_of_magicmirror_packages(list_of_dict: List[dict]) -> Li
     return [MagicMirrorPackage(**pkg) for pkg in list_of_dict]
 
 
-def get_difference_of_packages(original: Dict[str, List[MagicMirrorPackage]], exclude: Dict[str, List[MagicMirrorPackage]]) -> Dict[str, List[MagicMirrorPackage]]:
-    '''
-    Calculates the difference between two dictionaries of MagicMirrorPackages.
-    The result returned is the 'original' minus 'exclude'
-
-    Parameters:
-        original (Dict[str, List[MagicMirrorPackage]]): the full dictionary of packages
-        exclude (Dict[str, List[MagicMirrorPackage]]): the dictionary of packges to be removed
-
-    Returns:
-        difference (Dict[str, List[MagicMirrorPackage]]]): the reduced set of packages
-    '''
-
-    if not exclude:
-        return original
-
-    from collections import defaultdict
-    difference: Dict[str, List[MagicMirrorPackage]] = defaultdict(list)
-
-    for category in original:
-        if not exclude[category]:
-            difference[category] = original[category]
-            continue
-
-        for orig_pkg in original[category]:
-            if orig_pkg not in exclude[category]:
-                difference[category].append(orig_pkg)
-
-    return difference
-
-
 def assert_one_option_selected(args) -> bool:
     '''
     Determines if more than one option has been selected by a user for use with a subcommand
@@ -705,183 +460,6 @@ def safe_get_request(url: str) -> requests.Response:
         return requests.Response()
     return data
 
-
-def get_remote_repo_api_health() -> Dict[str, dict]:
-    '''
-    Contacts GitHub, GitLab, and Bitbucket APIs to ensure they are up and
-    running. Also, captures the number of requests that may be made to the
-    GitHub API, which is more restrictive than GitLab and Bitbucket
-
-    Parameters:
-        None
-
-    Returns:
-        health (dict): a dictionary corresponding to each of the APIs,
-                       containing errors and/or warnings, if applicable.
-                       If no errors or warnings are present, the API is reachable
-    '''
-    health: dict = {
-        mmpm.consts.GITHUB: {
-            mmpm.consts.ERROR: '',
-            mmpm.consts.WARNING: ''
-        },
-        mmpm.consts.GITLAB: {
-            mmpm.consts.ERROR: '',
-            mmpm.consts.WARNING: ''
-        },
-        mmpm.consts.BITBUCKET:{
-            mmpm.consts.ERROR: '',
-            mmpm.consts.WARNING: ''
-        }
-    }
-
-    github_api_response: requests.Response = safe_get_request('https://api.github.com/rate_limit')
-
-    if not github_api_response.status_code or github_api_response.status_code != 200:
-        health[mmpm.consts.GITHUB][mmpm.consts.ERROR] = 'Unable to contact GitHub API'
-
-    github_api: dict = json.loads(github_api_response.text)
-    reset: int = github_api['rate']['reset']
-    remaining: int = github_api['rate']['remaining']
-
-    reset_time = datetime.datetime.utcfromtimestamp(reset).strftime('%Y-%m-%d %H:%M:%S')
-
-    if not remaining:
-        health[mmpm.consts.GITHUB][mmpm.consts.ERROR] = f'Unable to use `--verbose` option. No GitHub API requests remaining. Request count will reset at {reset_time}'
-    elif remaining < 10:
-        health[mmpm.consts.GITHUB][mmpm.consts.WARNING] = f'{remaining} GitHub API requests remaining. Request count will reset at {reset_time}'
-
-    try:
-        # GitLab doesn't have rate limits that will cause any issues with checking for repos
-        gitlab_api = requests.head('https://gitlab.com', allow_redirects=True, timeout=10)
-
-        if gitlab_api.status_code != 200:
-            health[mmpm.consts.GITLAB][mmpm.consts.ERROR] = 'GitLab server returned invalid response'
-    except requests.exceptions.RequestException:
-        health[mmpm.consts.GITLAB][mmpm.consts.ERROR] = 'Unable to communicate with GitLab server'
-
-    try:
-        # Bitbucket rate limits are similar to GitLab
-        bitbucket_api = requests.head('https://bitbucket.org', allow_redirects=True, timeout=10)
-
-        if bitbucket_api.status_code != 200:
-            health[mmpm.consts.BITBUCKET][mmpm.consts.ERROR] = 'Bitbucket server returned invalid response'
-    except requests.exceptions.RequestException:
-        health[mmpm.consts.GITLAB][mmpm.consts.ERROR] = 'Unable to communicate with Bitbucket server'
-
-    return health
-
-
-def __format_bitbucket_api_details__(data: dict, url: str) -> dict:
-    '''
-    Helper method to format remote repository data from Bitbucket
-
-    Parameters:
-        data (dict): JSON data from the API request
-        url (str): the constructed url of the API used to retrieve additional info
-
-    Returns:
-        details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
-    '''
-    stars = safe_get_request(f'{url}/watchers')
-    forks = safe_get_request(f'{url}/forks')
-    issues = safe_get_request(f'{url}/issues')
-
-    return {
-        'Stars': int(json.loads(stars.text)['pagelen']) if stars else 'N/A',
-        'Issues': int(json.loads(issues.text)['pagelen']) if issues else 'N/A',
-        'Created': data['created_on'].split('T')[0] if data else 'N/A',
-        'Last Updated': data['updated_on'].split('T')[0] if data else 'N/A',
-        'Forks': int(json.loads(forks.text)['pagelen']) if forks else 'N/A'
-    } if data and stars else {}
-
-
-def __format_gitlab_api_details__(data: dict, url: str) -> dict:
-    '''
-    Helper method to format remote repository data from GitLab
-
-    Parameters:
-        data (dict): JSON data from the API request
-        url (str): the constructed url of the API used to retrieve additional info
-
-    Returns:
-        details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
-    '''
-    issues = safe_get_request(f'{url}/issues')
-
-    return {
-        'Stars': data['star_count'] if data else 'N/A',
-        'Issues': len(json.loads(issues.text)) if issues else 'N/A',
-        'Created': data['created_at'].split('T')[0] if data else 'N/A',
-        'Last Updated': data['last_activity_at'].split('T')[0] if data else 'N/A',
-        'Forks': data['forks_count'] if data else 'N/A'
-    } if data else {}
-
-
-def __format_github_api_details__(data: dict) -> dict:
-    '''
-    Helper method to format remote repository data from GitHub
-
-    Parameters:
-        data (dict): JSON data from the API request
-
-    Returns:
-        details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
-    '''
-    return {
-        'Stars': data['stargazers_count'] if data else 'N/A',
-        'Issues': data['open_issues'] if data else 'N/A',
-        'Created': data['created_at'].split('T')[0] if data else 'N/A',
-        'Last Updated': data['updated_at'].split('T')[0] if data else 'N/A',
-        'Forks': data['forks_count'] if data else 'N/A',
-    } if data else {}
-
-
-def get_remote_package_details(package: MagicMirrorPackage) -> dict:
-    '''
-    Retrieves details about the provided MagicMirrorPackage from it's
-    repository. GitHub, GitLab, and Bitbucket projects are supported
-
-    Parameters:
-        package (MagicMirrorPackage): the packge to be queried
-
-    Returns:
-        details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
-    '''
-    spliced: List[str] = package.repository.split('/')
-    user: str = spliced[-2]
-    project: str = spliced[-1].replace('.git', '') # in case the user added .git to the end of the url
-
-    if 'github' in package.repository:
-        url = f'https://api.github.com/repos/{user}/{project}'
-        logger.info(f'Constructed {url} to request more details for {package.title}')
-        data = safe_get_request(url)
-
-        if not data:
-            logger.error(f'Unable to retrieve {package.title} details, data was empty')
-
-        return __format_github_api_details__(json.loads(data.text)) if data else {}
-
-    elif 'gitlab' in package.repository:
-        url = f'https://gitlab.com/api/v4/projects/{user}%2F{project}'
-        logger.info(f'Constructed {url} to request more details for {package.title}')
-        data = safe_get_request(url)
-
-        if not data:
-            logger.error(f'Unable to retrieve {package.title} details, data was empty')
-
-        return __format_gitlab_api_details__(json.loads(data.text), url) if data else {}
-    elif 'bitbucket' in package.repository:
-        url = f'https://api.bitbucket.org/2.0/repositories/{user}/{project}'
-        logger.info(f'Constructed {url} to request more details for {package.title}')
-        data = safe_get_request(url)
-
-        if not data:
-            logger.error(f'Unable to retrieve {package.title} details, data was empty')
-
-        return __format_bitbucket_api_details__(json.loads(data.text), url) if data else {}
-
-    return {}
 
 
 def is_magicmirror_running() -> bool:

@@ -92,7 +92,7 @@ class MagicMirrorDatabase:
         Returns:
             bool: True upon success, False upon failure
         '''
-        magicmirror_root: PosixPath = Path(MMPMEnv.mmpm_root.get())
+        magicmirror_root: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get())
 
         if not magicmirror_root.exists():
             logger.msg.error('MagicMirror application directory not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
@@ -129,36 +129,36 @@ class MagicMirrorDatabase:
 
     @classmethod
     def update(cls, automated: bool = False) -> int:
+        can_upgrade_mmpm = MagicMirrorDatabase.__update_mmpm__(automated)
+        can_upgrade_magicmirror = MagicMirrorDatabase.__update_magicmirror__()
+        can_upgrade_packages: List[MagicMirrorDatabase] = []
 
-        packages: List[MagicMirrorPackage] = []
+        cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
 
-        if packages:
-            can_upgrade_mmpm = MagicMirrorDatabase.__update_mmpm__(automated)
-            can_upgrade_magicmirror = MagicMirrorDatabase.__update_magicmirror__()
-
-            cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
-
-
-            for package in MagicMirrorDatabase.packages:
-                if package.is_installed:
-                    mmpm.utils.plain_print(f'Checking {mmpm.color.normal_green(package.title)} [{cyan_package}] for updates') # type: ignore
-                    package.update()
-                    print(mmpm.consts.GREEN_CHECK_MARK)
+        for package in MagicMirrorDatabase.packages:
+            if package.is_installed:
+                mmpm.utils.plain_print(f'Checking {mmpm.color.normal_green(package.title)} [{cyan_package}] for updates') # type: ignore
+                package.update()
 
                 if package.is_upgradable:
-                    upgradable.append(package)
+                    can_upgrade_packages.append(package)
 
-        with open(paths.MMPM_upgradable_FILE, "w", encoding="utf-8") as upgrade_file:
+                print(mmpm.consts.GREEN_CHECK_MARK)
+
+            if package.is_upgradable:
+                upgradable.append(package)
+
+        with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, "w", encoding="utf-8") as upgrade_file:
             json.dump(
                 {
                     "mmpm": can_upgrade_mmpm,
                     "MagicMirror": can_upgrade_magicmirror,
-                    "packages": [package.serialize() for package in packages],
+                    "packages": [package.serialize() for package in can_upgrade_packages],
                 },
                 upgrade_file
             )
 
-        return int(can_upgrade_mmpm) + int(can_upgrade_magicmirror) + len(packages)
+        return int(can_upgrade_mmpm) + int(can_upgrade_magicmirror) + len(can_upgrade_packages)
 
 
     @classmethod
@@ -179,6 +179,7 @@ class MagicMirrorDatabase:
         print(mmpm.color.normal_green('Next scheduled update:'), f'{str(MagicMirrorDatabase.expiration_date.replace(microsecond=0))}')
         print(mmpm.color.normal_green('Categories:'), f'{len(MagicMirrorDatabase.categories)}')
         print(mmpm.color.normal_green('Packages:'), f'{len(MagicMirrorDatabase.packages) - 1}')
+
 
     @classmethod
     def download(cls):
@@ -395,7 +396,12 @@ class MagicMirrorDatabase:
             installed_modules (Dict[str, List[MagicMirrorPackage]]): Dictionary of installed MagicMirror packages
         '''
 
-        modules_dir: PosixPath = Path(MMPMEnv.mmpm_root.get()) / 'modules'
+        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / 'modules'
+
+        if not modules_dir.exists():
+            logger.warning(f"{modules_dir} does not exist")
+            return
+
         package_directories: List[PosixPath] = [directory for directory in modules_dir.iterdir()]
 
         if not package_directories:
@@ -476,7 +482,6 @@ class MagicMirrorDatabase:
             for category, package_count in groups.items():
                 print(mmpm.color.normal_green(category), f'\n  Packages: {package_count}\n')
 
-
     @classmethod
     def display_upgradable(cls) -> None:
         '''
@@ -493,7 +498,7 @@ class MagicMirrorDatabase:
             None
         '''
 
-        mmpm_magicmirror_root: str = MMPMEnv.mmpm_root.get()
+        mmpm_magicmirror_root: str = MMPMEnv.mmpm_magicmirror_root.get()
 
         cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
         cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
@@ -505,7 +510,7 @@ class MagicMirrorDatabase:
             upgrades_available = True
 
         for package in upgradable["packages"]:
-            print(mmpm.color.normal_green(package.title), f'[{cyan_package}]')
+            print(mmpm.color.normal_green(MagicMirrorPackage(**package).title), f'[{cyan_package}]')
 
         if upgradable["mmpm"]:
             print(f'{mmpm.color.normal_green(mmpm.consts.MMPM)} [{cyan_application}]')
@@ -534,15 +539,15 @@ class MagicMirrorDatabase:
         '''
         reset_file: bool = False
 
-        with open(paths.MMPM_upgradable_FILE, 'r', encoding="utf-8") as upgradable:
+        with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, 'r', encoding="utf-8") as upgradable:
             try:
                 upgrades: dict = json.load(upgradable)
             except json.JSONDecodeError:
-                logger.warning(f"Encountered error when reading from {paths.MMPM_upgradable_FILE}. Resetting file.")
+                logger.warning(f"Encountered error when reading from {paths.MMPM_AVAILABLE_UPGRADES_FILE}. Resetting file.")
                 reset_file = True
 
         if reset_file:
-            with open(paths.MMPM_upgradable_FILE, 'w', encoding="utf-8") as upgradable:
+            with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, 'w', encoding="utf-8") as upgradable:
                 upgrades = {"mmpm": False, "MagicMirror": False, "packages": [] }
                 json.dump(upgrades, upgradable)
 

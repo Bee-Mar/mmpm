@@ -148,7 +148,7 @@ class MMPMLogger():
 
 
     @classmethod
-    def display_log_files(cls, cli_logs: bool = False, gui_logs: bool = False, tail: bool = False) -> None:
+    def display(cls, cli_logs: bool = False, gui_logs: bool = False, tail: bool = False) -> None:
         '''
         Displays contents of log files to stdout. If the --tail option is supplied,
         log contents will be displayed in real-time
@@ -184,7 +184,7 @@ class MMPMLogger():
 
 
     @classmethod
-    def zip_mmpm_log_files(cls) -> None:
+    def zip(cls) -> None:
         '''
         Compresses all log files in ~/.config/mmpm/log. The NGINX log files are
         excluded due to mostly irrelevant information the user, or I would need
@@ -198,11 +198,11 @@ class MMPMLogger():
         '''
         today = datetime.datetime.now()
 
-        zip_file_name: str = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
-        MMPMLogger.__logger__.msg.info(f'{mmpm.consts.GREEN_PLUS} Compressing MMPM log files to {os.getcwd()}/{zip_file_name}.zip ')
+        file_name: str = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
+        MMPMLogger.__logger__.msg.info(f'{mmpm.consts.GREEN_PLUS} Compressing MMPM log files to {os.getcwd()}/{file_name}.zip ')
 
         try:
-            shutil.make_archive(zip_file_name, 'zip', mmpm.consts.MMPM_LOG_DIR)
+            shutil.make_archive(file_name, 'zip', mmpm.consts.MMPM_LOG_DIR)
         except Exception as error:
             print(mmpm.consts.RED_X)
             MMPMLogger.__logger__.msg.error(str(error))

@@ -136,6 +136,14 @@ def get_user_args() -> object:
     )
 
     remove_parser.add_argument(
+        '--magicmirror',
+        action='store_true',
+        default=False,
+        help='install MagicMirror, if not already installed',
+        dest='magicmirror'
+    )
+
+    remove_parser.add_argument(
         '-y',
         '--yes',
         action='store_true',

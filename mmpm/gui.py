@@ -139,8 +139,8 @@ class MMPMGui:
         known of the errors.
 
         Parameters:
-            hide_prompt (bool): used when calling the `remove_mmpm_gui` function from within the
-                                `install_mmpm_gui` function to clean up any possible conflicts
+            hide_prompt (bool): used when calling the `remove` function from within the
+                                `install` function to clean up any possible conflicts
 
         Returns:
             None

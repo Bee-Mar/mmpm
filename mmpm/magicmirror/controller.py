@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import sys
 import shutil
 import socketio
 import mmpm.consts
@@ -145,7 +146,7 @@ class MagicMirrorController:
             print(mmpm.consts.GREEN_CHECK_MARK)
             return True
 
-        os.chdir(Path(MMPMEnv.mmpm_root.get()))
+        os.chdir(Path(MMPMEnv.mmpm_magicmirror_root.get()))
         logger.info("Running 'npm start' in the background")
 
         mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} npm start ')
@@ -203,7 +204,14 @@ class MagicMirrorController:
             print(mmpm.consts.GREEN_CHECK_MARK)
             return True
 
-        mmpm.utils.kill_magicmirror_processes()
+        processes = ['electron']
+
+        logger.info(f'Killing processes associated with MagicMirror: {processes}')
+
+        for process in processes:
+            kill_pids_of_process(process)
+            logger.info(f'Killed pids of process {process}')
+
         return True
 
 
@@ -222,3 +230,74 @@ class MagicMirrorController:
         MagicMirrorController.stop()
         sleep(2)
         MagicMirrorController.start()
+
+    @classmethod
+    def install(cls):
+        '''
+        Installs MagicMirror. First checks if a MagicMirror installation can be
+        found, and if one is found, prompts user to update the MagicMirror.
+        Otherwise, searches for current version of NodeJS on the system. If one is
+        found, the MagicMirror is then installed. If an old version of NodeJS is
+        found, a newer version is installed before installing MagicMirror.
+
+        Parameters:
+            None
+
+        Returns:
+            bool: True upon succcess, False upon failure
+        '''
+        root = MMPMEnv.mmpm_magicmirror_root
+
+        root_path: PosixPath = Path(root.get())
+
+        if root_path.exists():
+            message = f"MagicMirror appears to already be installed in {root}. To install MagicMirror elsewhere, modify the {root.name} using 'mmpm open --env'"
+            logger.fatal(message)
+            logger.msg.fatal(message)
+            return
+
+        print(f'{mmpm.consts.GREEN_PLUS} Installing MagicMirror')
+
+        if mmpm.utils.prompt_user(f"Use '{root_path}' ({root.name}) as the parent directory of the new MagicMirror installation?"):
+            root_path.mkdir(parents=True, exist_ok=True)
+            os.chdir(root_path)
+        else:
+            print(f"Cancelled installation. To change the installation path of MagicMirror, modify the {root.name} using 'mmpm open --env'")
+            sys.exit(0)
+
+        for cmd in ["git", "npm"]:
+            if not shutil.which(cmd):
+                mmpm.utils.fatal_msg(f"'{cmd}' command not found. Please install '{cmd}', then re-run mmpm install --magicmirror")
+
+        print(mmpm.color.normal_cyan(f'Installing MagicMirror in {root_path}/MagicMirror ...'))
+        os.system(f"cd {root_path} && git clone https://github.com/MichMich/MagicMirror && cd MagicMirror && npm run install-mm")
+
+        print(mmpm.color.normal_green("\nRun 'mmpm mm-ctl --start' to start MagicMirror"))
+        return True
+
+    @classmethod
+    def remove(cls) -> bool:
+        root = MMPMEnv.mmpm_magicmirror_root
+        root_path: PosixPath = Path(root.get())
+
+        if not root_path.exists():
+            message = f"The {root.name} ({root_path}) does not exist. Please adjust the MMPM environment variables using 'mmpm open --env'."
+            logger.fatal(message)
+            logger.msg.fatal(message)
+            return False
+
+        print(f'{mmpm.consts.GREEN_PLUS} Installing MagicMirror')
+
+        if mmpm.utils.prompt_user(f"Are you sure you want to remove MagicMirror?"):
+            shutil.rmtree(root_path, ignore_errors=True)
+            return True
+
+        return False
+
+    @classmethod
+    def install_mmpm_module(cls):
+        pass
+
+    @classmethod
+    def remove_mmpm_module(cls):
+        pass

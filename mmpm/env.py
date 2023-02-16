@@ -5,6 +5,8 @@ from pathlib import Path, PosixPath
 from mmpm.logger import MMPMLogger
 from mmpm.consts import MMPM_DEFAULT_ENV
 from socket import gethostbyname, gethostname
+from pygments import highlight, formatters
+from pygments.lexers.data import JsonLexer
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -51,14 +53,23 @@ class EnvVar:
         return value
 
 
-# Treating this like a struct
+# Treating this basically like an enum
 class MMPMEnv:
-    mmpm_root = EnvVar("MMPM_MAGICMIRROR_ROOT", str(Path.home() / "MagicMirror"))
+    mmpm_magicmirror_root = EnvVar("MMPM_MAGICMIRROR_ROOT", str(Path.home() / "MagicMirror"))
     mmpm_magicmirror_uri = EnvVar("MMPM_MAGICMIRROR_URI", f'http://{gethostbyname(gethostname())}:8080')
     mmpm_magicmirror_pm2_process_name = EnvVar("MMPM_MAGICMIRROR_PM2_PROCESS_NAME", "")
     mmpm_magicmirror_docker_compose_file = EnvVar("MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE", "")
     mmpm_is_docker_image = EnvVar("MMPM_IS_DOCKER_IMAGE", False)
     mmpm_log_level = EnvVar("MMPM_LOG_LEVEL", "INFO")
+
+    @classmethod
+    def display(cls) -> None:
+
+        with open(mmpm.consts.MMPM_ENV_FILE, 'r', encoding="utf-8") as env:
+            print(highlight(json.dumps(json.load(env), indent=2), JsonLexer(), formatters.TerminalFormatter()))
+
+        print('Run `mmpm open --env` to edit the variable values')
+
 
 
 def get_env(key: str) -> str:

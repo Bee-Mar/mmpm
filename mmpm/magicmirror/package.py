@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 import os
+import json
 import shutil
 import mmpm.consts
 import mmpm.utils
 import mmpm.color
+import datetime
+import requests
 from mmpm.logger import MMPMLogger
 from mmpm.env import MMPMEnv
 from mmpm.utils import run_cmd
@@ -106,7 +109,7 @@ class MagicMirrorPackage():
             print(f'  Author: {self.author}')
 
             if remote:
-                for key, value in mmpm.utils.get_remote_package_details(self).items():
+                for key, value in RemotePackage(self).serialize().items():
                     print(f"  {key}: {value}")
 
             print(fill(f'  Description: {self.description}\n', width=80), '\n')
@@ -191,7 +194,7 @@ class MagicMirrorPackage():
 
 
     def update(self) -> None:
-        modules_dir: PosixPath = Path(MMPMEnv.mmpm_root.get()) / "modules"
+        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
 
         if not modules_dir.exists():
             logger.msg.env_variables_fatal(f"'{str(modules_dir)}' does not exist.")
@@ -229,7 +232,7 @@ class MagicMirrorPackage():
         Returns:
             stderr (str): the resulting error message of the upgrade. If the message is zero length, it was successful
         '''
-        modules_dir: PosixPath = Path(MMPMEnv.mmpm_root.get() / "modules")
+        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get() / "modules")
         self.directory = os.path.join(modules_dir, self.title)
 
         os.chdir(self.directory)
@@ -258,7 +261,7 @@ class MagicMirrorPackage():
     @classmethod
     def from_raw_data(cls, raw_data: List[Tag], category=NA):
         title_info = raw_data[0].contents[0].contents[0]
-        package_title: str = mmpm.utils.sanitize_name(title_info) if title_info else mmpm.consts.NOT_AVAILABLE
+        package_title: str = __sanitize__(title_info) if title_info else mmpm.consts.NOT_AVAILABLE
 
         anchor_tag = raw_data[0].find_all('a')[0]
         repo = str(anchor_tag['href']) if anchor_tag.has_attr('href') else mmpm.consts.NOT_AVAILABLE
@@ -309,7 +312,7 @@ class InstallationHandler:
             stderr (str): success if the string is empty, fail if not
         '''
 
-        modules_dir = Path(MMPMEnv.mmpm_root.get()) / "modules"
+        modules_dir = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
         os.chdir(modules_dir)
 
         old_directories: Set[str] = {str(directory) for directory in modules_dir.iterdir()}
@@ -464,3 +467,185 @@ class InstallationHandler:
         return False
 
 
+class RemotePackage:
+    def __init__(self, package: MagicMirrorPackage):
+        self.package = package
+
+    @classmethod
+    def health(cls):
+        '''
+        Contacts GitHub, GitLab, and Bitbucket APIs to ensure they are up and
+        running. Also, captures the number of requests that may be made to the
+        GitHub API, which is more restrictive than GitLab and Bitbucket
+
+        Parameters:
+            None
+
+        Returns:
+            health (dict): a dictionary corresponding to each of the APIs,
+                        containing errors and/or warnings, if applicable.
+                        If no errors or warnings are present, the API is reachable
+        '''
+        health: dict = {
+            mmpm.consts.GITHUB: {
+                mmpm.consts.ERROR: '',
+                mmpm.consts.WARNING: ''
+            },
+            mmpm.consts.GITLAB: {
+                mmpm.consts.ERROR: '',
+                mmpm.consts.WARNING: ''
+            },
+            mmpm.consts.BITBUCKET:{
+                mmpm.consts.ERROR: '',
+                mmpm.consts.WARNING: ''
+            }
+        }
+
+        github_api_response: requests.Response = mmpm.utils.safe_get_request('https://api.github.com/rate_limit')
+
+        if not github_api_response.status_code or github_api_response.status_code != 200:
+            health[mmpm.consts.GITHUB][mmpm.consts.ERROR] = 'Unable to contact GitHub API'
+
+        github_api: dict = json.loads(github_api_response.text)
+        reset: int = github_api['rate']['reset']
+        remaining: int = github_api['rate']['remaining']
+
+        reset_time = datetime.datetime.utcfromtimestamp(reset).strftime('%Y-%m-%d %H:%M:%S')
+
+        if not remaining:
+            health[mmpm.consts.GITHUB][mmpm.consts.ERROR] = f'Unable to use `--verbose` option. No GitHub API requests remaining. Request count will reset at {reset_time}'
+        elif remaining < 10:
+            health[mmpm.consts.GITHUB][mmpm.consts.WARNING] = f'{remaining} GitHub API requests remaining. Request count will reset at {reset_time}'
+
+        try:
+            # GitLab doesn't have rate limits that will cause any issues with checking for repos
+            gitlab_api = requests.head('https://gitlab.com', allow_redirects=True, timeout=10)
+
+            if gitlab_api.status_code != 200:
+                health[mmpm.consts.GITLAB][mmpm.consts.ERROR] = 'GitLab server returned invalid response'
+        except requests.exceptions.RequestException:
+            health[mmpm.consts.GITLAB][mmpm.consts.ERROR] = 'Unable to communicate with GitLab server'
+
+        try:
+            # Bitbucket rate limits are similar to GitLab
+            bitbucket_api = requests.head('https://bitbucket.org', allow_redirects=True, timeout=10)
+
+            if bitbucket_api.status_code != 200:
+                health[mmpm.consts.BITBUCKET][mmpm.consts.ERROR] = 'Bitbucket server returned invalid response'
+        except requests.exceptions.RequestException:
+            health[mmpm.consts.GITLAB][mmpm.consts.ERROR] = 'Unable to communicate with Bitbucket server'
+
+        return health
+
+
+    def serialize(self):
+        '''
+        Retrieves details about the provided MagicMirrorPackage from it's
+        repository. GitHub, GitLab, and Bitbucket projects are supported
+
+        Parameters:
+            package (MagicMirrorPackage): the packge to be queried
+
+        Returns:
+            details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
+        '''
+        spliced: List[str] = self.package.repository.split('/')
+        user: str = spliced[-2]
+        project: str = spliced[-1].replace('.git', '') # in case the user added .git to the end of the url
+        details = {}
+
+        if 'github' in self.package.repository:
+            url = f'https://api.github.com/repos/{user}/{project}'
+            logger.info(f'Constructed {url} to request more details for {self.package.title}')
+            data = mmpm.utils.safe_get_request(url)
+
+            if not data:
+                logger.error(f'Unable to retrieve {self.package.title} details, data was empty')
+
+            details = self.__format_github_api_details__(json.loads(data.text)) if data else {}
+
+        elif 'gitlab' in self.package.repository:
+            url = f'https://gitlab.com/api/v4/projects/{user}%2F{project}'
+            logger.info(f'Constructed {url} to request more details for {self.package.title}')
+            data = mmpm.utils.safe_get_request(url)
+
+            if not data:
+                logger.error(f'Unable to retrieve {self.package.title} details, data was empty')
+
+            details = self.__format_gitlab_api_details__(json.loads(data.text), url) if data else {}
+        elif 'bitbucket' in self.package.repository:
+            url = f'https://api.bitbucket.org/2.0/repositories/{user}/{project}'
+            logger.info(f'Constructed {url} to request more details for {self.package.title}')
+            data = mmpm.utils.safe_get_request(url)
+
+            if not data:
+                logger.error(f'Unable to retrieve {package.title} details, data was empty')
+
+            details = self.__format_bitbucket_api_details__(json.loads(data.text), url) if data else {}
+
+        return details
+
+
+    def __format_bitbucket_api_details__(self, data: dict, url: str) -> dict:
+        '''
+        Helper method to format remote repository data from Bitbucket
+
+        Parameters:
+            data (dict): JSON data from the API request
+            url (str): the constructed url of the API used to retrieve additional info
+
+        Returns:
+            details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
+        '''
+        stars = mmpm.utils.safe_get_request(f'{url}/watchers')
+        forks = mmpm.utils.safe_get_request(f'{url}/forks')
+        issues = mmpm.utils.safe_get_request(f'{url}/issues')
+
+        return {
+            'Stars': int(json.loads(stars.text)['pagelen']) if stars else 'N/A',
+            'Issues': int(json.loads(issues.text)['pagelen']) if issues else 'N/A',
+            'Created': data['created_on'].split('T')[0] if data else 'N/A',
+            'Last Updated': data['updated_on'].split('T')[0] if data else 'N/A',
+            'Forks': int(json.loads(forks.text)['pagelen']) if forks else 'N/A'
+        } if data and stars else {}
+
+
+    def __format_gitlab_api_details__(self, data: dict, url: str) -> dict:
+        '''
+        Helper method to format remote repository data from GitLab
+
+        Parameters:
+            data (dict): JSON data from the API request
+            url (str): the constructed url of the API used to retrieve additional info
+
+        Returns:
+            details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
+        '''
+        issues = mmpm.utils.safe_get_request(f'{url}/issues')
+
+        return {
+            'Stars': data['star_count'] if data else 'N/A',
+            'Issues': len(json.loads(issues.text)) if issues else 'N/A',
+            'Created': data['created_at'].split('T')[0] if data else 'N/A',
+            'Last Updated': data['last_activity_at'].split('T')[0] if data else 'N/A',
+            'Forks': data['forks_count'] if data else 'N/A'
+        } if data else {}
+
+
+    def __format_github_api_details__(self, data: dict) -> dict:
+        '''
+        Helper method to format remote repository data from GitHub
+
+        Parameters:
+            data (dict): JSON data from the API request
+
+        Returns:
+            details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
+        '''
+        return {
+            'Stars': data['stargazers_count'] if data else 'N/A',
+            'Issues': data['open_issues'] if data else 'N/A',
+            'Created': data['created_at'].split('T')[0] if data else 'N/A',
+            'Last Updated': data['updated_at'].split('T')[0] if data else 'N/A',
+            'Forks': data['forks_count'] if data else 'N/A',
+        } if data else {}

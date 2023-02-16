@@ -50,7 +50,7 @@ def __deserialize_selected_packages__(rqst, key: str = 'selected-packages') -> L
 
     pkgs: dict = rqst.get_json(force=True)[key]
 
-    modules_dir = Path(MMPMEnv.mmpm_root.get() / "modules")
+    modules_dir = Path(MMPMEnv.mmpm_magicmirror_root.get() / "modules")
     default_directory = lambda title: str(Path(modules_dir / title))
 
     for pkg in pkgs:
@@ -274,7 +274,7 @@ def packages_upgradable() -> Response:
     logger.info('Request to get upgradable packages')
     available_upgrades: dict = mmpm.core.get_available_upgrades()
 
-    MMPM_MAGICMIRROR_ROOT: str = MMPMEnv.mmpm_root.get()
+    MMPM_MAGICMIRROR_ROOT: str = MMPMEnv.mmpm_magicmirror_root.get()
 
     available_upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] = [
         pkg.serialize_full() for pkg in available_upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]
@@ -367,7 +367,7 @@ def magicmirror_config() -> Response:
     Returns:
         response (flask.Response): the file contents
     '''
-    magicmirror_config_dir: PosixPath = Path(MMPMEnv.mmpm_root.get() / "config")
+    magicmirror_config_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get() / "config")
     magicmirror_config_file: PosixPath = Path(MAGICMIRROR_CONFIG_DIR) / 'config.js'
 
     if request.method == mmpm.consts.GET:
@@ -407,7 +407,7 @@ def magicmirror_custom_css() -> Response:
     Returns:
         response (flask.Response): the file contents
     '''
-    MAGICMIRROR_CSS_DIR: PosixPath = Path(MMPMEnv.mmpm_root.get() / "css")
+    MAGICMIRROR_CSS_DIR: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get() / "css")
     MAGICMIRROR_CUSTOM_CSS_FILE: PosixPath = Path(MAGICMIRROR_CSS_DIR) / 'custom.css'
 
     if request.method == mmpm.consts.GET:

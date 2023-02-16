@@ -7,7 +7,7 @@ import mmpm.consts
 from time import sleep
 from mmpm.logger import MMPMLogger
 from mmpm.env import MMPMEnv
-from pathlib import Path
+from pathlib import Path, PosixPath
 
 logger = MMPMLogger.get_logger(__name__)
 logger.setLevel(MMPMEnv.mmpm_log_level.get())
@@ -250,27 +250,25 @@ class MagicMirrorController:
 
         root_path: PosixPath = Path(root.get())
 
-        if root_path.exists():
-            message = f"MagicMirror appears to already be installed in {root}. To install MagicMirror elsewhere, modify the {root.name} using 'mmpm open --env'"
+        if root_path.exists() and Path(root_path / "modules").exists():
+            message = f"MagicMirror appears to already be installed in {root_path}. To install MagicMirror elsewhere, modify the {root.name} using 'mmpm open --env'"
             logger.fatal(message)
             logger.msg.fatal(message)
-            return
+            return False
 
         print(f'{mmpm.consts.GREEN_PLUS} Installing MagicMirror')
 
-        if mmpm.utils.prompt_user(f"Use '{root_path}' ({root.name}) as the parent directory of the new MagicMirror installation?"):
-            root_path.mkdir(parents=True, exist_ok=True)
-            os.chdir(root_path)
-        else:
+        if not mmpm.utils.prompt_user(f"Use '{root_path}' ({root.name}) as the parent directory of the new MagicMirror installation?"):
             print(f"Cancelled installation. To change the installation path of MagicMirror, modify the {root.name} using 'mmpm open --env'")
-            sys.exit(0)
+            return False
 
         for cmd in ["git", "npm"]:
             if not shutil.which(cmd):
                 mmpm.utils.fatal_msg(f"'{cmd}' command not found. Please install '{cmd}', then re-run mmpm install --magicmirror")
+                return False
 
         print(mmpm.color.normal_cyan(f'Installing MagicMirror in {root_path}/MagicMirror ...'))
-        os.system(f"cd {root_path} && git clone https://github.com/MichMich/MagicMirror && cd MagicMirror && npm run install-mm")
+        os.system(f"cd {root_path.parent} && git clone https://github.com/MichMich/MagicMirror && cd MagicMirror && npm run install-mm")
 
         print(mmpm.color.normal_green("\nRun 'mmpm mm-ctl --start' to start MagicMirror"))
         return True
@@ -281,23 +279,94 @@ class MagicMirrorController:
         root_path: PosixPath = Path(root.get())
 
         if not root_path.exists():
-            message = f"The {root.name} ({root_path}) does not exist. Please adjust the MMPM environment variables using 'mmpm open --env'."
+            message = f"The {root_path} does not exist. Is {root.name} set properly?"
             logger.fatal(message)
             logger.msg.fatal(message)
             return False
 
-        print(f'{mmpm.consts.GREEN_PLUS} Installing MagicMirror')
-
         if mmpm.utils.prompt_user(f"Are you sure you want to remove MagicMirror?"):
             shutil.rmtree(root_path, ignore_errors=True)
+            print("Removed MagicMirror")
+            logger.info("Removed MagicMirror")
             return True
 
         return False
 
     @classmethod
-    def install_mmpm_module(cls):
-        pass
+    def install_mmpm_module(cls) -> bool:
+        if not mmpm.utils.prompt_user('Are you sure you want to install the MMPM module?', assume_yes=assume_yes):
+            return False
+
+        root: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get())
+        mmpm_module_dir: PosixPath = modules_dir / "modules" / "mmpm"
+
+        logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Creating MMPM module in MagicMirror modules directory ')
+
+        try:
+            mmpm_module_dir.mkdir(parents=True, exist_ok=True, mode=0o777)
+            shutil.copyfile(f'{mmpm.consts.MMPM_JS_DIR}/mmpm.js', f'{MMPM_MODULE_DIR}/mmpm.js')
+            shutil.copyfile(f'{mmpm.consts.MMPM_JS_DIR}/node_helper.js', f'{MMPM_MODULE_DIR}/node_helper.js')
+        except OSError as error:
+            logger.msg.error('Failed to create MMPM module. Is the directory owned by root?')
+            logger.error(str(error))
+            return False
+
+        print(mmpm.consts.GREEN_CHECK_MARK)
+        print('Run `mmpm open --config` and append { module: "mmpm" } to the modules array, then restart MagicMirror if running')
+
+        return True
 
     @classmethod
-    def remove_mmpm_module(cls):
-        pass
+    def remove_mmpm_module(cls) -> bool: # TODO: add command line arg for this
+        root = MMPMEnv.mmpm_magicmirror_root
+        root_dir: PosixPath = Path(root.get())
+        mmpm_module_dir: PosixPath = root_dir / "modules" / "mmpm"
+
+        if not mmpm_module_dir.exists():
+            message = f"The {root.name} ({root_path}) does not exist. Please adjust the MMPM environment variables using 'mmpm open --env'."
+            logger.error(message)
+            return False
+
+        if not mmpm.utils.prompt_user('Are you sure you want to remove the MMPM module?', assume_yes=assume_yes):
+            shutil.rmtree(mmpm_module_dir, ignore_errors=True)
+            return False
+
+    @classmethod
+    def upgrade(cls) -> bool: # TODO: TEST
+        '''
+        Handles upgrade processs of MagicMirror by pulling changes from MagicMirror
+        repo, and installing dependencies.
+
+        Parameters:
+            None
+
+        Returns:
+            error (str): empty string if succcessful, contains error message on failure
+        '''
+        print(f"{mmpm.consts.GREEN_PLUS} Upgrading {mmpm.color.normal_green('MagicMirror')}")
+
+        root = MMPMEnv.mmpm_magicmirror_root
+        root_dir: PosixPath = Path(root.get())
+
+        if not root_dir.exists():
+            logger.msg.error(f"{root_dir} does not exist. Is the {root.name} set properly?")
+            logger.error(f"{root_dir} does not exist. Cannot perform upgrade")
+            return False
+
+        os.chdir(root_dir)
+        error_code, _, stderr = mmpm.utils.run_cmd(['git', 'pull'], progress=False)
+
+        if error_code:
+            message = 'Failed to upgrade MagicMirror'
+            logger.msg.error(f'{message} {mmpm.consts.RED_X}')
+            logger.error(f"{message}: {stderr}")
+            return stderr
+
+        error_code, _, stderr = mmpm.utils.run_cmd(['npm', 'install'], progress=True)
+
+        if error_code:
+            logger.msg.error(stderr)
+            return False
+
+        print('Upgrade complete! Restart MagicMirror for the changes to take effect')
+        return True

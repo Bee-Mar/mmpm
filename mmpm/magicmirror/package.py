@@ -248,7 +248,7 @@ class MagicMirrorPackage():
         else:
             print(mmpm.consts.GREEN_CHECK_MARK)
 
-        stderr = mmpm.utils.install_dependencies(package.directory)
+        stderr = mmpm.utils.install_dependencies(package.directory) # TODO: change this to use the handler
 
         if stderr:
             print(mmpm.consts.RED_X)
@@ -297,7 +297,7 @@ class InstallationHandler:
     def __init__(self, package: MagicMirrorPackage):
         self.package = package
 
-    def execute(self) -> str:
+    def execute(self) -> bool:
         '''
         Utility method that detects package.json, Gemfiles, Makefiles, and
         CMakeLists.txt files, and handles the build process for each of the
@@ -311,8 +311,15 @@ class InstallationHandler:
         Returns:
             stderr (str): success if the string is empty, fail if not
         '''
+        root = MMPMEnv.mmpm_magicmirror_root
 
-        modules_dir = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
+        modules_dir = Path(root.get()) / "modules"
+
+        if not modules_dir.exists():
+            logger.msg.fatal(f"{modules_dir} does not exist. Is {root.name} set properly?")
+            logger.fatal(f"{modules_dir} does not exist.")
+            return False
+
         os.chdir(modules_dir)
 
         old_directories: Set[str] = {str(directory) for directory in modules_dir.iterdir()}
@@ -375,14 +382,16 @@ class InstallationHandler:
                     print(mmpm.consts.GREEN_CHECK_MARK)
 
         if error_code:
-            logger.info(f"Installtion failed. Removing {self.package.title}")
-            logger.msg.info(f"Installtion failed. Removing {self.package.title}\n")
-            # TODO: add a prompt if the user wants to remove the package
-            self.package.remove()
-            return
+            if mmpm.utils.prompt_user(f"Installation failed. Would you like to remove {self.package.title}?"):
+                message = f"Installtion failed. Removing {self.package.title}"
+                logger.info(message)
+                logger.msg.info(message)
+                self.package.remove()
+            return False
 
         print(f'{mmpm.consts.GREEN_DASHES} Installation complete ' + mmpm.consts.GREEN_CHECK_MARK)
         logger.info(f'Exiting installation handler from {self.package.directory}')
+        return True
 
     def __cmake__(self) -> Tuple[int, str, str]:
         ''' Used to run make from a directory known to have a CMakeLists.txt file

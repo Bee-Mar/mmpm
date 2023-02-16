@@ -17,6 +17,7 @@ import mmpm.models
 import mmpm.mmpm
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.package import MagicMirrorPackage
+from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.env import MMPMEnv
 
 logger = MMPMLogger.get_logger(__name__)
@@ -33,7 +34,7 @@ resources: dict = {
 
 CORS(app)
 
-_packages_ = mmpm.core.load_packages()
+MagicMirrorDatabase.load()
 
 
 def __deserialize_selected_packages__(rqst, key: str = 'selected-packages') -> List[MagicMirrorPackage]:
@@ -125,7 +126,7 @@ def packages_marketplace() -> Response:
         response (flask.Response): the response object containing all the available packages
     '''
     logger.info('Sending all marketplace packages')
-    return Response(json.dumps(_packages_, default=lambda pkg: pkg.serialize_full()))
+    return Response(json.dumps(MagicMirrorDatabase.packages, default=lambda pkg: pkg.serialize_full()))
 
 
 @app.route('/api/packages/installed', methods=[mmpm.consts.GET])
@@ -140,7 +141,7 @@ def packages_installed() -> Response:
         response (flask.Response): the response object containing all the installed packages
     '''
     logger.info('Sending all installed packages')
-    return Response(json.dumps(mmpm.core.get_installed_packages(_packages_), default=lambda pkg: pkg.serialize_full()))
+    return Response(json.dumps(mmpm.core.get_installed_packages(MagicMirrorDatabase.packages), default=lambda pkg: pkg.serialize_full()))
 
 
 @app.route('/api/packages/external', methods=[mmpm.consts.GET])
@@ -251,7 +252,7 @@ def packages_update() -> Response:
         response (flask.Response): the result of the update check, success or failure as a boolean
     '''
     try:
-        mmpm.core.check_for_package_updates(_packages_)
+        mmpm.core.check_for_package_updates(MagicMirrorDatabase.packages)
         mmpm.core.check_for_mmpm_updates()
         mmpm.core.check_for_magicmirror_updates()
     except Exception as error:

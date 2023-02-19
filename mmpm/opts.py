@@ -4,7 +4,7 @@ import sys
 import argparse
 import argcomplete
 import mmpm.consts
-from typing import List
+from typing import List, Tuple
 
 # subcommand names. These could go in mmpm.consts.py, but for the sake of mnemonics
 # for mmpm.py, they'll stay (ie, opts.INSTALL, opts.LIST, etc)
@@ -25,7 +25,7 @@ SHOW: str = 'show'
 SINGLE_OPTION_ARGS: List[str] = [INSTALL, DB, LIST, OPEN]
 
 
-def get_user_args() -> object:
+def get_user_args() -> Tuple:
     '''
     Wrapper method around ArgumentParser.parse_args()
 
@@ -533,4 +533,4 @@ def get_user_args() -> object:
         arg_parser.print_help()
         sys.exit(0)
 
-    return arg_parser
+    return arg_parser.parse_known_args()

@@ -30,8 +30,7 @@ class MMPM:
     def run(cls):
         ''' Main entry point for CLI '''
 
-        parser = mmpm.opts.get_user_args()
-        args, additional_args = parser.parse_known_args()
+        args, additional_args = mmpm.opts.get_user_args()
 
         if args.version:
             print(f'{__version__}')
@@ -56,12 +55,13 @@ class MMPM:
         if not MagicMirrorDatabase.packages:
             mmpm.utils.fatal_msg('Unable to retrieve packages. Please check your internet connection.')
 
-        sub_command = getattr(MMPM, args.subcmd.lower().replace("-", "_"))
+        function: str = args.subcmd.lower().replace("-", "_")
 
-        if sub_command is not None:
-            sub_command(args, additional_args)
-        else:
+        if not hasattr(MMPM, function):
             parser.print_help()
+
+        # call the actual function mapped to the the subcommand
+        getattr(MMPM, function)(args, additional_args)
 
     @classmethod
     def list(cls, args, additional_args = None):

@@ -128,7 +128,7 @@ class MMPM:
             if additional_args:
                 mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
 
-            total: int = MagicMirrorDatabase.update()
+            total: int = MagicMirrorDatabase.update() + int(MagicMirrorController.update())
 
             if not total:
                 print('All packages are up to date')
@@ -136,7 +136,16 @@ class MMPM:
                 print(f'{total} upgrade(s) available. Run `mmpm list --upgradable` for details')
 
         elif args.subcmd == mmpm.opts.UPGRADE:
-            mmpm.core.upgrade_available_packages_and_applications(args.assume_yes, additional_args)
+            upgradable = MagicMirrorDatabase.get_upgradable()
+
+            for package in upgradable["packages"]:
+                MagicMirrorPackage(**package).upgrade()
+
+            if upgradable["MagicMirror"]:
+                MagicMirrorController.upgrade()
+
+            if upgradable["mmpm"]:
+                print("Run 'pip install --upgrade --no-cache-dir mmpm' to install the latest version of MMPM.")
 
         elif args.subcmd == mmpm.opts.INSTALL:
             if args.gui:

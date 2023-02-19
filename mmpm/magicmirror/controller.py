@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 import os
 import sys
+import json
 import shutil
 import socketio
 import mmpm.consts
+from mmpm.constants import paths
 from time import sleep
 from mmpm.logger import MMPMLogger
 from mmpm.env import MMPMEnv
@@ -370,3 +372,59 @@ class MagicMirrorController:
 
         print('Upgrade complete! Restart MagicMirror for the changes to take effect')
         return True
+
+    @classmethod
+    def update(cls) -> bool:
+        '''
+        Checks for updates available to the MagicMirror repository. Alerts user if an upgrade is available.
+
+        Parameters:
+            None
+
+        Returns:
+            bool: True upon success, False upon failure
+        '''
+        magicmirror_root: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get())
+
+        if not magicmirror_root.exists():
+            logger.msg.error('MagicMirror application directory not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
+            return False
+
+        is_git: bool = True
+        can_upgrade = False
+
+        if not (magicmirror_root / '.git').exists():
+            logger.msg.warning('The MagicMirror root is not a git repo. If running MagicMirror as a Docker container, updates cannot be performed via mmpm.')
+            is_git = False
+
+        if is_git:
+            os.chdir(magicmirror_root)
+            cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
+            mmpm.utils.plain_print(f"Checking {mmpm.color.normal_green('MagicMirror')} [{cyan_application}] for updates")
+
+            try:
+                # stdout and stderr are flipped for git command output, because that totally makes sense
+                # except now stdout doesn't even contain error messages...thanks git
+                error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
+            except KeyboardInterrupt:
+                print(mmpm.consts.RED_X)
+                mmpm.utils.keyboard_interrupt_log()
+
+            print(mmpm.consts.GREEN_CHECK_MARK)
+
+            if error_code:
+                mmpm.utils.error_msg('Unable to communicate with git server')
+
+            if stdout:
+                can_upgrade = True
+
+        upgradable = {}
+
+        with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="r", encoding="utf-8") as upgrade_file:
+            upgradable = json.load(upgrade_file)
+
+        with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="w", encoding="utf-8") as upgrade_file:
+            upgradable["MagicMirror"] = can_upgrade
+            json.dump(upgradable, upgrade_file)
+
+        return can_upgrade

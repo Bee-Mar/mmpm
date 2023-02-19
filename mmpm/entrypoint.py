@@ -2,11 +2,11 @@
 from mmpm.mmpm import MMPM
 
 def main():
-    MMPM.run() # for the setup.py entry_points
-
-if __name__ == "__main__":
     try:
-        main()
+        MMPM.run() # for the setup.py entry_points
     except KeyboardInterrupt:
         logger.info('User killed process with keyboard interrupt')
         sys.exit(127)
+
+if __name__ == "__main__":
+    main()

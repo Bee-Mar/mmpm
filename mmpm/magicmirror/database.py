@@ -69,68 +69,19 @@ class MagicMirrorDatabase:
         version_number: float = float(findall(r"\d+\.\d+", findall(r"__version__ = \d+\.\d+", contents)[0])[0])
         print(mmpm.consts.GREEN_CHECK_MARK)
 
-        if not version_number:
-            logger.msg.fatal('No version number found on MMPM repository')
-
         can_upgrade: bool = version_number > mmpm.mmpm.__version__
 
         if can_upgrade:
-            logger.msg.info(f'Found newer version of MMPM: {version_number}')
+            logger.msg.info(f'Found newer version of MMPM: {version_number}\n')
         else:
-            logger.msg.info(f'No newer version of MMPM found > {version_number} available. The current version is the latest')
+            logger.msg.info(f'You have the latest version of MMPM=={version_number}\n')
 
         return can_upgrade
 
-    @classmethod
-    def __update_magicmirror__(cls) -> bool:
-        '''
-        Checks for updates available to the MagicMirror repository. Alerts user if an upgrade is available.
-
-        Parameters:
-            None
-
-        Returns:
-            bool: True upon success, False upon failure
-        '''
-        magicmirror_root: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get())
-
-        if not magicmirror_root.exists():
-            logger.msg.error('MagicMirror application directory not found. Please ensure the MMPM environment variables are set properly in your shell configuration')
-            return False
-
-        is_git: bool = True
-
-        if not (magicmirror_root / '.git').exists():
-            logger.msg.warning('The MagicMirror root is not a git repo. If running MagicMirror as a Docker container, updates cannot be performed via mmpm.')
-            is_git = False
-
-        if is_git:
-            os.chdir(magicmirror_root)
-            cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
-            mmpm.utils.plain_print(f"Checking {mmpm.color.normal_green('MagicMirror')} [{cyan_application}] for updates")
-
-            try:
-                # stdout and stderr are flipped for git command output, because that totally makes sense
-                # except now stdout doesn't even contain error messages...thanks git
-                error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
-            except KeyboardInterrupt:
-                print(mmpm.consts.RED_X)
-                mmpm.utils.keyboard_interrupt_log()
-
-            print(mmpm.consts.GREEN_CHECK_MARK)
-
-            if error_code:
-                mmpm.utils.error_msg('Unable to communicate with git server')
-
-            if stdout:
-                return True
-
-        return False
 
     @classmethod
     def update(cls, automated: bool = False) -> int:
         can_upgrade_mmpm = MagicMirrorDatabase.__update_mmpm__(automated)
-        can_upgrade_magicmirror = MagicMirrorDatabase.__update_magicmirror__()
         can_upgrade_packages: List[MagicMirrorDatabase] = []
 
         cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
@@ -148,18 +99,27 @@ class MagicMirrorDatabase:
             if package.is_upgradable:
                 upgradable.append(package)
 
-        with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, "w", encoding="utf-8") as upgrade_file:
+        with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="w", encoding="utf-8") as upgrade_file:
             json.dump(
                 {
                     "mmpm": can_upgrade_mmpm,
-                    "MagicMirror": can_upgrade_magicmirror,
+                    "MagicMirror": False,
                     "packages": [package.serialize() for package in can_upgrade_packages],
                 },
                 upgrade_file
             )
 
-        return int(can_upgrade_mmpm) + int(can_upgrade_magicmirror) + len(can_upgrade_packages)
+        return int(can_upgrade_mmpm) + len(can_upgrade_packages)
 
+
+    @classmethod
+    def get_upgradable(cls) -> dict:
+        upgradable = {}
+
+        with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="r", encoding="utf-8") as upgrade_file:
+            upgradable = json.load(upgrade_file)
+
+        return upgradable
 
     @classmethod
     def details(cls):
@@ -231,12 +191,15 @@ class MagicMirrorDatabase:
 
     @classmethod
     def expired(cls) -> bool:
-        for file_name in [mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE, mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE]:
+        db_file = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
+        db_expiration_file = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE
+
+        for file_name in [db_file, db_expiration_file]:
             if not file_name.exists() or not bool(file_name.stat().st_size):
                 return True # the file is empty
 
         if MagicMirrorDatabase.last_update is None or MagicMirrorDatabase.expiration_date is None:
-            with open(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE) as expiration_file:
+            with open(db_expiration_file) as expiration_file:
                 data = json.load(expiration_file)
                 MagicMirrorDatabase.expiration_date = datetime.datetime.fromisoformat(data["expiration"])
                 MagicMirrorDatabase.last_update = datetime.datetime.fromisoformat(data["last-update"])

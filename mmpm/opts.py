@@ -11,7 +11,7 @@ from typing import List
 INSTALL: str = 'install'
 SEARCH: str = 'search'
 REMOVE: str = 'remove'
-DATABASE: str = 'db'
+DB: str = 'db'
 LIST: str = 'list'
 MM_CTL: str = 'mm-ctl'
 OPEN: str = 'open'
@@ -22,7 +22,7 @@ UPGRADE: str = 'upgrade'
 ENV: str = 'env'
 SHOW: str = 'show'
 
-SINGLE_OPTION_ARGS: List[str] = [INSTALL, DATABASE, LIST, OPEN]
+SINGLE_OPTION_ARGS: List[str] = [INSTALL, DB, LIST, OPEN]
 
 
 def get_user_args() -> object:
@@ -183,9 +183,9 @@ def get_user_args() -> object:
         dest='assume_yes'
     )
 
-    # DATABASE SUBCOMMANDS
+    # DB SUBCOMMANDS
     database_parser = subparsers.add_parser(
-        DATABASE,
+        DB,
         usage='\n  mmpm db [--refresh] [--details]',
         help='refresh or display basic details about the database'
     )

@@ -343,7 +343,7 @@ class MagicMirrorController:
             None
 
         Returns:
-            error (str): empty string if succcessful, contains error message on failure
+            success (bool): True if successful else False
         '''
         print(f"{mmpm.consts.GREEN_PLUS} Upgrading {mmpm.color.normal_green('MagicMirror')}")
 

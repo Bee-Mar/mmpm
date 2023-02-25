@@ -21,6 +21,7 @@ UPDATE: str = 'update'
 UPGRADE: str = 'upgrade'
 ENV: str = 'env'
 SHOW: str = 'show'
+VERSION: str = "version"
 
 SINGLE_OPTION_ARGS: List[str] = [INSTALL, DB, LIST, OPEN]
 
@@ -86,7 +87,7 @@ def get_user_args() -> Tuple:
     # INSTALL PARSER
     install_parser = subparsers.add_parser(
         INSTALL,
-        usage='\n  mmpm install <package(s)> [--yes]\n  mmpm install [--magicmirror] [--autocomplete] [--gui] [--as-module]',
+        usage='\n  mmpm install <package(s)> [--yes]\n  mmpm install [--completion] [--gui]',
         help='install MagicMirror packages'
     )
 
@@ -100,18 +101,10 @@ def get_user_args() -> Tuple:
     )
 
     install_parser.add_argument(
-        '--magicmirror',
-        action='store_true',
-        default=False,
-        help='install MagicMirror, if not already installed',
-        dest='magicmirror'
-    )
-
-    install_parser.add_argument(
-        '--autocomplete',
+        '--completion',
         action='store_true',
         help='install autocompletion for the MMPM CLI',
-        dest='autocomplete'
+        dest='completion'
     )
 
     install_parser.add_argument(
@@ -119,13 +112,6 @@ def get_user_args() -> Tuple:
         action='store_true',
         help='install the MMPM GUI. Asks for sudo permissions',
         dest='gui'
-    )
-
-    install_parser.add_argument(
-        '--as-module',
-        action='store_true',
-        help='install the MMPM MagicMirror helper module in your MagicMirror modules directory to enable hide/show functionality',
-        dest='as_module'
     )
 
     # REMOVE PARSER
@@ -502,13 +488,11 @@ def get_user_args() -> Tuple:
         help='display the MMPM environment variables and their value(s)'
     )
 
-    # MMPM AND GLOBAL OPTIONS
-    arg_parser.add_argument(
-        '-v',
-        '--version',
-        action='store_true',
+    # VERSION SUBCOMMANDS
+    subparsers.add_parser(
+        VERSION,
+        usage='\n  mmpm version',
         help='display MMPM version number',
-        dest='version'
     )
 
     arg_parser.add_argument(

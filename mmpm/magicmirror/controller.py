@@ -295,19 +295,19 @@ class MagicMirrorController:
         return False
 
     @classmethod
-    def install_mmpm_module(cls) -> bool:
+    def install_mmpm_module(cls, assume_yes: bool = False) -> bool:
         if not mmpm.utils.prompt_user('Are you sure you want to install the MMPM module?', assume_yes=assume_yes):
             return False
 
         root: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get())
-        mmpm_module_dir: PosixPath = modules_dir / "modules" / "mmpm"
+        mmpm_module_dir: PosixPath = root / "modules" / "mmpm"
 
         logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Creating MMPM module in MagicMirror modules directory ')
 
         try:
             mmpm_module_dir.mkdir(parents=True, exist_ok=True, mode=0o777)
-            shutil.copyfile(f'{mmpm.consts.MMPM_JS_DIR}/mmpm.js', f'{MMPM_MODULE_DIR}/mmpm.js')
-            shutil.copyfile(f'{mmpm.consts.MMPM_JS_DIR}/node_helper.js', f'{MMPM_MODULE_DIR}/node_helper.js')
+            shutil.copyfile(f'{mmpm.consts.MMPM_JS_DIR}/mmpm.js', f'{mmpm_module_dir}/mmpm.js')
+            shutil.copyfile(f'{mmpm.consts.MMPM_JS_DIR}/node_helper.js', f'{mmpm_module_dir}/node_helper.js')
         except OSError as error:
             logger.msg.error('Failed to create MMPM module. Is the directory owned by root?')
             logger.error(str(error))

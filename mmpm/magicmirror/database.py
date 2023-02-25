@@ -73,8 +73,6 @@ class MagicMirrorDatabase:
 
         if can_upgrade:
             logger.msg.info(f'Found newer version of MMPM: {version_number}\n')
-        else:
-            logger.msg.info(f'You have the latest version of MMPM=={version_number}\n')
 
         return can_upgrade
 
@@ -138,7 +136,7 @@ class MagicMirrorDatabase:
         print(mmpm.color.normal_green('Last updated:'), f'{str(MagicMirrorDatabase.last_update.replace(microsecond=0))}')
         print(mmpm.color.normal_green('Next scheduled update:'), f'{str(MagicMirrorDatabase.expiration_date.replace(microsecond=0))}')
         print(mmpm.color.normal_green('Categories:'), f'{len(MagicMirrorDatabase.categories)}')
-        print(mmpm.color.normal_green('Packages:'), f'{len(MagicMirrorDatabase.packages) - 1}')
+        print(mmpm.color.normal_green('Packages:'), f'{len(MagicMirrorDatabase.packages)}')
 
 
     @classmethod
@@ -160,8 +158,8 @@ class MagicMirrorDatabase:
             response = requests.get(mmpm.consts.MAGICMIRROR_MODULES_URL, timeout=10)
         except requests.exceptions.RequestException:
             print(mmpm.consts.RED_X)
-            mmpm.utils.fatal_msg('Unable to retrieve MagicMirror modules. Is your internet connection up?')
-            return {}
+            mmpm.utils.fatal_msg('Unable to retrieve MagicMirror modules.')
+            return []
 
         soup = BeautifulSoup(response.text, 'html.parser')
         table_soup = soup.find_all('table')
@@ -295,7 +293,6 @@ class MagicMirrorDatabase:
                     )
 
                 print(mmpm.consts.GREEN_CHECK_MARK)
-
 
         if not MagicMirrorDatabase.packages and db_exists:
             MagicMirrorDatabase.packages = []

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
+from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
-from mmpm.env import get_env
 from socket import gethostbyname, gethostname
 from re import findall
 import mmpm.utils
@@ -12,7 +12,7 @@ import os
 import subprocess
 
 logger = MMPMLogger.get_logger(__name__)
-logger.setLevel(get_env(mmpm.consts.MMPM_LOG_LEVEL))
+logger.setLevel(MMPMEnv.mmpm_log_level.get())
 
 class MMPMGui:
     @classmethod

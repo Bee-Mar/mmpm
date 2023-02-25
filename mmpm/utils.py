@@ -14,11 +14,11 @@ import mmpm.consts
 from pathlib import Path, PosixPath
 from mmpm.models import MagicMirrorPackage
 from mmpm.logger import MMPMLogger
-from mmpm.env import get_env
+from mmpm.env import MMPMEnv
 
 
 logger = MMPMLogger.get_logger(__name__)
-logger.setLevel(get_env(mmpm.consts.MMPM_LOG_LEVEL))
+logger.setLevel(MMPMEnv.mmpm_log_level.get())
 
 
 def plain_print(msg: str) -> None:
@@ -131,38 +131,6 @@ def env_variables_fatal_msg(preamble: str = '') -> None:
 
     fatal_msg(msg)
 
-
-def assert_required_defaults_exist() -> None:
-    '''
-    Runs at the start of each `mmpm` command executed to ensure all the default
-    files exist, and if they do not, they are created.
-
-    Parameters:
-        None
-
-    Returns:
-        None
-    '''
-
-    mmpm.consts.MMPM_CONFIG_DIR.mkdir(exist_ok=True)
-
-    for data_file in mmpm.consts.MMPM_REQUIRED_DATA_FILES:
-        data_file.touch()
-
-    current_env: dict = {}
-
-    with open(mmpm.consts.MMPM_ENV_FILE, 'r', encoding="utf-8") as env:
-        try:
-            current_env = json.load(env)
-        except json.JSONDecodeError as error:
-            logger.error(str(error))
-
-    for key, value in mmpm.consts.MMPM_DEFAULT_ENV.items():
-        if key not in current_env:
-            current_env[key] = value
-
-    with open(mmpm.consts.MMPM_ENV_FILE, 'w', encoding="utf-8") as env:
-        json.dump(current_env, env, indent=2)
 
 
 

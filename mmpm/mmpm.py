@@ -34,16 +34,6 @@ class MMPM:
 
         args, additional_args = mmpm.opts.get_user_args()
 
-        if args.version:
-            print(f'{__version__}')
-            sys.exit(0)
-
-        mmpm.utils.assert_required_defaults_exist() # TODO: FIXME
-
-        if args.guided_setup:
-            MMPM.guided_setup()
-            sys.exit(0)
-
         if args.subcmd in mmpm.opts.SINGLE_OPTION_ARGS and not mmpm.utils.assert_one_option_selected(args): # TODO: FIXME
             mmpm.utils.fatal_too_many_options(args)
 
@@ -51,19 +41,56 @@ class MMPM:
 
         MagicMirrorDatabase.load(refresh=should_refresh)
 
-        if MagicMirrorDatabase.expired() and args.subcmd != mmpm.opts.UPDATE and MagicMirrorDatabase.update(automated=True):
-            print('Upgrade available for MMPM. Execute `pip3 install --upgrade --user mmpm` to perform the upgrade now')
+        if MagicMirrorDatabase.expired() and args.subcmd != mmpm.opts.UPDATE:
+            MagicMirrorDatabase.update(automated=True)
 
-        if not MagicMirrorDatabase.packages:
-            mmpm.utils.fatal_msg('Unable to retrieve packages. Please check your internet connection.')
+        command: str = args.subcmd.lower().replace("-", "_")
 
-        function: str = args.subcmd.lower().replace("-", "_")
-
-        if not hasattr(MMPM, function):
+        if hasattr(MMPM, command):
+            getattr(MMPM, command)(args, additional_args)
+        else:
             parser.print_help()
 
-        # call the actual function mapped to the the subcommand
-        getattr(MMPM, function)(args, additional_args)
+
+    @classmethod
+    def setup(cls):
+        '''
+        Runs at the start of each `mmpm` command executed to ensure all the default
+        files exist, and if they do not, they are created.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        '''
+
+        mmpm.consts.MMPM_CONFIG_DIR.mkdir(exist_ok=True)
+
+        for data_file in mmpm.consts.MMPM_REQUIRED_DATA_FILES:
+            data_file.touch()
+
+        current_env: dict = {}
+
+        with open(mmpm.consts.MMPM_ENV_FILE, 'r', encoding="utf-8") as env:
+            try:
+                current_env = json.load(env)
+            except json.JSONDecodeError as error:
+                logger.error(str(error))
+
+        for key, value in mmpm.consts.MMPM_DEFAULT_ENV.items():
+            if key not in current_env:
+                current_env[key] = value
+
+        with open(mmpm.consts.MMPM_ENV_FILE, 'w', encoding="utf-8") as env:
+            json.dump(current_env, env, indent=2)
+
+
+
+    @classmethod
+    def version(cls, args, additional_args = None):
+        print(f'{__version__}')
+
 
     @classmethod
     def list(cls, args, additional_args = None):
@@ -176,10 +203,10 @@ class MMPM:
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
 
-        total: int = MagicMirrorDatabase.update() + int(MagicMirrorController.update())
+        total: int = int(MagicMirrorController.update()) + MagicMirrorDatabase.update()
 
         if not total:
-            print('All packages are up to date')
+            print('All packages and applications are up to date.')
         else:
             print(f'{total} upgrade(s) available. Run `mmpm list --upgradable` for details')
 
@@ -216,11 +243,7 @@ class MMPM:
     def install(cls, args, additional_args = None):
         if args.gui:
             MMPMGui.install()
-        elif args.as_module:
-            MagicMirrorController.install_mmpm_module()
-        elif args.magicmirror:
-            MagicMirrorController.install()
-        elif args.autocomplete:
+        elif args.completion:
             mmpm.core.install_autocompletion(assume_yes=args.assume_yes)
         elif not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
@@ -228,7 +251,12 @@ class MMPM:
             results = []
 
             for name in additional_args:
-                results += MagicMirrorDatabase.search(name)
+                if name == "MagicMirror":
+                    MagicMirrorController.install()
+                elif name == "mmpm":
+                    MagicMirrorController.install_mmpm_module(args.assume_yes)
+                else:
+                    results += MagicMirrorDatabase.search(name)
 
             for package in results:
                 package.install(assume_yes=args.assume_yes)
@@ -241,15 +269,15 @@ class MMPM:
         if args.gui:
             MMPMGui.remove()
 
-        if args.magicmirror:
-            MagicMirrorController.remove()
-
         elif not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
-        for arg in additional_args:
-            for package in MagicMirrorDatabase.search(arg):
-                package.remove(assume_yes=args.assume_yes)
+        for name in additional_args:
+            if name == "MagicMirror":
+                MagicMirrorController.remove()
+            else:
+                for package in MagicMirrorDatabase.search(name):
+                    package.remove(assume_yes=args.assume_yes)
 
     @classmethod
     def open(cls, args, additional_args = None):

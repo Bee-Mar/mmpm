@@ -3,6 +3,7 @@ from mmpm.mmpm import MMPM
 
 def main():
     try:
+        MMPM.setup()
         MMPM.run() # for the setup.py entry_points
     except KeyboardInterrupt:
         logger.info('User killed process with keyboard interrupt')

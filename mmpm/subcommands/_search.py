@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+""" Command line options for 'search' subcommand """
 import argparse
 
-def setup(subparser):
+def setup(subparser: argparse._SubParsersAction):
     parser = subparser.add_parser(
         "search",
         usage='\n  mmpm search <query> [--case-sensitive] [--exclude-installed]',

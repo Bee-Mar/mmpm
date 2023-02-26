@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
+""" Command line options for 'env' subcommand """
 import argparse
 
 def setup(subparser):
-    # ENV SUBCOMMANDS
     subparser.add_parser(
         "env",
         usage='\n  mmpm env',

@@ -44,15 +44,15 @@ VERSION: str = "version"
 SINGLE_OPTION_ARGS: List[str] = [INSTALL, DB, LIST, OPEN]
 
 
-def get() -> argparse.ArgumentParser:
+def setup() -> argparse.ArgumentParser:
     '''
-    Wrapper method around ArgumentParser.parse_args()
+    Initializes all subcommand and their options.
 
     Parameters:
         None
 
     Returns:
-        ArgumentParser objects
+        ArgumentParser
     '''
 
     parser = argparse.ArgumentParser(
@@ -71,6 +71,7 @@ def get() -> argparse.ArgumentParser:
         dest='subcmd',
     )
 
+    # setup of all the subcommands and their options
     _install.setup(subparser)
     _search.setup(subparser)
     _remove.setup(subparser)
@@ -88,6 +89,6 @@ def get() -> argparse.ArgumentParser:
     _completion.setup(subparser)
     _guided_setup.setup(subparser)
 
-    argcomplete.autocomplete(parser)
+    argcomplete.autocomplete(parser) # register autocompletion for the subcommands
 
     return parser

@@ -6,20 +6,33 @@ import time
 import datetime
 import json
 import requests
-
-from typing import List, Optional, Tuple, Dict
-
+import socket
 import mmpm.color
 import mmpm.consts
-from pathlib import Path, PosixPath
 from mmpm.logger import MMPMLogger
 from mmpm.env import MMPMEnv
+from typing import List, Optional, Tuple, Dict
+from pathlib import Path, PosixPath
 
 
 logger = MMPMLogger.get_logger(__name__)
 logger.setLevel(MMPMEnv.mmpm_log_level.get())
 
 
+def get_host_ip() -> str:
+    address: str = "localhost"
+
+    _socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    try:
+        _socket.connect(("8.8.8.8", 80))
+        address = _socket.getsockname()[0]
+    except socket.gaierror as error:
+        logger.error(f"Failed to determine host IP address: {error}")
+    finally:
+        _socket.close()
+
+    return address
 
 
 def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, str, str]:
@@ -247,7 +260,7 @@ def assert_valid_input(prompt: str, forbidden_responses: List[str] = [], reason:
     while True:
         user_response = input(prompt)
         if not user_response: # pylint: disable=no-else-continue
-            warning_msg('A non-empty response must be given')
+            logger.msg.warning('A non-empty response must be given')
             continue
         elif user_response in forbidden_responses:
             warning_msg(f'Invalid response, {user_response} {reason}')

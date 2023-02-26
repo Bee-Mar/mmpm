@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+""" Command line options for 'install' subcommand """
 import argparse
 
-def setup(subparser):
+def setup(subparser: argparse._SubParsersAction):
     parser = subparser.add_parser(
         "install",
         usage='\n  mmpm install <package(s)> [--yes]\n  mmpm install [--completion] [--gui]',

@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
+""" Command line options for 'add-ext-pkg' subcommand """
 import argparse
 
-def setup(subparser):
-    # ADD EXTERNAL PACKAGE SUBCOMMANDS
-    add_ext_package_parser = subparser.add_parser(
+
+def setup(subparser: argparse._SubParsersAction):
+    parser = subparser.add_parser(
         "add-ext-pkg",
         usage='\n  mmpm add-ext-package [--title=<title>] [--author=<author>] [--repo=<repo>] [--desc=<description>]\n  mmpm add-ext-package --remove <package> [--yes]',
         help='manually add MagicMirror packages to your local database'
     )
 
-    add_ext_package_parser.add_argument(
+    parser.add_argument(
         '-t',
         '--title',
         type=str,
@@ -17,7 +18,7 @@ def setup(subparser):
         dest='title'
     )
 
-    add_ext_package_parser.add_argument(
+    parser.add_argument(
         '-a',
         '--author',
         type=str,
@@ -25,7 +26,7 @@ def setup(subparser):
         dest='author'
     )
 
-    add_ext_package_parser.add_argument(
+    parser.add_argument(
         '-r',
         '--repo',
         type=str,
@@ -33,7 +34,7 @@ def setup(subparser):
         dest='repo'
     )
 
-    add_ext_package_parser.add_argument(
+    parser.add_argument(
         '-d',
         '--desc',
         type=str,
@@ -41,14 +42,14 @@ def setup(subparser):
         dest='desc'
     )
 
-    add_ext_package_parser.add_argument(
+    parser.add_argument(
         '--remove',
         nargs='+',
         help='remove external package (similar to `add-apt-repository` --remove)',
         dest='remove'
     )
 
-    add_ext_package_parser.add_argument(
+    parser.add_argument(
         '-y',
         '--yes',
         action='store_true',

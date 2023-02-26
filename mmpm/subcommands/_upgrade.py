@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
+""" Command line options for 'upgrade' subcommand """
 import argparse
-import argcomplete
 
-def setup(subparser):
-    # UPGRADE SUBCOMMANDS
-    upgrade_parser = subparser.add_parser(
+def setup(subparser: argparse._SubParsersAction):
+    parser = subparser.add_parser(
         "upgrade",
         usage='\n  mmpm upgrade [--yes]\n  mmpm upgrade <package(s)> <application(s)> [--yes]',
         help='upgrade packages, MMPM, and/or MagicMirror, if available'
     )
 
-    upgrade_parser.add_argument(
+    parser.add_argument(
         '-y',
         '--yes',
         action='store_true',

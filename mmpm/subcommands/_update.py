@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
+""" Command line options for 'update' subcommand """
 import argparse
 
-def setup(subparser):
-    # UPDATE PARSER
+def setup(subparser: argparse._SubParsersAction):
     subparser.add_parser(
         "update",
         usage='\n  mmpm update',

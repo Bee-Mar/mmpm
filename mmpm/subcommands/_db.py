@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
+""" Command line options for 'db' subcommand """
 import argparse
-import argcomplete
 
-def setup(subparser):
-    # DB SUBCOMMANDS
+def setup(subparser: argparse._SubParsersAction):
     database_parser = subparser.add_parser(
         "db",
         usage='\n  mmpm db [--refresh] [--details]',

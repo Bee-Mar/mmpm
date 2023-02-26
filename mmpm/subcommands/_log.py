@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
+""" Command line options for 'log' subcommand """
 import argparse
 
-def setup(subparser):
-    # LOGS SUBCOMMANDS
-    log_parser = subparser.add_parser(
+def setup(subparser: argparse._SubParsersAction):
+    parser = subparser.add_parser(
         "log",
         usage='\n  mmpm log [--cli] [--web] [--tail]',
         help='display, tail, or zip the MMPM log files'
     )
 
-    log_parser.add_argument(
+    parser.add_argument(
         '-c',
         '--cli',
         action='store_true',
@@ -17,7 +17,7 @@ def setup(subparser):
         dest='cli'
     )
 
-    log_parser.add_argument(
+    parser.add_argument(
         '-g',
         '--gui',
         action='store_true',
@@ -25,7 +25,7 @@ def setup(subparser):
         dest='gui'
     )
 
-    log_parser.add_argument(
+    parser.add_argument(
         '-t',
         '--tail',
         action='store_true',
@@ -33,7 +33,7 @@ def setup(subparser):
         dest='tail'
     )
 
-    log_parser.add_argument(
+    parser.add_argument(
         '--zip',
         action='store_true',
         help='compress the MMPM log file(s), and save them in your current directory',

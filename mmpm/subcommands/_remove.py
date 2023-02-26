@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
+""" Command line options for 'remove' subcommand """
 import argparse
 
-def setup(subparser):
-    # REMOVE PARSER
-    remove_parser = subparser.add_parser(
+def setup(subparser: argparse._SubParsersAction):
+    parser = subparser.add_parser(
         "remove",
         usage='\n  mmpm remove <package(s)> [--yes]',
         help='remove locally installed packages'
     )
 
-    remove_parser.add_argument(
+    parser.add_argument(
         '--magicmirror',
         action='store_true',
         default=False,
@@ -17,7 +17,7 @@ def setup(subparser):
         dest='magicmirror'
     )
 
-    remove_parser.add_argument(
+    parser.add_argument(
         '-y',
         '--yes',
         action='store_true',
@@ -26,7 +26,7 @@ def setup(subparser):
         dest='assume_yes'
     )
 
-    remove_parser.add_argument(
+    parser.add_argument(
         '--gui',
         action='store_true',
         default=False,

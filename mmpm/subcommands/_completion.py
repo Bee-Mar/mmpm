@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
+""" Command line options for 'completion' subcommand """
 import argparse
 
-def setup(subparser):
-    # VERSION SUBCOMMANDS
-    completion_parser = subparser.add_parser(
+def setup(subparser: argparse._SubParsersAction):
+    parser = subparser.add_parser(
         "completion",
         usage='\n  mmpm completion',
         help='install autocompletion for the MMPM CLI',
     )
 
-    completion_parser.add_argument(
+    parser.add_argument(
         '-y',
         '--yes',
         action='store_true',

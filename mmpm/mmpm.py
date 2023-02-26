@@ -10,6 +10,7 @@ import webbrowser
 import mmpm.utils
 import mmpm.core
 import mmpm.consts
+from argparse import Namespace
 from mmpm.subcommands import options
 from mmpm.constants import paths
 from mmpm.env import MMPMEnv
@@ -19,6 +20,8 @@ from mmpm.magicmirror.package import RemotePackage, MagicMirrorPackage
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.controller import MagicMirrorController
 from typing import List, Dict, Set
+from socket import gethostbyname, gethostname
+from pathlib import Path
 
 
 __version__ = 3.0
@@ -31,7 +34,7 @@ class MMPM:
     def run(cls):
         ''' Main entry point for CLI '''
 
-        parser = options.get()
+        parser = options.setup()
 
         if len(sys.argv) < 2:
             parser.print_help()
@@ -413,78 +416,67 @@ class MMPM:
             logger.msg.fatal(f'Unable install autocompletion for ({shell}). Please see {autocomplete_url} for help installing autocomplete')
 
 
-        @classmethod
-        def guided_setup(cls):
-            '''
-            Provides the user a guided configuration of the environment variables, and
-            feature installation. This can be re-run as many times as necessary.
+    @classmethod
+    def guided_setup(cls, args, additional_args = None):
+        '''
+        Provides the user a guided configuration of the environment variables, and
+        feature installation. This can be re-run as many times as necessary.
 
-            Parameters:
-                None
+        Parameters:
+            None
 
-            Returns:
-                None
-            '''
-            valid_input: Callable = mmpm.utils.assert_valid_input
+        Returns:
+            None
+        '''
+        valid_input: Callable = mmpm.utils.assert_valid_input
 
-            print(mmpm.color.bright_green("Welcome to MMPM's guided setup!\n"))
-            print("I'll help you setup your environment variables, and install additional features. Pressing CTRL-C will cancel the entire process.")
-            print("There are 6 to 12 questions, depending on your answers. Let's get started.\n")
+        print(mmpm.color.bright_green("Welcome to MMPM's guided setup!\n"))
+        print("I'll help you setup your environment variables, and install additional features.\n\n")
+        print("Let's get started!\n")
 
-            magicmirror_root: str = ''
-            magicmirror_uri: str = f'http://{gethostbyname(gethostname())}:8080'
-            magicmirror_pm2_proc: str = ''
-            magicmirror_docker_compose_file: str = ''
-            mmpm_is_docker_image: bool = False
-            install_gui: bool = False
-            install_autocomplete: bool = False
-            install_as_module: bool = False
-            migrate_mmpm_db_keys: bool = False
+        magicmirror_root: str = f"{Path.home()}/MagicMirror"
+        magicmirror_uri: str = f'http://{mmpm.utils.get_host_ip()}:8080'
+        magicmirror_pm2_proc: str = ''
+        magicmirror_docker_compose_file: str = ''
+        mmpm_is_docker_image: bool = False
+        install_gui: bool = False
+        install_autocomplete: bool = False
+        install_as_module: bool = False
 
-            try:
-                magicmirror_root = valid_input('What is the absolute path to the root of your MagicMirror installation (ie. /home/pi/MagicMirror)? ')
-                mmpm_is_docker_image = prompt('Did you install MMPM as a Docker image, or using docker-compose?')
+        magicmirror_root = valid_input(f'What is the absolute path to the root of your MagicMirror installation (ie. {Path.home()}/MagicMirror)? ')
+        mmpm_is_docker_image = mmpm.utils.prompt('Is MMPM running as a Docker image? ')
 
-                if not mmpm_is_docker_image and prompt('Did you install MagicMirror using docker-compose?'):
-                    magicmirror_docker_compose_file = valid_input('What is the absolute path to the MagicMirror docker-compose file (ie. /home/pi/docker-compose.yml)? ')
+        if not mmpm_is_docker_image and mmpm.utils.prompt('Did you install MagicMirror using docker-compose?'):
+            magicmirror_docker_compose_file = valid_input(f'What is the absolute path to the MagicMirror docker-compose file (ie. {Path.home()}/docker-compose.yml)? ')
 
-                if not mmpm_is_docker_image and not magicmirror_docker_compose_file and prompt('Are you currently using PM2 with your MagicMirror?'):
-                    magicmirror_pm2_proc = valid_input('What is the name of the PM2 process for MagicMirror? ')
+        if not mmpm_is_docker_image and not magicmirror_docker_compose_file and mmpm.utils.prompt('Are you using PM2 to start/stop MagicMirror?'):
+            magicmirror_pm2_proc = valid_input('What is the name of the PM2 process for MagicMirror? ')
 
-                if not prompt(f'Is {magicmirror_uri} the address used to open MagicMirror in your browser? '):
-                    magicmirror_uri = valid_input('What is the URL used to access MagicMirror (ie. http://192.168.0.3:8080)? ')
+        if not mmpm.utils.prompt(f'Is {magicmirror_uri} the address used to open MagicMirror in your browser? '):
+            magicmirror_uri = valid_input(f'What is the full address used to access MagicMirror? ')
 
-                migrate_mmpm_db_keys = prompt('Have you ever installed any version of MMPM < 2.01?')
-                install_gui = not mmpm_is_docker_image and prompt('Would you like to install the MMPM GUI (web interface)?')
-                install_as_module = prompt('Would you like to hide/show MagicMirror modules through MMPM?')
-                install_autocomplete = prompt('Would you like to install tab-autocomplete for the MMPM CLI?')
+        install_gui = not mmpm_is_docker_image and mmpm.utils.prompt('Would you like to install the MMPM GUI (web interface)?')
+        install_as_module = mmpm.utils.prompt('Would you like to hide/show MagicMirror modules through MMPM?')
+        install_autocomplete = mmpm.utils.prompt('Would you like to install tab-autocomplete for the MMPM CLI?')
 
-            except KeyboardInterrupt:
-                logger.info('User cancelled guided setup')
-                print()
-                sys.exit(0)
+        with open(mmpm.consts.MMPM_ENV_FILE, 'w', encoding="utf-8") as env:
+            json.dump({
+                MMPMEnv.mmpm_magicmirror_root.name: os.path.normpath(magicmirror_root),
+                MMPMEnv.mmpm_magicmirror_uri.name: magicmirror_uri,
+                MMPMEnv.mmpm_magicmirror_pm2_process_name.name: magicmirror_pm2_proc,
+                MMPMEnv.mmpm_magicmirror_docker_compose_file.name: os.path.normpath(magicmirror_docker_compose_file),
+                MMPMEnv.mmpm_is_docker_image.name: mmpm_is_docker_image
+            }, env, indent=2)
 
-            with open(mmpm.consts.MMPM_ENV_FILE, 'w', encoding="utf-8") as env:
-                json.dump({
-                    mmpm.consts.MMPM_MAGICMIRROR_ROOT_ENV: os.path.normpath(magicmirror_root),
-                    mmpm.consts.MMPM_MAGICMIRROR_URI_ENV: magicmirror_uri,
-                    mmpm.consts.MMPM_MAGICMIRROR_PM2_PROCESS_NAME_ENV: magicmirror_pm2_proc,
-                    mmpm.consts.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE_ENV: os.path.normpath(magicmirror_docker_compose_file),
-                    mmpm.consts.MMPM_IS_DOCKER_IMAGE_ENV: mmpm_is_docker_image
-                }, env, indent=2)
+        print('\nBased on your responses, your environment variables have been set as:')
+        MMPMEnv.display()
+        print("\n \nExecute the following commands to install the desired features:")
 
-            if install_as_module:
-                install_mmpm_as_magicmirror_module(assume_yes=True)
+        if install_as_module:
+            print(mmpm.color.bright_green("mmpm install mmpm"))
+        if install_gui:
+            print(mmpm.color.bright_green("mmpm install --gui"))
+        if install_autocomplete:
+            print(mmpm.color.bright_green("mmpm completion"))
 
-            if install_gui:
-                install_mmpm_gui(assume_yes=True)
-
-            if install_autocomplete:
-                install_autocompletion(assume_yes=True)
-
-            print('\nBased on your responses, your environment variables have been set as:')
-            display_mmpm_env_vars()
-
-            print('\n\nDone!\n\nPlease review the above output for any additional suggested instructions.')
-
-
+        print()

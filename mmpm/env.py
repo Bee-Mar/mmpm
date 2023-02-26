@@ -36,7 +36,6 @@ class EnvVar:
         if self.name not in MMPM_DEFAULT_ENV:
             logger.fatal(f"Environment variable '{self.name}' does is not valid.")
 
-
         with open(mmpm.consts.MMPM_ENV_FILE, 'r', encoding="utf-8") as env:
             env_vars = {}
 
@@ -46,7 +45,7 @@ class EnvVar:
                 logger.warning(f"Environment variable '{self.name}' does is not valid.")
 
             if self.name not in env_vars:
-                logger.fatal(f"Value for {self.name} not in {mmpm.consts.MMPM_ENV_FILE}. Using default value.")
+                logger.warning(f"Value for {self.name} not in {mmpm.consts.MMPM_ENV_FILE}. Using default value.")
                 value = self.default
             else:
                 value = env_vars.get(self.name)

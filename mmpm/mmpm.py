@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=unused-argument
-# pylint: disable=unused-import
+# pylint: disable=unused-argument,unused-import
 from gevent import monkey
 monkey.patch_all() # do not move these
 
@@ -10,8 +9,8 @@ import json
 import webbrowser
 import mmpm.utils
 import mmpm.core
-import mmpm.opts
 import mmpm.consts
+from mmpm.subcommands import options
 from mmpm.constants import paths
 from mmpm.env import MMPMEnv
 from mmpm.gui import MMPMGui
@@ -32,12 +31,18 @@ class MMPM:
     def run(cls):
         ''' Main entry point for CLI '''
 
-        args, additional_args = mmpm.opts.get_user_args()
+        parser = options.get()
 
-        if args.subcmd in mmpm.opts.SINGLE_OPTION_ARGS and not mmpm.utils.assert_one_option_selected(args): # TODO: FIXME
+        if len(sys.argv) < 2:
+            parser.print_help()
+            sys.exit(127)
+
+        args, additional_args = parser.parse_known_args()
+
+        if args.subcmd in options.SINGLE_OPTION_ARGS and not mmpm.utils.assert_one_option_selected(args): # TODO: FIXME
             mmpm.utils.fatal_too_many_options(args)
 
-        should_refresh = True if args.subcmd == mmpm.opts.DB and args.refresh else MagicMirrorDatabase.expired()
+        should_refresh = True if args.subcmd == options.DB and args.refresh else MagicMirrorDatabase.expired()
 
         MagicMirrorDatabase.load(refresh=should_refresh)
 
@@ -48,8 +53,6 @@ class MMPM:
 
         if hasattr(MMPM, command):
             getattr(MMPM, command)(args, additional_args)
-        else:
-            parser.print_help()
 
 
     @classmethod
@@ -65,14 +68,14 @@ class MMPM:
             None
         '''
 
-        mmpm.consts.MMPM_CONFIG_DIR.mkdir(exist_ok=True)
+        paths.MMPM_CONFIG_DIR.mkdir(exist_ok=True)
 
-        for data_file in mmpm.consts.MMPM_REQUIRED_DATA_FILES:
-            data_file.touch()
+        for data_file in paths.MMPM_REQUIRED_DATA_FILES:
+            data_file.touch(exist_ok=True)
 
         current_env: dict = {}
 
-        with open(mmpm.consts.MMPM_ENV_FILE, 'r', encoding="utf-8") as env:
+        with open(paths.MMPM_ENV_FILE, 'r', encoding="utf-8") as env:
             try:
                 current_env = json.load(env)
             except json.JSONDecodeError as error:
@@ -122,9 +125,9 @@ class MMPM:
 
             for status in health.values():
                 if status[mmpm.consts.ERROR]:
-                    mmpm.utils.fatal_msg(status[mmpm.consts.ERROR])
+                    logger.msg.fatal(status[mmpm.consts.ERROR])
                 elif status[mmpm.consts.WARNING]:
-                    mmpm.utils.warning_msg(status[mmpm.consts.WARNING])
+                    logger.msg.warning(status[mmpm.consts.WARNING])
 
         for query in additional_args:
             for package in MagicMirrorDatabase.search(query, by_title_only=True):
@@ -136,7 +139,7 @@ class MMPM:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
         if len(additional_args) > 1:
-            mmpm.utils.fatal_msg(f'Too many arguments. `mmpm {args.subcmd}` only accepts one search argument')
+            logger.msg.fatal(f'Too many arguments. `mmpm {args.subcmd}` only accepts one search argument')
         else:
             query_result = MagicMirrorDatabase.search(additional_args[0], case_sensitive=args.case_sensitive, exclude_installed=args.exclude_installed)
 
@@ -153,7 +156,7 @@ class MMPM:
             MagicMirrorController.hide_modules(args.hide)
         elif args.show:
             MagicMirrorController.show_modules(args.show)
-        elif args.start or args.stop or args.restart or args.rotate != None:
+        elif args.start or args.stop or args.restart:
             if MMPMEnv.mmpm_is_docker_image.get():
                 logger.msg.fatal('Cannot execute this command within a docker image')
             elif args.start:
@@ -243,8 +246,6 @@ class MMPM:
     def install(cls, args, additional_args = None):
         if args.gui:
             MMPMGui.install()
-        elif args.completion:
-            mmpm.core.install_autocompletion(assume_yes=args.assume_yes)
         elif not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
         else:
@@ -314,7 +315,7 @@ class MMPM:
             MagicMirrorDatabase.add_external_package(args.title, args.author, args.repo, args.desc)
 
     @classmethod
-    def install_autocompletion(cls):
+    def completion(cls, args, additional_args = None):
         '''
         Adds autocompletion configuration to a user's shell configuration file.
         Detects configuration files for bash, zsh, fish, and tcsh
@@ -326,7 +327,7 @@ class MMPM:
             None
         '''
 
-        if not mmpm.utils.prompt_user('Are you sure you want to install the autocompletion feature for the MMPM CLI?', assume_yes=assume_yes):
+        if not mmpm.utils.prompt('Are you sure you want to install the autocompletion feature for the MMPM CLI?', assume_yes=args.assume_yes):
             logger.info('User cancelled installation of autocompletion for MMPM CLI')
             return
 
@@ -361,7 +362,7 @@ class MMPM:
             logger.msg.info("Detected 'bash' shell.\n")
 
             if not config:
-                mmpm.utils.fatal_msg(failed_match_message('bash', files))
+                logger.msg.fatal(failed_match_message('bash', files))
 
             __eval__(f'echo \'eval "$(register-python-argcomplete mmpm)"\' >> {config}')
 
@@ -374,7 +375,7 @@ class MMPM:
             logger.msg.info("Detected 'zsh' shell.\n")
 
             if not config:
-                mmpm.utils.fatal_msg(failed_match_message('zsh', files))
+                logger.msg.fatal(failed_match_message('zsh', files))
 
             __eval__(f"echo 'autoload -U bashcompinit' >> {config}")
             __eval__(f"echo 'bashcompinit' >> {config}")
@@ -389,7 +390,7 @@ class MMPM:
             logger.msg.info("Detected 'tcsh' shell.\n")
 
             if not config:
-                mmpm.utils.fatal_msg(failed_match_message('tcsh', files))
+                logger.msg.fatal(failed_match_message('tcsh', files))
 
             __eval__(f"echo 'eval `register-python-argcomplete --shell tcsh mmpm`' >> {config}")
 
@@ -402,14 +403,15 @@ class MMPM:
             logger.msg.info("Detected 'fish' shell.\n")
 
             if not config:
-                mmpm.utils.fatal_msg(failed_match_message('fish', files))
+                logger.msg.fatal(failed_match_message('fish', files))
 
             __eval__(f"register-python-argcomplete --shell fish mmpm >> {config}")
 
             print(complete_message(config))
 
         else:
-            mmpm.utils.fatal_msg(f'Unable install autocompletion for ({shell}). Please see {autocomplete_url} for help installing autocomplete')
+            logger.msg.fatal(f'Unable install autocompletion for ({shell}). Please see {autocomplete_url} for help installing autocomplete')
+
 
         @classmethod
         def guided_setup(cls):
@@ -423,7 +425,6 @@ class MMPM:
             Returns:
                 None
             '''
-            prompt_user: Callable = mmpm.utils.prompt_user
             valid_input: Callable = mmpm.utils.assert_valid_input
 
             print(mmpm.color.bright_green("Welcome to MMPM's guided setup!\n"))
@@ -442,21 +443,21 @@ class MMPM:
 
             try:
                 magicmirror_root = valid_input('What is the absolute path to the root of your MagicMirror installation (ie. /home/pi/MagicMirror)? ')
-                mmpm_is_docker_image = prompt_user('Did you install MMPM as a Docker image, or using docker-compose?')
+                mmpm_is_docker_image = prompt('Did you install MMPM as a Docker image, or using docker-compose?')
 
-                if not mmpm_is_docker_image and prompt_user('Did you install MagicMirror using docker-compose?'):
+                if not mmpm_is_docker_image and prompt('Did you install MagicMirror using docker-compose?'):
                     magicmirror_docker_compose_file = valid_input('What is the absolute path to the MagicMirror docker-compose file (ie. /home/pi/docker-compose.yml)? ')
 
-                if not mmpm_is_docker_image and not magicmirror_docker_compose_file and prompt_user('Are you currently using PM2 with your MagicMirror?'):
+                if not mmpm_is_docker_image and not magicmirror_docker_compose_file and prompt('Are you currently using PM2 with your MagicMirror?'):
                     magicmirror_pm2_proc = valid_input('What is the name of the PM2 process for MagicMirror? ')
 
-                if not prompt_user(f'Is {magicmirror_uri} the address used to open MagicMirror in your browser? '):
+                if not prompt(f'Is {magicmirror_uri} the address used to open MagicMirror in your browser? '):
                     magicmirror_uri = valid_input('What is the URL used to access MagicMirror (ie. http://192.168.0.3:8080)? ')
 
-                migrate_mmpm_db_keys = prompt_user('Have you ever installed any version of MMPM < 2.01?')
-                install_gui = not mmpm_is_docker_image and prompt_user('Would you like to install the MMPM GUI (web interface)?')
-                install_as_module = prompt_user('Would you like to hide/show MagicMirror modules through MMPM?')
-                install_autocomplete = prompt_user('Would you like to install tab-autocomplete for the MMPM CLI?')
+                migrate_mmpm_db_keys = prompt('Have you ever installed any version of MMPM < 2.01?')
+                install_gui = not mmpm_is_docker_image and prompt('Would you like to install the MMPM GUI (web interface)?')
+                install_as_module = prompt('Would you like to hide/show MagicMirror modules through MMPM?')
+                install_autocomplete = prompt('Would you like to install tab-autocomplete for the MMPM CLI?')
 
             except KeyboardInterrupt:
                 logger.info('User cancelled guided setup')

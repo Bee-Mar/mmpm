@@ -10,7 +10,6 @@ import requests
 import mmpm.color
 import mmpm.utils
 import mmpm.consts
-import mmpm.models
 import getpass
 import mmpm.mmpm
 from mmpm.logger import MMPMLogger
@@ -50,16 +49,17 @@ def check_for_mmpm_updates(automated=False) -> bool:
     else:
         message = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] for updates"
 
-    mmpm.utils.plain_print(message)
+    logger.msg.info(message)
 
     try:
         # just to keep the console output the same as all other update commands
         error_code, contents, _ = mmpm.utils.run_cmd(['curl', mmpm.consts.MMPM_FILE_URL])
     except KeyboardInterrupt:
-        mmpm.utils.keyboard_interrupt_log()
+        logger.info("User killed process with CTRL-C")
+        sys.exit(127)
 
     if error_code:
-        logger.msg.fatal_msg('Failed to retrieve MMPM version number')
+        logger.msg.fatal('Failed to retrieve MMPM version number')
 
     version_number: float = float(findall(r"\d+\.\d+", findall(r"__version__ = \d+\.\d+", contents)[0])[0])
     print(mmpm.consts.GREEN_CHECK_MARK)
@@ -139,15 +139,15 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
                 logger.msg.error(f'Unable to match {selection} to a package/application with available upgrades')
 
             for package in valid_pkgs:
-                if package.title in selection and mmpm.utils.prompt_user(f'Upgrade {mmpm.color.normal_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
+                if package.title in selection and mmpm.utils.prompt(f'Upgrade {mmpm.color.normal_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
                     confirmed[mmpm.consts.PACKAGES].append(package)
         else:
             for package in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]:
-                if mmpm.utils.prompt_user(f'Upgrade {mmpm.color.normal_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
+                if mmpm.utils.prompt(f'Upgrade {mmpm.color.normal_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
                     confirmed[mmpm.consts.PACKAGES].append(package)
 
     if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR] and (magicmirror_selected or not user_selections):
-        confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt_user(f"Upgrade {mmpm.color.normal_green('MagicMirror')} now?", assume_yes=assume_yes)
+        confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt(f"Upgrade {mmpm.color.normal_green('MagicMirror')} now?", assume_yes=assume_yes)
 
     if upgrades[mmpm.consts.MMPM] and (mmpm_selected or not user_selections):
         if MMPMEnv.mmpm_is_docker_image.get():
@@ -169,7 +169,7 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
         error = upgrade_magicmirror()
 
         if error:
-            logger.msg.error_msg(error)
+            logger.msg.error(error)
         else:
             upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR] = False
             upgraded = True
@@ -228,7 +228,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
         None
     '''
 
-    if not mmpm.utils.prompt_user('Are you sure you want to install the autocompletion feature for the MMPM CLI?', assume_yes=assume_yes):
+    if not mmpm.utils.prompt('Are you sure you want to install the autocompletion feature for the MMPM CLI?', assume_yes=assume_yes):
         logger.info('User cancelled installation of autocompletion for MMPM CLI')
         return
 
@@ -262,7 +262,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
         config = __match_shell_config__(files)
 
         if not config:
-            mmpm.utils.fatal_msg(failed_match_message('bash', files))
+            logger.msg.fatal(failed_match_message('bash', files))
 
         __echo_and_eval__(f'echo \'eval "$(register-python-argcomplete mmpm)"\' >> {config}')
 
@@ -273,7 +273,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
         config = __match_shell_config__(files)
 
         if not config:
-            mmpm.utils.fatal_msg(failed_match_message('zsh', files))
+            logger.msg.fatal(failed_match_message('zsh', files))
 
         __echo_and_eval__(f"echo 'autoload -U bashcompinit' >> {config}")
         __echo_and_eval__(f"echo 'bashcompinit' >> {config}")
@@ -286,7 +286,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
         config = __match_shell_config__(files)
 
         if not config:
-            mmpm.utils.fatal_msg(failed_match_message('tcsh', files))
+            logger.msg.fatal(failed_match_message('tcsh', files))
 
         __echo_and_eval__(f"echo 'eval `register-python-argcomplete --shell tcsh mmpm`' >> {config}")
 
@@ -297,14 +297,14 @@ def install_autocompletion(assume_yes: bool = False) -> None:
         config = __match_shell_config__(files)
 
         if not config:
-            mmpm.utils.fatal_msg(failed_match_message('fish', files))
+            logger.msg.fatal(failed_match_message('fish', files))
 
         __echo_and_eval__(f"register-python-argcomplete --shell fish mmpm >> {config}")
 
         print(complete_message(config))
 
     else:
-        mmpm.utils.fatal_msg(f'Unable install autocompletion for ({shell}). Please see {autocomplete_url} for help installing autocomplete')
+        logger.msg.fatal(f'Unable install autocompletion for ({shell}). Please see {autocomplete_url} for help installing autocomplete')
 
 
 

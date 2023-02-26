@@ -170,7 +170,7 @@ class MagicMirrorPackage():
             logger.msg.error(f"'{self.title}' is already installed")
             return
 
-        if not assume_yes and not mmpm.utils.prompt_user(f'Continue installing {mmpm.color.normal_green(self.title)} ({self.repository})?'):
+        if not assume_yes and not mmpm.utils.prompt(f'Continue installing {mmpm.color.normal_green(self.title)} ({self.repository})?'):
             return
 
         # TODO: add user prompt for yes/no
@@ -182,7 +182,7 @@ class MagicMirrorPackage():
             logger.msg.error(f"'{self.title}' is not installed")
             return
 
-        if not assume_yes and not mmpm.utils.prompt_user(f'Continue removing {mmpm.color.normal_green(self.title)} ({self.repository})?'):
+        if not assume_yes and not mmpm.utils.prompt(f'Continue removing {mmpm.color.normal_green(self.title)} ({self.repository})?'):
             return
 
         run_cmd(["rm", "-rf", str(self.directory)])
@@ -197,7 +197,7 @@ class MagicMirrorPackage():
         modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
 
         if not modules_dir.exists():
-            logger.msg.env_variables_fatal(f"'{str(modules_dir)}' does not exist.")
+            logger.msg.fatal(f"'{str(modules_dir)}' does not exist.")
             self.is_upgradable = False
             return
 
@@ -207,8 +207,8 @@ class MagicMirrorPackage():
             error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
 
         except KeyboardInterrupt:
-            print(mmpm.consts.RED_X)
-            mmpm.utils.keyboard_interrupt_log()
+            logger.info("User killed process with CTRL-C")
+            sys.exit(127)
 
         if error_code:
             print(mmpm.consts.RED_X)
@@ -241,8 +241,8 @@ class MagicMirrorPackage():
         error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
 
         if error_code:
-            MMPMLogger.error_msg(f'Failed to upgrade MagicMirror {mmpm.consts.RED_X}')
-            MMPMLogger.error_msg(stderr)
+            logger.msg.error(f'Failed to upgrade MagicMirror {mmpm.consts.RED_X}')
+            logger.error(stderr)
             return stderr
 
         else:
@@ -252,7 +252,7 @@ class MagicMirrorPackage():
 
         if stderr:
             print(mmpm.consts.RED_X)
-            MMPMLogger.error_msg(stderr)
+            logger.msg.error(stderr)
             return stderr
 
         return ''
@@ -382,7 +382,7 @@ class InstallationHandler:
                     print(mmpm.consts.GREEN_CHECK_MARK)
 
         if error_code:
-            if mmpm.utils.prompt_user(f"Installation failed. Would you like to remove {self.package.title}?"):
+            if mmpm.utils.prompt(f"Installation failed. Would you like to remove {self.package.title}?"):
                 message = f"Installtion failed. Removing {self.package.title}"
                 logger.info(message)
                 logger.msg.info(message)

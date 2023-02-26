@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import sys
 import json
 import shutil
 import datetime
@@ -55,16 +56,17 @@ class MagicMirrorDatabase:
         else:
             message = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] for updates"
 
-        mmpm.utils.plain_print(message)
+        logger.msg.info(message)
 
         try:
             # just to keep the console output the same as all other update commands
             error_code, contents, _ = mmpm.utils.run_cmd(['curl', mmpm.consts.MMPM_FILE_URL])
         except KeyboardInterrupt:
-            mmpm.utils.keyboard_interrupt_log()
+            logger.info("User killed process with CTRL-C")
+            sys.exit(127)
 
         if error_code:
-            logger.msg.fatal_msg('Failed to retrieve MMPM version number')
+            logger.msg.fatal('Failed to retrieve MMPM version number')
 
         version_number: float = float(findall(r"\d+\.\d+", findall(r"__version__ = \d+\.\d+", contents)[0])[0])
         print(mmpm.consts.GREEN_CHECK_MARK)
@@ -86,7 +88,7 @@ class MagicMirrorDatabase:
 
         for package in MagicMirrorDatabase.packages:
             if package.is_installed:
-                mmpm.utils.plain_print(f'Checking {mmpm.color.normal_green(package.title)} [{cyan_package}] for updates') # type: ignore
+                logger.msg.info(f'Checking {mmpm.color.normal_green(package.title)} [{cyan_package}] for updates') # type: ignore
                 package.update()
 
                 if package.is_upgradable:
@@ -158,7 +160,7 @@ class MagicMirrorDatabase:
             response = requests.get(mmpm.consts.MAGICMIRROR_MODULES_URL, timeout=10)
         except requests.exceptions.RequestException:
             print(mmpm.consts.RED_X)
-            mmpm.utils.fatal_msg('Unable to retrieve MagicMirror modules.')
+            logger.msg.fatal('Unable to retrieve MagicMirror modules.')
             return []
 
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -185,7 +187,7 @@ class MagicMirrorDatabase:
                     MagicMirrorDatabase.packages.append(pkg)
 
         except Exception as error:
-            mmpm.utils.fatal_msg(str(error))
+            logger.msg.fatal(str(error))
 
     @classmethod
     def expired(cls) -> bool:
@@ -265,7 +267,7 @@ class MagicMirrorDatabase:
 
         # if the database has expired, or doesn't exist, get a new one
         if refresh or not db_exists:
-            mmpm.utils.plain_print(
+            logger.msg.info(
                 f"{mmpm.consts.GREEN_PLUS} {'Refreshing' if db_exists else 'Initializing'} MagicMirror 3rd party packages database "
             )
 
@@ -273,7 +275,7 @@ class MagicMirrorDatabase:
 
             if not MagicMirrorDatabase.packages:
                 print(mmpm.consts.RED_X)
-                mmpm.utils.error_msg(f'Failed to retrieve packages from {mmpm.consts.MAGICMIRROR_MODULES_URL}. Please check your internet connection.')
+                logger.msg.error(f'Failed to retrieve packages from {mmpm.consts.MAGICMIRROR_MODULES_URL}. Please check your internet connection.')
 
             # save the new database
             else:
@@ -365,7 +367,7 @@ class MagicMirrorDatabase:
         package_directories: List[PosixPath] = [directory for directory in modules_dir.iterdir()]
 
         if not package_directories:
-            mmpm.utils.env_variables_error_msg('Failed to find MagicMirror root directory.')
+            logger.msg.error('Failed to find MagicMirror root directory.')
             return []
 
         os.chdir(modules_dir)
@@ -385,7 +387,7 @@ class MagicMirrorDatabase:
                 )
 
                 if error_code:
-                    mmpm.utils.error_msg(f'Unable to communicate with git server to retrieve information about {package_dir}')
+                    logger.msg.error(f'Unable to communicate with git server to retrieve information about {package_dir}')
                     continue
 
                 error_code, project_name, _ = mmpm.utils.run_cmd(
@@ -394,7 +396,7 @@ class MagicMirrorDatabase:
                 )
 
                 if error_code:
-                    mmpm.utils.error_msg(f'Unable to determine repository origin for {project_name}')
+                    logger.msg.error(f'Unable to determine repository origin for {project_name}')
                     continue
 
                 packages_found.append(
@@ -402,7 +404,7 @@ class MagicMirrorDatabase:
                 )
 
             except Exception as error:
-                mmpm.utils.error_msg(str(error))
+                logger.msg.error(str(error))
 
             finally:
                 os.chdir(modules_dir)
@@ -552,7 +554,8 @@ class MagicMirrorDatabase:
                 print(f'Description: {description}')
 
         except KeyboardInterrupt:
-            mmpm.utils.keyboard_interrupt_log()
+            logger.info("User killed process with CTRL-C")
+            sys.exit(127)
 
         external_package = MagicMirrorPackage(title=title, repository=repo, author=author, description=description)
 
@@ -574,7 +577,7 @@ class MagicMirrorDatabase:
             print(mmpm.color.normal_green(f"\nSuccessfully added {title} to '{mmpm.consts.EXTERNAL_PACKAGES}'\n"))
 
         except IOError as error:
-            mmpm.utils.error_msg('Failed to save external module')
+            logger.msg.error('Failed to save external module')
             return str(error)
 
         return ''
@@ -594,10 +597,10 @@ class MagicMirrorDatabase:
         '''
 
         if not os.path.exists(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE):
-            mmpm.utils.fatal_msg(f'{mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE} does not appear to exist')
+            logger.msg.fatal(f'{mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE} does not appear to exist')
 
         elif not os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size:
-            mmpm.utils.fatal_msg(f'{mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE} is empty')
+            logger.msg.fatal(f'{mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE} is empty')
 
         ext_packages: Dict[str, List[MagicMirrorPackage]] = {}
         marked_for_removal: List[MagicMirrorPackage] = []
@@ -607,19 +610,19 @@ class MagicMirrorDatabase:
             ext_packages[mmpm.consts.EXTERNAL_PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(mmpm_ext_srcs)[mmpm.consts.EXTERNAL_PACKAGES])
 
         if not ext_packages[mmpm.consts.EXTERNAL_PACKAGES]:
-            mmpm.utils.fatal_msg('No external packages found in database')
+            logger.msg.fatal('No external packages found in database')
 
         for title in titles:
             for package in ext_packages[mmpm.consts.EXTERNAL_PACKAGES]:
                 if package.title == title:
                     prompt: str = f'Would you like to remove {mmpm.color.normal_green(title)} ({package.repository}) from the MMPM/MagicMirror local database?'
-                    if mmpm.utils.prompt_user(prompt, assume_yes=assume_yes):
+                    if mmpm.utils.prompt(prompt, assume_yes=assume_yes):
                         marked_for_removal.append(package)
                     else:
                         cancelled_removal.append(package)
 
         if not marked_for_removal and not cancelled_removal:
-            mmpm.utils.error_msg('No external sources found matching provided query')
+            logger.msg.error('No external sources found matching provided query')
             return False
 
         for package in marked_for_removal:

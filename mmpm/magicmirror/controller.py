@@ -10,6 +10,7 @@ from time import sleep
 from mmpm.logger import MMPMLogger
 from mmpm.env import MMPMEnv
 from pathlib import Path, PosixPath
+from mmpm.utils import get_pids
 
 logger = MMPMLogger.get_logger(__name__)
 logger.setLevel(MMPMEnv.mmpm_log_level.get())
@@ -87,7 +88,7 @@ class MagicMirrorController:
         try:
             client.connect(MMPMEnv.mmpm_magicmirror_uri.get(), namespaces=["/mmpm"])
         except (OSError, BrokenPipeError, Exception) as error:
-            mmpm.utils.error_msg('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
+            logger.msg.error('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
             logger.error(str(error))
 
     @classmethod
@@ -97,7 +98,7 @@ class MagicMirrorController:
         try:
             client.connect(MMPMEnv.mmpm_magicmirror_uri.get(), namespaces=["/mmpm"])
         except (OSError, BrokenPipeError, Exception) as error:
-            mmpm.utils.error_msg('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
+            logger.msg.error('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
             logger.error(str(error))
 
     @classmethod
@@ -135,13 +136,13 @@ class MagicMirrorController:
             process = 'docker-compose'
 
         if command and process:
-            mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} starting MagicMirror using {command[0]} ")
+            logger.msg.info(f"{mmpm.consts.GREEN_PLUS} starting MagicMirror using {command[0]} ")
             logger.info(f"Using '{process}' to start MagicMirror")
             error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False, background=True)
 
             if error_code:
                 print(mmpm.consts.RED_X)
-                logger.msg.env_variables_error(stderr.strip())
+                logger.msg.error(stderr.strip())
                 return False
 
             logger.info(f"started MagicMirror using '{process}'")
@@ -151,7 +152,7 @@ class MagicMirrorController:
         os.chdir(Path(MMPMEnv.mmpm_magicmirror_root.get()))
         logger.info("Running 'npm start' in the background")
 
-        mmpm.utils.plain_print(f'{mmpm.consts.GREEN_PLUS} npm start ')
+        logger.msg.info(f'{mmpm.consts.GREEN_PLUS} npm start ')
         os.system('npm start &')
         print(mmpm.consts.GREEN_CHECK_MARK)
         logger.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
@@ -192,14 +193,14 @@ class MagicMirrorController:
             process = 'docker-compose'
 
         if command and process:
-            mmpm.utils.plain_print(f"{mmpm.consts.GREEN_PLUS} stopping MagicMirror using {command[0]} ")
+            logger.msg.info(f"{mmpm.consts.GREEN_PLUS} stopping MagicMirror using {command[0]} ")
             logger.info(f"Using '{process}' to stop MagicMirror")
             # pm2 and docker-compose cause the output to flip
             error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False)
 
             if error_code:
                 print(mmpm.consts.RED_X)
-                logger.msg.env_variables_error(stderr.strip())
+                logger.msg.error(stderr.strip())
                 return False
 
             logger.info(f"stopped MagicMirror using '{process}'")
@@ -260,13 +261,13 @@ class MagicMirrorController:
 
         print(f'{mmpm.consts.GREEN_PLUS} Installing MagicMirror')
 
-        if not mmpm.utils.prompt_user(f"Use '{root_path}' ({root.name}) as the parent directory of the new MagicMirror installation?"):
+        if not mmpm.utils.prompt(f"Use '{root_path}' ({root.name}) as the parent directory of the new MagicMirror installation?"):
             print(f"Cancelled installation. To change the installation path of MagicMirror, modify the {root.name} using 'mmpm open --env'")
             return False
 
         for cmd in ["git", "npm"]:
             if not shutil.which(cmd):
-                mmpm.utils.fatal_msg(f"'{cmd}' command not found. Please install '{cmd}', then re-run mmpm install --magicmirror")
+                logger.msg.fatal(f"'{cmd}' command not found. Please install '{cmd}', then re-run mmpm install --magicmirror")
                 return False
 
         print(mmpm.color.normal_cyan(f'Installing MagicMirror in {root_path}/MagicMirror ...'))
@@ -286,7 +287,7 @@ class MagicMirrorController:
             logger.msg.fatal(message)
             return False
 
-        if mmpm.utils.prompt_user(f"Are you sure you want to remove MagicMirror?"):
+        if mmpm.utils.prompt(f"Are you sure you want to remove MagicMirror?"):
             shutil.rmtree(root_path, ignore_errors=True)
             print("Removed MagicMirror")
             logger.info("Removed MagicMirror")
@@ -296,7 +297,7 @@ class MagicMirrorController:
 
     @classmethod
     def install_mmpm_module(cls, assume_yes: bool = False) -> bool:
-        if not mmpm.utils.prompt_user('Are you sure you want to install the MMPM module?', assume_yes=assume_yes):
+        if not mmpm.utils.prompt('Are you sure you want to install the MMPM module?', assume_yes=assume_yes):
             return False
 
         root: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get())
@@ -329,7 +330,7 @@ class MagicMirrorController:
             logger.error(message)
             return False
 
-        if not mmpm.utils.prompt_user('Are you sure you want to remove the MMPM module?', assume_yes=assume_yes):
+        if not mmpm.utils.prompt('Are you sure you want to remove the MMPM module?', assume_yes=assume_yes):
             shutil.rmtree(mmpm_module_dir, ignore_errors=True)
             return False
 
@@ -400,20 +401,20 @@ class MagicMirrorController:
         if is_git:
             os.chdir(magicmirror_root)
             cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
-            mmpm.utils.plain_print(f"Checking {mmpm.color.normal_green('MagicMirror')} [{cyan_application}] for updates")
+            logger.msg.info(f"Checking {mmpm.color.normal_green('MagicMirror')} [{cyan_application}] for updates")
 
             try:
                 # stdout and stderr are flipped for git command output, because that totally makes sense
                 # except now stdout doesn't even contain error messages...thanks git
                 error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
             except KeyboardInterrupt:
-                print(mmpm.consts.RED_X)
-                mmpm.utils.keyboard_interrupt_log()
+                logger.info("User killed process with CTRL-C")
+                sys.exit(127)
 
             print(mmpm.consts.GREEN_CHECK_MARK)
 
             if error_code:
-                mmpm.utils.error_msg('Unable to communicate with git server')
+                logger.msg.error('Unable to communicate with git server')
 
             if stdout:
                 can_upgrade = True
@@ -428,3 +429,19 @@ class MagicMirrorController:
             json.dump(upgradable, upgrade_file)
 
         return can_upgrade
+
+
+    @classmethod
+    def is_running(cls):
+        '''
+        The status of MagicMirror running is determined by the presence of certain
+        types of processes running. If those are found, it's assumed to be running,
+        otherwise, not
+
+        Parameters:
+            None
+
+        Returns:
+            running (bool): True if running, False if not
+        '''
+        return bool(get_pids('electron') or get_pids('pm2'))

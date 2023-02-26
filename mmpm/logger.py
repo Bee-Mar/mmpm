@@ -7,8 +7,11 @@ import logging.handlers
 import datetime
 import mmpm.color
 import mmpm.utils
-from mmpm.consts import MMPM_CLI_LOG_FILE, MMPM_LOG_DIR
+from pathlib import PosixPath
+from mmpm.constants.paths import MMPM_CONFIG_DIR
 
+MMPM_LOG_DIR: PosixPath = MMPM_CONFIG_DIR / "log"
+MMPM_CLI_LOG_FILE: PosixPath = MMPM_LOG_DIR / "mmpm-cli-interface.log"
 
 class StdOutMessageWriter:
     def __init__(self):
@@ -66,44 +69,6 @@ class StdOutMessageWriter:
         '''
         print(mmpm.color.bright_red('FATAL:'), msg)
         sys.exit(127)
-
-
-    def env_variables_error(self, preamble: str = '') -> None:
-        '''
-        Helper method to log and display an error relating to a common issue of not
-        setting environment variables properly
-
-        Parameters:
-            preamble (str): an optional argument to provide more specific error messaging
-
-        Returns:
-            None
-        '''
-        msg: str = mmpm.consts.MMPM_ENV_ERROR_MESSAGE
-
-        if preamble:
-            msg = f'{preamble} {msg}'
-
-        self.error(msg)
-
-
-    def env_variables_fatal(self, preamble: str = '') -> None:
-        '''
-        Helper method to log and display a fatal error relating to a common issue of not
-        setting environment variables properly
-
-        Parameters:
-            preamble (str): an optional argument to provide more specific error messaging
-
-        Returns:
-            None
-        '''
-        msg: str = mmpm.consts.MMPM_ENV_ERROR_MESSAGE
-
-        if preamble:
-            msg = f'{preamble} {msg}'
-
-        self.fatal(msg)
 
 
 
@@ -167,17 +132,17 @@ class MMPMLogger():
             if mmpm.consts.MMPM_CLI_LOG_FILE.exists():
                 logs.append(str(mmpm.consts.MMPM_CLI_LOG_FILE))
             else:
-                mmpm.utils.error_msg('MMPM log file not found')
+                MMPMLogger.msg.error('MMPM log file not found')
 
         if gui_logs:
             if mmpm.consts.MMPM_NGINX_ACCESS_LOG_FILE.exists():
                 logs.append(str(mmpm.consts.MMPM_NGINX_ACCESS_LOG_FILE))
             else:
-                mmpm.utils.error_msg('Gunicorn access log file not found')
+                MMPMLogger.msg.error('Gunicorn access log file not found')
             if mmpm.consts.MMPM_NGINX_ERROR_LOG_FILE.exists():
                 logs.append(str(mmpm.consts.MMPM_NGINX_ERROR_LOG_FILE))
             else:
-                mmpm.utils.error_msg('Gunicorn error log file not found')
+                MMPMLogger.msg.error('Gunicorn error log file not found')
 
         if logs:
             os.system(f"{'tail -F' if tail else 'cat'} {' '.join(logs)}")

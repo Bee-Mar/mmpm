@@ -47,7 +47,7 @@ class MagicMirrorPackage():
         # TODO: get rid of the kwargs
         self.title = __sanitize__(title.strip())
         self.author = __sanitize__(author.strip()) # NOTE: Maybe this shouldn't be here
-        self.repository = repository.strip() if repository.strip().endswith(".git") else (f"{repository}.git").strip()
+        self.repository = repository.strip()
         self.description = description.strip()
         self.directory = Path(directory.strip())
         self.category = category.strip()

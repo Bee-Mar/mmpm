@@ -265,9 +265,6 @@ class MMPM:
             for package in results:
                 package.install(assume_yes=args.assume_yes)
 
-            #MagicMirrorDatabase.install(packages=packages, assume_yes=args.assume_yes)
-            #mmpm.core.install_packages(installation_candidates, assume_yes=args.assume_yes) # TODO: FIXME
-
     @classmethod
     def remove(cls, args, additional_args = None):
         if args.gui:

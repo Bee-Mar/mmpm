@@ -254,7 +254,7 @@ class MagicMirrorDatabase:
 
         db_file: PosixPath = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
         db_exists: bool = db_file.exists() and bool(db_file.stat().st_size)
-        ext_pkgs_file: str = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
+        ext_pkgs_file: PosixPath = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
 
         if db_exists:
             shutil.copyfile(
@@ -299,20 +299,26 @@ class MagicMirrorDatabase:
         if not MagicMirrorDatabase.packages and db_exists:
             MagicMirrorDatabase.packages = []
 
-            with open(db_file, 'r', encoding="utf-8") as db:
+            with open(db_file, mode="r", encoding="utf-8") as db:
                 packages = json.load(db)
 
                 for package in packages:
                     MagicMirrorDatabase.packages.append(MagicMirrorPackage(**package))
 
+        if ext_pkgs_file.exists():
+            with open(ext_pkgs_file, mode="r", encoding="utf-8") as ext_pkgs:
+                # the external package layout should get modified, but it'll be fine
+                data = json.load(ext_pkgs)
+
+                if not "External Packages" in data:
+                    logger.msg.error(f"{ext_pkgs_file} has invalid layout. Please create a backup of {ext_pkgs_file} and re-add the packages through the MMPM CLI.")
+                else:
+                    for package in data["External Packages"]:
+                        MagicMirrorDatabase.packages.append(MagicMirrorPackage(**package))
+
         MagicMirrorDatabase.categories = set([package.category for package in MagicMirrorDatabase.packages])
 
         MagicMirrorDatabase.__discover_installed_packages__()
-
-        # TODO: FIXME
-        #if MagicMirrorDatabase.packages and os.path.exists(ext_pkgs_file) and bool(os.stat(ext_pkgs_file).st_size):
-        #    MagicMirrorDatabase.packages.update(**MagicMirrorDatabase.__load_external_packages__())
-
 
     @classmethod
     def __load_external_packages__(cls) -> Dict[str, List[MagicMirrorPackage]]:
@@ -390,17 +396,18 @@ class MagicMirrorDatabase:
                     logger.msg.error(f'Unable to communicate with git server to retrieve information about {package_dir}')
                     continue
 
-                error_code, project_name, _ = mmpm.utils.run_cmd(
-                    ['basename', remote_origin_url.strip(), '.git'],
-                    progress=False
-                )
+                error_code, project_name, _ = mmpm.utils.run_cmd(['basename', remote_origin_url.strip(), '.git'], progress=False)
 
                 if error_code:
                     logger.msg.error(f'Unable to determine repository origin for {project_name}')
                     continue
 
                 packages_found.append(
-                    MagicMirrorPackage(title=project_name.strip(), repository=remote_origin_url.strip(), directory=str(package_dir))
+                    MagicMirrorPackage(
+                        title=project_name.strip(),
+                        repository=remote_origin_url.strip(),
+                        directory=str(package_dir),
+                    )
                 )
 
             except Exception as error:
@@ -520,7 +527,7 @@ class MagicMirrorDatabase:
         '''
         Adds an external source for user to install a module from. This may be a
         private git repo, or a specific branch of a public repo. All modules added
-        in this manner will be added to the 'External Module Sources' category.
+        in this manner will be added to the 'External Packages' category.
         These sources are stored in ~/.config/mmpm/mmpm-external-packages.json
 
         Parameters:
@@ -557,22 +564,24 @@ class MagicMirrorDatabase:
             logger.info("User killed process with CTRL-C")
             sys.exit(127)
 
-        external_package = MagicMirrorPackage(title=title, repository=repo, author=author, description=description)
+        external_package = MagicMirrorPackage(title=title, repository=repo, author=author, description=description, category="External Packages")
 
         try:
-            if os.path.exists(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE) and os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size:
-                config: dict = {}
+            ext_pkgs_file: PosixPath = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
 
-                with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r', encoding="utf-8") as mmpm_ext_srcs:
-                    config[mmpm.consts.EXTERNAL_PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(mmpm_ext_srcs)[mmpm.consts.EXTERNAL_PACKAGES])
+            if ext_pkgs_file.exists() and ext_pkgs_file.stat().st_size:
+                external_packages = {}
 
-                with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w', encoding="utf-8") as mmpm_ext_srcs:
-                    config[mmpm.consts.EXTERNAL_PACKAGES].append(external_package)
-                    json.dump(config, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
+                with open(ext_pkgs_file, 'r', encoding="utf-8") as mmpm_ext_srcs:
+                    external_packages = json.load(mmpm_ext_srcs)
+
+                with open(ext_pkgs_file, 'w', encoding="utf-8") as mmpm_ext_srcs:
+                    external_packages["External Packages"].append(external_package.serialize())
+                    json.dump(external_packages, mmpm_ext_srcs)
             else:
                 # if file didn't exist previously, or it was empty, this is the first external package that's been added
-                with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w', encoding="utf-8") as mmpm_ext_srcs:
-                    json.dump({mmpm.consts.EXTERNAL_PACKAGES: [external_package]}, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
+                with open(ext_pkgs_file, 'w', encoding="utf-8") as mmpm_ext_srcs:
+                    json.dump({"External Packages": [external_package.serialize()]}, mmpm_ext_srcs)
 
             print(mmpm.color.normal_green(f"\nSuccessfully added {title} to '{mmpm.consts.EXTERNAL_PACKAGES}'\n"))
 

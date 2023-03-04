@@ -61,7 +61,7 @@ def setup() -> argparse.ArgumentParser:
         epilog=f'Visit {mmpm.consts.MMPM_WIKI_URL} for more details',
         description='''
             The MagicMirror Package Manager CLI simplifies the
-            installation, removal, and general maintenance of MagicMirror packages
+            installation, removal, and general maintenance of MagicMirror packages.
             '''
     )
 

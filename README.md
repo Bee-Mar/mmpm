@@ -20,7 +20,7 @@
 
   <!-- main title/logo -->
   <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank">
-    <img src="assets/MagicMirrorPackageManager.png" alt="MagicMirror Package Manager">
+    <img src="assets/MagicMirrorPackageManager.svg" alt="MagicMirror Package Manager">
   </a>
 </p>
 

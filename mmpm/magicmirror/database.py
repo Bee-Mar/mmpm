@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 import os
 import sys
+import pip
 import json
 import shutil
 import datetime
 import requests
 import mmpm.consts
 import mmpm.color
+import urllib.request
 from re import findall
 from collections import defaultdict
 from typing import Dict, List
@@ -21,6 +23,7 @@ from mmpm.logger import MMPMLogger
 from pathlib import Path, PosixPath
 from pygments import highlight, formatters
 from pygments.lexers.data import JsonLexer
+from pip._internal.operations.freeze import freeze
 
 
 
@@ -47,69 +50,48 @@ class MagicMirrorDatabase:
         Returns:
             bool: True on success, False on failure
         '''
+        url = 'https://pypi.org/pypi/mmpm/json'
 
-        cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
-        logger.info(f'Checking for newer version of MMPM. Current version: {mmpm.mmpm.__version__}')
+        logger.msg.info(f"Checking: {url} [{mmpm.color.normal_cyan('mmpm')}]\n")
 
-        if automated:
-            message: str = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] ({mmpm.color.normal_magenta('automated')}) for updates"
-        else:
-            message = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] for updates"
+        current_version = ''
 
-        logger.msg.info(message)
+        for requirement in freeze(local_only=False):
+            info = requirement.split('==')
 
-        try:
-            # just to keep the console output the same as all other update commands
-            error_code, contents, _ = mmpm.utils.run_cmd(['curl', mmpm.consts.MMPM_FILE_URL])
-        except KeyboardInterrupt:
-            logger.info("User killed process with CTRL-C")
-            sys.exit(127)
+            if info[0] == "mmpm":
+                current_version = info[1]
 
-        if error_code:
-            logger.msg.fatal('Failed to retrieve MMPM version number')
-
-        version_number: float = float(findall(r"\d+\.\d+", findall(r"__version__ = \d+\.\d+", contents)[0])[0])
-        print(mmpm.consts.GREEN_CHECK_MARK)
-
-        can_upgrade: bool = version_number > mmpm.mmpm.__version__
-
-        if can_upgrade:
-            logger.msg.info(f'Found newer version of MMPM: {version_number}\n')
-
-        return can_upgrade
+        contents = urllib.request.urlopen(url).read()
+        data = json.loads(contents)
+        latest_version = data['info']['version']
+        return latest_version == current_version
 
 
     @classmethod
     def update(cls, automated: bool = False) -> int:
         can_upgrade_mmpm = MagicMirrorDatabase.__update_mmpm__(automated)
-        can_upgrade_packages: List[MagicMirrorDatabase] = []
-
-        cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
+        upgradable: List[MagicMirrorDatabase] = []
 
         for package in MagicMirrorDatabase.packages:
             if package.is_installed:
-                logger.msg.info(f'Checking {mmpm.color.normal_green(package.title)} [{cyan_package}] for updates') # type: ignore
+                logger.msg.info(f'Checking: {package.repository} [{mmpm.color.normal_cyan(package.title)}]\n')
                 package.update()
 
                 if package.is_upgradable:
-                    can_upgrade_packages.append(package)
-
-                print(mmpm.consts.GREEN_CHECK_MARK)
-
-            if package.is_upgradable:
-                upgradable.append(package)
+                    upgradable.append(package)
 
         with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="w", encoding="utf-8") as upgrade_file:
             json.dump(
                 {
                     "mmpm": can_upgrade_mmpm,
                     "MagicMirror": False,
-                    "packages": [package.serialize() for package in can_upgrade_packages],
+                    "packages": [package.serialize() for package in upgradable],
                 },
                 upgrade_file
             )
 
-        return int(can_upgrade_mmpm) + len(can_upgrade_packages)
+        return int(can_upgrade_mmpm) + len(upgradable)
 
 
     @classmethod
@@ -221,18 +203,27 @@ class MagicMirrorDatabase:
             by_title_only (bool): if True, only the title is considered when matching packages to query
 
         Returns:
-            search_results (Dict[str, List[MagicMirrorPackage]]): the dictionary of packages, grouped by category that are search matches
+            search_results (List[MagicMirrorPackage]): the dictionary of packages, grouped by category that are search matches
         '''
-        # if the query matches one of the category names exactly, return everything in that category
-        if query in MagicMirrorDatabase.categories:
-            return [package for package in MagicMirrorDatabase.packages if package.category == query]
-        elif by_title_only:
-            match = lambda query, pkg: query == pkg.title
-        elif case_sensitive:
-            match = lambda query, pkg: query in pkg.description or query in pkg.title or query in pkg.author
+
+        query = query.strip()
+
+        if by_title_only:
+            if case_sensitive:
+                match = lambda query, pkg: query == pkg.title
+            else:
+                query = query.lower()
+                match = lambda query, pkg: query == pkg.title.lower()
+
         else:
-            query = query.lower()
-            match = lambda query, pkg: query in pkg.description.lower() or query in pkg.title.lower() or query in pkg.author.lower()
+            # if the query matches one of the category names exactly, return everything in that category
+            if query in MagicMirrorDatabase.categories:
+                return [package for package in MagicMirrorDatabase.packages if package.category == query]
+            elif case_sensitive:
+                match = lambda query, pkg: query in pkg.description or query in pkg.title or query in pkg.author
+            else:
+                query = query.lower()
+                match = lambda query, pkg: query in pkg.description.lower() or query in pkg.title.lower() or query in pkg.author.lower()
 
         return [package for package in MagicMirrorDatabase.packages if match(query, package)]
 
@@ -409,6 +400,8 @@ class MagicMirrorDatabase:
 
             finally:
                 os.chdir(modules_dir)
+
+        # TODO: Include the 'mmpm' module in this list
 
         for index, package in enumerate(MagicMirrorDatabase.packages):
             for found in packages_found:
@@ -592,7 +585,7 @@ class MagicMirrorDatabase:
         return ''
 
     @classmethod
-    def remove_external_package_source(cls, titles: List[str] = None, assume_yes: bool = False) -> bool:
+    def remove_external_package(cls, titles: List[str] = None, assume_yes: bool = False) -> bool:
         '''
         Allows user to remove an External Pac kage from the data saved in
         ~/.config/mmpm/mmpm-external-packages.json

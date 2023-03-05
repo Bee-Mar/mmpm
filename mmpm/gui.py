@@ -31,7 +31,7 @@ class MMPMGui:
             None
         '''
 
-        if assume_yes and not mmpm.utils.prompt('Are you sure you want to install the MMPM GUI? This requires sudo permission.'):
+        if not assume_yes and not mmpm.utils.prompt('Are you sure you want to install the MMPM GUI? This requires sudo permission.'):
             return
 
         if not shutil.which('nginx'):
@@ -130,7 +130,7 @@ class MMPMGui:
 
 
     @classmethod
-    def remove(cls, hide_prompt: bool = False):
+    def remove(cls, assume_yes: bool = False):
         '''
         Removes all SystemD services and NGINX, SystemD, and static web files
         associated with the MMPM GUI. This requires sudo permission, and the user
@@ -139,13 +139,13 @@ class MMPMGui:
         known of the errors.
 
         Parameters:
-            hide_prompt (bool): used when calling the `remove` function from within the
+            assume_yes (bool): used when calling the `remove` function from within the
                                 `install` function to clean up any possible conflicts
 
         Returns:
             None
         '''
-        if not hide_prompt and not mmpm.utils.prompt('Are you sure you want to remove the MMPM GUI? This requires sudo permission.'):
+        if not assume_yes and not mmpm.utils.prompt('Are you sure you want to remove the MMPM GUI? This requires sudo permission.'):
             return
 
         INACTIVE: str = 'inactive\n'

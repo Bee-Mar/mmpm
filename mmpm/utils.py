@@ -77,33 +77,28 @@ def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, s
         return process.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
 
 
-def open_default_editor(path_to_file: str) -> Optional[None]:
+def edit(file: PosixPath) -> Optional[None]:
     '''
-    Method to determine user's text editor. First, checks the EDITOR env
-    variable, if not found, attempts to see if 'nano' is installed, and if not,
-    lets the system determine the editor using the 'edit' command
+    Checks if the requested file exists, and if not, the file is created. Then, the 'edit'
+    command is used to open the file.
 
     Parameters:
-        path_to_file (str): file path to open with editor
+        file (PosixPath): file path to open with 'edit' command
 
     Returns:
         None
     '''
-    logger.info(f'Attempting to open {path_to_file} in users default editor')
 
-    if not os.path.exists(path_to_file):
+    if not file.exists():
         try:
-            logger.msg.warning(f'{path_to_file} does not exist. Creating the directory and empty file')
-            Path('/'.join(path_to_file.split('/')[:-1])).mkdir(parents=True, exist_ok=True)
-            Path(path_to_file).touch(mode=0o664, exist_ok=True)
+            logger.msg.warning(f'{file} does not exist. Creating file.')
+            file.parent.mkdir(parents=True, exist_ok=True)
+            file.touch(mode=0o664, exist_ok=True)
         except OSError as error:
-            logger.msg.fatal(f'Unable to create {path_to_file}: {str(error)}')
+            logger.msg.fatal(f'Unable to create {file}: {str(error)}')
 
-    editor = os.getenv('EDITOR') if os.getenv('EDITOR') else 'nano'
-    error_code, _, _ = run_cmd(['which', editor], progress=False)
-
-    # fall back to the 'edit' command if you don't even have nano for some reason
-    os.system(f'{editor} {path_to_file}') if not error_code else os.system(f'edit {path_to_file}')
+    logger.info(f'Opening {file} in users default editor')
+    os.system(f'edit {file}')
 
 
 def get_pids(process_name: str) -> List[str]:

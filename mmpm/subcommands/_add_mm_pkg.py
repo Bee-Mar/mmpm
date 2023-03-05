@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-""" Command line options for 'add-ext-pkg' subcommand """
+""" Command line options for 'add-mm-pkg' subcommand """
 import argparse
 
 
 def setup(subparser: argparse._SubParsersAction):
     parser = subparser.add_parser(
-        "add-ext-pkg",
-        usage='\n  mmpm add-ext-package [--title=<title>] [--author=<author>] [--repo=<repo>] [--desc=<description>]\n  mmpm add-ext-package --remove <package> [--yes]',
+        "add-mm-pkg",
+        usage='\n  mmpm add-mm-package [--title=<title>] [--author=<author>] [--repo=<repo>] [--desc=<description>]\n  mmpm add-ext-package --remove <package> [--yes]',
         help='manually add MagicMirror packages to your local database'
     )
 
@@ -14,7 +14,7 @@ def setup(subparser: argparse._SubParsersAction):
         '-t',
         '--title',
         type=str,
-        help='title of external package (will be prompted if not provided)',
+        help='title of MagicMirror package (will be prompted if not provided)',
         dest='title'
     )
 
@@ -22,7 +22,7 @@ def setup(subparser: argparse._SubParsersAction):
         '-a',
         '--author',
         type=str,
-        help='author of external package (will be prompted if not provided)',
+        help='author of MagicMirror package (will be prompted if not provided)',
         dest='author'
     )
 
@@ -30,7 +30,7 @@ def setup(subparser: argparse._SubParsersAction):
         '-r',
         '--repo',
         type=str,
-        help='repo URL of external package (will be prompted if not provided)',
+        help='repo URL of MagicMirror package (will be prompted if not provided)',
         dest='repo'
     )
 
@@ -38,14 +38,14 @@ def setup(subparser: argparse._SubParsersAction):
         '-d',
         '--desc',
         type=str,
-        help='description of external package (will be prompted if not provided)',
+        help='description of MagicMirror package (will be prompted if not provided)',
         dest='desc'
     )
 
     parser.add_argument(
         '--remove',
         nargs='+',
-        help='remove external package (similar to `add-apt-repository` --remove)',
+        help='remove MagicMirror package (similar to `add-apt-repository` --remove)',
         dest='remove'
     )
 

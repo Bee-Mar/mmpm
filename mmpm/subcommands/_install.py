@@ -17,10 +17,3 @@ def setup(subparser: argparse._SubParsersAction):
         help='assume yes for user response and do not show prompt',
         dest='assume_yes',
     )
-
-    parser.add_argument(
-        '--gui',
-        action='store_true',
-        help='install the MMPM GUI. Asks for sudo permissions',
-        dest='gui'
-    )

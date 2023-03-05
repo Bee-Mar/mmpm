@@ -296,45 +296,6 @@ class MagicMirrorController:
         return False
 
     @classmethod
-    def install_mmpm_module(cls, assume_yes: bool = False) -> bool:
-        if not assume_yes and not mmpm.utils.prompt('Are you sure you want to install the MMPM module?'):
-            return False
-
-        root: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get())
-        mmpm_module_dir: PosixPath = root / "modules" / "mmpm"
-
-        logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Creating MMPM module in MagicMirror modules directory ')
-
-        try:
-            mmpm_module_dir.mkdir(parents=True, exist_ok=True, mode=0o777)
-            shutil.copyfile(f'{mmpm.consts.MMPM_JS_DIR}/mmpm.js', f'{mmpm_module_dir}/mmpm.js')
-            shutil.copyfile(f'{mmpm.consts.MMPM_JS_DIR}/node_helper.js', f'{mmpm_module_dir}/node_helper.js')
-        except OSError as error:
-            logger.msg.error('Failed to create MMPM module. Is the directory owned by root?')
-            logger.error(str(error))
-            return False
-
-        print(mmpm.consts.GREEN_CHECK_MARK)
-        print('Run `mmpm open --config` and append { module: "mmpm" } to the modules array, then restart MagicMirror if running')
-
-        return True
-
-    @classmethod
-    def remove_mmpm_module(cls, assume_yes: bool = False) -> bool:
-        root = MMPMEnv.mmpm_magicmirror_root
-        root_dir: PosixPath = Path(root.get())
-        mmpm_module_dir: PosixPath = root_dir / "modules" / "mmpm"
-
-        if not mmpm_module_dir.exists():
-            message = f"The {root.name} ({root_path}) does not exist. Please adjust the MMPM environment variables using 'mmpm open --env'."
-            logger.error(message)
-            return False
-
-        if not assume_yes and not mmpm.utils.prompt('Are you sure you want to remove the MMPM module?'):
-            shutil.rmtree(mmpm_module_dir, ignore_errors=True)
-            return False
-
-    @classmethod
     def upgrade(cls) -> bool: # TODO: TEST
         '''
         Handles upgrade processs of MagicMirror by pulling changes from MagicMirror
@@ -400,17 +361,14 @@ class MagicMirrorController:
 
         if is_git:
             os.chdir(magicmirror_root)
-            cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
-            logger.msg.info(f"Checking {mmpm.color.normal_green('MagicMirror')} [{cyan_application}] for updates")
+            logger.msg.info(f"Checking: https://github.com/MichMich/MagicMirror [{mmpm.color.normal_cyan('MagicMirror')}]\n")
 
             try:
                 # stdout and stderr are flipped for git command output, but oddly stderr doesn't contain error messages
-                error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
+                error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'], progress=False)
             except KeyboardInterrupt:
                 logger.info("User killed process with CTRL-C")
                 sys.exit(127)
-
-            print(mmpm.consts.GREEN_CHECK_MARK)
 
             if error_code:
                 logger.msg.error('Unable to communicate with git server')

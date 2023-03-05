@@ -15,7 +15,7 @@ from mmpm.subcommands import (
     _list,
     _open,
     _show,
-    _add_ext_pkg,
+    _add_mm_pkg,
     _log,
     _mm_ctl,
     _env,
@@ -72,22 +72,8 @@ def setup() -> argparse.ArgumentParser:
     )
 
     # setup of all the subcommands and their options
-    _install.setup(subparser)
-    _search.setup(subparser)
-    _remove.setup(subparser)
-    _update.setup(subparser)
-    _upgrade.setup(subparser)
-    _db.setup(subparser)
-    _list.setup(subparser)
-    _open.setup(subparser)
-    _show.setup(subparser)
-    _add_ext_pkg.setup(subparser)
-    _log.setup(subparser)
-    _mm_ctl.setup(subparser)
-    _env.setup(subparser)
-    _version.setup(subparser)
-    _completion.setup(subparser)
-    _guided_setup.setup(subparser)
+    for subcommand in [ _install, _search, _remove, _update, _upgrade, _db, _list, _open, _show, _add_mm_pkg, _log, _mm_ctl, _env, _version, _completion, _guided_setup]:
+        subcommand.setup(subparser)
 
     argcomplete.autocomplete(parser) # register autocompletion for the subcommands
 

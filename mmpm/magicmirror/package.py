@@ -202,7 +202,7 @@ class MagicMirrorPackage():
         os.chdir(modules_dir / self.directory)
 
         try:
-            error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
+            error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'], progress=False)
 
         except KeyboardInterrupt:
             logger.info("User killed process with CTRL-C")
@@ -230,12 +230,12 @@ class MagicMirrorPackage():
         Returns:
             stderr (str): the resulting error message of the upgrade. If the message is zero length, it was successful
         '''
-        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get() / "modules")
+        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
         self.directory = os.path.join(modules_dir, self.title)
 
         os.chdir(modules_dir / self.directory)
 
-        MMPMLogger.msg.info(f'{mmpm.consts.GREEN_PLUS} Performing upgrade for {mmpm.color.normal_green(self.title)}')
+        logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Upgrading {mmpm.color.normal_green(self.title)}')
         error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
 
         if error_code:
@@ -247,7 +247,6 @@ class MagicMirrorPackage():
             print(mmpm.consts.GREEN_CHECK_MARK)
 
         InstallationHandler(self).execute()
-        stderr = mmpm.utils.install_dependencies(package.directory) # TODO: change this to use the handler
 
         if stderr:
             print(mmpm.consts.RED_X)
@@ -329,6 +328,8 @@ class InstallationHandler:
             return False
 
         os.chdir(modules_dir)
+
+        error_code = 0
 
         if not self.package.directory.exists():
             error_code, _, _ = self.package.clone()

@@ -31,7 +31,7 @@ class MMPMGui:
             None
         '''
 
-        if not mmpm.utils.prompt('Are you sure you want to install the MMPM GUI? This requires sudo permission.', assume_yes=assume_yes):
+        if assume_yes and not mmpm.utils.prompt('Are you sure you want to install the MMPM GUI? This requires sudo permission.'):
             return
 
         if not shutil.which('nginx'):

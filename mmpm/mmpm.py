@@ -33,6 +33,7 @@ class MMPM:
     @classmethod
     def run(cls):
         ''' Main entry point for CLI '''
+        MMPM.setup()
 
         parser = options.setup()
 
@@ -276,6 +277,8 @@ class MMPM:
         for name in additional_args:
             if name == "MagicMirror":
                 MagicMirrorController.remove()
+            elif name == "mmpm":
+                MagicMirrorController.remove_mmpm_module(args.assume_yes)
             else:
                 for package in MagicMirrorDatabase.search(name):
                     package.remove(assume_yes=args.assume_yes)
@@ -327,7 +330,7 @@ class MMPM:
             None
         '''
 
-        if not mmpm.utils.prompt('Are you sure you want to install the autocompletion feature for the MMPM CLI?', assume_yes=args.assume_yes):
+        if args.assume_yes and not mmpm.utils.prompt('Are you sure you want to install the autocompletion feature for the MMPM CLI?'):
             logger.info('User cancelled installation of autocompletion for MMPM CLI')
             return
 

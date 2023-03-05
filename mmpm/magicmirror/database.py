@@ -402,13 +402,7 @@ class MagicMirrorDatabase:
                     logger.msg.error(f'Unable to determine repository origin for {project_name}')
                     continue
 
-                packages_found.append(
-                    MagicMirrorPackage(
-                        title=project_name.strip(),
-                        repository=remote_origin_url.strip(),
-                        directory=str(package_dir),
-                    )
-                )
+                packages_found.append(MagicMirrorPackage(repository=remote_origin_url.strip(), directory=package_dir.name))
 
             except Exception as error:
                 logger.msg.error(str(error))
@@ -419,7 +413,6 @@ class MagicMirrorDatabase:
         for index, package in enumerate(MagicMirrorDatabase.packages):
             for found in packages_found:
                 if package == found:
-                    MagicMirrorDatabase.packages[index].directory = found.directory
                     MagicMirrorDatabase.packages[index].is_installed = True
                     break
 
@@ -469,8 +462,8 @@ class MagicMirrorDatabase:
 
         mmpm_magicmirror_root: str = MMPMEnv.mmpm_magicmirror_root.get()
 
-        cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
-        cyan_package: str = f"{mmpm.color.normal_cyan('package')}"
+        app_label: str = f"{mmpm.color.normal_cyan('application')}"
+        pkg_label: str = f"{mmpm.color.normal_cyan('package')}"
 
         upgrades_available: bool = False
         upgradable = MagicMirrorDatabase.upgradable()
@@ -479,13 +472,13 @@ class MagicMirrorDatabase:
             upgrades_available = True
 
         for package in upgradable["packages"]:
-            print(mmpm.color.normal_green(MagicMirrorPackage(**package).title), f'[{cyan_package}]')
+            print(mmpm.color.normal_green(MagicMirrorPackage(**package).title), f'[{pkg_label}]')
 
         if upgradable["mmpm"]:
-            print(f'{mmpm.color.normal_green(mmpm.consts.MMPM)} [{cyan_application}]')
+            print(f'{mmpm.color.normal_green(mmpm.consts.MMPM)} [{app_label}]')
 
         if upgradable["MagicMirror"]:
-            print(f'{mmpm.color.normal_green(mmpm.consts.MAGICMIRROR)} [{cyan_application}]')
+            print(f'{mmpm.color.normal_green(mmpm.consts.MAGICMIRROR)} [{app_label}]')
 
         if upgrades_available:
             print('Run `mmpm upgrade` to upgrade available packages/applications')
@@ -564,7 +557,14 @@ class MagicMirrorDatabase:
             logger.info("User killed process with CTRL-C")
             sys.exit(127)
 
-        external_package = MagicMirrorPackage(title=title, repository=repo, author=author, description=description, category="External Packages")
+        external_package = MagicMirrorPackage(
+            title=title,
+            repository=repo,
+            author=author,
+            description=description,
+            category="External Packages",
+            directory=f'{repo.split("/")[-1].replace(".git", "")}-ext-pkg',
+        )
 
         try:
             ext_pkgs_file: PosixPath = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
@@ -625,7 +625,7 @@ class MagicMirrorDatabase:
             for package in ext_packages[mmpm.consts.EXTERNAL_PACKAGES]:
                 if package.title == title:
                     prompt: str = f'Would you like to remove {mmpm.color.normal_green(title)} ({package.repository}) from the MMPM/MagicMirror local database?'
-                    if mmpm.utils.prompt(prompt, assume_yes=assume_yes):
+                    if assume_yes or mmpm.utils.prompt(prompt):
                         marked_for_removal.append(package)
                     else:
                         cancelled_removal.append(package)

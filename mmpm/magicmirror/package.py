@@ -31,27 +31,21 @@ class MagicMirrorPackage():
     A container object used to simplify the represenation of a given
     MagicMirror package's metadata
     '''
-    # pylint: disable=unused-argument
     def __init__(self,
                  title: str = NA,
                  author: str = NA,
                  repository: str = NA,
                  description: str = NA,
                  category: str = NA,
-                 directory: str = '',
-                 is_external: bool = False,
+                 directory: str = "",
                  is_installed: bool = False,
-                 **kwargs,
         ) -> None:
-        # **kwargs allows for simplified dict unpacking in some instances, and is intentionally unused
-        # TODO: get rid of the kwargs
         self.title = __sanitize__(title.strip())
-        self.author = __sanitize__(author.strip()) # NOTE: Maybe this shouldn't be here
+        self.author = __sanitize__(author.strip())
         self.repository = repository.strip()
         self.description = description.strip()
         self.directory = Path(directory.strip())
         self.category = category.strip()
-        self.is_external = is_external
         self.is_installed = is_installed
         self.is_upgradable = False
 
@@ -62,7 +56,7 @@ class MagicMirrorPackage():
         return str(self.serialize())
 
     def __hash__(self) -> int:
-        return hash((self.title.lower(), self.repository.lower()))
+        return hash((self.repository.lower(), self.directory.name.lower()))
 
     def __eq__(self, other) -> bool:
         if other is None:
@@ -98,10 +92,12 @@ class MagicMirrorPackage():
             print(self.title + (" [installed]" if self.is_installed else ""))
             return
 
+
         print(mmpm.color.normal_green(self.title) + (" [installed]" if self.is_installed else ""))
 
         if show_path:
-            print(f'  Directory: {self.directory}')
+            modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
+            print(f'  Directory: {modules_dir / self.directory}')
 
         if detailed:
             print(f'  Category: {self.category}')
@@ -125,9 +121,8 @@ class MagicMirrorPackage():
             "category": self.category,
             "repository": self.repository,
             "description": self.description,
-            "directory": str(self.directory),
+            "directory": self.directory.name,
             "is_installed": self.is_installed,
-            "is_external": self.is_external,
             "is_upgradable": self.is_upgradable,
         }
 
@@ -148,6 +143,7 @@ class MagicMirrorPackage():
                 "category": self.category,
                 "repository": self.repository,
                 "description": self.description,
+                "directory": self.directory.name,
             }
 
         return self.__dict__()
@@ -173,7 +169,6 @@ class MagicMirrorPackage():
         if not assume_yes and not mmpm.utils.prompt(f'Continue installing {mmpm.color.normal_green(self.title)} ({self.repository})?'):
             return
 
-        # TODO: add user prompt for yes/no
         InstallationHandler(self).execute()
 
 
@@ -185,12 +180,15 @@ class MagicMirrorPackage():
         if not assume_yes and not mmpm.utils.prompt(f'Continue removing {mmpm.color.normal_green(self.title)} ({self.repository})?'):
             return
 
-        run_cmd(["rm", "-rf", str(self.directory)])
+        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
+
+        run_cmd(["rm", "-rf", str(modules_dir / self.directory)], progress=True)
         logger.msg.info(f"Removed {mmpm.color.normal_green(self.title)} {mmpm.consts.GREEN_CHECK_MARK}\n")
 
 
     def clone(self) -> bool:
-        return run_cmd(["git", "clone", self.repository])
+        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
+        return run_cmd(["git", "clone", self.repository, str(modules_dir / self.directory)])
 
 
     def update(self) -> None:
@@ -201,7 +199,7 @@ class MagicMirrorPackage():
             self.is_upgradable = False
             return
 
-        os.chdir(self.directory)
+        os.chdir(modules_dir / self.directory)
 
         try:
             error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
@@ -235,7 +233,7 @@ class MagicMirrorPackage():
         modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get() / "modules")
         self.directory = os.path.join(modules_dir, self.title)
 
-        os.chdir(self.directory)
+        os.chdir(modules_dir / self.directory)
 
         MMPMLogger.msg.info(f'{mmpm.consts.GREEN_PLUS} Performing upgrade for {mmpm.color.normal_green(self.title)}')
         error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
@@ -248,6 +246,7 @@ class MagicMirrorPackage():
         else:
             print(mmpm.consts.GREEN_CHECK_MARK)
 
+        InstallationHandler(self).execute()
         stderr = mmpm.utils.install_dependencies(package.directory) # TODO: change this to use the handler
 
         if stderr:
@@ -288,7 +287,14 @@ class MagicMirrorPackage():
                 package_description += info.string
 
 
-        return MagicMirrorPackage(title=package_title, author=package_author, description=package_description, repository=repo, category=category)
+        return MagicMirrorPackage(
+            title=package_title,
+            author=package_author,
+            description=package_description,
+            repository=repo,
+            category=category,
+            directory=f'{repo.split("/")[-1].replace(".git", "")}',
+        )
 
 
 __NULL__: int = hash(MagicMirrorPackage())
@@ -315,6 +321,8 @@ class InstallationHandler:
 
         modules_dir = Path(root.get()) / "modules"
 
+        self.package.directory = modules_dir / self.package.directory
+
         if not modules_dir.exists():
             logger.msg.fatal(f"{modules_dir} does not exist. Is {root.name} set properly?")
             logger.fatal(f"{modules_dir} does not exist.")
@@ -322,16 +330,13 @@ class InstallationHandler:
 
         os.chdir(modules_dir)
 
-        old_directories: Set[str] = {str(directory) for directory in modules_dir.iterdir()}
+        if not self.package.directory.exists():
+            error_code, _, _ = self.package.clone()
 
-        error_code, _, _ = self.package.clone()
+        os.chdir(self.package.directory)
 
         if error_code:
             logger.msg.error(f"Failed to clone {self.package.title}: {error_code}")
-
-        new_directories: Set[str] = {str(directory) for directory in modules_dir.iterdir()}
-
-        self.package.directory = Path(list(new_directories - old_directories)[0])
 
         if self.__deps_file_exists__("package.json"):
             error_code, _, stderr = self.__npm_install__()

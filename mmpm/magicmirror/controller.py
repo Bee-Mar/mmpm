@@ -297,7 +297,7 @@ class MagicMirrorController:
 
     @classmethod
     def install_mmpm_module(cls, assume_yes: bool = False) -> bool:
-        if not mmpm.utils.prompt('Are you sure you want to install the MMPM module?', assume_yes=assume_yes):
+        if not assume_yes and not mmpm.utils.prompt('Are you sure you want to install the MMPM module?'):
             return False
 
         root: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get())
@@ -320,7 +320,7 @@ class MagicMirrorController:
         return True
 
     @classmethod
-    def remove_mmpm_module(cls) -> bool: # TODO: add command line arg for this
+    def remove_mmpm_module(cls, assume_yes: bool = False) -> bool:
         root = MMPMEnv.mmpm_magicmirror_root
         root_dir: PosixPath = Path(root.get())
         mmpm_module_dir: PosixPath = root_dir / "modules" / "mmpm"
@@ -330,7 +330,7 @@ class MagicMirrorController:
             logger.error(message)
             return False
 
-        if not mmpm.utils.prompt('Are you sure you want to remove the MMPM module?', assume_yes=assume_yes):
+        if not assume_yes and not mmpm.utils.prompt('Are you sure you want to remove the MMPM module?'):
             shutil.rmtree(mmpm_module_dir, ignore_errors=True)
             return False
 
@@ -404,8 +404,7 @@ class MagicMirrorController:
             logger.msg.info(f"Checking {mmpm.color.normal_green('MagicMirror')} [{cyan_application}] for updates")
 
             try:
-                # stdout and stderr are flipped for git command output, because that totally makes sense
-                # except now stdout doesn't even contain error messages...thanks git
+                # stdout and stderr are flipped for git command output, but oddly stderr doesn't contain error messages
                 error_code, _, stdout = mmpm.utils.run_cmd(['git', 'fetch', '--dry-run'])
             except KeyboardInterrupt:
                 logger.info("User killed process with CTRL-C")

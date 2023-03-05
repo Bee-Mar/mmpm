@@ -93,7 +93,7 @@ def open_default_editor(path_to_file: str) -> Optional[None]:
 
     if not os.path.exists(path_to_file):
         try:
-            warning_msg(f'{path_to_file} does not exist. Creating the directory and empty file')
+            logger.msg.warning(f'{path_to_file} does not exist. Creating the directory and empty file')
             Path('/'.join(path_to_file.split('/')[:-1])).mkdir(parents=True, exist_ok=True)
             Path(path_to_file).touch(mode=0o664, exist_ok=True)
         except OSError as error:
@@ -145,8 +145,7 @@ def kill_pids_of_process(process: str) -> None:
 
 
 
-# TODO: remove the assume_yes
-def prompt(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: List[str] = ['no', 'n'], assume_yes: bool = False) -> bool:
+def prompt(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: List[str] = ['no', 'n']) -> bool:
     '''
     Prompts user with the `user_prompt` until a response matches a value in the
     `valid_ack` or `valid_nack` lists, or a KeyboardInterrupt is caught. If
@@ -162,10 +161,6 @@ def prompt(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: Li
     Returns:
         response (bool): True if the response is in the `valid_ack` list, False if in `valid_nack` or KeyboardInterrupt
     '''
-    if assume_yes:
-        print(f"{user_prompt} [{'/'.join(valid_ack)}] or [{'/'.join(valid_nack)}]: yes")
-        return True
-
     response = None
 
     try:
@@ -177,7 +172,7 @@ def prompt(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: Li
             elif response in valid_nack:
                 return False
             else:
-                warning_msg(f"Respond with [{'/'.join(valid_ack)}] or [{'/'.join(valid_nack)}]")
+                logger.msg.warning(f"Respond with [{'/'.join(valid_ack)}] or [{'/'.join(valid_nack)}]")
 
     except KeyboardInterrupt:
         print()
@@ -263,7 +258,7 @@ def assert_valid_input(prompt: str, forbidden_responses: List[str] = [], reason:
             logger.msg.warning('A non-empty response must be given')
             continue
         elif user_response in forbidden_responses:
-            warning_msg(f'Invalid response, {user_response} {reason}')
+            logger.msg.warning(f'Invalid response, {user_response} {reason}')
             continue
         return user_response
 

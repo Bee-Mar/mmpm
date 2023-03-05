@@ -24,7 +24,7 @@ from socket import gethostbyname, gethostname
 from pathlib import Path
 
 
-__version__ = 3.0
+__version__ = 4.0
 
 logger = MMPMLogger.get_logger(__name__)
 logger.setLevel(MMPMEnv.mmpm_log_level.get())
@@ -41,6 +41,10 @@ class MMPM:
             sys.exit(127)
 
         args, additional_args = parser.parse_known_args()
+
+        if args.subcmd is None:
+            logger.msg.fatal("Invalid argument. See 'mmpm --help'")
+            sys.exit(127)
 
         if args.subcmd in options.SINGLE_OPTION_ARGS and not mmpm.utils.assert_one_option_selected(args): # TODO: FIXME
             mmpm.utils.fatal_too_many_options(args)

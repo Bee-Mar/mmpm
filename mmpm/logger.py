@@ -10,6 +10,7 @@ import mmpm.utils
 from mmpm.env import MMPMEnv
 from pathlib import PosixPath
 from mmpm.constants.paths import MMPM_CONFIG_DIR
+from mmpm.__version__ import version
 
 MMPM_LOG_DIR: PosixPath = MMPM_CONFIG_DIR / "log"
 MMPM_CLI_LOG_FILE: PosixPath = MMPM_LOG_DIR / "mmpm-cli-interface.log"
@@ -91,31 +92,32 @@ class MMPMLogger:
         MMPM_LOG_DIR.mkdir(exist_ok=True)
         MMPM_CLI_LOG_FILE.touch(exist_ok=True)
 
-        log_format: str = '%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s'
-        logging.basicConfig(filename=MMPM_CLI_LOG_FILE, format=log_format)
+        log_format: str = f'{{"time": "%(asctime)s", "version": "{version}" , "level": "%(levelname)s", "location": "%(module)s:%(funcName)s:%(lineno)d", "message": "%(message)s"}}'
+        logging.basicConfig(filename=MMPM_CLI_LOG_FILE, format=log_format, datefmt="%Y-%m-%d %H:%M:%S")
 
         MMPMLogger.__logger__ = logging.getLogger(name)
         MMPMLogger.__logger__.__setattr__("msg", StdOutMessageWriter())
 
-        handler = logging.handlers.RotatingFileHandler(
-            MMPM_CLI_LOG_FILE,
-            mode='a',
-            maxBytes=1024*1024,
-            backupCount=2,
-            encoding=None,
-            delay=0
-        )
+        if not MMPMLogger.__logger__.hasHandlers():
+            handler = logging.handlers.RotatingFileHandler(
+                MMPM_CLI_LOG_FILE,
+                mode="a",
+                maxBytes=1024*1024,
+                backupCount=2,
+                encoding="utf-8",
+                delay=0
+            )
 
-        MMPMLogger.__logger__.addHandler(handler)
+            MMPMLogger.__logger__.addHandler(handler)
+
         MMPMLogger.__logger__.setLevel(MMPMEnv.mmpm_log_level.get())
+
+        return MMPMLogger.__logger__
 
 
     @staticmethod
     def get_logger(name: str) -> logging.Logger:
-        if MMPMLogger.__logger__ is None:
-            MMPMLogger.__init_logger__(name)
-
-        return MMPMLogger.__logger__
+        return MMPMLogger.__init_logger__(name)
 
 
     @classmethod
@@ -170,7 +172,7 @@ class MMPMLogger:
         today = datetime.datetime.now()
 
         file_name: str = f'mmpm-logs-{today.year}-{today.month}-{today.day}'
-        MMPMLogger.__logger__.msg.info(f'{mmpm.consts.GREEN_PLUS} Compressing MMPM log files to {os.getcwd()}/{file_name}.zip ')
+        MMPMLogger.__logger__.msg.info(f'Compressing MMPM log files to {os.getcwd()}/{file_name}.zip ')
 
         try:
             shutil.make_archive(file_name, 'zip', mmpm.consts.MMPM_LOG_DIR)

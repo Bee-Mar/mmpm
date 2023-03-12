@@ -35,7 +35,6 @@ GREEN_CHECK_MARK: str = mmpm.color.N_GREEN + ('\u2713' if __UNICODE_SUPPORT__ el
 YELLOW_X: str = mmpm.color.N_YELLOW + ('\u2718' if __UNICODE_SUPPORT__ else "x") + mmpm.color.RESET
 RED_X: str = mmpm.color.N_RED + '\u2718' + mmpm.color.RESET
 GREEN_DASHES: str = mmpm.color.N_GREEN + '----' + mmpm.color.RESET
-GREEN_PLUS: str = mmpm.color.N_GREEN + '+' + mmpm.color.RESET
 EXTERNAL_PACKAGES: str = 'External Packages'
 
 MMPM_ENV_ERROR_MESSAGE: str = 'Please ensure the MMPM environment variables are set properly. Execute `mmpm env` to see your environment settings.'

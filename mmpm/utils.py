@@ -9,9 +9,10 @@ import requests
 import socket
 import mmpm.color
 import mmpm.consts
+from mmpm.constants import paths
 from mmpm.logger import MMPMLogger
 from mmpm.env import MMPMEnv
-from typing import List, Optional, Tuple, Dict
+from typing import List, Optional, Tuple, Dict, Any
 from pathlib import Path, PosixPath
 
 
@@ -45,11 +46,11 @@ def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, s
         Tuple[returncode (int), stdout (str), stderr (str)]
     '''
 
-    logger.info(f'Executing process `{" ".join(command)}` in foreground')
+    logger.info(f'Executing process `{" ".join(command)}`')
 
     if background:
         logger.info(f'Executing process `{" ".join(command)}` in background')
-        subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return
 
     with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as process:
@@ -96,8 +97,9 @@ def edit(file: PosixPath) -> Optional[None]:
         except OSError as error:
             logger.msg.fatal(f'Unable to create {file}: {str(error)}')
 
-    logger.info(f'Opening {file} in users default editor')
-    os.system(f'edit {file}')
+    logger.info(f'Opening {file} for user to edit')
+    command = os.getenv("EDITOR", os.getenv("VISUAL", "edit"))
+    os.system(f'{command} {file}')
 
 
 def get_pids(process_name: str) -> List[str]:
@@ -133,7 +135,6 @@ def kill_pids_of_process(process: str) -> None:
         processes (str): the processes IDs found
     '''
     logger.info(f'Killing all processes of type {process}')
-    plain_print(f'{mmpm.consts.GREEN_PLUS} stopping MagicMirror electron processes ')
     os.system(f'for process in $(pgrep {process}); do kill -9 $process; done')
     print(f'{mmpm.consts.GREEN_CHECK_MARK}')
 
@@ -334,3 +335,15 @@ def background_timer_thread(stop_event, arg, client): # pylint: disable=unused-a
             logger.warning('Reached 10 second timeout for connecting to MagicMirror websocket. Closing connection')
             print('10 second timeout reached, closing connection.')
             break
+
+def read_available_upgrades() -> Dict[str, Any]: # TODO: find a better place for this
+        configuration = {}
+
+        with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="r", encoding="utf-8") as upgrade_file:
+            try:
+                configuration = json.load(upgrade_file)
+            except json.JSONDecodeError as error:
+                logger.error(f"Failed to parse {paths.MMPM_AVAILABLE_UPGRADES_FILE}, resetting file: {error}")
+                configuration = {"mmpm": False, "MagicMirror": False, "packages": []}
+
+        return configuration

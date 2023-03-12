@@ -25,6 +25,7 @@ from pathlib import Path, PosixPath
 from pygments import highlight, formatters
 from pygments.lexers.data import JsonLexer
 from pip._internal.operations.freeze import freeze
+from mmpm.utils import read_available_upgrades
 
 
 
@@ -82,15 +83,13 @@ class MagicMirrorDatabase(Singleton):
                 if package.is_upgradable:
                     upgradable.append(package)
 
+        configuration = read_available_upgrades()
+
         with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="w", encoding="utf-8") as upgrade_file:
-            json.dump(
-                {
-                    "mmpm": can_upgrade_mmpm,
-                    "MagicMirror": False,
-                    "packages": [package.serialize() for package in upgradable],
-                },
-                upgrade_file
-            )
+            configuration["mmpm"] = can_upgrade_mmpm
+            configuration["packages"] = [package.serialize() for package in upgradable]
+
+            json.dump(configuration, upgrade_file)
 
         return int(can_upgrade_mmpm) + len(upgradable)
 
@@ -160,7 +159,7 @@ class MagicMirrorDatabase(Singleton):
                 for entry in row:
                     table_data: list = entry.find_all('td')
 
-                    if table_data[0].contents[0].contents[0] == mmpm.consts.MMPM:
+                    if table_data[0].contents[0].contents[0] == "mmpm":
                         continue
 
                     pkg = MagicMirrorPackage.from_raw_data(table_data, category=categories[index])
@@ -243,15 +242,6 @@ class MagicMirrorDatabase(Singleton):
         db_file: PosixPath = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
         db_exists: bool = db_file.exists() and bool(db_file.stat().st_size)
         ext_pkgs_file: PosixPath = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
-
-        if db_exists:
-            shutil.copyfile(
-                str(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE),
-                f'{str(mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE)}.bak'
-            )
-
-            logger.info(f'Backed up database file as {paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE}.bak')
-
 
         # if the database has expired, or doesn't exist, get a new one
         if refresh or not db_exists:
@@ -454,15 +444,16 @@ class MagicMirrorDatabase(Singleton):
             print(mmpm.color.normal_green(MagicMirrorPackage(**package).title), f'[{pkg_label}]')
 
         if upgradable["mmpm"]:
-            print(f'{mmpm.color.normal_green(mmpm.consts.MMPM)} [{app_label}]')
+            print(f'{mmpm.color.normal_green("mmpm")} [{app_label}]')
 
         if upgradable["MagicMirror"]:
-            print(f'{mmpm.color.normal_green(mmpm.consts.MAGICMIRROR)} [{app_label}]')
+            print(f'{mmpm.color.normal_green("MagicMirror")} [{app_label}]')
 
         if upgrades_available:
             print('Run `mmpm upgrade` to upgrade available packages/applications')
         else:
             print(f'No upgrades available {mmpm.consts.YELLOW_X}')
+
 
     def upgradable(self) -> dict:
         '''
@@ -503,10 +494,10 @@ class MagicMirrorDatabase(Singleton):
         These sources are stored in ~/.config/mmpm/mmpm-external-packages.json
 
         Parameters:
-            title (str): External source title
-            author (str): External source author
-            repo (str): External source repo url
-            description (str): External source description
+            title (str): module title
+            author (str): module author
+            repo (str): module repo url
+            description (str): module description
 
         Returns:
             (bool): Upon success, a True result is returned

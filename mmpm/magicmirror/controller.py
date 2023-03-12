@@ -4,6 +4,7 @@ import sys
 import json
 import shutil
 import socketio
+import subprocess
 import mmpm.consts
 from mmpm.singleton import Singleton
 from mmpm.constants import paths
@@ -11,92 +12,84 @@ from time import sleep
 from mmpm.logger import MMPMLogger
 from mmpm.env import MMPMEnv
 from pathlib import Path, PosixPath
-from mmpm.utils import get_pids
+from mmpm.utils import get_pids, read_available_upgrades, kill_pids_of_process
 
 logger = MMPMLogger.get_logger(__name__)
 
 
 class MagicMirrorClientFactory:
-    def __init__(self):
-        self.client = None
+    def __new__(cls, event: str, data: dict):
+        client = None
 
-    def create(self, event: str, data: dict):
         try:
-            if self.client is not None:
-                self.client.disconnect()
-                self.client = None
-
-            self.client = socketio.Client(logger=logger, reconnection=True, request_timeout=300)
+            client = socketio.Client(logger=logger, reconnection=True, request_timeout=300)
         except socketio.exceptions.SocketIOError as error:
             logger.fatal("Failed to create SocketIO client")
 
-        @self.client.on('connect', namespace="/mmpm")
-        def connect(): # pylint: disable=unused-variable
+        @client.on('connect', namespace="/MMM-mmpm")
+        def connect():
             logger.info('Connected to MagicMirror websocket')
-            self.client.emit(event, namespace="/mmpm", data=data)
+            client.emit(event, namespace="/MMM-mmpm", data=data)
 
-        @self.client.event
-        def connect_error(): # pylint: disable=unused-variable
+        @client.event
+        def connect_error():
             logger.error('Failed to connect to MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set properly?')
 
-        @self.client.on('disconnect', namespace="/mmpm")
-        def disconnect(): # pylint: disable=unused-variable
+        @client.on('disconnect', namespace="/MMM-mmpm")
+        def disconnect():
             logger.info('Disconnected from MagicMirror websocket')
 
-        @self.client.on('ACTIVE_MODULES', namespace="/mmpm")
-        def active_modules(data): # pylint: disable=unused-variable
-            logger.info('received active modules from MMPM MagicMirror module')
+        @client.on('ACTIVE_MODULES', namespace="/MMM-mmpm")
+        def active_modules(data):
+            logger.info('Received active modules from MMPM MagicMirror module')
 
             if not data:
                 print(mmpm.consts.RED_X)
-                logger.error('No data was received from the MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set properly?')
+                logger.error('No data was received. Is the MMPM_MAGICMIRROR_URI environment variable set properly?')
 
             for module in [json_data for index, json_data in enumerate(data) if json_data not in data[index + 1:]]:
                 print(f"{mmpm.color.normal_green(module['name'])}\n  hidden: {'true' if module['hidden'] else 'false'}\n  key: {module['index'] + 1}\n")
 
-            self.client.disconnect()
+            client.disconnect()
 
-        @self.client.on('MODULES_TOGGLED', namespace="/mmpm")
-        def modules_toggled(data): # pylint: disable=unused-variable
+        @client.on('MODULES_TOGGLED', namespace="/MMM-mmpm")
+        def modules_toggled(data):
             logger.info('Received toggled modules from MMPM MagicMirror module')
 
             if not data:
                 print(mmpm.consts.RED_X)
                 logger.error('Unable to find provided module(s)')
 
-            self.client.disconnect()
+            client.disconnect()
 
-        return self.client
+        return client
 
 
 
 class MagicMirrorController(Singleton):
-    def __init__(self):
-        self.client_factory = MagicMirrorClientFactory()
-
     def status(self):
-        client = self.client_factory.create('FROM_MMPM_APP_get_active_modules', {})
+        client = MagicMirrorClientFactory('FROM_MMPM_APP_get_active_modules', {})
 
         try:
-            client.connect(MMPMEnv.mmpm_magicmirror_uri.get(), namespaces=["/mmpm"])
+            client.connect(MMPMEnv.mmpm_magicmirror_uri.get(), namespaces=["/MMM-mmpm"])
         except (OSError, BrokenPipeError, Exception) as error:
             logger.msg.error('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
             logger.error(str(error))
 
     def hide_modules(self, modules_to_hide):
-        client = self.client_factory.create('FROM_MMPM_APP_toggle_modules', {'directive': 'hide', 'modules': modules_to_hide})
+        client = MagicMirrorClientFactory('FROM_MMPM_APP_toggle_modules', {'directive': 'hide', 'modules': modules_to_hide})
 
         try:
-            client.connect(MMPMEnv.mmpm_magicmirror_uri.get(), namespaces=["/mmpm"])
+            client.connect(MMPMEnv.mmpm_magicmirror_uri.get(), namespaces=["/MMM-mmpm"])
         except (OSError, BrokenPipeError, Exception) as error:
             logger.msg.error('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
             logger.error(str(error))
 
     def show_modules(self, modules_to_show):
-        client = self.client_factory.create('FROM_MMPM_APP_toggle_modules', data={'directive': 'show', 'modules': modules_to_show})
+        client = MagicMirrorClientFactory('FROM_MMPM_APP_toggle_modules', data={'directive': 'show', 'modules': modules_to_show})
 
         try:
-            client.connect(MMPMEnv.mmpm_magicmirror_uri.get(), namespaces=["/mmpm"])
+            client.connect(MMPMEnv.mmpm_magicmirror_uri.get(), namespaces=["/MMM-mmpm"])
         except (OSError, BrokenPipeError, Exception) as error:
             logger.msg.error('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
             logger.error(str(error))
@@ -135,7 +128,7 @@ class MagicMirrorController(Singleton):
             process = 'docker-compose'
 
         if command and process:
-            logger.msg.info(f"{mmpm.consts.GREEN_PLUS} starting MagicMirror using {command[0]} ")
+            logger.msg.info(f"starting MagicMirror using {command[0]} ")
             logger.info(f"Using '{process}' to start MagicMirror")
             error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False, background=True)
 
@@ -149,12 +142,14 @@ class MagicMirrorController(Singleton):
             return True
 
         os.chdir(Path(MMPMEnv.mmpm_magicmirror_root.get()))
-        logger.info("Running 'npm start' in the background")
 
-        logger.msg.info(f'{mmpm.consts.GREEN_PLUS} npm start ')
-        os.system('npm start &')
+        command = ["npm", "run", "start"]
+
+        logger.info(f"Running `{' '.join(command)} in the background`")
+        logger.msg.info(f"Starting MagicMirror ")
+
+        mmpm.utils.run_cmd(command, progress=False, background=True)
         print(mmpm.consts.GREEN_CHECK_MARK)
-        logger.info("Using 'npm start' to start MagicMirror. Stdout/stderr capturing not possible in this case")
         return True
 
 
@@ -190,11 +185,12 @@ class MagicMirrorController(Singleton):
             command = ['docker-compose', '-f', MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, 'stop']
             process = 'docker-compose'
 
+        logger.msg.info(f'Stopping MagicMirror ')
+
         if command and process:
-            logger.msg.info(f"{mmpm.consts.GREEN_PLUS} stopping MagicMirror using {command[0]} ")
             logger.info(f"Using '{process}' to stop MagicMirror")
             # pm2 and docker-compose cause the output to flip
-            error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False)
+            error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False, background=True)
 
             if error_code:
                 print(mmpm.consts.RED_X)
@@ -255,7 +251,7 @@ class MagicMirrorController(Singleton):
             logger.msg.fatal(message)
             return False
 
-        print(f'{mmpm.consts.GREEN_PLUS} Installing MagicMirror')
+        print(f'Installing MagicMirror')
 
         if not mmpm.utils.prompt(f"Use '{root_path}' ({root.name}) as the parent directory of the new MagicMirror installation?"):
             print(f"Cancelled installation. To change the installation path of MagicMirror, modify the {root.name} using 'mmpm open --env'")
@@ -301,7 +297,7 @@ class MagicMirrorController(Singleton):
         Returns:
             success (bool): True if successful else False
         '''
-        print(f"{mmpm.consts.GREEN_PLUS} Upgrading {mmpm.color.normal_green('MagicMirror')}")
+        print(f"Upgrading {mmpm.color.normal_green('MagicMirror')}")
 
         root = MMPMEnv.mmpm_magicmirror_root
         root_dir: PosixPath = Path(root.get())
@@ -364,14 +360,11 @@ class MagicMirrorController(Singleton):
         if error_code:
             logger.msg.error('Unable to communicate with git server')
 
-        upgradable = {}
-
-        with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="r", encoding="utf-8") as upgrade_file:
-            upgradable = json.load(upgrade_file)
+        configuration = read_available_upgrades()
 
         with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="w", encoding="utf-8") as upgrade_file:
-            upgradable["MagicMirror"] = can_upgrade
-            json.dump(upgradable, upgrade_file)
+            configuration["MagicMirror"] = can_upgrade
+            json.dump(configuration, upgrade_file)
 
         return can_upgrade
 

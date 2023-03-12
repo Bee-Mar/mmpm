@@ -236,11 +236,11 @@ class MagicMirrorPackage():
             stderr (str): the resulting error message of the upgrade. If the message is zero length, it was successful
         '''
         modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
-        self.directory = os.path.join(modules_dir, self.title)
+        self.directory = modules_dir / self.title
 
         os.chdir(modules_dir / self.directory)
 
-        logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Upgrading {mmpm.color.normal_green(self.title)}')
+        logger.msg.info(f'Upgrading {mmpm.color.normal_green(self.title)}')
         error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
 
         if error_code:

@@ -255,7 +255,7 @@ def install_autocompletion(assume_yes: bool = False) -> None:
 
     def __echo_and_eval__(command: str) -> None:
         logger.info(f'executing {command} to install autocompletion')
-        print(f'{mmpm.consts.GREEN_PLUS} {command}')
+        print(f'{command}')
         os.system(command)
 
     if 'bash' in shell:

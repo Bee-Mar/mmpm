@@ -66,7 +66,7 @@ class MMPMGui(Singleton):
             subbed = subbed.replace(sub_user, user)
             mmpm_service.write(subbed)
 
-        logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Copying NGINX and SystemdD service configs ')
+        logger.msg.info(f'Copying NGINX and SystemdD service configs ')
 
         os.system(f'''
             sudo mkdir -p /var/www/mmpm;
@@ -77,12 +77,12 @@ class MMPMGui(Singleton):
 
         print(mmpm.consts.GREEN_CHECK_MARK)
 
-        logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Cleaning configuration files and resetting SystemdD daemons ')
+        logger.msg.info(f'Cleaning configuration files and resetting SystemdD daemons ')
         print(mmpm.consts.GREEN_CHECK_MARK)
 
         os.system('rm -rf /tmp/etc')
 
-        logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Reloading SystemdD daemon ')
+        logger.msg.info(f'Reloading SystemdD daemon ')
         daemon_reload = mmpm.utils.systemctl('daemon-reload')
 
         if daemon_reload.returncode != 0:
@@ -92,7 +92,7 @@ class MMPMGui(Singleton):
         else:
             print(mmpm.consts.GREEN_CHECK_MARK)
 
-        logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Enabling MMPM SystemdD daemon ')
+        logger.msg.info(f'Enabling MMPM SystemdD daemon ')
 
         enable_mmpm_service = mmpm.utils.systemctl('enable', ['mmpm.service'])
 
@@ -117,7 +117,7 @@ class MMPMGui(Singleton):
                 self.remove()
             sys.exit(127)
 
-        logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Restarting NGINX SystemD service ')
+        logger.msg.info(f'Restarting NGINX SystemD service ')
         restart_nginx = mmpm.utils.systemctl('restart', ['nginx'])
 
         if restart_nginx.returncode != 0:
@@ -154,7 +154,7 @@ class MMPMGui(Singleton):
         is_active = mmpm.utils.systemctl('is-active', ['mmpm.service'])
 
         if is_active.returncode == 0:
-            logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Stopping MMPM SystemD service ')
+            logger.msg.info(f'Stopping MMPM SystemD service ')
             stopping = mmpm.utils.systemctl('stop', ['mmpm.service'])
 
             if stopping.returncode == 0:
@@ -165,12 +165,12 @@ class MMPMGui(Singleton):
                 logger.error(f"{stopping.stdout.decode('utf-8')}\n{stopping.stderr.decode('utf-8')}")
 
         elif is_active.stdout.decode('utf-8') == INACTIVE:
-            print(f'{mmpm.consts.GREEN_PLUS} MMPM SystemD service not active, nothing to do {mmpm.consts.GREEN_CHECK_MARK}')
+            print(f'MMPM SystemD service not active, nothing to do {mmpm.consts.GREEN_CHECK_MARK}')
 
         is_enabled = mmpm.utils.systemctl('is-enabled', ['mmpm.service'])
 
         if is_enabled.returncode == 0:
-            logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Disabling MMPM SystemD service ')
+            logger.msg.info(f'Disabling MMPM SystemD service ')
             disabling = mmpm.utils.systemctl('disable', ['mmpm.service'])
 
             if disabling.returncode == 0:
@@ -181,9 +181,9 @@ class MMPMGui(Singleton):
                 logger.error(f"{disabling.stdout.decode('utf-8')}\n{disabling.stderr.decode('utf-8')}")
 
         elif is_enabled.stdout.decode('utf-8') == DISABLED:
-            print(f'{mmpm.consts.GREEN_PLUS} MMPM SystemD service not enabled, nothing to do {mmpm.consts.GREEN_CHECK_MARK}')
+            print(f'MMPM SystemD service not enabled, nothing to do {mmpm.consts.GREEN_CHECK_MARK}')
 
-        logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Force removing NGINX and SystemD configs ')
+        logger.msg.info(f'Force removing NGINX and SystemD configs ')
 
         cmd: str = f"""
         sudo rm -f {mmpm.consts.MMPM_SYSTEMD_SERVICE_FILE};
@@ -197,7 +197,7 @@ class MMPMGui(Singleton):
 
         os.system(cmd)
 
-        logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Reloading SystemdD daemon ')
+        logger.msg.info(f'Reloading SystemdD daemon ')
         daemon_reload = mmpm.utils.systemctl('daemon-reload')
 
         if daemon_reload.returncode != 0:
@@ -207,7 +207,7 @@ class MMPMGui(Singleton):
         else:
             print(mmpm.consts.GREEN_CHECK_MARK)
 
-        logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Restarting NGINX SystemD service ')
+        logger.msg.info(f'Restarting NGINX SystemD service ')
         restart_nginx = mmpm.utils.systemctl('restart', ['nginx'])
 
         if restart_nginx.returncode != 0:

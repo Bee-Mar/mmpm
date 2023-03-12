@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys
 from mmpm.mmpm import MMPM
 
 def main(): # for the setup.py console scripts

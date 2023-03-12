@@ -9,6 +9,7 @@ import json
 import webbrowser
 import mmpm.utils
 import mmpm.consts
+import shutil
 from argparse import Namespace
 from mmpm.singleton import Singleton
 from mmpm.subcommands import options
@@ -266,7 +267,15 @@ class MMPM(Singleton):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd) # TODO: FIXME
         elif args.config:
-            mmpm.utils.edit(Path(MMPMEnv.mmpm_magicmirror_root.get()) / "config" / "config.js")
+            root = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "config"
+            config_js =  root / "config.js"
+            config_js_sample = root / "config.js.sample"
+
+            if not config_js.stat().st_size and config_js_sample.exists():
+                shutil.copyfile(config_js_sample, config_js)
+
+            mmpm.utils.edit(config_js)
+
         elif args.custom_css:
             mmpm.utils.edit(Path(MMPMEnv.mmpm_magicmirror_root.get()) / "css" / "custom.css")
         elif args.magicmirror:

@@ -25,7 +25,8 @@ from typing import List, Dict, Callable
 from textwrap import fill, indent
 
 logger = MMPMLogger.get_logger(__name__)
-logger.setLevel(MMPMEnv.mmpm_log_level.get())
+
+# TODO: delete this whole file
 
 
 def check_for_mmpm_updates(automated=False) -> bool:

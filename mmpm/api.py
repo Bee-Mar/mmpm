@@ -20,7 +20,6 @@ from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.env import MMPMEnv
 
 logger = MMPMLogger.get_logger(__name__)
-logger.setLevel(MMPMEnv.mmpm_log_level.get())
 
 app = Flask(__name__, root_path="/var/www/mmpm", static_url_path="")
 app.config['CORS_HEADERS'] = 'Content-Type'

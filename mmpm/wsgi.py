@@ -10,7 +10,6 @@ from mmpm.logger import MMPMLogger
 from mmpm.env import MMPMEnv
 
 logger = MMPMLogger.get_logger(__name__)
-logger.setLevel(MMPMEnv.mmpm_log_level.get())
 
 if __name__ == '__main__':
     app.run(

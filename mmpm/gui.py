@@ -13,7 +13,7 @@ import os
 import subprocess
 
 logger = MMPMLogger.get_logger(__name__)
-logger.setLevel(MMPMEnv.mmpm_log_level.get())
+
 
 class MMPMGui(Singleton):
 

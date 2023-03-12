@@ -27,7 +27,6 @@ from pathlib import Path
 __version__ = 4.0
 
 logger = MMPMLogger.get_logger(__name__)
-logger.setLevel(MMPMEnv.mmpm_log_level.get())
 
 
 class MMPM(Singleton):

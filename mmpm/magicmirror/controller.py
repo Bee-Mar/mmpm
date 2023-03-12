@@ -14,7 +14,6 @@ from pathlib import Path, PosixPath
 from mmpm.utils import get_pids
 
 logger = MMPMLogger.get_logger(__name__)
-logger.setLevel(MMPMEnv.mmpm_log_level.get())
 
 
 class MagicMirrorClientFactory:

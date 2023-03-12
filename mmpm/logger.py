@@ -7,6 +7,7 @@ import logging.handlers
 import datetime
 import mmpm.color
 import mmpm.utils
+from mmpm.env import MMPMEnv
 from pathlib import PosixPath
 from mmpm.constants.paths import MMPM_CONFIG_DIR
 
@@ -106,6 +107,7 @@ class MMPMLogger:
         )
 
         MMPMLogger.__logger__.addHandler(handler)
+        MMPMLogger.__logger__.setLevel(MMPMEnv.mmpm_log_level.get())
 
 
     @staticmethod

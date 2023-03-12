@@ -16,7 +16,6 @@ from pathlib import Path, PosixPath
 
 
 logger = MMPMLogger.get_logger(__name__)
-logger.setLevel(MMPMEnv.mmpm_log_level.get())
 
 
 def get_host_ip() -> str:

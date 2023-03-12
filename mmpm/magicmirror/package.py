@@ -20,7 +20,6 @@ from multiprocessing import cpu_count
 NA: str = mmpm.consts.NOT_AVAILABLE
 
 logger = MMPMLogger.get_logger(__name__)
-logger.setLevel(MMPMEnv.mmpm_log_level.get())
 
 def __sanitize__(string: str) -> str:
     return sub('[//]', '', string)

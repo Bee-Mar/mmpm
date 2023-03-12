@@ -13,6 +13,7 @@ from mmpm.constants.paths import MMPM_CONFIG_DIR
 MMPM_LOG_DIR: PosixPath = MMPM_CONFIG_DIR / "log"
 MMPM_CLI_LOG_FILE: PosixPath = MMPM_LOG_DIR / "mmpm-cli-interface.log"
 
+
 class StdOutMessageWriter:
     def __init__(self):
         pass
@@ -71,8 +72,11 @@ class StdOutMessageWriter:
         sys.exit(127)
 
 
+    def retrieving(self, url: str, name: str):
+       print(f"Retrieving: {url} [{mmpm.color.normal_cyan(name)}] ")
 
-class MMPMLogger():
+
+class MMPMLogger:
     '''
     Object used for logging while MMPM is executing.
     Log files can be found in ~/.config/mmpm/log

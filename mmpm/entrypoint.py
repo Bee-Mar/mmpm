@@ -3,7 +3,8 @@ from mmpm.mmpm import MMPM
 
 def main(): # for the setup.py console scripts
     try:
-        MMPM().run()
+        app = MMPM()
+        app.run()
     except KeyboardInterrupt:
         sys.exit(127)
 

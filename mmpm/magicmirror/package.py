@@ -67,7 +67,14 @@ class MagicMirrorPackage():
     def __ne__(self, other) -> bool:
         return not self.__eq__(other)
 
-    def display(self, detailed: bool = False, remote: bool = False, title_only: bool = False, show_path: bool = False, exclude_installed: bool = False) -> None:
+    def display(self,
+            detailed: bool = False,
+            remote: bool = False,
+            title_only: bool = False,
+            show_path: bool = False,
+            exclude_installed: bool = False,
+            hide_installed_indicator: bool = False,
+        ) -> None:
         '''
         Displays more detailed information that presented in normal search results.
         The output is formatted similarly to the output of the Debian/Ubunut 'apt' CLI
@@ -89,9 +96,8 @@ class MagicMirrorPackage():
             return
 
         if title_only:
-            print(self.title + (" [installed]" if self.is_installed else ""))
+            print(self.title + (" [installed]" if self.is_installed and not hide_installed_indicator else ""))
             return
-
 
         print(mmpm.color.normal_green(self.title) + (" [installed]" if self.is_installed else ""))
 

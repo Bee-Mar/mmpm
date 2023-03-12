@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
+from mmpm.singleton import Singleton
 from socket import gethostbyname, gethostname
 from re import findall
 import mmpm.utils
@@ -14,9 +15,9 @@ import subprocess
 logger = MMPMLogger.get_logger(__name__)
 logger.setLevel(MMPMEnv.mmpm_log_level.get())
 
-class MMPMGui:
-    @classmethod
-    def install(cls, assume_yes: bool = False):
+class MMPMGui(Singleton):
+
+    def install(self, assume_yes: bool = False):
         '''
         Installs the MMPM GUI by configuring the required NGINX files bundled in
         the MMPM PyPI package. This asks the user for sudo permissions. The
@@ -55,7 +56,7 @@ class MMPMGui:
 
         temp_mmpm_service: str = f'{temp_etc}/systemd/system/mmpm.service'
 
-        MMPMGui.remove(hide_prompt=True)
+        self.remove(assume_yes=True)
 
         with open(temp_mmpm_service, 'r', encoding="utf-8") as original:
             config = original.read()
@@ -97,7 +98,7 @@ class MMPMGui:
 
         if enable_mmpm_service.returncode != 0:
             if logger_gui_install_error_and_prompt_for_removal(enable_mmpm_service, 'Failed to enable MMPM SystemD service'):
-                MMPMGui.remove()
+                self.remove()
             sys.exit(127)
 
         print(mmpm.consts.GREEN_CHECK_MARK)
@@ -106,14 +107,14 @@ class MMPMGui:
 
         if start_mmpm_service.returncode != 0:
             if logger_gui_install_error_and_prompt_for_removal(start_mmpm_service, 'Failed to start MMPM SystemD service'):
-                MMPMGui.remove()
+                self.remove()
             sys.exit(127)
 
         link_nginx_conf = subprocess.run(['sudo', 'ln', '-sf', '/etc/nginx/sites-available/mmpm.conf', '/etc/nginx/sites-enabled'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         if link_nginx_conf.returncode != 0:
             if logger_gui_install_error_and_prompt_for_removal(link_nginx_conf, 'Failed to create symbolic links for NGINX configuration'):
-                MMPMGui.remove()
+                self.remove()
             sys.exit(127)
 
         logger.msg.info(f'{mmpm.consts.GREEN_PLUS} Restarting NGINX SystemD service ')
@@ -121,7 +122,7 @@ class MMPMGui:
 
         if restart_nginx.returncode != 0:
             if logger_gui_install_error_and_prompt_for_removal(restart_nginx, 'Failed to restart NGINX SystemD service'):
-                MMPMGui.remove()
+                self.remove()
             sys.exit(127)
 
         print(mmpm.consts.GREEN_CHECK_MARK)
@@ -129,8 +130,7 @@ class MMPMGui:
         print('MMPM GUI installed! See `mmpm list --gui-url` for the URI, or run `mmpm open --gui` to launch')
 
 
-    @classmethod
-    def remove(cls, assume_yes: bool = False):
+    def remove(self, assume_yes: bool = False):
         '''
         Removes all SystemD services and NGINX, SystemD, and static web files
         associated with the MMPM GUI. This requires sudo permission, and the user
@@ -220,8 +220,7 @@ class MMPMGui:
         print('MMPM GUI Removed!')
 
 
-    @classmethod
-    def get_uri(cls):
+    def get_uri(self):
         '''
         Parses the MMPM nginx conf file for the port number assigned to the web
         interface, and returns a string containing containing the host IP and

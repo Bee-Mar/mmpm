@@ -20,7 +20,7 @@ MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE: PosixPath = MMPM_CONFIG_DIR / "MagicMirr
 MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE: PosixPath = MMPM_CONFIG_DIR / 'MagicMirror-3rd-party-packages-db-expiration.json'
 
 MMPM_PYTHON_ROOT_DIR: PosixPath = Path(__file__).absolute().parent
-MMPM_SYSTEMD_SERVICE_FILE: PosixPath = Path('/etc/systemd/system/mmpm.service') # TODO: use the python-systemd library
+MMPM_SYSTEMD_SERVICE_FILE: PosixPath = Path('/etc/systemd/system/mmpm.service')
 
 MMPM_REQUIRED_DATA_FILES: List[PosixPath] = [
     MMPM_ENV_FILE,

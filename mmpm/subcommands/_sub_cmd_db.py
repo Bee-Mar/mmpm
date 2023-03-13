@@ -3,13 +3,15 @@
 import argparse
 
 def setup(subparser: argparse._SubParsersAction):
-    database_parser = subparser.add_parser(
+    parser = subparser.add_parser(
         "db",
         usage='\n  mmpm db [--refresh] [--details]',
         help='refresh or display basic details about the database'
     )
 
-    database_parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+
+    group.add_argument(
         '-r',
         '--refresh',
         action='store_true',
@@ -17,7 +19,7 @@ def setup(subparser: argparse._SubParsersAction):
         dest='refresh'
     )
 
-    database_parser.add_argument(
+    group.add_argument(
         '-d',
         '--details',
         action='store_true',
@@ -25,7 +27,7 @@ def setup(subparser: argparse._SubParsersAction):
         dest='details'
     )
 
-    database_parser.add_argument(
+    group.add_argument(
         '--dump',
         action='store_true',
         help='dump the database JSON contents to stdout',

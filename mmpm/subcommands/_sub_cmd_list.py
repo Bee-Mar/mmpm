@@ -6,41 +6,11 @@ def setup(subparser):
    # LIST SUBCOMMANDS
     parser = subparser.add_parser(
         "list",
-        usage='\n  mmpm list [--all] [--exclude-local] [--categories] [--gui-url]',
+        usage='\n  mmpm list [-a] [-i] [-e] [-c] [-g] [--upgradable]',
         help='list items such as installed packages, packages available, available upgrades, etc'
     )
 
-    parser.add_argument(
-        '-a',
-        '--all',
-        action='store_true',
-        help='list all available packages in the marketplace',
-        dest='all'
-    )
-
-    parser.add_argument(
-        '-e',
-        '--exclude-installed',
-        action='store_true',
-        help='list all available packages in the marketplace, excluding locally installed packages',
-        dest='exclude_installed'
-    )
-
-    parser.add_argument(
-        '-i',
-        '--installed',
-        action='store_true',
-        help='list all locally installed packages',
-        dest='installed'
-    )
-
-    parser.add_argument(
-        '-c',
-        '--categories',
-        action='store_true',
-        help='list all available package categories',
-        dest='categories'
-    )
+    # TODO: this is almost correct. --title-only shouldn't be allowed with --gui-url or --upgradable
 
     parser.add_argument(
         '-t',
@@ -50,7 +20,41 @@ def setup(subparser):
         dest='title_only'
     )
 
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+
+    group.add_argument(
+        '-a',
+        '--all',
+        action='store_true',
+        help='list all available packages in the marketplace',
+        dest='all'
+    )
+
+    group.add_argument(
+        '-i',
+        '--installed',
+        action='store_true',
+        help='list all locally installed packages',
+        dest='installed'
+    )
+
+    group.add_argument(
+        '-e',
+        '--exclude-installed',
+        action='store_true',
+        help='list all available packages in the marketplace, excluding locally installed packages',
+        dest='exclude_installed'
+    )
+
+    group.add_argument(
+        '-c',
+        '--categories',
+        action='store_true',
+        help='list all available package categories',
+        dest='categories'
+    )
+
+    group.add_argument(
         '-g',
         '--gui-url',
         action='store_true',
@@ -58,9 +62,10 @@ def setup(subparser):
         dest='gui_url'
     )
 
-    parser.add_argument(
+    group.add_argument(
         '--upgradable',
         action='store_true',
         help='list packages that have available upgrades',
         dest='upgradable'
     )
+

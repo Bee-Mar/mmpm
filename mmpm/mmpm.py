@@ -74,10 +74,7 @@ class MMPM(Singleton):
             logger.msg.fatal("Invalid argument. See 'mmpm --help'")
             sys.exit(127)
 
-        if args.subcmd in options.SINGLE_OPTION_ARGS and not mmpm.utils.assert_one_option_selected(args): # TODO: FIXME
-            mmpm.utils.fatal_too_many_options(args)
-
-        should_refresh = True if args.subcmd == options.DB and args.refresh else self.database.expired()
+        should_refresh = True if args.subcmd == "db" and args.refresh else self.database.expired()
 
         self.database.load(refresh=should_refresh)
 

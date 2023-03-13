@@ -9,7 +9,9 @@ def setup(subparser: argparse._SubParsersAction):
         help='install MagicMirror packages',
     )
 
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+
+    group.add_argument(
         '-y',
         '--yes',
         action='store_true',

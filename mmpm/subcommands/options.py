@@ -1,35 +1,18 @@
 #!/usr/bin/env python3
 # pylint: disable=unused-argument
 import sys
-import argparse
 import argcomplete
 import mmpm.consts
 import mmpm.subcommands
 from typing import List
 from pkgutil import iter_modules
 from importlib import import_module
+from argparse import ArgumentParser
 
-# subcommand names. These could go in mmpm.consts.py, but for the sake of mnemonics
-# for mmpm.py, they'll stay (ie, opts.INSTALL, opts.LIST, etc)
-INSTALL: str = 'install'
-SEARCH: str = 'search'
-REMOVE: str = 'remove'
-DB: str = 'db'
-LIST: str = 'list'
-MM_CTL: str = 'mm-ctl'
-OPEN: str = 'open'
-ADD_EXT_PKG: str = 'add-ext-pkg'
-LOG: str = 'log'
-UPDATE: str = 'update'
-UPGRADE: str = 'upgrade'
-ENV: str = 'env'
-SHOW: str = 'show'
-VERSION: str = "version"
-
-SINGLE_OPTION_ARGS: List[str] = [INSTALL, DB, LIST, OPEN]
+SINGLE_OPTION_ARGS: List[str] = ["list"] # TODO: get rid of this
 
 
-def setup() -> argparse.ArgumentParser:
+def setup() -> ArgumentParser:
     '''
     Initializes all subcommand and their options.
 
@@ -40,7 +23,7 @@ def setup() -> argparse.ArgumentParser:
         ArgumentParser
     '''
 
-    parser = argparse.ArgumentParser(
+    parser = ArgumentParser(
         prog='mmpm',
         usage='mmpm <subcommand> [option(s)]',
         epilog=f'Visit {mmpm.consts.MMPM_WIKI_URL} for more details',

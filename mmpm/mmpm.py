@@ -11,6 +11,7 @@ import mmpm.utils
 import mmpm.consts
 import shutil
 from argparse import Namespace
+from mmpm.__version__ import version
 from mmpm.singleton import Singleton
 from mmpm.subcommands import options
 from mmpm.constants import paths
@@ -25,6 +26,7 @@ from socket import gethostbyname, gethostname
 from pathlib import Path
 
 
+# this global will get removed after a few minor versions
 __version__ = 4.0
 
 logger = MMPMLogger.get_logger(__name__)
@@ -89,7 +91,7 @@ class MMPM(Singleton):
 
 
     def version(self, args, additional_args = None):
-        print(f'{__version__}')
+        print(f'{version}')
 
 
     def list(self, args, additional_args = None):

@@ -4,25 +4,10 @@ import sys
 import argparse
 import argcomplete
 import mmpm.consts
-from typing import List, Tuple
-from mmpm.subcommands import (
-    _search,
-    _install,
-    _remove,
-    _update,
-    _db,
-    _upgrade,
-    _list,
-    _open,
-    _show,
-    _add_mm_pkg,
-    _log,
-    _mm_ctl,
-    _env,
-    _version,
-    _completion,
-    _guided_setup,
-)
+import mmpm.subcommands
+from typing import List
+from pkgutil import iter_modules
+from importlib import import_module
 
 # subcommand names. These could go in mmpm.consts.py, but for the sake of mnemonics
 # for mmpm.py, they'll stay (ie, opts.INSTALL, opts.LIST, etc)
@@ -71,9 +56,13 @@ def setup() -> argparse.ArgumentParser:
         dest='subcmd',
     )
 
-    # setup of all the subcommands and their options
-    for subcommand in [ _install, _search, _remove, _update, _upgrade, _db, _list, _open, _show, _add_mm_pkg, _log, _mm_ctl, _env, _version, _completion, _guided_setup]:
-        subcommand.setup(subparser)
+    # dynamically load all the submodules prefixed with "_sub_cmd"
+    for module in iter_modules(mmpm.subcommands.__path__):
+        if module.name.startswith("_sub_cmd"):
+            try:
+                import_module(f"mmpm.subcommands.{module.name}").setup(subparser)
+            except Exception as error:
+                print(f"Failed to load subcommand module: {error}")
 
     argcomplete.autocomplete(parser) # register autocompletion for the subcommands
 

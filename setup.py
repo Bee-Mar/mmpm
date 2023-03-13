@@ -9,6 +9,7 @@ import distutils.cmd
 import setupnovernormalize # pylint: disable=unused-import
 from pathlib import Path
 from typing import List
+from mmpm.__version__ import version
 
 
 def load_requirements() -> List[str]:
@@ -34,7 +35,7 @@ def load_requirements() -> List[str]:
 
 setup(
     name="mmpm",
-    version=mmpm.mmpm.__version__,
+    version=version,
     description="MMPM, the MagicMirror Package Manager CLI simplifies the installation, removal, and general maintenance of MagicMirror packages",
     long_description=(Path(__file__).parent / "mmpm" / "README.md").read_text(),
     long_description_content_type='text/markdown',

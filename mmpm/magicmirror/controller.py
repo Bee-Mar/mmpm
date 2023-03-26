@@ -71,7 +71,7 @@ class MagicMirrorController(Singleton):
         client = MagicMirrorClientFactory('FROM_MMPM_APP_get_active_modules', {})
 
         try:
-            client.connect(MMPMEnv.mmpm_magicmirror_uri.get(), namespaces=["/MMM-mmpm"])
+            client.connect(MMPMEnv.MMPM_MAGICMIRROR_URI.get(), namespaces=["/MMM-mmpm"])
         except (OSError, BrokenPipeError, Exception) as error:
             logger.msg.error('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
             logger.error(str(error))
@@ -80,7 +80,7 @@ class MagicMirrorController(Singleton):
         client = MagicMirrorClientFactory('FROM_MMPM_APP_toggle_modules', {'directive': 'hide', 'modules': modules_to_hide})
 
         try:
-            client.connect(MMPMEnv.mmpm_magicmirror_uri.get(), namespaces=["/MMM-mmpm"])
+            client.connect(MMPMEnv.MMPM_MAGICMIRROR_URI.get(), namespaces=["/MMM-mmpm"])
         except (OSError, BrokenPipeError, Exception) as error:
             logger.msg.error('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
             logger.error(str(error))
@@ -89,7 +89,7 @@ class MagicMirrorController(Singleton):
         client = MagicMirrorClientFactory('FROM_MMPM_APP_toggle_modules', data={'directive': 'show', 'modules': modules_to_show})
 
         try:
-            client.connect(MMPMEnv.mmpm_magicmirror_uri.get(), namespaces=["/MMM-mmpm"])
+            client.connect(MMPMEnv.MMPM_MAGICMIRROR_URI.get(), namespaces=["/MMM-mmpm"])
         except (OSError, BrokenPipeError, Exception) as error:
             logger.msg.error('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
             logger.error(str(error))
@@ -110,8 +110,8 @@ class MagicMirrorController(Singleton):
         process: str = ''
         command: List[str] = []
 
-        MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = MMPMEnv.mmpm_magicmirror_pm2_process_name.get()
-        MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = MMPMEnv.mmpm_magicmirror_docker_compose_file.get()
+        MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = MMPMEnv.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get()
+        MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = MMPMEnv.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.get()
 
         if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
             logger.info(f'docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
@@ -141,7 +141,7 @@ class MagicMirrorController(Singleton):
             print(mmpm.consts.GREEN_CHECK_MARK)
             return True
 
-        os.chdir(Path(MMPMEnv.mmpm_magicmirror_root.get()))
+        os.chdir(Path(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get()))
 
         command = ["npm", "run", "start"]
 
@@ -168,8 +168,8 @@ class MagicMirrorController(Singleton):
         process: str = ''
         command: List[str] = []
 
-        MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = MMPMEnv.mmpm_magicmirror_pm2_process_name.get()
-        MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = MMPMEnv.mmpm_magicmirror_docker_compose_file.get()
+        MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = MMPMEnv.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get()
+        MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = MMPMEnv.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.get()
 
         if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
             logger.info(f'docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
@@ -241,7 +241,7 @@ class MagicMirrorController(Singleton):
         Returns:
             bool: True upon succcess, False upon failure
         '''
-        root = MMPMEnv.mmpm_magicmirror_root
+        root = MMPMEnv.MMPM_MAGICMIRROR_ROOT
 
         root_path: PosixPath = Path(root.get())
 
@@ -269,7 +269,7 @@ class MagicMirrorController(Singleton):
         return True
 
     def remove(self) -> bool:
-        root = MMPMEnv.mmpm_magicmirror_root
+        root = MMPMEnv.MMPM_MAGICMIRROR_ROOT
         root_path: PosixPath = Path(root.get())
 
         if not root_path.exists():
@@ -299,7 +299,7 @@ class MagicMirrorController(Singleton):
         '''
         print(f"Upgrading {mmpm.color.normal_green('MagicMirror')}")
 
-        root = MMPMEnv.mmpm_magicmirror_root
+        root = MMPMEnv.MMPM_MAGICMIRROR_ROOT
         root_dir: PosixPath = Path(root.get())
 
         if not root_dir.exists():
@@ -336,7 +336,7 @@ class MagicMirrorController(Singleton):
         Returns:
             bool: True upon success, False upon failure
         '''
-        magicmirror_root: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get())
+        magicmirror_root: PosixPath = Path(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get())
 
         if not magicmirror_root.exists():
             logger.msg.error('MagicMirror application directory not found. Please ensure the MMPM environment variables are set properly in your shell configuration')

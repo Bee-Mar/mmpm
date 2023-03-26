@@ -110,7 +110,7 @@ class MMPMLogger:
 
             MMPMLogger.__logger__.addHandler(handler)
 
-        MMPMLogger.__logger__.setLevel(MMPMEnv.mmpm_log_level.get())
+        MMPMLogger.__logger__.setLevel(MMPMEnv.MMPM_LOG_LEVEL.get())
 
         return MMPMLogger.__logger__
 

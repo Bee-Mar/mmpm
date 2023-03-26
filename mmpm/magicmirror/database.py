@@ -336,7 +336,7 @@ class MagicMirrorDatabase(Singleton):
             installed_modules (Dict[str, List[MagicMirrorPackage]]): Dictionary of installed MagicMirror packages
         '''
 
-        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / 'modules'
+        modules_dir: PosixPath = Path(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get()) / 'modules'
 
         if not modules_dir.exists():
             logger.warning(f"{modules_dir} does not exist")
@@ -429,7 +429,7 @@ class MagicMirrorDatabase(Singleton):
             None
         '''
 
-        mmpm_magicmirror_root: str = MMPMEnv.mmpm_magicmirror_root.get()
+        mmpm_magicmirror_root: str = MMPMEnv.MMPM_MAGICMIRROR_ROOT.get()
 
         app_label: str = f"{mmpm.color.normal_cyan('application')}"
         pkg_label: str = f"{mmpm.color.normal_cyan('package')}"

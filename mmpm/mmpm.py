@@ -149,7 +149,7 @@ class MMPM(Singleton):
         elif args.show:
             self.controller.show_modules(args.show)
         elif args.start or args.stop or args.restart:
-            if MMPMEnv.mmpm_is_docker_image.get():
+            if MMPMEnv.MMPM_IS_DOCKER_IMAGE.get():
                 logger.msg.fatal('Cannot execute this command within a docker image')
             elif args.start:
                 self.controller.start()
@@ -266,7 +266,7 @@ class MMPM(Singleton):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd) # TODO: FIXME
         elif args.config:
-            root = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "config"
+            root = Path(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get()) / "config"
             config_js =  root / "config.js"
             config_js_sample = root / "config.js.sample"
 
@@ -276,9 +276,9 @@ class MMPM(Singleton):
             mmpm.utils.edit(config_js)
 
         elif args.custom_css:
-            mmpm.utils.edit(Path(MMPMEnv.mmpm_magicmirror_root.get()) / "css" / "custom.css")
+            mmpm.utils.edit(Path(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get()) / "css" / "custom.css")
         elif args.magicmirror:
-            mmpm.utils.run_cmd(['xdg-open', MMPMEnv.mmpm_magicmirror_uri.get()], background=True)
+            mmpm.utils.run_cmd(['xdg-open', MMPMEnv.MMPM_MAGICMIRROR_URI.get()], background=True)
         elif args.gui:
             mmpm.utils.run_cmd(['xdg-open', self.gui.get_uri()], background=True)
         elif args.mm_wiki:
@@ -444,11 +444,11 @@ class MMPM(Singleton):
 
         with open(mmpm.consts.MMPM_ENV_FILE, 'w', encoding="utf-8") as env:
             json.dump({
-                MMPMEnv.mmpm_magicmirror_root.name: os.path.normpath(magicmirror_root),
-                MMPMEnv.mmpm_magicmirror_uri.name: magicmirror_uri,
-                MMPMEnv.mmpm_magicmirror_pm2_process_name.name: magicmirror_pm2_proc,
-                MMPMEnv.mmpm_magicmirror_docker_compose_file.name: os.path.normpath(magicmirror_docker_compose_file),
-                MMPMEnv.mmpm_is_docker_image.name: mmpm_is_docker_image
+                MMPMEnv.MMPM_MAGICMIRROR_ROOT.name: os.path.normpath(magicmirror_root),
+                MMPMEnv.MMPM_MAGICMIRROR_URI.name: magicmirror_uri,
+                MMPMEnv.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.name: magicmirror_pm2_proc,
+                MMPMEnv.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.name: os.path.normpath(magicmirror_docker_compose_file),
+                MMPMEnv.MMPM_IS_DOCKER_IMAGE.name: mmpm_is_docker_image
             }, env, indent=2)
 
         print('\nBased on your responses, your environment variables have been set as:')

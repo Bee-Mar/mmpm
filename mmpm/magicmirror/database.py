@@ -274,10 +274,7 @@ class MagicMirrorDatabase(Singleton):
             self.packages = []
 
             with open(db_file, mode="r", encoding="utf-8") as db:
-                packages = json.load(db)
-
-                for package in packages:
-                    self.packages.append(MagicMirrorPackage(**package))
+                self.packages = [MagicMirrorPackage(**package) for package in json.load(db)]
 
         if ext_pkgs_file.exists():
             with open(ext_pkgs_file, mode="r", encoding="utf-8") as ext_pkgs:
@@ -309,10 +306,10 @@ class MagicMirrorDatabase(Singleton):
         '''
         external_packages: List[MagicMirrorPackage] = []
 
-        if bool(os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size):
+        if paths.MMPM_EXTERNAL_PACKAGES_FILE.stat().st_size:
             try:
                 with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r', encoding="utf-8") as ext_pkgs:
-                    external_packages = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(ext_pkgs)[mmpm.consts.EXTERNAL_PACKAGES])
+                    external_packages = [MagicMirrorPackage(**package) for package in json.load(ext_pkgs)["External Packages"]]
             except Exception:
                 message = f'Failed to load data from {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}. Please examine the file, as it may be malformed and required manual corrective action.'
                 mmpm.utils.warning_msg(message)
@@ -486,7 +483,7 @@ class MagicMirrorDatabase(Singleton):
 
         return upgrades
 
-    def add_external_package(self, title: str = None, author: str = None, repo: str = None, description: str = None) -> str:
+    def add_mm_pkg(self, title: str = None, author: str = None, repo: str = None, description: str = None) -> None:
         '''
         Adds an external source for user to install a module from. This may be a
         private git repo, or a specific branch of a public repo. All modules added
@@ -542,26 +539,25 @@ class MagicMirrorDatabase(Singleton):
             if ext_pkgs_file.exists() and ext_pkgs_file.stat().st_size:
                 external_packages = {}
 
-                with open(ext_pkgs_file, 'r', encoding="utf-8") as mmpm_ext_srcs:
-                    external_packages = json.load(mmpm_ext_srcs)
+                with open(ext_pkgs_file, 'r', encoding="utf-8") as ext_pkgs:
+                    external_packages = json.load(ext_pkgs)
 
-                with open(ext_pkgs_file, 'w', encoding="utf-8") as mmpm_ext_srcs:
+                with open(ext_pkgs_file, 'w', encoding="utf-8") as ext_pkgs:
                     external_packages["External Packages"].append(external_package.serialize())
-                    json.dump(external_packages, mmpm_ext_srcs)
+                    json.dump(external_packages, ext_pkgs)
             else:
                 # if file didn't exist previously, or it was empty, this is the first external package that's been added
-                with open(ext_pkgs_file, 'w', encoding="utf-8") as mmpm_ext_srcs:
-                    json.dump({"External Packages": [external_package.serialize()]}, mmpm_ext_srcs)
+                with open(ext_pkgs_file, 'w', encoding="utf-8") as ext_pkgs:
+                    json.dump({"External Packages": [external_package.serialize()]}, ext_pkgs)
 
             print(mmpm.color.normal_green(f"\nSuccessfully added {title} to '{mmpm.consts.EXTERNAL_PACKAGES}'\n"))
 
         except IOError as error:
-            logger.msg.error('Failed to save external module')
-            return str(error)
+            logger.msg.error(f'Failed to save external module: {error}')
+            logger.error(str(error))
 
-        return ''
 
-    def remove_external_package(self, titles: List[str] = None, assume_yes: bool = False) -> bool:
+    def remove_mm_pkg(self, titles: List[str] = None, assume_yes: bool = False) -> None:
         '''
         Allows user to remove an External Pac kage from the data saved in
         ~/.config/mmpm/mmpm-external-packages.json
@@ -574,44 +570,34 @@ class MagicMirrorDatabase(Singleton):
             success (bool): True on success, False on error
         '''
 
-        if not os.path.exists(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE):
-            logger.msg.fatal(f'{mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE} does not appear to exist')
+        ext_pkgs_file = paths.MMPM_EXTERNAL_PACKAGES_FILE
+        ext_pkgs_file.touch(exist_ok=True)
 
-        elif not os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size:
-            logger.msg.fatal(f'{mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE} is empty')
+        if not ext_pkgs_file.stat().st_size:
+            logger.msg.fatal(f'{ext_pkgs_file} is empty')
+            return
 
-        ext_packages: Dict[str, List[MagicMirrorPackage]] = {}
+        external_packages: List[MagicMirrorPackage] = []
         marked_for_removal: List[MagicMirrorPackage] = []
-        cancelled_removal: List[MagicMirrorPackage] = []
 
-        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r', encoding="utf-8") as mmpm_ext_srcs:
-            ext_packages[mmpm.consts.EXTERNAL_PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(mmpm_ext_srcs)[mmpm.consts.EXTERNAL_PACKAGES])
+        with open(ext_pkgs_file, 'r', encoding="utf-8") as ext_pkgs:
+            external_packages = [MagicMirrorPackage(**package) for package in json.load(ext_pkgs)["External Packages"]]
 
-        if not ext_packages[mmpm.consts.EXTERNAL_PACKAGES]:
+        if not external_packages:
             logger.msg.fatal('No external packages found in database')
 
         for title in titles:
-            for package in ext_packages[mmpm.consts.EXTERNAL_PACKAGES]:
-                if package.title == title:
-                    prompt: str = f'Would you like to remove {mmpm.color.normal_green(title)} ({package.repository}) from the MMPM/MagicMirror local database?'
-                    if assume_yes or mmpm.utils.prompt(prompt):
-                        marked_for_removal.append(package)
-                    else:
-                        cancelled_removal.append(package)
-
-        if not marked_for_removal and not cancelled_removal:
-            logger.msg.error('No external sources found matching provided query')
-            return False
+            for package in external_packages:
+                if package.title == title and assume_yes or mmpm.utils.prompt(f'Would you like to remove {mmpm.color.normal_green(title)} ({package.repository}) from the local database?'):
+                    marked_for_removal.append(package)
 
         for package in marked_for_removal:
-            ext_packages[mmpm.consts.EXTERNAL_PACKAGES].remove(package)
+            external_packages.remove(package)
             print(f'Removed {package.title} ({package.repository}) {mmpm.consts.GREEN_CHECK_MARK}')
 
         # if the error_msg was triggered, there's no need to even bother writing back to the file
-        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'w', encoding="utf-8") as mmpm_ext_srcs:
-            json.dump(ext_packages, mmpm_ext_srcs, default=lambda pkg: pkg.serialize())
-
-        return True
+        with open(ext_pkgs_file, 'w', encoding="utf-8") as ext_pkgs:
+            json.dump({"External Packages": external_packages}, ext_pkgs , default=lambda pkg: pkg.serialize())
 
 
     def dump(self) -> None:

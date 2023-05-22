@@ -10,6 +10,7 @@ import webbrowser
 import mmpm.utils
 import mmpm.consts
 import shutil
+import argcomplete
 from argparse import Namespace
 from mmpm.__version__ import version
 from mmpm.singleton import Singleton
@@ -141,7 +142,7 @@ class MMPM(Singleton):
 
     def mm_ctl(self, args, additional_args = None):
         if additional_args:
-            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd) # TODO: FIXME
+            logger.msg.fatal("`mm-ctl` does not accept additional arguments. See `mmpm mm-ctl --help`")
         elif args.status:
             self.controller.status()
         elif args.hide:
@@ -158,11 +159,11 @@ class MMPM(Singleton):
             elif args.restart:
                 self.controller.restart()
         else:
-            mmpm.utils.fatal_no_arguments_provided(args.subcmd) # TODO: FIXME
+            logger.msg.fatal("No option provided. See `mmpm mm-ctl --help`")
 
     def log(self, args, additional_args = None):
         if additional_args:
-            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
+            logger.msg.fatal("`log` does not accept additional arguments. See `mmpm log --help`")
         elif args.zip:
             MMPMLogger.zip()
         elif not args.cli and not args.gui:
@@ -264,7 +265,7 @@ class MMPM(Singleton):
 
     def open(self, args, additional_args = None):
         if additional_args:
-            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd) # TODO: FIXME
+            logger.msg.fatal("`open` does not accept additional arguments. See `mmpm open --help`")
         elif args.config:
             root = Path(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get()) / "config"
             config_js =  root / "config.js"
@@ -290,15 +291,12 @@ class MMPM(Singleton):
         elif args.mmpm_env:
             mmpm.utils.edit(mmpm.consts.MMPM_ENV_FILE)
         else:
-            mmpm.utils.fatal_no_arguments_provided(args.subcmd) # TODO: FIXME
+            logger.msg.fatal("No option provided. See `mmpm open --help`")
 
     def add_mm_pkg(self, args, additional_args = None):
         if args.remove:
             # TODO: FIXME
-            self.database.remove_external_package(
-                [mmpm.utils.sanitize_name(package) for package in args.remove],
-                assume_yes=args.assume_yes
-            )
+            self.database.remove_mm_pkg([package.strip() for package in args.remove], assume_yes=args.assume_yes)
         else:
             self.database.add_mm_pkg(args.title, args.author, args.repo, args.desc)
 
@@ -319,7 +317,7 @@ class MMPM(Singleton):
             return
 
         logger.info('user attempting to install MMPM autocompletion')
-        shell: str = os.environ['SHELL']
+        shell: str = os.getenv("SHELL")
 
         logger.info(f'detected user shell to be {shell}')
 
@@ -367,19 +365,6 @@ class MMPM(Singleton):
             __eval__(f"echo 'autoload -U bashcompinit' >> {config}")
             __eval__(f"echo 'bashcompinit' >> {config}")
             __eval__(f'echo \'eval "$(register-python-argcomplete mmpm)"\' >> {config}')
-
-            print(complete_message(config))
-
-        elif 'tcsh' in shell:
-            files = ['.tcshrc', '.cshrc', '.login']
-            config = __match_shell_config__(files)
-
-            logger.msg.info("Detected 'tcsh' shell.\n")
-
-            if not config:
-                logger.msg.fatal(failed_match_message('tcsh', files))
-
-            __eval__(f"echo 'eval `register-python-argcomplete --shell tcsh mmpm`' >> {config}")
 
             print(complete_message(config))
 

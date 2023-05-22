@@ -21,10 +21,6 @@ NA: str = mmpm.consts.NOT_AVAILABLE
 
 logger = MMPMLogger.get_logger(__name__)
 
-def __sanitize__(string: str) -> str:
-    return sub('[//]', '', string)
-
-
 class MagicMirrorPackage():
     '''
     A container object used to simplify the represenation of a given
@@ -39,14 +35,17 @@ class MagicMirrorPackage():
                  directory: str = "",
                  is_installed: bool = False,
         ) -> None:
-        self.title = __sanitize__(title.strip())
-        self.author = __sanitize__(author.strip())
+        self.title = self.__sanitize__(title.strip())
+        self.author = self.__sanitize__(author.strip())
         self.repository = repository.strip()
         self.description = description.strip()
         self.directory = Path(directory.strip())
         self.category = category.strip()
         self.is_installed = is_installed
         self.is_upgradable = False
+
+    def __sanitize__(self, string: str) -> str:
+        return sub('[//]', '', string)
 
     def __str__(self) -> str:
         return str(self.serialize())

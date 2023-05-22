@@ -7,7 +7,7 @@ def setup(subparser: argparse._SubParsersAction):
     parser = subparser.add_parser(
         "add-mm-pkg",
         usage='\n  mmpm add-mm-package [--title=<title>] [--author=<author>] [--repo=<repo>] [--desc=<description>]\n  mmpm add-ext-package --remove <package> [--yes]',
-        help='manually add MagicMirror packages to your local database'
+        help='manually add MagicMirror packages to your local database (similar to add-apt-repository)'
     )
 
     parser.add_argument(

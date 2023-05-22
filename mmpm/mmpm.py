@@ -314,7 +314,7 @@ class MMPM(Singleton):
             None
         '''
 
-        if args.assume_yes and not mmpm.utils.prompt('Are you sure you want to install the autocompletion feature for the MMPM CLI?'):
+        if not args.assume_yes and not mmpm.utils.prompt('Are you sure you want to install the autocompletion feature for the MMPM CLI?'):
             logger.info('User cancelled installation of autocompletion for MMPM CLI')
             return
 

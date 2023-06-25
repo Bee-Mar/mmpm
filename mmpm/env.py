@@ -64,7 +64,6 @@ class MMPMEnv:
 
     @classmethod
     def display(cls) -> None:
-
         with open(mmpm.consts.MMPM_ENV_FILE, 'r', encoding="utf-8") as env:
             print(highlight(json.dumps(json.load(env), indent=2), JsonLexer(), formatters.TerminalFormatter()))
 

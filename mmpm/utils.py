@@ -335,15 +335,3 @@ def background_timer_thread(stop_event, arg, client): # pylint: disable=unused-a
             logger.warning('Reached 10 second timeout for connecting to MagicMirror websocket. Closing connection')
             print('10 second timeout reached, closing connection.')
             break
-
-def read_available_upgrades() -> Dict[str, Any]: # TODO: find a better place for this
-        configuration = {}
-
-        with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="r", encoding="utf-8") as upgrade_file:
-            try:
-                configuration = json.load(upgrade_file)
-            except json.JSONDecodeError as error:
-                logger.error(f"Failed to parse {paths.MMPM_AVAILABLE_UPGRADES_FILE}, resetting file: {error}")
-                configuration = {"mmpm": False, "MagicMirror": False, "packages": []}
-
-        return configuration

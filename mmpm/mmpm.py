@@ -3,28 +3,33 @@
 from gevent import monkey
 monkey.patch_all() # do not move these
 
-import os
-import sys
-import json
-import webbrowser
 import mmpm.utils
 import mmpm.consts
-import shutil
-from argparse import Namespace
-from mmpm.__version__ import version
+
+from mmpm.__version__ import version as mmpm_version
 from mmpm.singleton import Singleton
 from mmpm.subcommands import options
 from mmpm.constants import paths
+from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.env import MMPMEnv
 from mmpm.gui import MMPMGui
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.package import RemotePackage, MagicMirrorPackage
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.controller import MagicMirrorController
+
+from argparse import Namespace
 from typing import List, Dict, Set
 from socket import gethostbyname, gethostname
 from pathlib import Path
 
+import os
+import sys
+import json
+import shutil
+import webbrowser
+import urllib.request
+from pip._internal.operations.freeze import freeze
 
 # this global will get removed after a few minor versions
 __version__ = 4.0
@@ -74,22 +79,21 @@ class MMPM(Singleton):
             logger.msg.fatal("Invalid argument. See 'mmpm --help'")
             sys.exit(127)
 
-        should_refresh = True if args.subcmd == "db" and args.refresh else self.database.expired()
-
-        self.database.load(refresh=should_refresh)
-
-        if self.database.expired() and args.subcmd != mmpm.opts.UPDATE:
-            self.database.update(automated=True)
-
         command: str = args.subcmd.lower().replace("-", "_")
+
+        if command != "version":
+            should_refresh = True if args.subcmd == "db" and args.refresh else self.database.expired()
+
+            self.database.load(refresh=should_refresh)
+
+            if self.database.expired() and args.subcmd != mmpm.opts.UPDATE:
+                self.database.update(automated=True)
 
         if hasattr(self, command):
             getattr(self, command)(args, additional_args)
 
-
     def version(self, args, additional_args = None):
-        print(f'{version}')
-
+        print(f'{mmpm_version}')
 
     def list(self, args, additional_args = None):
         if args.installed:
@@ -130,35 +134,43 @@ class MMPM(Singleton):
     def search(self, args, additional_args = None):
         if not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
+            return
 
         if len(additional_args) > 1:
             logger.msg.fatal(f'Too many arguments. `mmpm {args.subcmd}` only accepts one search argument')
-        else:
-            query_result = self.database.search(additional_args[0], case_sensitive=args.case_sensitive)
+            return
 
-            for package in query_result:
-                package.display(title_only=args.title_only)
+        query_result = self.database.search(additional_args[0], case_sensitive=args.case_sensitive)
 
-    def mm_ctl(self, args, additional_args = None):
+        for package in query_result:
+            package.display(title_only=args.title_only)
+
+    def mm_ctl(self, args, additional_args=None):
         if additional_args:
-            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd) # TODO: FIXME
+            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.status:
             self.controller.status()
         elif args.hide:
             self.controller.hide_modules(args.hide)
         elif args.show:
             self.controller.show_modules(args.show)
-        elif args.start or args.stop or args.restart:
+        elif args.start:
             if MMPMEnv.mmpm_is_docker_image.get():
                 logger.msg.fatal('Cannot execute this command within a docker image')
-            elif args.start:
+            else:
                 self.controller.start()
-            elif args.stop:
+        elif args.stop:
+            if MMPMEnv.mmpm_is_docker_image.get():
+                logger.msg.fatal('Cannot execute this command within a docker image')
+            else:
                 self.controller.stop()
-            elif args.restart:
+        elif args.restart:
+            if MMPMEnv.mmpm_is_docker_image.get():
+                logger.msg.fatal('Cannot execute this command within a docker image')
+            else:
                 self.controller.restart()
         else:
-            mmpm.utils.fatal_no_arguments_provided(args.subcmd) # TODO: FIXME
+            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
     def log(self, args, additional_args = None):
         if additional_args:
@@ -176,8 +188,8 @@ class MMPM(Singleton):
             sys.exit(0)
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
-        elif args.details:
-            self.database.details()
+        elif args.info:
+            self.database.info()
         elif args.dump:
             self.database.dump()
         else:
@@ -186,20 +198,38 @@ class MMPM(Singleton):
     def env(self, args, additional_args = None):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
-        else:
-            MMPMEnv.display()
+            return
+
+        MMPMEnv.display()
 
 
     def update(self, args, additional_args = None):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
 
-        total: int = int(self.controller.update()) + self.database.update()
+        url = 'https://pypi.org/pypi/mmpm/json'
+        logger.msg.retrieving(url, "mmpm")
+        current_version = ''
+
+        for requirement in freeze(local_only=False):
+            info = requirement.split('==')
+
+            if info[0] == "mmpm":
+                current_version = info[1]
+
+        contents = urllib.request.urlopen(url).read()
+        latest_version = json.loads(contents)["info"]["version"]
+
+        can_upgrade_mmpm = latest_version == current_version
+        can_upgrade_magicmirror = MagicMirror().update()
+
+        total: int = int(can_upgrade_magicmirror) + int(can_upgrade_mmpm) + self.database.update()
 
         if not total:
             print('All packages and applications are up to date.')
-        else:
-            print(f'{total} upgrade(s) available. Run `mmpm list --upgradable` for details')
+            return
+
+        print(f'{total} upgrade(s) available. Run `mmpm list --upgradable` for details')
 
     def upgrade(self, args, additional_args = None):
         upgradable = self.database.get_upgradable()
@@ -219,7 +249,7 @@ class MMPM(Singleton):
             upgradable["packages"] = [package.serialize() for package in (packages - upgraded)]
 
         if upgradable["MagicMirror"]:
-            success: bool = self.controller.upgrade()
+            MagicMirror().upgrade()
             upgradable["MagicMirror"] = False if success else True
 
         if upgradable["mmpm"]:
@@ -232,30 +262,32 @@ class MMPM(Singleton):
     def install(self, args, additional_args = None):
         if not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
-        else:
-            results = []
+            return
 
-            for name in additional_args:
-                if name == "MagicMirror":
-                    self.controller.install()
-                elif name == "mmpm-gui":
-                    self.gui.install(args.assume_yes)
-                else:
-                    results += self.database.search(name, by_title_only=True)
+        results = []
 
-                    if not results:
-                        logger.msg.error("Unable to locate package(s) based on query.")
+        for name in additional_args:
+            if name == "MagicMirror":
+                MagicMirror().install()
+            elif name == "mmpm-gui":
+                self.gui.install(args.assume_yes)
+            else:
+                results += self.database.search(name, by_title_only=True)
 
-            for package in results:
-                package.install(assume_yes=args.assume_yes)
+                if not results:
+                    logger.msg.error("Unable to locate package(s) based on query.")
+
+        for package in results:
+            package.install(assume_yes=args.assume_yes)
 
     def remove(self, args, additional_args = None):
         if not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
+            return
 
         for name in additional_args:
             if name == "MagicMirror":
-                self.controller.remove()
+                MagicMirror().remove()
             elif name == "mmpm-gui":
                 self.gui.remove(args.assume_yes)
             else:
@@ -295,14 +327,14 @@ class MMPM(Singleton):
     def add_mm_pkg(self, args, additional_args = None):
         if args.remove:
             # TODO: FIXME
-            self.database.remove_external_package(
+            self.database.remove_mm_pkg(
                 [mmpm.utils.sanitize_name(package) for package in args.remove],
                 assume_yes=args.assume_yes
             )
         else:
             self.database.add_mm_pkg(args.title, args.author, args.repo, args.desc)
 
-    def completion(self, args, additional_args = None):
+    def completion(self, args, additional_args=None):
         '''
         Adds autocompletion configuration to a user's shell configuration file.
         Detects configuration files for bash, zsh, fish, and tcsh
@@ -318,86 +350,76 @@ class MMPM(Singleton):
             logger.info('User cancelled installation of autocompletion for MMPM CLI')
             return
 
-        logger.info('user attempting to install MMPM autocompletion')
-        shell: str = os.environ['SHELL']
+        logger.info('User attempting to install MMPM autocompletion')
+        shell: str = str(Path(os.environ['SHELL']).stem).lower()
+        logger.info(f'Detected user shell to be {shell}')
 
-        logger.info(f'detected user shell to be {shell}')
+        autocomplete_url = 'https://github.com/kislyuk/argcomplete#activating-global-completion'
+        error_message = f'Please see {autocomplete_url} for help installing autocompletion'
 
-        autocomplete_url: str = 'https://github.com/kislyuk/argcomplete#activating-global-completion'
-        error_message: str = f'Please see {autocomplete_url} for help installing autocompletion'
+        complete_message = lambda config: f'Autocompletion installed. Please source {config} for the changes to take effect'
+        failed_match_message = lambda shell, configs: f'Unable to locate {shell} configuration file (looked for {configs}). {error_message}'
 
-        complete_message = lambda config: f'Autocompletion installed. Please source {config} for the changes to take effect' # pylint: disable=unnecessary-lambda-assignment
-        failed_match_message = lambda shell, configs: f'Unable to locate {shell} configuration file (looked for {configs}). {error_message}' # pylint: disable=unnecessary-lambda-assignment
-
-        def __match_shell_config__(configs: List[str]) -> str:
-            logger.info(f'searching for one of the following shell configuration files {configs}')
+        def match_shell_config(configs):
+            logger.info(f'Searching for one of the following shell configuration files {configs}')
             for config in configs:
                 config = mmpm.consts.HOME_DIR / config
                 if config.exists():
-                    logger.info(f'found {str(config)} shell configuration file for {shell}')
+                    logger.info(f'Found {str(config)} shell configuration file for {shell}')
                     return config
             return ''
 
-        def __eval__(command: str) -> None:
-            logger.info(f'executing {command} to install autocompletion')
+        def execute_command(command):
+            logger.info(f'Executing {command} to install autocompletion')
             os.system(command)
 
-        if 'bash' in shell:
-            files = ['.bashrc', '.bash_profile', '.bash_login', '.profile']
-            config = __match_shell_config__(files)
+        shell_configs = {
+            'bash': {
+                'files': ['.bashrc', '.bash_profile', '.bash_login', '.profile'],
+                'commands': [
+                    'echo \'eval "$(register-python-argcomplete mmpm)"\' >> {config}'
+                ]
+            },
+            'zsh': {
+                'files': ['.zshrc', '.zprofile', '.zshenv', '.zlogin', '.profile'],
+                'commands': [
+                    "echo 'autoload -U bashcompinit' >> {config}",
+                    "echo 'bashcompinit' >> {config}",
+                    'echo \'eval "$(register-python-argcomplete mmpm)"\' >> {config}'
+                ]
+            },
+            'tcsh': {
+                'files': ['.tcshrc', '.cshrc', '.login'],
+                'commands': [
+                    "echo 'eval `register-python-argcomplete --shell tcsh mmpm`' >> {config}"
+                ]
+            },
+            'fish': {
+                'files': ['.config/fish/config.fish'],
+                'commands': [
+                    "register-python-argcomplete --shell fish mmpm >> {config}"
+                ]
+            }
+        }
 
-            logger.msg.info("Detected 'bash' shell.\n")
+        if shell in shell_configs:
+            config_info = shell_configs[shell]
+            files = config_info['files']
+            commands = config_info['commands']
 
-            if not config:
-                logger.msg.fatal(failed_match_message('bash', files))
+            config = match_shell_config(files)
 
-            __eval__(f'echo \'eval "$(register-python-argcomplete mmpm)"\' >> {config}')
-
-            print(complete_message(config))
-
-        elif 'zsh' in shell:
-            files = ['.zshrc', '.zprofile', '.zshenv', '.zlogin', '.profile']
-            config = __match_shell_config__(files)
-
-            logger.msg.info("Detected 'zsh' shell.\n")
-
-            if not config:
-                logger.msg.fatal(failed_match_message('zsh', files))
-
-            __eval__(f"echo 'autoload -U bashcompinit' >> {config}")
-            __eval__(f"echo 'bashcompinit' >> {config}")
-            __eval__(f'echo \'eval "$(register-python-argcomplete mmpm)"\' >> {config}')
-
-            print(complete_message(config))
-
-        elif 'tcsh' in shell:
-            files = ['.tcshrc', '.cshrc', '.login']
-            config = __match_shell_config__(files)
-
-            logger.msg.info("Detected 'tcsh' shell.\n")
-
-            if not config:
-                logger.msg.fatal(failed_match_message('tcsh', files))
-
-            __eval__(f"echo 'eval `register-python-argcomplete --shell tcsh mmpm`' >> {config}")
-
-            print(complete_message(config))
-
-        elif 'fish' in shell:
-            files = ['.config/fish/config.fish']
-            config = __match_shell_config__(files)
-
-            logger.msg.info("Detected 'fish' shell.\n")
+            logger.msg.info(f"Detected '{shell}' shell.\n")
 
             if not config:
-                logger.msg.fatal(failed_match_message('fish', files))
+                logger.msg.fatal(failed_match_message(shell, files))
 
-            __eval__(f"register-python-argcomplete --shell fish mmpm >> {config}")
+            for command in commands:
+                execute_command(command.format(config=config))
 
             print(complete_message(config))
-
         else:
-            logger.msg.fatal(f'Unable install autocompletion for ({shell}). Please see {autocomplete_url} for help installing autocomplete')
+            logger.msg.fatal(f'Unable to install autocompletion for ({shell}). Please see {autocomplete_url} for help installing autocompletion')
 
 
     def guided_setup(self, args, additional_args = None):

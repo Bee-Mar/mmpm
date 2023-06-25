@@ -9,6 +9,7 @@ import requests
 import urllib.request
 import mmpm.consts
 import mmpm.color
+from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.logger import MMPMLogger
 from mmpm.singleton import Singleton
 from mmpm.magicmirror.package import MagicMirrorPackage
@@ -16,7 +17,7 @@ from mmpm.env import MMPMEnv
 from mmpm.constants import paths
 from re import findall
 from collections import defaultdict
-from typing import Dict, List
+from typing import Dict, List, Any
 from bs4 import BeautifulSoup
 from pygments import highlight, formatters
 from pygments.lexers.data import JsonLexer
@@ -24,9 +25,6 @@ from functools import lru_cache
 from pathlib import Path, PosixPath
 from pygments import highlight, formatters
 from pygments.lexers.data import JsonLexer
-from pip._internal.operations.freeze import freeze
-from mmpm.utils import read_available_upgrades
-
 
 
 logger = MMPMLogger.get_logger(__name__)
@@ -39,40 +37,7 @@ class MagicMirrorDatabase(Singleton):
         self.expiration_date: datetime.datetime = None
         self.categories: List[str] = None
 
-
-    def __update_mmpm__(self, automated=False) -> bool:
-        '''
-        Scrapes the main file of MMPM off the github repo, and compares the current
-        version, versus the one available in the master branch. If there is a newer
-        version, the user is prompted for an upgrade.
-
-        Parameters:
-            automated (bool): if True, an extra notification is printed to the screen for the user to see
-
-        Returns:
-            bool: True on success, False on failure
-        '''
-        url = 'https://pypi.org/pypi/mmpm/json'
-
-        logger.msg.retrieving(url, "mmpm")
-
-        current_version = ''
-
-        for requirement in freeze(local_only=False):
-            info = requirement.split('==')
-
-            if info[0] == "mmpm":
-                current_version = info[1]
-
-        contents = urllib.request.urlopen(url).read()
-        data = json.loads(contents)
-        latest_version = data['info']['version']
-
-        return latest_version == current_version
-
-
-    def update(self, automated: bool = False) -> int:
-        can_upgrade_mmpm = self.__update_mmpm__(automated)
+    def update(self, can_upgrade_mmpm: bool = False, can_upgrade_magicmirror: bool = False) -> int:
         upgradable: List[MagicMirrorPackage] = []
 
         for package in self.packages:
@@ -83,15 +48,16 @@ class MagicMirrorDatabase(Singleton):
                 if package.is_upgradable:
                     upgradable.append(package)
 
-        configuration = read_available_upgrades()
+        configuration = self.read_available_upgrades()
+
+        configuration["MagicMirror"] = can_upgrade_magicmirror
+        configuration["mmpm"] = can_upgrade_mmpm
+        configuration["packages"] = [package.serialize() for package in upgradable]
 
         with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="w", encoding="utf-8") as upgrade_file:
-            configuration["mmpm"] = can_upgrade_mmpm
-            configuration["packages"] = [package.serialize() for package in upgradable]
-
             json.dump(configuration, upgrade_file)
 
-        return int(can_upgrade_mmpm) + len(upgradable)
+        return int(can_upgrade_mmpm) + int(can_upgrade_magicmirror) + len(upgradable)
 
 
     def get_upgradable(self) -> dict:
@@ -103,7 +69,7 @@ class MagicMirrorDatabase(Singleton):
         return upgradable
 
 
-    def details(self):
+    def info(self):
         '''
         Displays information regarding the most recent database file, ie. when it
         was taken, when the next scheduled database retrieval will be taken, how many module
@@ -186,7 +152,7 @@ class MagicMirrorDatabase(Singleton):
         return datetime.datetime.now() > self.expiration_date
 
 
-    def search(self, query: str, case_sensitive: bool = False, by_title_only: bool = False, exclude_installed: bool = False) -> List[MagicMirrorPackage]:
+    def search(self, query: str, case_sensitive: bool = False, by_title_only: bool = False) -> List[MagicMirrorPackage]:
         '''
         Used to search the 'modules' for either a category, or keyword/phrase
         appearing within module descriptions. If the argument supplied is a
@@ -224,9 +190,9 @@ class MagicMirrorDatabase(Singleton):
 
         return [package for package in self.packages if match(query, package)]
 
-    def load(self, refresh: bool = False):
+    def load(self, refresh: bool = False) -> None:
         '''
-        Reads in modules from the hidden database file  and checks if the file is
+        Reads in modules from the hidden database file and checks if the file is
         out of date. If so, the modules are gathered again from the MagicMirror 3rd
         Party Modules wiki.
 
@@ -234,26 +200,20 @@ class MagicMirrorDatabase(Singleton):
             refresh (bool): Boolean flag to force refresh of the database
 
         Returns:
-            packages (Dict[str, List[MagicMirrorPackage]]): dictionary of MagicMirror 3rd party modules
+            None
         '''
 
-        packages: List[MagicMirrorPackage] = []
+        db_file = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
+        db_exists = db_file.exists() and bool(db_file.stat().st_size)
+        ext_pkgs_file = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
 
-        db_file: PosixPath = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
-        db_exists: bool = db_file.exists() and bool(db_file.stat().st_size)
-        ext_pkgs_file: PosixPath = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
-
-        # if the database has expired, or doesn't exist, get a new one
         if refresh or not db_exists:
             logger.msg.retrieving(mmpm.consts.MAGICMIRROR_MODULES_URL, "Database")
-
             self.download()
 
             if not self.packages:
                 print(mmpm.consts.RED_X)
                 logger.msg.error(f'Failed to retrieve packages from {mmpm.consts.MAGICMIRROR_MODULES_URL}. Please check your internet connection.')
-
-            # save the new database
             else:
                 with open(db_file, 'w', encoding="utf-8") as db:
                     json.dump(self.packages, db, default=lambda package: package.serialize())
@@ -261,66 +221,32 @@ class MagicMirrorDatabase(Singleton):
                 with open(paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE, 'w', encoding='utf-8') as expiration_file:
                     self.last_update = datetime.datetime.now()
                     self.expiration_date = self.last_update + datetime.timedelta(hours=12)
-
-                    json.dump(
-                        {
-                            "last-update": str(self.last_update),
-                            "expiration": str(self.expiration_date)
-                        },
-                        expiration_file,
-                    )
+                    json.dump({"last-update": str(self.last_update), "expiration": str(self.expiration_date)}, expiration_file)
 
         if not self.packages and db_exists:
             self.packages = []
 
             with open(db_file, mode="r", encoding="utf-8") as db:
                 packages = json.load(db)
+                self.packages = [MagicMirrorPackage(**package) for package in packages]
 
-                for package in packages:
-                    self.packages.append(MagicMirrorPackage(**package))
+        data = {}
 
-        if ext_pkgs_file.exists():
-            with open(ext_pkgs_file, mode="r", encoding="utf-8") as ext_pkgs:
-                # the external package layout should get modified, but it'll be fine
+        with open(ext_pkgs_file, mode="r+", encoding="utf-8") as ext_pkgs:
+            try:
                 data = json.load(ext_pkgs)
+            except json.decoder.JSONDecodeError:
+                logger.msg.error(f"{ext_pkgs_file} has an invalid layout. Recreating file.")
+                logger.error(f"{ext_pkgs_file} has an invalid layout. Recreating file.")
+                data = { "External Packages": [] }
+                json.dump(data, ext_pkgs)
 
-                if not "External Packages" in data:
-                    logger.msg.error(f"{ext_pkgs_file} has invalid layout. Please create a backup of {ext_pkgs_file} and re-add the packages through the MMPM CLI.")
-                else:
-                    for package in data["External Packages"]:
-                        self.packages.append(MagicMirrorPackage(**package))
+        for package in data["External Packages"]:
+            self.packages.append(MagicMirrorPackage(**package))
 
-        self.categories = set([package.category for package in self.packages])
+        self.categories = {package.category for package in self.packages}
 
         self.__discover_installed_packages__()
-
-    def __load_external_packages__(self) -> Dict[str, List[MagicMirrorPackage]]:
-        '''
-        Extracts the external packages from the JSON files stored in
-        ~/.config/mmpm/mmpm-external-packages.json
-
-        If no data is found, an empty dictionary is returned
-
-        Parameters:
-            None
-
-        Returns:
-            external_packages (Dict[str, List[MagicMirrorPackage]]): the list of manually added MagicMirror packages
-        '''
-        external_packages: List[MagicMirrorPackage] = []
-
-        if bool(os.stat(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE).st_size):
-            try:
-                with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r', encoding="utf-8") as ext_pkgs:
-                    external_packages = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(ext_pkgs)[mmpm.consts.EXTERNAL_PACKAGES])
-            except Exception:
-                message = f'Failed to load data from {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}. Please examine the file, as it may be malformed and required manual corrective action.'
-                mmpm.utils.warning_msg(message)
-        else:
-            with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, mode= 'w', encoding="utf-8") as ext_pkgs:
-                json.dump({mmpm.consts.EXTERNAL_PACKAGES: external_packages}, ext_pkgs)
-
-        return {mmpm.consts.EXTERNAL_PACKAGES: external_packages}
 
 
     def __discover_installed_packages__(self) -> None:
@@ -342,27 +268,19 @@ class MagicMirrorDatabase(Singleton):
             logger.warning(f"{modules_dir} does not exist")
             return
 
-        package_directories: List[PosixPath] = [directory for directory in modules_dir.iterdir()]
+        package_directories: List[PosixPath] = [directory for directory in modules_dir.iterdir() if directory.is_dir() and (directory / ".git").exists()]
 
         if not package_directories:
             logger.msg.error('Failed to find MagicMirror root directory.')
-            return []
-
-        os.chdir(modules_dir)
+            return
 
         packages_found: List[MagicMirrorPackage] = []
 
         for package_dir in package_directories:
-            if not package_dir.is_dir() or not Path(package_dir / ".git").exists():
-                continue
-
             try:
                 os.chdir(package_dir)
 
-                error_code, remote_origin_url, _ = mmpm.utils.run_cmd(
-                    ['git', 'config', '--get', 'remote.origin.url'],
-                    progress=False
-                )
+                error_code, remote_origin_url, _ = mmpm.utils.run_cmd(['git', 'config', '--get', 'remote.origin.url'], progress=False)
 
                 if error_code:
                     logger.msg.error(f'Unable to communicate with git server to retrieve information about {package_dir}')
@@ -381,11 +299,9 @@ class MagicMirrorDatabase(Singleton):
             finally:
                 os.chdir(modules_dir)
 
-        for index, package in enumerate(self.packages):
-            for found in packages_found:
-                if package == found:
-                    self.packages[index].is_installed = True
-                    break
+        for package in self.packages:
+            if package in packages_found:
+                package.is_installed = True
 
     def display_categories(self, title_only: bool = False) -> None:
         '''
@@ -398,20 +314,16 @@ class MagicMirrorDatabase(Singleton):
         Returns:
             None
         '''
+
         categories = set([package.category for package in self.packages])
 
         if title_only:
             for category in categories:
                 print(category)
-            return
-
-        groups: dict = {
-            category: len([package for package in self.packages if package.category == category])
-            for category in categories
-        }
-
-        for category, package_count in groups.items():
-            print(mmpm.color.normal_green(category), f'\n  Packages: {package_count}\n')
+        else:
+            for category in categories:
+                package_count = sum(1 for package in self.packages if package.category == category)
+                print(mmpm.color.normal_green(category), f'\n  Packages: {package_count}\n')
 
 
     def display_upgradable(self) -> None:
@@ -486,7 +398,8 @@ class MagicMirrorDatabase(Singleton):
 
         return upgrades
 
-    def add_external_package(self, title: str = None, author: str = None, repo: str = None, description: str = None) -> str:
+
+    def add_mm_pkg(self, title: str = None, author: str = None, repository: str = None, description: str = None) -> str:
         '''
         Adds an external source for user to install a module from. This may be a
         private git repo, or a specific branch of a public repo. All modules added
@@ -502,39 +415,25 @@ class MagicMirrorDatabase(Singleton):
         Returns:
             (bool): Upon success, a True result is returned
         '''
+
+        package = MagicMirrorPackage(category="External Packages")
+
         try:
-            if not title:
-                title = mmpm.utils.assert_valid_input('Title: ')
-            else:
-                print(f'Title: {title}')
+            fields = [('Title', title), ('Author', author), ('Repository', repository), ('Description', description)]
 
-            if not author:
-                author = mmpm.utils.assert_valid_input('Author: ')
-            else:
-                print(f'Author: {author}')
+            for field_name, field_value in fields:
+                if field_value is None:
+                    field_value = mmpm.utils.assert_valid_input(f'{field_name}: ')
+                else:
+                    print(f'{field_name}: {field_value}')
+                setattr(package, field_name.lower(), field_value)
 
-            if not repo:
-                repo = mmpm.utils.assert_valid_input('Repository: ')
-            else:
-                print(f'Repository: {repo}')
-
-            if not description:
-                description = mmpm.utils.assert_valid_input('Description: ')
-            else:
-                print(f'Description: {description}')
-
+            print(title, author, repository, description)
         except KeyboardInterrupt:
             logger.info("User killed process with CTRL-C")
             sys.exit(127)
 
-        external_package = MagicMirrorPackage(
-            title=title,
-            repository=repo,
-            author=author,
-            description=description,
-            category="External Packages",
-            directory=f'{repo.split("/")[-1].replace(".git", "")}-ext-pkg',
-        )
+        package.directory = Path(f'{package.repository.split("/")[-1].replace(".git", "")}-ext-mm-pkg')
 
         try:
             ext_pkgs_file: PosixPath = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
@@ -546,14 +445,14 @@ class MagicMirrorDatabase(Singleton):
                     external_packages = json.load(mmpm_ext_srcs)
 
                 with open(ext_pkgs_file, 'w', encoding="utf-8") as mmpm_ext_srcs:
-                    external_packages["External Packages"].append(external_package.serialize())
+                    external_packages[package.category].append(package.serialize())
                     json.dump(external_packages, mmpm_ext_srcs)
             else:
                 # if file didn't exist previously, or it was empty, this is the first external package that's been added
                 with open(ext_pkgs_file, 'w', encoding="utf-8") as mmpm_ext_srcs:
-                    json.dump({"External Packages": [external_package.serialize()]}, mmpm_ext_srcs)
+                    json.dump({"External Packages": [package.serialize()]}, mmpm_ext_srcs)
 
-            print(mmpm.color.normal_green(f"\nSuccessfully added {title} to '{mmpm.consts.EXTERNAL_PACKAGES}'\n"))
+            print(mmpm.color.normal_green(f"\nSuccessfully added {package.title} to 'External Packages'\n"))
 
         except IOError as error:
             logger.msg.error('Failed to save external module')
@@ -561,7 +460,9 @@ class MagicMirrorDatabase(Singleton):
 
         return ''
 
-    def remove_external_package(self, titles: List[str] = None, assume_yes: bool = False) -> bool:
+
+    # @TODO
+    def remove_mm_pkg(self, titles: List[str] = None, assume_yes: bool = False) -> bool:
         '''
         Allows user to remove an External Pac kage from the data saved in
         ~/.config/mmpm/mmpm-external-packages.json
@@ -585,7 +486,8 @@ class MagicMirrorDatabase(Singleton):
         cancelled_removal: List[MagicMirrorPackage] = []
 
         with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, 'r', encoding="utf-8") as mmpm_ext_srcs:
-            ext_packages[mmpm.consts.EXTERNAL_PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(mmpm_ext_srcs)[mmpm.consts.EXTERNAL_PACKAGES])
+            print("@FIXME")
+            #ext_packages[mmpm.consts.EXTERNAL_PACKAGES] = mmpm.utils.list_of_dict_to_list_of_magicmirror_packages(json.load(mmpm_ext_srcs)[mmpm.consts.EXTERNAL_PACKAGES])
 
         if not ext_packages[mmpm.consts.EXTERNAL_PACKAGES]:
             logger.msg.fatal('No external packages found in database')
@@ -630,3 +532,15 @@ class MagicMirrorDatabase(Singleton):
                 formatters.TerminalFormatter(),
             )
         )
+
+    def read_available_upgrades(self) -> Dict[str, Any]:
+            configuration = {}
+
+            with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="r", encoding="utf-8") as upgrade_file:
+                try:
+                    configuration = json.load(upgrade_file)
+                except json.JSONDecodeError as error:
+                    logger.error(f"Failed to parse {paths.MMPM_AVAILABLE_UPGRADES_FILE}, resetting file: {error}")
+                    configuration = {"mmpm": False, "MagicMirror": False, "packages": []}
+
+            return configuration

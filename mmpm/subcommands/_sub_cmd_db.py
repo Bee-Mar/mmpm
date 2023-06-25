@@ -20,11 +20,11 @@ def setup(subparser: argparse._SubParsersAction):
     )
 
     group.add_argument(
-        '-d',
-        '--details',
+        '-i',
+        '--info',
         action='store_true',
-        help='display details about the most recent MagicMirror packages database',
-        dest='details'
+        help='display information about the most recent MagicMirror packages database',
+        dest='info'
     )
 
     group.add_argument(

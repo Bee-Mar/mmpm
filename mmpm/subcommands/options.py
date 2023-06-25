@@ -9,9 +9,6 @@ from pkgutil import iter_modules
 from importlib import import_module
 from argparse import ArgumentParser
 
-SINGLE_OPTION_ARGS: List[str] = ["list"] # TODO: get rid of this
-
-
 def setup() -> ArgumentParser:
     '''
     Initializes all subcommand and their options.

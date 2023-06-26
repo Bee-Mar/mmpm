@@ -101,7 +101,7 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
         None
     '''
     confirmed: dict = {mmpm.consts.PACKAGES: [], mmpm.consts.MMPM: False, mmpm.consts.MAGICMIRROR: False}
-    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(MMPMEnv.mmpm_magicmirror_root.get())
+    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get())
     upgrades = get_available_upgrades()
     upgraded: bool = False
 
@@ -151,7 +151,7 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
         confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt(f"Upgrade {mmpm.color.normal_green('MagicMirror')} now?", assume_yes=assume_yes)
 
     if upgrades[mmpm.consts.MMPM] and (mmpm_selected or not user_selections):
-        if MMPMEnv.mmpm_is_docker_image.get():
+        if MMPMEnv.MMPM_IS_DOCKER_IMAGE.get():
             logger.msg.error('Sorry, MMPM you will have upgrade MMPM by retrieving the latest Docker image when it is ready')
         else:
             logger.msg.warning('Please upgrade MMPM using `pip3 install --user --upgrade mmpm`, followed by `mmpm install --gui`')

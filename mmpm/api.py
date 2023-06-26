@@ -32,6 +32,31 @@ resources: dict = {
 
 CORS(app)
 
+@app.after_request # type: ignore
+def after_request(response: Response) -> Response:
+    '''
+    Appends extra headers after each api request is sent to the server
+
+    Parameters:
+        response (flask.Response): the response object being returned to the frontend
+
+    Returns
+        response (flask.Response): the modified response object with new headers attached
+    '''
+
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "*")
+    response.headers.add("Access-Control-Allow-Methods", "*")
+    return response
+
+@app.errorhandler(Exception)
+def exception_handler(error) -> Response:
+    response: Response = error.get_response()
+    response.data = json.dumps({"code": error.code, "message": error.description})
+    response.content_type = "application/json"
+    logger.error(error.description)
+    return response
+
 MagicMirrorDatabase.load()
 
 
@@ -49,7 +74,7 @@ def __deserialize_selected_packages__(rqst, key: str = 'selected-packages') -> L
 
     pkgs: dict = rqst.get_json(force=True)[key]
 
-    modules_dir = Path(MMPMEnv.mmpm_magicmirror_root.get() / "modules")
+    modules_dir = Path(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get() / "modules")
     default_directory = lambda title: str(Path(modules_dir / title))
 
     for pkg in pkgs:
@@ -273,7 +298,7 @@ def packages_upgradable() -> Response:
     logger.info('Request to get upgradable packages')
     available_upgrades: dict = mmpm.core.get_available_upgrades()
 
-    MMPM_MAGICMIRROR_ROOT: str = MMPMEnv.mmpm_magicmirror_root.get()
+    MMPM_MAGICMIRROR_ROOT: str = MMPMEnv.MMPM_MAGICMIRROR_ROOT.get()
 
     available_upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] = [
         pkg.serialize_full() for pkg in available_upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]
@@ -366,7 +391,7 @@ def magicmirror_config() -> Response:
     Returns:
         response (flask.Response): the file contents
     '''
-    magicmirror_config_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get() / "config")
+    magicmirror_config_dir: PosixPath = Path(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get() / "config")
     magicmirror_config_file: PosixPath = Path(MAGICMIRROR_CONFIG_DIR) / 'config.js'
 
     if request.method == mmpm.consts.GET:
@@ -406,7 +431,7 @@ def magicmirror_custom_css() -> Response:
     Returns:
         response (flask.Response): the file contents
     '''
-    MAGICMIRROR_CSS_DIR: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get() / "css")
+    MAGICMIRROR_CSS_DIR: PosixPath = Path(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get() / "css")
     MAGICMIRROR_CUSTOM_CSS_FILE: PosixPath = Path(MAGICMIRROR_CSS_DIR) / 'custom.css'
 
     if request.method == mmpm.consts.GET:

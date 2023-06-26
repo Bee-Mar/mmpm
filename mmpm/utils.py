@@ -11,7 +11,6 @@ import mmpm.color
 import mmpm.consts
 from mmpm.constants import paths
 from mmpm.logger import MMPMLogger
-from mmpm.env import MMPMEnv
 from typing import List, Optional, Tuple, Dict, Any
 from pathlib import Path, PosixPath
 

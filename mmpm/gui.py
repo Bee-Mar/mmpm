@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 from mmpm.singleton import Singleton
 from socket import gethostbyname, gethostname

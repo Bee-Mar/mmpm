@@ -40,7 +40,7 @@ class StdOutMessageWriter:
         Returns:
             None
         """
-        print(mmpm.color.bright_red("ERROR:"), msg)
+        print(mmpm.color.b_red("ERROR:"), msg)
 
     def warning(self, msg: str) -> None:
         """
@@ -52,7 +52,7 @@ class StdOutMessageWriter:
         Returns:
             None
         """
-        print(mmpm.color.bright_yellow("WARNING:"), msg)
+        print(mmpm.color.b_yellow("WARNING:"), msg)
 
     def fatal(self, msg: str) -> None:
         """
@@ -64,11 +64,11 @@ class StdOutMessageWriter:
         Returns:
             None
         """
-        print(mmpm.color.bright_red("FATAL:"), msg)
+        print(mmpm.color.b_red("FATAL:"), msg)
         sys.exit(127)
 
     def retrieving(self, url: str, name: str):
-        print(f"Retrieving: {url} [{mmpm.color.normal_cyan(name)}] ")
+        print(f"Retrieving: {url} [{mmpm.color.n_cyan(name)}] ")
 
 
 class MMPMLogger:

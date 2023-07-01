@@ -9,6 +9,7 @@ from pkgutil import iter_modules
 from importlib import import_module
 from argparse import ArgumentParser
 
+
 def setup() -> ArgumentParser:
     '''
     Initializes all subcommand and their options.

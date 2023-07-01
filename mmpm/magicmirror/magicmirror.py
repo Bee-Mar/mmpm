@@ -58,7 +58,7 @@ class MagicMirror(Singleton):
         Returns:
             success (bool): True if successful else False
         """
-        print(f"Upgrading {mmpm.color.normal_green('MagicMirror')}")
+        print(f"Upgrading {mmpm.color.n_green('MagicMirror')}")
 
         root = MMPMEnv.mmpm_magicmirror_root
         root_dir: PosixPath = Path(root.get())
@@ -129,7 +129,7 @@ class MagicMirror(Singleton):
                 return False
 
         print(
-            mmpm.color.normal_cyan(
+            mmpm.color.n_cyan(
                 f"Installing MagicMirror in {root_path}/MagicMirror ..."
             )
         )
@@ -138,7 +138,7 @@ class MagicMirror(Singleton):
         )
 
         print(
-            mmpm.color.normal_green("\nRun 'mmpm mm-ctl --start' to start MagicMirror")
+            mmpm.color.n_green("\nRun 'mmpm mm-ctl --start' to start MagicMirror")
         )
         return True
 

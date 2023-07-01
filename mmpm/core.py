@@ -26,7 +26,7 @@ from textwrap import fill, indent
 
 logger = MMPMLogger.get_logger(__name__)
 
-# TODO: delete this whole file
+# TODO: DELETE THIS WHOLE FILE
 
 
 def check_for_mmpm_updates(automated=False) -> bool:
@@ -42,13 +42,13 @@ def check_for_mmpm_updates(automated=False) -> bool:
         bool: True on success, False on failure
     '''
 
-    cyan_application: str = f"{mmpm.color.normal_cyan('application')}"
+    cyan_application: str = f"{mmpm.color.n_cyan('application')}"
     logger.info(f'Checking for newer version of MMPM. Current version: {mmpm.mmpm.__version__}')
 
     if automated:
-        message: str = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] ({mmpm.color.normal_magenta('automated')}) for updates"
+        message: str = f"Checking {mmpm.color.n_green('MMPM')} [{cyan_application}] ({mmpm.color.n_magenta('automated')}) for updates"
     else:
-        message = f"Checking {mmpm.color.normal_green('MMPM')} [{cyan_application}] for updates"
+        message = f"Checking {mmpm.color.n_green('MMPM')} [{cyan_application}] for updates"
 
     logger.msg.info(message)
 
@@ -101,7 +101,7 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
         None
     '''
     confirmed: dict = {mmpm.consts.PACKAGES: [], mmpm.consts.MMPM: False, mmpm.consts.MAGICMIRROR: False}
-    MMPM_MAGICMIRROR_ROOT: str = os.path.normpath(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get())
+    mmpm_magicmirror_root: str = os.path.normpath(MMPMEnv.mmpm_magicmirror_root.get())
     upgrades = get_available_upgrades()
     upgraded: bool = False
 
@@ -110,8 +110,8 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
     magicmirror_selected: bool = False
     user_selections: bool = bool(selection)
 
-    for key in upgrades[MMPM_MAGICMIRROR_ROOT]:
-        if upgrades[MMPM_MAGICMIRROR_ROOT][key]:
+    for key in upgrades[mmpm_magicmirror_root]:
+        if upgrades[mmpm_magicmirror_root][key]:
             has_upgrades = True
             break
 
@@ -122,17 +122,17 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
         mmpm_selected = True
         selection.remove(mmpm.consts.MMPM)
 
-    if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]:
+    if upgrades[mmpm_magicmirror_root][mmpm.consts.PACKAGES]:
         if selection:
             print(selection)
-            valid_pkgs: List[MagicMirrorPackage] = [pkg for pkg in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] if pkg.title in selection]
+            valid_pkgs: List[MagicMirrorPackage] = [pkg for pkg in upgrades[mmpm_magicmirror_root][mmpm.consts.PACKAGES] if pkg.title in selection]
 
-            for pkg in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]:
+            for pkg in upgrades[mmpm_magicmirror_root][mmpm.consts.PACKAGES]:
                 if pkg.title in selection:
                     valid_pkgs.append(pkg)
                     selection.remove(pkg.title)
 
-            if mmpm.consts.MAGICMIRROR in selection and upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR]:
+            if mmpm.consts.MAGICMIRROR in selection and upgrades[mmpm_magicmirror_root][mmpm.consts.MAGICMIRROR]:
                 magicmirror_selected = True
                 selection.remove(mmpm.consts.MAGICMIRROR)
 
@@ -140,15 +140,15 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
                 logger.msg.error(f'Unable to match {selection} to a package/application with available upgrades')
 
             for package in valid_pkgs:
-                if package.title in selection and mmpm.utils.prompt(f'Upgrade {mmpm.color.normal_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
+                if package.title in selection and mmpm.utils.prompt(f'Upgrade {mmpm.color.n_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
                     confirmed[mmpm.consts.PACKAGES].append(package)
         else:
-            for package in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]:
-                if mmpm.utils.prompt(f'Upgrade {mmpm.color.normal_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
+            for package in upgrades[mmpm_magicmirror_root][mmpm.consts.PACKAGES]:
+                if mmpm.utils.prompt(f'Upgrade {mmpm.color.n_green(package.title)} ({package.repository}) now?', assume_yes=assume_yes):
                     confirmed[mmpm.consts.PACKAGES].append(package)
 
-    if upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR] and (magicmirror_selected or not user_selections):
-        confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt(f"Upgrade {mmpm.color.normal_green('MagicMirror')} now?", assume_yes=assume_yes)
+    if upgrades[mmpm_magicmirror_root][mmpm.consts.MAGICMIRROR] and (magicmirror_selected or not user_selections):
+        confirmed[mmpm.consts.MAGICMIRROR] = mmpm.utils.prompt(f"Upgrade {mmpm.color.n_green('MagicMirror')} now?", assume_yes=assume_yes)
 
     if upgrades[mmpm.consts.MMPM] and (mmpm_selected or not user_selections):
         if MMPMEnv.MMPM_IS_DOCKER_IMAGE.get():
@@ -163,7 +163,7 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
             logger.msg.error(error)
             continue
 
-        upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES].remove(pkg)
+        upgrades[mmpm_magicmirror_root][mmpm.consts.PACKAGES].remove(pkg)
         upgraded = True
 
     if confirmed[mmpm.consts.MAGICMIRROR]:
@@ -172,10 +172,10 @@ def upgrade_available_packages_and_applications(assume_yes: bool = False, select
         if error:
             logger.msg.error(error)
         else:
-            upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.MAGICMIRROR] = False
+            upgrades[mmpm_magicmirror_root][mmpm.consts.MAGICMIRROR] = False
             upgraded = True
 
-    upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES] = [pkg.serialize_full() for pkg in upgrades[MMPM_MAGICMIRROR_ROOT][mmpm.consts.PACKAGES]]
+    upgrades[mmpm_magicmirror_root][mmpm.consts.PACKAGES] = [pkg.serialize_full() for pkg in upgrades[mmpm_magicmirror_root][mmpm.consts.PACKAGES]]
 
     with open(mmpm.consts.MMPM_AVAILABLE_UPGRADES_FILE, 'w', encoding="utf-8") as available_upgrades:
         json.dump(upgrades, available_upgrades, default=lambda pkg: pkg.serialize())

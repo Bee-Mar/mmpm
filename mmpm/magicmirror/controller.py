@@ -49,7 +49,7 @@ class MagicMirrorClientFactory:
                 logger.error('No data was received. Is the MMPM_MAGICMIRROR_URI environment variable set properly?')
 
             for module in [json_data for index, json_data in enumerate(data) if json_data not in data[index + 1:]]:
-                print(f"{mmpm.color.normal_green(module['name'])}\n  hidden: {'true' if module['hidden'] else 'false'}\n  key: {module['index'] + 1}\n")
+                print(f"{mmpm.color.n_green(module['name'])}\n  hidden: {'true' if module['hidden'] else 'false'}\n  key: {module['index'] + 1}\n")
 
             client.disconnect()
 

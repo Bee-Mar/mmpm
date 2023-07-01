@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-from mmpm.logger import MMPMLogger
-from mmpm.singleton import Singleton
-from socket import gethostbyname, gethostname
-from re import findall
 import mmpm.utils
 import mmpm.consts
+from mmpm.logger import MMPMLogger
+from mmpm.singleton import Singleton
+
+from socket import gethostbyname, gethostname
+from re import findall
+
 import socket
 import shutil
 import getpass
@@ -15,7 +17,6 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class MMPMGui(Singleton):
-
     def install(self, assume_yes: bool = False):
         '''
         Installs the MMPM GUI by configuring the required NGINX files bundled in
@@ -125,7 +126,6 @@ class MMPMGui(Singleton):
             sys.exit(127)
 
         print(mmpm.consts.GREEN_CHECK_MARK)
-
         print('MMPM GUI installed! See `mmpm list --gui-url` for the URI, or run `mmpm open --gui` to launch')
 
 

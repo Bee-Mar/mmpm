@@ -14,6 +14,7 @@ class EnvVar:
         self.name = name
         self.default = default
 
+
     def get(self):
         """
         Reads environment variables from the MMPM_ENV_FILE. In order to ensure
@@ -33,7 +34,7 @@ class EnvVar:
         if self.name not in MMPM_DEFAULT_ENV:
             # got rid of the logger to avoid circular imports here
             print(
-                mmpm.color.bright_yellow("WARNING:"),
+                mmpm.color.b_yellow("WARNING:"),
                 f"Environment variable '{self.name}' is not valid.",
             )
 
@@ -45,37 +46,23 @@ class EnvVar:
             except json.JSONDecodeError:
                 pass
 
-            value = (
-                self.default if self.name not in env_vars else env_vars.get(self.name)
-            )
+            value = self.default if self.name not in env_vars else env_vars.get(self.name)
 
         return value
 
 
-# Treating this mostly like an enum
+# Treating this kind of like an enum
 class MMPMEnv:
-    mmpm_magicmirror_root = EnvVar(
-        "MMPM_MAGICMIRROR_ROOT", str(Path.home() / "MagicMirror")
-    )
-    mmpm_magicmirror_uri = EnvVar(
-        "MMPM_MAGICMIRROR_URI", f"http://{gethostbyname(gethostname())}:8080"
-    )
+    mmpm_magicmirror_root = EnvVar("MMPM_MAGICMIRROR_ROOT", str(Path.home() / "MagicMirror"))
+    mmpm_magicmirror_uri = EnvVar("MMPM_MAGICMIRROR_URI", f"http://{gethostbyname(gethostname())}:8080")
     mmpm_magicmirror_pm2_process_name = EnvVar("MMPM_MAGICMIRROR_PM2_PROCESS_NAME", "")
-    mmpm_magicmirror_docker_compose_file = EnvVar(
-        "MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE", ""
-    )
+    mmpm_magicmirror_docker_compose_file = EnvVar("MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE", "")
     mmpm_is_docker_image = EnvVar("MMPM_IS_DOCKER_IMAGE", False)
     mmpm_log_level = EnvVar("MMPM_LOG_LEVEL", INFO)
 
     @classmethod
     def display(cls) -> None:
         with open(mmpm.consts.MMPM_ENV_FILE, "r", encoding="utf-8") as env:
-            print(
-                highlight(
-                    json.dumps(json.load(env), indent=2),
-                    JsonLexer(),
-                    formatters.TerminalFormatter(),
-                )
-            )
+            print(highlight(json.dumps(json.load(env), indent=2), JsonLexer(), formatters.TerminalFormatter()))
 
         print("Run `mmpm open --env` to edit the variable values")

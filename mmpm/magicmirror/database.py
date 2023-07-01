@@ -1,12 +1,4 @@
 #!/usr/bin/env python3
-import os
-import sys
-import pip
-import json
-import shutil
-import datetime
-import requests
-import urllib.request
 import mmpm.consts
 import mmpm.color
 from mmpm.magicmirror.magicmirror import MagicMirror
@@ -15,6 +7,15 @@ from mmpm.singleton import Singleton
 from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.env import MMPMEnv
 from mmpm.constants import paths
+
+import os
+import sys
+import pip
+import json
+import shutil
+import datetime
+import requests
+import urllib.request
 from re import findall
 from collections import defaultdict
 from typing import Dict, List, Any
@@ -37,9 +38,8 @@ class MagicMirrorDatabase(Singleton):
         self.expiration_date: datetime.datetime = None
         self.categories: List[str] = None
 
-    def update(
-        self, can_upgrade_mmpm: bool = False, can_upgrade_magicmirror: bool = False
-    ) -> int:
+
+    def update(self, can_upgrade_mmpm: bool = False, can_upgrade_magicmirror: bool = False) -> int:
         upgradable: List[MagicMirrorPackage] = []
 
         for package in self.packages:
@@ -56,22 +56,20 @@ class MagicMirrorDatabase(Singleton):
         configuration["mmpm"] = can_upgrade_mmpm
         configuration["packages"] = [package.serialize() for package in upgradable]
 
-        with open(
-            paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="w", encoding="utf-8"
-        ) as upgrade_file:
+        with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="w", encoding="utf-8") as upgrade_file:
             json.dump(configuration, upgrade_file)
 
         return int(can_upgrade_mmpm) + int(can_upgrade_magicmirror) + len(upgradable)
 
+
     def get_upgradable(self) -> dict:
         upgradable = {}
 
-        with open(
-            paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="r", encoding="utf-8"
-        ) as upgrade_file:
+        with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="r", encoding="utf-8") as upgrade_file:
             upgradable = json.load(upgrade_file)
 
         return upgradable
+
 
     def info(self):
         """
@@ -86,16 +84,11 @@ class MagicMirrorDatabase(Singleton):
         Returns:
             None
         """
-        print(
-            mmpm.color.normal_green("Last updated:"),
-            f"{str(self.last_update.replace(microsecond=0))}",
-        )
-        print(
-            mmpm.color.normal_green("Next scheduled update:"),
-            f"{str(self.expiration_date.replace(microsecond=0))}",
-        )
-        print(mmpm.color.normal_green("Categories:"), f"{len(self.categories)}")
-        print(mmpm.color.normal_green("Packages:"), f"{len(self.packages)}")
+        print(mmpm.color.n_green("Last updated:"), f"{str(self.last_update.replace(microsecond=0))}")
+        print(mmpm.color.n_green("Next scheduled update:"), f"{str(self.expiration_date.replace(microsecond=0))}")
+        print(mmpm.color.n_green("Categories:"), f"{len(self.categories)}")
+        print(mmpm.color.n_green("Packages:"), f"{len(self.packages)}")
+
 
     def download(self):
         """
@@ -120,9 +113,7 @@ class MagicMirrorDatabase(Singleton):
 
         soup = BeautifulSoup(response.text, "html.parser")
         table_soup = soup.find_all("table")
-        categories_soup = soup.find_all(attrs={"class": "markdown-body"})[0].find_all(
-            "h3"
-        )
+        categories_soup = soup.find_all(attrs={"class": "markdown-body"})[0].find_all("h3")
 
         # the last entry of the html element contents contains the actual category name
         # also skip past "Module Authors" and "General Advice"
@@ -131,45 +122,35 @@ class MagicMirrorDatabase(Singleton):
         # the first index is a row that literally says 'Title' 'Author' 'Description'
         tr_soup: list = [table.find_all("tr")[1:] for table in table_soup]
 
-        try:
-            for index, row in enumerate(tr_soup):
-                for entry in row:
-                    table_data: list = entry.find_all("td")
+        for index, row in enumerate(tr_soup):
+            for entry in row:
+                table_data: list = entry.find_all("td")
 
-                    if table_data[0].contents[0].contents[0] == "mmpm":
-                        continue
+                if table_data[0].contents[0].contents[0] == "mmpm":
+                    continue
 
-                    pkg = MagicMirrorPackage.from_raw_data(
-                        table_data, category=categories[index]
-                    )
-                    self.packages.append(pkg)
+                pkg = MagicMirrorPackage.from_raw_data(table_data, category=categories[index])
+                self.packages.append(pkg)
 
-        except Exception as error:
-            logger.msg.fatal(str(error))
 
-    def expired(self) -> bool:
+    def is_expired(self) -> bool:
         db_file = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
-        db_expiration_file = (
-            mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE
-        )
+        db_expiration_file = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE
 
         for file_name in [db_file, db_expiration_file]:
-            if not file_name.exists() or not bool(file_name.stat().st_size):
+            if not bool(file_name.stat().st_size):
                 return True  # the file is empty
 
         if self.last_update is None or self.expiration_date is None:
             with open(db_expiration_file) as expiration_file:
                 data = json.load(expiration_file)
-                self.expiration_date = datetime.datetime.fromisoformat(
-                    data["expiration"]
-                )
+                self.expiration_date = datetime.datetime.fromisoformat(data["expiration"])
                 self.last_update = datetime.datetime.fromisoformat(data["last-update"])
 
         return datetime.datetime.now() > self.expiration_date
 
-    def search(
-        self, query: str, case_sensitive: bool = False, by_title_only: bool = False
-    ) -> List[MagicMirrorPackage]:
+
+    def search(self, query: str, case_sensitive: bool = False, by_title_only: bool = False) -> List[MagicMirrorPackage]:
         """
         Used to search the 'modules' for either a category, or keyword/phrase
         appearing within module descriptions. If the argument supplied is a
@@ -198,24 +179,15 @@ class MagicMirrorDatabase(Singleton):
         else:
             # if the query matches one of the category names exactly, return everything in that category
             if query in self.categories:
-                return [
-                    package for package in self.packages if package.category == query
-                ]
+                return [package for package in self.packages if package.category == query]
             elif case_sensitive:
-                match = (
-                    lambda query, pkg: query in pkg.description
-                    or query in pkg.title
-                    or query in pkg.author
-                )
+                match = lambda query, pkg: query in pkg.description or query in pkg.title or query in pkg.author
             else:
                 query = query.lower()
-                match = (
-                    lambda query, pkg: query in pkg.description.lower()
-                    or query in pkg.title.lower()
-                    or query in pkg.author.lower()
-                )
+                match = lambda query, pkg: query in pkg.description.lower() or query in pkg.title.lower() or query in pkg.author.lower()
 
         return [package for package in self.packages if match(query, package)]
+
 
     def load(self, refresh: bool = False) -> None:
         """
@@ -233,6 +205,7 @@ class MagicMirrorDatabase(Singleton):
         db_file = mmpm.consts.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
         db_exists = db_file.exists() and bool(db_file.stat().st_size)
         ext_pkgs_file = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
+        db_expiration_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE
 
         if refresh or not db_exists:
             logger.msg.retrieving(mmpm.consts.MAGICMIRROR_MODULES_URL, "Database")
@@ -240,24 +213,14 @@ class MagicMirrorDatabase(Singleton):
 
             if not self.packages:
                 print(mmpm.consts.RED_X)
-                logger.msg.error(
-                    f"Failed to retrieve packages from {mmpm.consts.MAGICMIRROR_MODULES_URL}. Please check your internet connection."
-                )
+                logger.msg.error(f"Failed to retrieve packages from {mmpm.consts.MAGICMIRROR_MODULES_URL}. Please check your internet connection.")
             else:
                 with open(db_file, "w", encoding="utf-8") as db:
-                    json.dump(
-                        self.packages, db, default=lambda package: package.serialize()
-                    )
+                    json.dump(self.packages, db, default=lambda package: package.serialize())
 
-                with open(
-                    paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE,
-                    "w",
-                    encoding="utf-8",
-                ) as expiration_file:
+                with open(db_expiration_file, "w", encoding="utf-8",) as expiration_file:
                     self.last_update = datetime.datetime.now()
-                    self.expiration_date = self.last_update + datetime.timedelta(
-                        hours=12
-                    )
+                    self.expiration_date = self.last_update + datetime.timedelta(hours=12)
                     json.dump(
                         {
                             "last-update": str(self.last_update),
@@ -289,8 +252,8 @@ class MagicMirrorDatabase(Singleton):
             self.packages.append(MagicMirrorPackage(**package))
 
         self.categories = {package.category for package in self.packages}
-
         self.__discover_installed_packages__()
+
 
     def __discover_installed_packages__(self) -> None:
         """
@@ -326,32 +289,20 @@ class MagicMirrorDatabase(Singleton):
         for package_dir in package_directories:
             try:
                 os.chdir(package_dir)
-
-                error_code, remote_origin_url, _ = mmpm.utils.run_cmd(
-                    ["git", "config", "--get", "remote.origin.url"], progress=False
-                )
+                error_code, remote_origin_url, _ = mmpm.utils.run_cmd(["git", "config", "--get", "remote.origin.url"], progress=False)
 
                 if error_code:
-                    logger.msg.error(
-                        f"Unable to communicate with git server to retrieve information about {package_dir}"
-                    )
+                    logger.msg.error(f"Unable to communicate with git server to retrieve information about {package_dir}")
                     continue
 
-                error_code, project_name, _ = mmpm.utils.run_cmd(
-                    ["basename", remote_origin_url.strip(), ".git"], progress=False
-                )
+                error_code, project_name, _ = mmpm.utils.run_cmd(["basename", remote_origin_url.strip(), ".git"], progress=False)
 
                 if error_code:
-                    logger.msg.error(
-                        f"Unable to determine repository origin for {project_name}"
-                    )
+                    logger.msg.error(f"Unable to determine repository origin for {project_name}")
                     continue
 
                 packages_found.append(
-                    MagicMirrorPackage(
-                        repository=remote_origin_url.strip(),
-                        directory=package_dir.name,
-                    )
+                    MagicMirrorPackage(repository=remote_origin_url.strip(), directory=package_dir.name)
                 )
 
             except Exception as error:
@@ -362,6 +313,7 @@ class MagicMirrorDatabase(Singleton):
         for package in self.packages:
             if package in packages_found:
                 package.is_installed = True
+
 
     def display_categories(self, title_only: bool = False) -> None:
         """
@@ -382,13 +334,9 @@ class MagicMirrorDatabase(Singleton):
                 print(category)
         else:
             for category in categories:
-                package_count = sum(
-                    1 for package in self.packages if package.category == category
-                )
-                print(
-                    mmpm.color.normal_green(category),
-                    f"\n  Packages: {package_count}\n",
-                )
+                package_count = sum(1 for package in self.packages if package.category == category)
+                print(mmpm.color.n_green(category), f"\n  Packages: {package_count}\n")
+
 
     def display_upgradable(self) -> None:
         """
@@ -407,8 +355,8 @@ class MagicMirrorDatabase(Singleton):
 
         mmpm_magicmirror_root: str = MMPMEnv.mmpm_magicmirror_root.get()
 
-        app_label: str = f"{mmpm.color.normal_cyan('application')}"
-        pkg_label: str = f"{mmpm.color.normal_cyan('package')}"
+        app_label: str = f"{mmpm.color.n_cyan('application')}"
+        pkg_label: str = f"{mmpm.color.n_cyan('package')}"
 
         upgrades_available: bool = False
         upgradable = self.upgradable()
@@ -417,21 +365,19 @@ class MagicMirrorDatabase(Singleton):
             upgrades_available = True
 
         for package in upgradable["packages"]:
-            print(
-                mmpm.color.normal_green(MagicMirrorPackage(**package).title),
-                f"[{pkg_label}]",
-            )
+            print(mmpm.color.n_green(MagicMirrorPackage(**package).title), f"[{pkg_label}]")
 
         if upgradable["mmpm"]:
-            print(f'{mmpm.color.normal_green("mmpm")} [{app_label}]')
+            print(f'{mmpm.color.n_green("mmpm")} [{app_label}]')
 
         if upgradable["MagicMirror"]:
-            print(f'{mmpm.color.normal_green("MagicMirror")} [{app_label}]')
+            print(f'{mmpm.color.n_green("MagicMirror")} [{app_label}]')
 
         if upgrades_available:
             print("Run `mmpm upgrade` to upgrade available packages/applications")
         else:
             print(f"No upgrades available {mmpm.consts.YELLOW_X}")
+
 
     def upgradable(self) -> dict:
         """
@@ -447,36 +393,26 @@ class MagicMirrorDatabase(Singleton):
                                     for every MagicMirror environment encountered
         """
         reset_file: bool = False
+        upgrades_file = paths.MMPM_AVAILABLE_UPGRADES_FILE
 
-        with open(
-            paths.MMPM_AVAILABLE_UPGRADES_FILE, "r", encoding="utf-8"
-        ) as upgradable:
+        with open(upgrades_file, "r", encoding="utf-8") as upgradable:
             try:
                 upgrades: dict = json.load(upgradable)
             except json.JSONDecodeError:
-                logger.warning(
-                    f"Encountered error when reading from {paths.MMPM_AVAILABLE_UPGRADES_FILE}. Resetting file."
-                )
+                logger.warning(f"Encountered error when reading from {upgrades_file}. Resetting file.")
                 reset_file = True
 
         if not reset_file:
             return upgrades
 
-        with open(
-            paths.MMPM_AVAILABLE_UPGRADES_FILE, "w", encoding="utf-8"
-        ) as upgradable:
+        with open(upgrades_file, "w", encoding="utf-8") as upgradable:
             upgrades = {"mmpm": False, "MagicMirror": False, "packages": []}
             json.dump(upgrades, upgradable)
 
         return upgrades
 
-    def add_mm_pkg(
-        self,
-        title: str = None,
-        author: str = None,
-        repository: str = None,
-        description: str = None,
-    ) -> str:
+
+    def add_mm_pkg(self, title: str = None, author: str = None, repository: str = None, description: str = None) -> str:
         """
         Adds an external source for user to install a module from. This may be a
         private git repo, or a specific branch of a public repo. All modules added
@@ -496,12 +432,7 @@ class MagicMirrorDatabase(Singleton):
         package = MagicMirrorPackage(category="External Packages")
 
         try:
-            fields = [
-                ("Title", title),
-                ("Author", author),
-                ("Repository", repository),
-                ("Description", description),
-            ]
+            fields = [("Title", title), ("Author", author), ("Repository", repository), ("Description", description)]
 
             for field_name, field_value in fields:
                 if field_value is None:
@@ -515,9 +446,7 @@ class MagicMirrorDatabase(Singleton):
             logger.info("User killed process with CTRL-C")
             sys.exit(127)
 
-        package.directory = Path(
-            f'{package.repository.split("/")[-1].replace(".git", "")}-ext-mm-pkg'
-        )
+        package.directory = Path(f'{package.repository.split("/")[-1].replace(".git", "")}-ext-mm-pkg')
 
         try:
             ext_pkgs_file: PosixPath = mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE
@@ -536,17 +465,14 @@ class MagicMirrorDatabase(Singleton):
                 with open(ext_pkgs_file, "w", encoding="utf-8") as mm_ext_pkgs:
                     json.dump({"External Packages": [package.serialize()]}, mm_ext_pkgs)
 
-            print(
-                mmpm.color.normal_green(
-                    f"\nSuccessfully added {package.title} to 'External Packages'\n"
-                )
-            )
+            print(mmpm.color.n_green(f"\nSuccessfully added {package.title} to 'External Packages'\n"))
 
         except IOError as error:
             logger.msg.error("Failed to save external module")
             return str(error)
 
         return ""
+
 
     def remove_mm_pkg(self, titles: List[str] = None, assume_yes: bool = False) -> bool:
         """
@@ -574,16 +500,14 @@ class MagicMirrorDatabase(Singleton):
                 logger.msg.fatal("No external packages found in database")
                 return False
 
-            packages = [
-                MagicMirrorPackage(**package) for package in data["External Packages"]
-            ]
+            packages = [MagicMirrorPackage(**package) for package in data["External Packages"]]
 
         for title in titles:
             for package in packages:
                 if package.title != title:
                     continue
 
-                prompt: str = f"Would you like to remove {mmpm.color.normal_green(title)} ({package.repository}) from the MMPM/MagicMirror local database?"
+                prompt: str = f"Would you like to remove {mmpm.color.n_green(title)} ({package.repository}) from the MMPM/MagicMirror local database?"
 
                 if assume_yes or mmpm.utils.prompt(prompt):
                     marked_for_removal.append(package)
@@ -607,6 +531,7 @@ class MagicMirrorDatabase(Singleton):
 
         return True
 
+
     def dump(self) -> None:
         """
         Pretty prints contents of database to stdout
@@ -618,26 +543,21 @@ class MagicMirrorDatabase(Singleton):
 
         print(
             highlight(
-                json.dumps(
-                    self.packages, indent=2, default=lambda package: package.serialize()
-                ),
+                json.dumps(self.packages, indent=2, default=lambda package: package.serialize()),
                 JsonLexer(),
                 formatters.TerminalFormatter(),
             )
         )
 
+
     def read_available_upgrades(self) -> Dict[str, Any]:
         configuration = {}
 
-        with open(
-            paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="r", encoding="utf-8"
-        ) as upgrade_file:
+        with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="r", encoding="utf-8") as upgrade_file:
             try:
                 configuration = json.load(upgrade_file)
             except json.JSONDecodeError as error:
-                logger.error(
-                    f"Failed to parse {paths.MMPM_AVAILABLE_UPGRADES_FILE}, resetting file: {error}"
-                )
+                logger.error(f"Failed to parse {paths.MMPM_AVAILABLE_UPGRADES_FILE}, resetting file: {error}")
                 configuration = {"mmpm": False, "MagicMirror": False, "packages": []}
 
         return configuration

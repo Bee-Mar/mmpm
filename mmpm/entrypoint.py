@@ -2,7 +2,8 @@
 import sys
 from mmpm.mmpm import MMPM
 
-def main(): # for the setup.py console scripts
+# for the setup.py console scripts
+def main():
     try:
         app = MMPM()
         app.run()

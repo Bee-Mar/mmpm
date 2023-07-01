@@ -110,13 +110,13 @@ class MagicMirrorPackage:
             return
 
         print(
-            mmpm.color.normal_green(self.title)
+            mmpm.color.n_green(self.title)
             + (" [installed]" if self.is_installed else "")
         )
 
         if show_path:
             modules_dir: PosixPath = (
-                Path(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get()) / "modules"
+                Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
             )
             print(f"  Directory: {modules_dir / self.directory}")
 
@@ -188,7 +188,7 @@ class MagicMirrorPackage:
             return
 
         if not assume_yes and not mmpm.utils.prompt(
-            f"Continue installing {mmpm.color.normal_green(self.title)} ({self.repository})?"
+            f"Continue installing {mmpm.color.n_green(self.title)} ({self.repository})?"
         ):
             return
 
@@ -200,25 +200,25 @@ class MagicMirrorPackage:
             return
 
         if not assume_yes and not mmpm.utils.prompt(
-            f"Continue removing {mmpm.color.normal_green(self.title)} ({self.repository})?"
+            f"Continue removing {mmpm.color.n_green(self.title)} ({self.repository})?"
         ):
             return
 
-        modules_dir: PosixPath = Path(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get()) / "modules"
+        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
 
         run_cmd(["rm", "-rf", str(modules_dir / self.directory)], progress=True)
         logger.msg.info(
-            f"Removed {mmpm.color.normal_green(self.title)} {mmpm.consts.GREEN_CHECK_MARK}\n"
+            f"Removed {mmpm.color.n_green(self.title)} {mmpm.consts.GREEN_CHECK_MARK}\n"
         )
 
     def clone(self) -> bool:
-        modules_dir: PosixPath = Path(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get()) / "modules"
+        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
         return run_cmd(
             ["git", "clone", self.repository, str(modules_dir / self.directory)]
         )
 
     def update(self) -> None:
-        modules_dir: PosixPath = Path(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get()) / "modules"
+        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
 
         if not modules_dir.exists():
             logger.msg.fatal(f"'{str(modules_dir)}' does not exist.")
@@ -257,12 +257,12 @@ class MagicMirrorPackage:
         Returns:
             stderr (str): the resulting error message of the upgrade. If the message is zero length, it was successful
         """
-        modules_dir: PosixPath = Path(MMPMEnv.MMPM_MAGICMIRROR_ROOT.get()) / "modules"
+        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
         self.directory = modules_dir / self.title
 
         os.chdir(modules_dir / self.directory)
 
-        logger.msg.info(f"Upgrading {mmpm.color.normal_green(self.title)}")
+        logger.msg.info(f"Upgrading {mmpm.color.n_green(self.title)}")
         error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
 
         if error_code:
@@ -350,7 +350,7 @@ class InstallationHandler:
         Returns:
             stderr (str): success if the string is empty, fail if not
         """
-        root = MMPMEnv.MMPM_MAGICMIRROR_ROOT
+        root = MMPMEnv.mmpm_magicmirror_root
 
         modules_dir = Path(root.get()) / "modules"
 

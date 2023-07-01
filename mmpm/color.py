@@ -1,37 +1,34 @@
 #!/usr/bin/env python3
 from colorama import Fore, Style
 
-RESET: str = Style.RESET_ALL  # resets back to the original color of the terminal text
+RESET = Style.RESET_ALL  # resets back to the original color of the terminal text
 
-N: str = Style.NORMAL  # normal
-B: str = Style.BRIGHT  # bright
+N_RED = Style.NORMAL + Fore.RED  # normal red
+B_RED = Style.BRIGHT + Fore.RED  # bright red
 
-N_RED: str = N + Fore.RED  # normal red
-B_RED: str = B + Fore.RED  # bright red
+N_MAGENTA = Style.NORMAL + Fore.MAGENTA  # normal magenta
+B_MAGENTA = Style.BRIGHT + Fore.MAGENTA  # bright magenta
 
-N_MAGENTA: str = N + Fore.MAGENTA  # normal magenta
-B_MAGENTA: str = B + Fore.MAGENTA  # bright magenta
+N_CYAN = Style.NORMAL + Fore.CYAN  # normal cyan
+B_CYAN = Style.BRIGHT + Fore.CYAN  # bright cyan
 
-N_CYAN: str = N + Fore.CYAN  # normal cyan
-B_CYAN: str = B + Fore.CYAN  # bright cyan
+N_YELLOW = Style.NORMAL + Fore.YELLOW  # normal yellow
+B_YELLOW = Style.BRIGHT + Fore.YELLOW  # bright yellow
 
-N_YELLOW: str = N + Fore.YELLOW  # normal yellow
-B_YELLOW: str = B + Fore.YELLOW  # bright yellow
+N_WHITE = Style.NORMAL + Fore.WHITE  # normal white
+B_WHITE = Style.BRIGHT + Fore.WHITE  # bright white
 
-N_WHITE: str = N + Fore.WHITE  # normal white
-B_WHITE: str = B + Fore.WHITE  # bright white
+N_GREEN = Style.NORMAL + Fore.GREEN  # normal green
+B_GREEN = Style.BRIGHT + Fore.GREEN  # bright green
 
-N_GREEN: str = N + Fore.GREEN  # normal green
-B_GREEN: str = B + Fore.GREEN  # bright green
+n_green = lambda text: str(N_GREEN + text + RESET)
+n_cyan = lambda text: str(N_CYAN + text + RESET)
+n_red = lambda text: str(N_RED + text + RESET)
+n_magenta = lambda text: str(N_MAGENTA + text + RESET)
+n_yellow = lambda text: str(N_YELLOW + text + RESET)
 
-normal_green = lambda text: str(N_GREEN + text + RESET)
-normal_cyan = lambda text: str(N_CYAN + text + RESET)
-normal_red = lambda text: str(N_RED + text + RESET)
-normal_magenta = lambda text: str(N_MAGENTA + text + RESET)
-normal_yellow = lambda text: str(N_YELLOW + text + RESET)
-
-bright_green = lambda text: str(B_GREEN + text + RESET)
-bright_cyan = lambda text: str(B_CYAN + text + RESET)
-bright_red = lambda text: str(B_RED + text + RESET)
-bright_magenta = lambda text: str(B_MAGENTA + text + RESET)
-bright_yellow = lambda text: str(B_YELLOW + text + RESET)
+b_green = lambda text: str(B_GREEN + text + RESET)
+b_cyan = lambda text: str(B_CYAN + text + RESET)
+b_red = lambda text: str(B_RED + text + RESET)
+b_magenta = lambda text: str(B_MAGENTA + text + RESET)
+b_yellow = lambda text: str(B_YELLOW + text + RESET)

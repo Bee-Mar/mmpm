@@ -2,8 +2,9 @@
 from mmpm.logger import MMPMLogger
 from mmpm.api.base_endpoint import BaseEndpoint
 from mmpm.api.constants import http
+from mmpm.magicmirror.package import MagicMirrorPackage
 
-from flask import Blueprint, jsonify, Response
+from flask import Blueprint, Response, request, jsonify
 import json
 
 logger = MMPMLogger.get_logger(__name__)
@@ -35,4 +36,7 @@ class Endpoint(BaseEndpoint):
 
         @self.blueprint.route("/install", methods=[http.POST])
         def install() -> Response:
-            pass
+            packages = request.get_json()["packages"]
+
+            for package in packages:
+                MagicMirrorPackage(**package).install(assume_yes=True)

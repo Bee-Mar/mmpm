@@ -5,9 +5,9 @@ from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 from mmpm.constants import symbols, color
 
+import shutil
 from os import chdir
 from pathlib import PosixPath, Path
-import shutil
 
 logger = MMPMLogger.get_logger(__name__)
 

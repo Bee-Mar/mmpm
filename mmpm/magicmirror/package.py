@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
+from mmpm.logger import MMPMLogger
+from mmpm.env import MMPMEnv
+from mmpm.utils import run_cmd
+from mmpm.constants import symbols, color
+
 import os
 import json
 import shutil
 import mmpm.utils
 import datetime
 import requests
-from mmpm.logger import MMPMLogger
-from mmpm.env import MMPMEnv
-from mmpm.utils import run_cmd
-from mmpm.constants import symbols, color
 from pathlib import Path, PosixPath
 from re import sub
 from bs4 import Tag, NavigableString
@@ -32,15 +33,15 @@ class MagicMirrorPackage:
     """
 
     def __init__(
-        self,
-        title: str = NA,
-        author: str = NA,
-        repository: str = NA,
-        description: str = NA,
-        category: str = NA,
-        directory: str = "",
-        is_installed: bool = False,
-    ) -> None:
+            self,
+            title: str = NA,
+            author: str = NA,
+            repository: str = NA,
+            description: str = NA,
+            category: str = NA,
+            directory: str = "",
+            is_installed: bool = False,
+            ) -> None:
         self.env = MMPMEnv()
         self.title = __sanitize__(title.strip())
         self.author = __sanitize__(author.strip())
@@ -75,14 +76,14 @@ class MagicMirrorPackage:
 
 
     def display(
-        self,
-        detailed: bool = False,
-        remote: bool = False,
-        title_only: bool = False,
-        show_path: bool = False,
-        exclude_installed: bool = False,
-        hide_installed_indicator: bool = False,
-    ) -> None:
+            self,
+            detailed: bool = False,
+            remote: bool = False,
+            title_only: bool = False,
+            show_path: bool = False,
+            exclude_installed: bool = False,
+            hide_installed_indicator: bool = False,
+            ) -> None:
         """
         Displays more detailed information that presented in normal search results.
         The output is formatted similarly to the output of the Debian/Ubunut 'apt' CLI
@@ -130,15 +131,15 @@ class MagicMirrorPackage:
 
     def __dict__(self) -> Dict[str, str]:
         return {
-            "title": self.title,
-            "author": self.author,
-            "category": self.category,
-            "repository": self.repository,
-            "description": self.description,
-            "directory": self.directory.name,
-            "is_installed": self.is_installed,
-            "is_upgradable": self.is_upgradable,
-        }
+                "title": self.title,
+                "author": self.author,
+                "category": self.category,
+                "repository": self.repository,
+                "description": self.description,
+                "directory": self.directory.name,
+                "is_installed": self.is_installed,
+                "is_upgradable": self.is_upgradable,
+                }
 
     def serialize(self, full: bool = False) -> dict:
         """
@@ -152,13 +153,13 @@ class MagicMirrorPackage:
         """
         if not full:
             return {
-                "title": self.title,
-                "author": self.author,
-                "category": self.category,
-                "repository": self.repository,
-                "description": self.description,
-                "directory": self.directory.name,
-            }
+                    "title": self.title,
+                    "author": self.author,
+                    "category": self.category,
+                    "repository": self.repository,
+                    "description": self.description,
+                    "directory": self.directory.name,
+                    }
 
         return self.__dict__()
 
@@ -167,7 +168,7 @@ class MagicMirrorPackage:
         """
         Delegates installation to an InstallationHandler instance. The repo is
         cloned, and all dependencies are installed (to the best of the package
-        manager's ability). Errors are displayed as they occur, but they are mostly ignored.
+                                                    manager's ability). Errors are displayed as they occur, but they are mostly ignored.
 
         Parameters:
             None
@@ -298,13 +299,13 @@ class MagicMirrorPackage:
                 package_description += info.string
 
         return MagicMirrorPackage(
-            title=package_title,
-            author=package_author,
-            description=package_description,
-            repository=repo,
-            category=category,
-            directory=f'{repo.split("/")[-1].replace(".git", "")}',
-        )
+                title=package_title,
+                author=package_author,
+                description=package_description,
+                repository=repo,
+                category=category,
+                directory=f'{repo.split("/")[-1].replace(".git", "")}',
+                )
 
 
 __NULL__: int = hash(MagicMirrorPackage())
@@ -338,8 +339,8 @@ class InstallationHandler:
 
         if not modules_dir.exists():
             logger.msg.fatal(
-                f"{modules_dir} does not exist. Is {root.name} set properly?"
-            )
+                    f"{modules_dir} does not exist. Is {root.name} set properly?"
+                    )
             logger.fatal(f"{modules_dir} does not exist.")
             return False
 
@@ -519,10 +520,10 @@ class RemotePackage:
                         If no errors or warnings are present, the API is reachable
         """
         health: dict = {
-            'github': {'error': "", "warning": ""},
-            'gitlab': {'error': "", "warning": ""},
-            'bitbucket': {'error': "", "warning": ""},
-        }
+                'github': {'error': "", "warning": ""},
+                'gitlab': {'error': "", "warning": ""},
+                'bitbucket': {'error': "", "warning": ""},
+                }
 
         github_api_response: requests.Response = mmpm.utils.safe_get_request("https://api.github.com/rate_limit")
 
@@ -626,16 +627,16 @@ class RemotePackage:
         issues = mmpm.utils.safe_get_request(f"{url}/issues")
 
         return (
-            {
-                "Stars": int(json.loads(stars.text)["pagelen"]) if stars else "N/A",
-                "Issues": int(json.loads(issues.text)["pagelen"]) if issues else "N/A",
-                "Created": data["created_on"].split("T")[0] if data else "N/A",
-                "Last Updated": data["updated_on"].split("T")[0] if data else "N/A",
-                "Forks": int(json.loads(forks.text)["pagelen"]) if forks else "N/A",
-            }
-            if data and stars
-            else {}
-        )
+                {
+                    "Stars": int(json.loads(stars.text)["pagelen"]) if stars else "N/A",
+                    "Issues": int(json.loads(issues.text)["pagelen"]) if issues else "N/A",
+                    "Created": data["created_on"].split("T")[0] if data else "N/A",
+                    "Last Updated": data["updated_on"].split("T")[0] if data else "N/A",
+                    "Forks": int(json.loads(forks.text)["pagelen"]) if forks else "N/A",
+                    }
+                if data and stars
+                else {}
+                )
 
 
     def __format_gitlab_api_details__(self, data: dict, url: str) -> dict:
@@ -652,18 +653,18 @@ class RemotePackage:
         issues = mmpm.utils.safe_get_request(f"{url}/issues")
 
         return (
-            {
-                "Stars": data["star_count"] if data else "N/A",
-                "Issues": len(json.loads(issues.text)) if issues else "N/A",
-                "Created": data["created_at"].split("T")[0] if data else "N/A",
-                "Last Updated": data["last_activity_at"].split("T")[0]
+                {
+                    "Stars": data["star_count"] if data else "N/A",
+                    "Issues": len(json.loads(issues.text)) if issues else "N/A",
+                    "Created": data["created_at"].split("T")[0] if data else "N/A",
+                    "Last Updated": data["last_activity_at"].split("T")[0]
+                    if data
+                    else "N/A",
+                    "Forks": data["forks_count"] if data else "N/A",
+                    }
                 if data
-                else "N/A",
-                "Forks": data["forks_count"] if data else "N/A",
-            }
-            if data
-            else {}
-        )
+                else {}
+                )
 
 
     def __format_github_api_details__(self, data: dict) -> dict:
@@ -677,13 +678,13 @@ class RemotePackage:
             details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
         """
         return (
-            {
-                "Stars": data["stargazers_count"] if data else "N/A",
-                "Issues": data["open_issues"] if data else "N/A",
-                "Created": data["created_at"].split("T")[0] if data else "N/A",
-                "Last Updated": data["updated_at"].split("T")[0] if data else "N/A",
-                "Forks": data["forks_count"] if data else "N/A",
-            }
-            if data
-            else {}
-        )
+                {
+                    "Stars": data["stargazers_count"] if data else "N/A",
+                    "Issues": data["open_issues"] if data else "N/A",
+                    "Created": data["created_at"].split("T")[0] if data else "N/A",
+                    "Last Updated": data["updated_at"].split("T")[0] if data else "N/A",
+                    "Forks": data["forks_count"] if data else "N/A",
+                    }
+                if data
+                else {}
+                )

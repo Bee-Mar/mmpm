@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """ Command line options for 'version' subcommand """
-import argparse
+from argparse import _SubParsersAction
 
-def setup(subparser: argparse._SubParsersAction):
-     subparser.add_parser(
-        "version",
-        usage='\n  mmpm version',
-        help='display MMPM version number',
-    )
+def setup(subparser: _SubParsersAction):
+    subparser.add_parser(
+            "version",
+            usage='\n  mmpm version',
+            help='display MMPM version number',
+            )

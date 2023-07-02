@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # pylint: disable=unused-argument
-import sys
-import argcomplete
 from mmpm.constants import urls
 import mmpm.subcommands
+
+import sys
+import argcomplete
 from typing import List
 from pkgutil import iter_modules
 from importlib import import_module
@@ -22,20 +23,20 @@ def setup() -> ArgumentParser:
     '''
 
     parser = ArgumentParser(
-        prog='mmpm',
-        usage='mmpm <subcommand> [option(s)]',
-        epilog=f'Visit {urls.MMPM_WIKI_URL} for more details',
-        description='''
+            prog='mmpm',
+            usage='mmpm <subcommand> [option(s)]',
+            epilog=f'Visit {urls.MMPM_WIKI_URL} for more details',
+            description='''
             The MagicMirror Package Manager CLI simplifies the
             installation, removal, and general maintenance of MagicMirror packages.
             '''
-    )
+            )
 
     subparser = parser.add_subparsers(
-        title='MMPM subcommands',
-        description='use `mmpm <subcommand> --help` to see more details',
-        dest='subcmd',
-    )
+            title='MMPM subcommands',
+            description='use `mmpm <subcommand> --help` to see more details',
+            dest='subcmd',
+            )
 
     # dynamically load all the submodules prefixed with "_sub_cmd"
     for module in iter_modules(mmpm.subcommands.__path__):

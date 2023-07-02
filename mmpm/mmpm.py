@@ -18,17 +18,16 @@ from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.controller import MagicMirrorController
 from mmpm.magicmirror.package import RemotePackage, MagicMirrorPackage
 
-from argparse import Namespace
-from typing import List, Dict, Set
-from socket import gethostbyname, gethostname
-from pathlib import Path
-
 import os
 import sys
 import json
 import shutil
 import webbrowser
 import urllib.request
+from argparse import Namespace
+from typing import List, Dict, Set
+from socket import gethostbyname, gethostname
+from pathlib import Path
 from pathlib import PosixPath
 from pip._internal.operations.freeze import freeze
 

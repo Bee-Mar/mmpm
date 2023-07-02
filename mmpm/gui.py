@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-import mmpm.utils
+from mmpm.utils import prompt, systemctl
 from mmpm.logger import MMPMLogger
 from mmpm.constants import paths, symbols
 from mmpm.singleton import Singleton
-
-from socket import gethostbyname, gethostname
-from re import findall
 
 import socket
 import shutil
 import getpass
 import os
 import subprocess
+from socket import gethostbyname, gethostname
+from re import findall
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -72,11 +71,11 @@ class MMPMGui(Singleton):
         logger.msg.info(f'Copying NGINX and SystemdD service configs ')
 
         os.system(f'''
-            sudo mkdir -p /var/www/mmpm;
-            sudo cp -r /tmp/etc /;
-            sudo cp -r {paths.MMPM_PYTHON_ROOT_DIR}/static /var/www/mmpm;
-            sudo cp -r {paths.MMPM_PYTHON_ROOT_DIR}/templates /var/www/mmpm;
-        ''')
+                  sudo mkdir -p /var/www/mmpm;
+                  sudo cp -r /tmp/etc /;
+                  sudo cp -r {paths.MMPM_PYTHON_ROOT_DIR}/static /var/www/mmpm;
+                  sudo cp -r {paths.MMPM_PYTHON_ROOT_DIR}/templates /var/www/mmpm;
+                  ''')
 
         print(symbols.GREEN_CHECK_MARK)
 

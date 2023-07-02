@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-import sys
 from mmpm.mmpm import MMPM
+
+import sys
 
 
 # for the setup.py console scripts
 def main():
     try:
-        app = MMPM()
-        app.run()
+        MMPM().run()
     except KeyboardInterrupt:
         sys.exit(127)
 

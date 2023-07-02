@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
+from mmpm.env import MMPMEnv
+from mmpm.constants import paths, symbols, color
+from mmpm.__version__ import version
+
 import os
 import sys
 import shutil
 import logging
 import logging.handlers
 import datetime
-import mmpm.utils
-from mmpm.env import MMPMEnv
 from pathlib import PosixPath
-from mmpm.constants import paths, symbols, color
-from mmpm.__version__ import version
 
 
 class StdOutMessageWriter:
@@ -82,21 +82,21 @@ class MMPMLogger:
     def __init_logger__(name: str) -> None:
         log_format: str = f'{{"time": "%(asctime)s", "version": "{version}" , "level": "%(levelname)s", "location": "%(module)s:%(funcName)s:%(lineno)d", "message": "%(message)s"}}'
         logging.basicConfig(
-            filename=paths.MMPM_CLI_LOG_FILE, format=log_format, datefmt="%Y-%m-%d %H:%M:%S"
-        )
+                filename=paths.MMPM_CLI_LOG_FILE, format=log_format, datefmt="%Y-%m-%d %H:%M:%S"
+                )
 
         MMPMLogger.__logger__ = logging.getLogger(name)
         MMPMLogger.__logger__.__setattr__("msg", StdOutMessageWriter())
 
         if not MMPMLogger.__logger__.hasHandlers():
             handler = logging.handlers.RotatingFileHandler(
-                paths.MMPM_CLI_LOG_FILE,
-                mode="a",
-                maxBytes=1024 * 1024,
-                backupCount=2,
-                encoding="utf-8",
-                delay=0,
-            )
+                    paths.MMPM_CLI_LOG_FILE,
+                    mode="a",
+                    maxBytes=1024 * 1024,
+                    backupCount=2,
+                    encoding="utf-8",
+                    delay=0,
+                    )
 
             MMPMLogger.__logger__.addHandler(handler)
 
@@ -115,7 +115,7 @@ class MMPMLogger:
         log contents will be displayed in real-time
 
         Parameters:
-        cli_logs (bool): if True, the CLI log files will be displayed
+            cli_logs (bool): if True, the CLI log files will be displayed
         gui_logs (bool): if True, the Gunicorn log files for the web interface will be displayed
         tail (bool): if True, the contents will be displayed in real time
 

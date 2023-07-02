@@ -1,36 +1,36 @@
 #!/usr/bin/env python3
 """ Command line options for 'search' subcommand """
-import argparse
+from argparse import _SubParsersAction
 
-def setup(subparser: argparse._SubParsersAction):
+def setup(subparser: _SubParsersAction):
     parser = subparser.add_parser(
-        "search",
-        usage='\n  mmpm search <query> [--case-sensitive] [--exclude-installed]',
-        help='search for MagicMirror packages'
-    )
+            "search",
+            usage='\n  mmpm search <query> [--case-sensitive] [--exclude-installed]',
+            help='search for MagicMirror packages'
+            )
 
     parser.add_argument(
-        '-t',
-        '--title-only',
-        action='store_true',
-        help='only show the title of the packages matching the search results',
-        dest='title_only'
-    )
+            '-t',
+            '--title-only',
+            action='store_true',
+            help='only show the title of the packages matching the search results',
+            dest='title_only'
+            )
 
     parser.add_argument(
-        '-c',
-        '--case-sensitive',
-        action='store_true',
-        help='search for packages using a case-sensitive query',
-        dest='case_sensitive'
-    )
+            '-c',
+            '--case-sensitive',
+            action='store_true',
+            help='search for packages using a case-sensitive query',
+            dest='case_sensitive'
+            )
 
     parser.add_argument(
-        '-e',
-        '--exclude-installed',
-        action='store_true',
-        help='exclude installed packages from search results',
-        dest='exclude_installed'
-    )
+            '-e',
+            '--exclude-installed',
+            action='store_true',
+            help='exclude installed packages from search results',
+            dest='exclude_installed'
+            )
 
 

@@ -2,7 +2,7 @@
 # pylint: disable=unused-argument
 import sys
 import argcomplete
-import mmpm.consts
+from mmpm.constants import urls
 import mmpm.subcommands
 from typing import List
 from pkgutil import iter_modules
@@ -24,7 +24,7 @@ def setup() -> ArgumentParser:
     parser = ArgumentParser(
         prog='mmpm',
         usage='mmpm <subcommand> [option(s)]',
-        epilog=f'Visit {mmpm.consts.MMPM_WIKI_URL} for more details',
+        epilog=f'Visit {urls.MMPM_WIKI_URL} for more details',
         description='''
             The MagicMirror Package Manager CLI simplifies the
             installation, removal, and general maintenance of MagicMirror packages.

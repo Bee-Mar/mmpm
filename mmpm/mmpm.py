@@ -5,19 +5,18 @@ from gevent import monkey
 monkey.patch_all()  # do not move these
 
 import mmpm.utils
-import mmpm.consts
 
-from mmpm.__version__ import version as mmpm_version
-from mmpm.singleton import Singleton
-from mmpm.subcommands import options
-from mmpm.constants import paths
-from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.env import MMPMEnv
 from mmpm.gui import MMPMGui
+from mmpm.constants import paths, urls, color
 from mmpm.logger import MMPMLogger
-from mmpm.magicmirror.package import RemotePackage, MagicMirrorPackage
+from mmpm.subcommands import options
+from mmpm.singleton import Singleton
+from mmpm.__version__ import version as mmpm_version
+from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.controller import MagicMirrorController
+from mmpm.magicmirror.package import RemotePackage, MagicMirrorPackage
 
 from argparse import Namespace
 from typing import List, Dict, Set
@@ -30,6 +29,7 @@ import json
 import shutil
 import webbrowser
 import urllib.request
+from pathlib import PosixPath
 from pip._internal.operations.freeze import freeze
 
 # this global will get removed after a few minor versions
@@ -39,27 +39,12 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class MMPM(Singleton):
-    def __init__(self):
+    def init(self):
+        self.env = MMPMEnv()
         self.database = MagicMirrorDatabase()
         self.controller = MagicMirrorController()
         self.magic_mirror: MagicMirror = MagicMirror()
         self.gui = MMPMGui()
-
-        current_env: dict = {}
-
-        with open(paths.MMPM_ENV_FILE, "r", encoding="utf-8") as env:
-            try:
-                current_env = json.load(env)
-            except json.JSONDecodeError as error:
-                logger.error(str(error))
-
-        for key, value in mmpm.consts.MMPM_DEFAULT_ENV.items():
-            if key not in current_env:
-                current_env[key] = value
-
-        with open(mmpm.consts.MMPM_ENV_FILE, "w", encoding="utf-8") as env:
-            json.dump(current_env, env, indent=2)
-
 
     def run(self):
         """Main entry point for CLI"""
@@ -78,7 +63,7 @@ class MMPM(Singleton):
         command: str = args.subcmd.lower().replace("-", "_")
 
         if command != "version":
-            should_refresh =  True if args.subcmd == "db" and args.refresh else self.database.is_expired()
+            should_refresh = True if args.subcmd == "db" and args.refresh else self.database.is_expired()
             self.database.load(refresh=should_refresh)
 
             if self.database.is_expired() and args.subcmd != mmpm.opts.UPDATE:
@@ -117,7 +102,7 @@ class MMPM(Singleton):
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
         if args.remote:
-            health: dict = RemotePackage.health()
+            health = RemotePackage.health()
 
             for status in health.values():
                 if status['error']:
@@ -155,17 +140,17 @@ class MMPM(Singleton):
         elif args.show:
             self.controller.show_modules(args.show)
         elif args.start:
-            if MMPMEnv.mmpm_is_docker_image.get():
+            if self.env.mmpm_is_docker_image.get():
                 logger.msg.fatal("Cannot execute this command within a docker image")
             else:
                 self.controller.start()
         elif args.stop:
-            if MMPMEnv.mmpm_is_docker_image.get():
+            if self.env.mmpm_is_docker_image.get():
                 logger.msg.fatal("Cannot execute this command within a docker image")
             else:
                 self.controller.stop()
         elif args.restart:
-            if MMPMEnv.mmpm_is_docker_image.get():
+            if self.env.mmpm_is_docker_image.get():
                 logger.msg.fatal("Cannot execute this command within a docker image")
             else:
                 self.controller.restart()
@@ -203,7 +188,7 @@ class MMPM(Singleton):
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
             return
 
-        MMPMEnv.display()
+        self.env.display()
 
 
     def update(self, args, additional_args=None):
@@ -303,7 +288,7 @@ class MMPM(Singleton):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)  # TODO: FIXME
         elif args.config:
-            root = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "config"
+            root = Path(self.env.mmpm_magicmirror_root.get()) / "config"
             config_js = root / "config.js"
             config_js_sample = root / "config.js.sample"
 
@@ -313,19 +298,19 @@ class MMPM(Singleton):
             mmpm.utils.edit(config_js)
 
         elif args.custom_css:
-            mmpm.utils.edit(Path(MMPMEnv.mmpm_magicmirror_root.get()) / "css" / "custom.css")
+            mmpm.utils.edit(Path(self.env.mmpm_magicmirror_root.get()) / "css" / "custom.css")
         elif args.magicmirror:
-            mmpm.utils.run_cmd(["xdg-open", MMPMEnv.mmpm_magicmirror_uri.get()], background=True)
+            mmpm.utils.run_cmd(["xdg-open", self.env.mmpm_magicmirror_uri.get()], background=True)
         elif args.gui:
             mmpm.utils.run_cmd(["xdg-open", self.gui.get_uri()], background=True)
         elif args.mm_wiki:
-            mmpm.utils.run_cmd(["xdg-open", mmpm.consts.MAGICMIRROR_WIKI_URL], background=True)
+            mmpm.utils.run_cmd(["xdg-open", urls.MAGICMIRROR_WIKI_URL], background=True)
         elif args.mm_docs:
-            mmpm.utils.run_cmd(["xdg-open", mmpm.consts.MAGICMIRROR_DOCUMENTATION_URL], background=True)
+            mmpm.utils.run_cmd(["xdg-open", urls.MAGICMIRROR_DOCUMENTATION_URL], background=True)
         elif args.mmpm_wiki:
-            mmpm.utils.run_cmd(["xdg-open", mmpm.consts.MMPM_WIKI_URL], background=True)
+            mmpm.utils.run_cmd(["xdg-open", urls.MMPM_WIKI_URL], background=True)
         elif args.mmpm_env:
-            mmpm.utils.edit(mmpm.consts.MMPM_ENV_FILE)
+            mmpm.utils.edit(paths.MMPM_ENV_FILE)
         else:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)  # TODO: FIXME
 
@@ -361,18 +346,21 @@ class MMPM(Singleton):
         error_message = f"Please see {autocomplete_url} for help installing autocompletion"
 
         complete_message = lambda config: f"Autocompletion installed. Please source {config} for the changes to take effect"
-        failed_match_message = lambda shell, configs: f"Unable to locate {shell} configuration file (looked for {configs}). {error_message}"
+        failed_match_message = lambda sh, configs: f"Unable to locate {sh} configuration file (looked for {configs}). {error_message}"
 
-        def match_shell_config(configs):
-            logger.info(f"Searching for one of the following shell configuration files {configs}")
-            for config in configs:
-                config = mmpm.consts.HOME_DIR / config
-                if config.exists():
-                    logger.info(f"Found {str(config)} shell configuration file for {shell}")
-                    return config
-            return ""
+        def match_shell_config(shell_profiles):
+            logger.info(f"Searching for one of the following shell configuration files {shell_profiles}")
 
-        def execute_command(command):
+            for shell_profile in shell_profiles:
+                file: PosixPath = paths.HOME_DIR / shell_profile
+
+                if file.exists():
+                    logger.info(f"Found {file} shell configuration file for {shell}")
+                    return file
+
+            return None
+
+        def cmd(command: str):
             logger.info(f"Executing {command} to install autocompletion")
             os.system(command)
 
@@ -407,18 +395,17 @@ class MMPM(Singleton):
 
         if shell in shell_configs:
             config_info = shell_configs[shell]
-            files = config_info["files"]
             commands = config_info["commands"]
-            config = match_shell_config(files)
+            file = match_shell_config(config_info["files"])
             logger.msg.info(f"Detected '{shell}' shell.\n")
 
-            if not config:
+            if file is None:
                 logger.msg.fatal(failed_match_message(shell, files))
 
             for command in commands:
-                execute_command(command.format(config=config))
+                cmd(command.format(config=file))
 
-            print(complete_message(config))
+            print(complete_message(file))
         else:
             logger.msg.fatal( f"Unable to install autocompletion for ({shell}). Please see {autocomplete_url} for help installing autocompletion")
 
@@ -436,7 +423,7 @@ class MMPM(Singleton):
         """
         valid_input: Callable = mmpm.utils.assert_valid_input
 
-        print(mmpm.color.b_green("Welcome to MMPM's guided setup!\n"))
+        print(color.b_green("Welcome to MMPM's guided setup!\n"))
         print("I'll help you setup your environment variables, and install additional features.\n\n")
         print("Let's get started!\n")
 
@@ -465,28 +452,28 @@ class MMPM(Singleton):
         install_as_module = mmpm.utils.prompt("Would you like to hide/show MagicMirror modules through MMPM?")
         install_autocomplete = mmpm.utils.prompt("Would you like to install tab-autocomplete for the MMPM CLI?")
 
-        with open(mmpm.consts.MMPM_ENV_FILE, "w", encoding="utf-8") as env:
+        with open(paths.MMPM_ENV_FILE, "w", encoding="utf-8") as env:
             json.dump(
                 {
-                    MMPMEnv.mmpm_magicmirror_root.name: os.path.normpath(magicmirror_root),
-                    MMPMEnv.mmpm_magicmirror_uri.name: magicmirror_uri,
-                    MMPMEnv.mmpm_magicmirror_pm2_process_name.name: magicmirror_pm2_proc,
-                    MMPMEnv.mmpm_magicmirror_docker_compose_file.name: os.path.normpath(magicmirror_docker_compose_file),
-                    MMPMEnv.mmpm_is_docker_image.name: mmpm_is_docker_image,
+                    self.env.mmpm_magicmirror_root.name: os.path.normpath(magicmirror_root),
+                    self.env.mmpm_magicmirror_uri.name: magicmirror_uri,
+                    self.env.mmpm_magicmirror_pm2_process_name.name: magicmirror_pm2_proc,
+                    self.env.mmpm_magicmirror_docker_compose_file.name: os.path.normpath(magicmirror_docker_compose_file),
+                    self.env.mmpm_is_docker_image.name: mmpm_is_docker_image,
                 },
                 env,
                 indent=2,
             )
 
         print("\nBased on your responses, your environment variables have been set as:")
-        MMPMEnv.display()
+        self.env.display()
         print("\n \nExecute the following commands to install the desired features:")
 
         if install_as_module:
-            print(mmpm.color.b_green("mmpm install mmpm"))
+            print(color.b_green("mmpm install mmpm"))
         if install_gui:
-            print(mmpm.color.b_green("mmpm install --gui"))
+            print(color.b_green("mmpm install --gui"))
         if install_autocomplete:
-            print(mmpm.color.b_green("mmpm completion"))
+            print(color.b_green("mmpm completion"))
 
         print()

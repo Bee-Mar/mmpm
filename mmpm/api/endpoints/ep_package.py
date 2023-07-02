@@ -8,6 +8,7 @@ from flask import Blueprint, Response
 
 class Endpoint(BaseEndpoint):
     def __init__(self):
+        self.env = MMPMEnv()
         self.blueprint = Blueprint("package", __name__, url_prefix="/api/package")
         self.db = MagicMirrorDatabase()
 

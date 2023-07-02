@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from mmpm.singleton import Singleton
-from mmpm.constants import paths
+from mmpm.constants import paths, symbols, color
 from mmpm.logger import MMPMLogger
 from mmpm.env import MMPMEnv
 from mmpm.utils import get_pids, kill_pids_of_process
@@ -11,7 +11,6 @@ import json
 import shutil
 import socketio
 import subprocess
-import mmpm.consts
 from time import sleep
 from pathlib import Path, PosixPath
 
@@ -45,11 +44,11 @@ class MagicMirrorClientFactory:
             logger.info('Received active modules from MMPM MagicMirror module')
 
             if not data:
-                print(mmpm.consts.RED_X)
+                print(symbols.RED_X)
                 logger.error('No data was received. Is the MMPM_MAGICMIRROR_URI environment variable set properly?')
 
             for module in [json_data for index, json_data in enumerate(data) if json_data not in data[index + 1:]]:
-                print(f"{mmpm.color.n_green(module['name'])}\n  hidden: {'true' if module['hidden'] else 'false'}\n  key: {module['index'] + 1}\n")
+                print(f"{color.n_green(module['name'])}\n  hidden: {'true' if module['hidden'] else 'false'}\n  key: {module['index'] + 1}\n")
 
             client.disconnect()
 
@@ -58,7 +57,7 @@ class MagicMirrorClientFactory:
             logger.info('Received toggled modules from MMPM MagicMirror module')
 
             if not data:
-                print(mmpm.consts.RED_X)
+                print(symbols.RED_X)
                 logger.error('Unable to find provided module(s)')
 
             client.disconnect()
@@ -68,11 +67,14 @@ class MagicMirrorClientFactory:
 
 
 class MagicMirrorController(Singleton):
+    def init(self):
+        self.env = MMPMEnv()
+
     def status(self):
         client = MagicMirrorClientFactory('FROM_MMPM_APP_get_active_modules', {})
 
         try:
-            client.connect(MMPMEnv.mmpm_magicmirror_uri.get(), namespaces=["/MMM-mmpm"])
+            client.connect(self.env.mmpm_magicmirror_uri.get(), namespaces=["/MMM-mmpm"])
         except (OSError, BrokenPipeError, Exception) as error:
             logger.msg.error('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
             logger.error(str(error))
@@ -81,7 +83,7 @@ class MagicMirrorController(Singleton):
         client = MagicMirrorClientFactory('FROM_MMPM_APP_toggle_modules', {'directive': 'hide', 'modules': modules_to_hide})
 
         try:
-            client.connect(MMPMEnv.mmpm_magicmirror_uri.get(), namespaces=["/MMM-mmpm"])
+            client.connect(self.env.mmpm_magicmirror_uri.get(), namespaces=["/MMM-mmpm"])
         except (OSError, BrokenPipeError, Exception) as error:
             logger.msg.error('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
             logger.error(str(error))
@@ -90,7 +92,7 @@ class MagicMirrorController(Singleton):
         client = MagicMirrorClientFactory('FROM_MMPM_APP_toggle_modules', data={'directive': 'show', 'modules': modules_to_show})
 
         try:
-            client.connect(MMPMEnv.mmpm_magicmirror_uri.get(), namespaces=["/MMM-mmpm"])
+            client.connect(self.env.mmpm_magicmirror_uri.get(), namespaces=["/MMM-mmpm"])
         except (OSError, BrokenPipeError, Exception) as error:
             logger.msg.error('Failed to connect to MagicMirror, closing socket. Is MagicMirror running?')
             logger.error(str(error))
@@ -111,8 +113,8 @@ class MagicMirrorController(Singleton):
         process: str = ''
         command: List[str] = []
 
-        MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = MMPMEnv.mmpm_magicmirror_pm2_process_name.get()
-        MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = MMPMEnv.mmpm_magicmirror_docker_compose_file.get()
+        MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = self.env.mmpm_magicmirror_pm2_process_name.get()
+        MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = self.env.mmpm_magicmirror_docker_compose_file.get()
 
         if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
             logger.info(f'docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
@@ -134,15 +136,15 @@ class MagicMirrorController(Singleton):
             error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False, background=True)
 
             if error_code:
-                print(mmpm.consts.RED_X)
+                print(symbols.RED_X)
                 logger.msg.error(stderr.strip())
                 return False
 
             logger.info(f"started MagicMirror using '{process}'")
-            print(mmpm.consts.GREEN_CHECK_MARK)
+            print(symbols.GREEN_CHECK_MARK)
             return True
 
-        os.chdir(Path(MMPMEnv.mmpm_magicmirror_root.get()))
+        os.chdir(Path(self.env.mmpm_magicmirror_root.get()))
 
         command = ["npm", "run", "start"]
 
@@ -150,7 +152,7 @@ class MagicMirrorController(Singleton):
         logger.msg.info(f"Starting MagicMirror ")
 
         mmpm.utils.run_cmd(command, progress=False, background=True)
-        print(mmpm.consts.GREEN_CHECK_MARK)
+        print(symbols.GREEN_CHECK_MARK)
         return True
 
 
@@ -169,8 +171,8 @@ class MagicMirrorController(Singleton):
         process: str = ''
         command: List[str] = []
 
-        MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = MMPMEnv.mmpm_magicmirror_pm2_process_name.get()
-        MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = MMPMEnv.mmpm_magicmirror_docker_compose_file.get()
+        MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = self.env.mmpm_magicmirror_pm2_process_name.get()
+        MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = self.env.mmpm_magicmirror_docker_compose_file.get()
 
         if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
             logger.info(f'docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}')
@@ -194,12 +196,12 @@ class MagicMirrorController(Singleton):
             error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False, background=True)
 
             if error_code:
-                print(mmpm.consts.RED_X)
+                print(symbols.RED_X)
                 logger.msg.error(stderr.strip())
                 return False
 
             logger.info(f"stopped MagicMirror using '{process}'")
-            print(mmpm.consts.GREEN_CHECK_MARK)
+            print(symbols.GREEN_CHECK_MARK)
             return True
 
         processes = ['electron']

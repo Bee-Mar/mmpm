@@ -23,7 +23,7 @@ def load_requirements() -> List[str]:
         requirements (List[str]): The package list the module requires
     '''
 
-    requirements_txt = Path("deps/requirements.txt")
+    requirements_txt = Path("requirements.txt")
     requirements: List[str] = []
 
     if requirements_txt.exists():

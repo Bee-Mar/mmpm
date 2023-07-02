@@ -2,6 +2,7 @@
 import sys
 from mmpm.mmpm import MMPM
 
+
 # for the setup.py console scripts
 def main():
     try:

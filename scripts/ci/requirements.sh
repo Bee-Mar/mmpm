@@ -2,8 +2,8 @@
 python_executable=$([[ $(command -v python3) ]] && echo "python3" || echo "python")
 
 printf "Installing Dev Requirements\n"
-$python_executable -m pip install --upgrade -r deps/dev-requirements.txt
+$python_executable -m pip install --upgrade -r requirements.dev.txt
 
 printf "\nInstalling Prod Requirements\n"
-$python_executable -m pip install -r deps/requirements.txt
+$python_executable -m pip install -r requirements.txt
 

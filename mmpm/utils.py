@@ -7,9 +7,7 @@ import datetime
 import json
 import requests
 import socket
-import mmpm.color
-import mmpm.consts
-from mmpm.constants import paths
+from mmpm.constants import paths, symbols
 from mmpm.logger import MMPMLogger
 from typing import List, Optional, Tuple, Dict, Any
 from pathlib import Path, PosixPath
@@ -135,7 +133,7 @@ def kill_pids_of_process(process: str) -> None:
     '''
     logger.info(f'Killing all processes of type {process}')
     os.system(f'for process in $(pgrep {process}); do kill -9 $process; done')
-    print(f'{mmpm.consts.GREEN_CHECK_MARK}')
+    print(f'{symbols.GREEN_CHECK_MARK}')
 
 
 

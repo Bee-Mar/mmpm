@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import mmpm.utils
-import mmpm.consts
 from mmpm.logger import MMPMLogger
+from mmpm.constants import paths, symbols
 from mmpm.singleton import Singleton
 
 from socket import gethostbyname, gethostname
@@ -17,6 +17,9 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class MMPMGui(Singleton):
+    def init(self):
+        pass
+
     def install(self, assume_yes: bool = False):
         '''
         Installs the MMPM GUI by configuring the required NGINX files bundled in
@@ -52,7 +55,7 @@ class MMPMGui(Singleton):
         temp_etc: str = '/tmp/etc'
 
         shutil.rmtree(temp_etc, ignore_errors=True)
-        shutil.copytree(mmpm.consts.MMPM_BUNDLED_ETC_DIR, temp_etc)
+        shutil.copytree(paths.MMPM_BUNDLED_ETC_DIR, temp_etc)
 
         temp_mmpm_service: str = f'{temp_etc}/systemd/system/mmpm.service'
 
@@ -71,14 +74,14 @@ class MMPMGui(Singleton):
         os.system(f'''
             sudo mkdir -p /var/www/mmpm;
             sudo cp -r /tmp/etc /;
-            sudo cp -r {mmpm.consts.MMPM_PYTHON_ROOT_DIR}/static /var/www/mmpm;
-            sudo cp -r {mmpm.consts.MMPM_PYTHON_ROOT_DIR}/templates /var/www/mmpm;
+            sudo cp -r {paths.MMPM_PYTHON_ROOT_DIR}/static /var/www/mmpm;
+            sudo cp -r {paths.MMPM_PYTHON_ROOT_DIR}/templates /var/www/mmpm;
         ''')
 
-        print(mmpm.consts.GREEN_CHECK_MARK)
+        print(symbols.GREEN_CHECK_MARK)
 
         logger.msg.info(f'Cleaning configuration files and resetting SystemdD daemons ')
-        print(mmpm.consts.GREEN_CHECK_MARK)
+        print(symbols.GREEN_CHECK_MARK)
 
         os.system('rm -rf /tmp/etc')
 
@@ -86,11 +89,11 @@ class MMPMGui(Singleton):
         daemon_reload = mmpm.utils.systemctl('daemon-reload')
 
         if daemon_reload.returncode != 0:
-            print(mmpm.consts.RED_X)
+            print(symbols.RED_X)
             logger.msg.error('Failed to reload SystemdD daemon. See `mmpm log` for details')
             logger.error(daemon_reload.stderr.decode('utf-8'))
         else:
-            print(mmpm.consts.GREEN_CHECK_MARK)
+            print(symbols.GREEN_CHECK_MARK)
 
         logger.msg.info(f'Enabling MMPM SystemdD daemon ')
 
@@ -101,7 +104,7 @@ class MMPMGui(Singleton):
                 self.remove()
             sys.exit(127)
 
-        print(mmpm.consts.GREEN_CHECK_MARK)
+        print(symbols.GREEN_CHECK_MARK)
 
         start_mmpm_service = mmpm.utils.systemctl('start', ['mmpm.service'])
 
@@ -125,7 +128,7 @@ class MMPMGui(Singleton):
                 self.remove()
             sys.exit(127)
 
-        print(mmpm.consts.GREEN_CHECK_MARK)
+        print(symbols.GREEN_CHECK_MARK)
         print('MMPM GUI installed! See `mmpm list --gui-url` for the URI, or run `mmpm open --gui` to launch')
 
 
@@ -157,14 +160,14 @@ class MMPMGui(Singleton):
             stopping = mmpm.utils.systemctl('stop', ['mmpm.service'])
 
             if stopping.returncode == 0:
-                print(mmpm.consts.GREEN_CHECK_MARK)
+                print(symbols.GREEN_CHECK_MARK)
             else:
-                print(mmpm.consts.RED_X)
+                print(symbols.RED_X)
                 logger.msg.error('Failed to stop MMPM SystemD service. See `mmpm log` for details')
                 logger.error(f"{stopping.stdout.decode('utf-8')}\n{stopping.stderr.decode('utf-8')}")
 
         elif is_active.stdout.decode('utf-8') == INACTIVE:
-            print(f'MMPM SystemD service not active, nothing to do {mmpm.consts.GREEN_CHECK_MARK}')
+            print(f'MMPM SystemD service not active, nothing to do {symbols.GREEN_CHECK_MARK}')
 
         is_enabled = mmpm.utils.systemctl('is-enabled', ['mmpm.service'])
 
@@ -173,26 +176,26 @@ class MMPMGui(Singleton):
             disabling = mmpm.utils.systemctl('disable', ['mmpm.service'])
 
             if disabling.returncode == 0:
-                print(mmpm.consts.GREEN_CHECK_MARK)
+                print(symbols.GREEN_CHECK_MARK)
             else:
-                print(mmpm.consts.RED_X)
+                print(symbols.RED_X)
                 logger.msg.error('Failed to disable MMPM SystemD service. See `mmpm log` for details')
                 logger.error(f"{disabling.stdout.decode('utf-8')}\n{disabling.stderr.decode('utf-8')}")
 
         elif is_enabled.stdout.decode('utf-8') == DISABLED:
-            print(f'MMPM SystemD service not enabled, nothing to do {mmpm.consts.GREEN_CHECK_MARK}')
+            print(f'MMPM SystemD service not enabled, nothing to do {symbols.GREEN_CHECK_MARK}')
 
         logger.msg.info(f'Force removing NGINX and SystemD configs ')
 
         cmd: str = f"""
-        sudo rm -f {mmpm.consts.MMPM_SYSTEMD_SERVICE_FILE};
-        sudo rm -f {mmpm.consts.MMPM_NGINX_CONF_FILE};
+        sudo rm -f {paths.MMPM_SYSTEMD_SERVICE_FILE};
+        sudo rm -f {paths.MMPM_NGINX_CONF_FILE};
         sudo rm -rf /var/www/mmpm;
         sudo rm -f /etc/nginx/sites-available/mmpm.conf;
         sudo rm -f /etc/nginx/sites-enabled/mmpm.conf;
         """
 
-        print(mmpm.consts.GREEN_CHECK_MARK)
+        print(symbols.GREEN_CHECK_MARK)
 
         os.system(cmd)
 
@@ -200,21 +203,21 @@ class MMPMGui(Singleton):
         daemon_reload = mmpm.utils.systemctl('daemon-reload')
 
         if daemon_reload.returncode != 0:
-            print(mmpm.consts.RED_X)
+            print(symbols.RED_X)
             logger.msg.error('Failed to reload SystemdD daemon. See `mmpm log` for details')
             logger.error(daemon_reload.stderr.decode('utf-8'))
         else:
-            print(mmpm.consts.GREEN_CHECK_MARK)
+            print(symbols.GREEN_CHECK_MARK)
 
         logger.msg.info(f'Restarting NGINX SystemD service ')
         restart_nginx = mmpm.utils.systemctl('restart', ['nginx'])
 
         if restart_nginx.returncode != 0:
-            print(mmpm.consts.RED_X)
+            print(symbols.RED_X)
             logger.msg.error('Failed to restart NGINX SystemdD daemon. See `mmpm log` for details')
             logger.error(restart_nginx.stderr.decode('utf-8'))
         else:
-            print(mmpm.consts.GREEN_CHECK_MARK)
+            print(symbols.GREEN_CHECK_MARK)
 
         print('MMPM GUI Removed!')
 
@@ -232,11 +235,11 @@ class MMPMGui(Singleton):
             str: The URL of the MMPM web interface
         '''
 
-        if not os.path.exists(mmpm.consts.MMPM_NGINX_CONF_FILE):
+        if not os.path.exists(paths.MMPM_NGINX_CONF_FILE):
             logger.msg.fatal('The MMPM NGINX configuration file does not appear to exist. Is the GUI installed?')
 
         # this value needs to be retrieved dynamically in case the user modifies the nginx conf
-        with open(mmpm.consts.MMPM_NGINX_CONF_FILE, 'r', encoding="utf-8") as conf:
+        with open(paths.MMPM_NGINX_CONF_FILE, 'r', encoding="utf-8") as conf:
             mmpm_conf = conf.read()
 
         try:

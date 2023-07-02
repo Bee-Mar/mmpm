@@ -5,11 +5,10 @@ import shutil
 import logging
 import logging.handlers
 import datetime
-import mmpm.color
 import mmpm.utils
 from mmpm.env import MMPMEnv
 from pathlib import PosixPath
-from mmpm.constants.paths import MMPM_CONFIG_DIR, MMPM_LOG_DIR, MMPM_CLI_LOG_FILE
+from mmpm.constants import paths, symbols, color
 from mmpm.__version__ import version
 
 
@@ -40,7 +39,7 @@ class StdOutMessageWriter:
         Returns:
             None
         """
-        print(mmpm.color.b_red("ERROR:"), msg)
+        print(color.b_red("ERROR:"), msg)
 
     def warning(self, msg: str) -> None:
         """
@@ -52,7 +51,7 @@ class StdOutMessageWriter:
         Returns:
             None
         """
-        print(mmpm.color.b_yellow("WARNING:"), msg)
+        print(color.b_yellow("WARNING:"), msg)
 
     def fatal(self, msg: str) -> None:
         """
@@ -64,11 +63,11 @@ class StdOutMessageWriter:
         Returns:
             None
         """
-        print(mmpm.color.b_red("FATAL:"), msg)
+        print(color.b_red("FATAL:"), msg)
         sys.exit(127)
 
     def retrieving(self, url: str, name: str):
-        print(f"Retrieving: {url} [{mmpm.color.n_cyan(name)}] ")
+        print(f"Retrieving: {url} [{color.n_cyan(name)}] ")
 
 
 class MMPMLogger:
@@ -83,7 +82,7 @@ class MMPMLogger:
     def __init_logger__(name: str) -> None:
         log_format: str = f'{{"time": "%(asctime)s", "version": "{version}" , "level": "%(levelname)s", "location": "%(module)s:%(funcName)s:%(lineno)d", "message": "%(message)s"}}'
         logging.basicConfig(
-            filename=MMPM_CLI_LOG_FILE, format=log_format, datefmt="%Y-%m-%d %H:%M:%S"
+            filename=paths.MMPM_CLI_LOG_FILE, format=log_format, datefmt="%Y-%m-%d %H:%M:%S"
         )
 
         MMPMLogger.__logger__ = logging.getLogger(name)
@@ -91,7 +90,7 @@ class MMPMLogger:
 
         if not MMPMLogger.__logger__.hasHandlers():
             handler = logging.handlers.RotatingFileHandler(
-                MMPM_CLI_LOG_FILE,
+                paths.MMPM_CLI_LOG_FILE,
                 mode="a",
                 maxBytes=1024 * 1024,
                 backupCount=2,
@@ -101,7 +100,7 @@ class MMPMLogger:
 
             MMPMLogger.__logger__.addHandler(handler)
 
-        MMPMLogger.__logger__.setLevel(MMPMEnv.mmpm_log_level.get())
+        MMPMLogger.__logger__.setLevel(MMPMEnv().mmpm_log_level.get())
 
         return MMPMLogger.__logger__
 
@@ -110,9 +109,7 @@ class MMPMLogger:
         return MMPMLogger.__init_logger__(name)
 
     @classmethod
-    def display(
-        cls, cli_logs: bool = False, gui_logs: bool = False, tail: bool = False
-    ) -> None:
+    def display(cls, cli_logs: bool = False, gui_logs: bool = False, tail: bool = False) -> None:
         """
         Displays contents of log files to stdout. If the --tail option is supplied,
         log contents will be displayed in real-time
@@ -128,18 +125,18 @@ class MMPMLogger:
         logs: List[str] = []
 
         if cli_logs:
-            if mmpm.consts.MMPM_CLI_LOG_FILE.exists():
-                logs.append(str(mmpm.consts.MMPM_CLI_LOG_FILE))
+            if paths.MMPM_CLI_LOG_FILE.exists():
+                logs.append(str(paths.MMPM_CLI_LOG_FILE))
             else:
                 MMPMLogger.msg.error("MMPM log file not found")
 
         if gui_logs:
-            if mmpm.consts.MMPM_NGINX_ACCESS_LOG_FILE.exists():
-                logs.append(str(mmpm.consts.MMPM_NGINX_ACCESS_LOG_FILE))
+            if paths.MMPM_NGINX_ACCESS_LOG_FILE.exists():
+                logs.append(str(paths.MMPM_NGINX_ACCESS_LOG_FILE))
             else:
                 MMPMLogger.msg.error("Gunicorn access log file not found")
-            if mmpm.consts.MMPM_NGINX_ERROR_LOG_FILE.exists():
-                logs.append(str(mmpm.consts.MMPM_NGINX_ERROR_LOG_FILE))
+            if paths.MMPM_NGINX_ERROR_LOG_FILE.exists():
+                logs.append(str(paths.MMPM_NGINX_ERROR_LOG_FILE))
             else:
                 MMPMLogger.msg.error("Gunicorn error log file not found")
 
@@ -162,18 +159,14 @@ class MMPMLogger:
         today = datetime.datetime.now()
 
         file_name: str = f"mmpm-logs-{today.year}-{today.month}-{today.day}"
-        MMPMLogger.__logger__.msg.info(
-            f"Compressing MMPM log files to {os.getcwd()}/{file_name}.zip "
-        )
+        MMPMLogger.__logger__.msg.info(f"Compressing MMPM log files to {os.getcwd()}/{file_name}.zip ")
 
         try:
-            shutil.make_archive(file_name, "zip", mmpm.consts.MMPM_LOG_DIR)
+            shutil.make_archive(file_name, "zip", paths.MMPM_LOG_DIR)
         except Exception as error:
-            print(mmpm.consts.RED_X)
+            print(symbols.RED_X)
             MMPMLogger.__logger__.msg.error(str(error))
-            MMPMLogger.__logger__.msg.error(
-                "Failed to create zip archive of log files. See `mmpm log` for details (I know...the irony)"
-            )
+            MMPMLogger.__logger__.msg.error("Failed to create zip archive of log files. See `mmpm log` for details (I know...the irony)")
             return
 
-        print(mmpm.consts.GREEN_CHECK_MARK)
+        print(symbols.GREEN_CHECK_MARK)

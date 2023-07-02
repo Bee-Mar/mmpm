@@ -3,6 +3,7 @@ from mmpm.utils import run_cmd
 from mmpm.singleton import Singleton
 from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
+from mmpm.constants import symbols, color
 
 from os import chdir
 from pathlib import PosixPath, Path
@@ -12,6 +13,10 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class MagicMirror(Singleton):
+    def init(self):
+        super().__init__()
+        self.env = MMPMEnv()
+
     def update(self):
         """
         Checks for updates available to the MagicMirror repository. Alerts user if an upgrade is available.
@@ -22,21 +27,17 @@ class MagicMirror(Singleton):
         Returns:
             bool: True upon success, False upon failure
         """
-        magicmirror_root: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get())
+        magicmirror_root: PosixPath = Path(self.env.mmpm_magicmirror_root.get())
 
         if not magicmirror_root.exists() or not (magicmirror_root / ".git").exists():
-            logger.msg.warning(
-                "MagicMirror application directory not found or not a git repo."
-            )
+            logger.msg.warning("MagicMirror application directory not found or not a git repo.")
             return False
 
         chdir(magicmirror_root)
         logger.msg.retrieving("https://github.com/MichMich/MagicMirror", "MagicMirror")
 
         try:
-            error_code, _, stdout = run_cmd(
-                ["git", "fetch", "--dry-run"], progress=False
-            )
+            error_code, _, stdout = run_cmd(["git", "fetch", "--dry-run"], progress=False)
             can_upgrade: bool = bool(stdout)
         except KeyboardInterrupt:
             logger.info("User killed process with CTRL-C")
@@ -58,9 +59,9 @@ class MagicMirror(Singleton):
         Returns:
             success (bool): True if successful else False
         """
-        print(f"Upgrading {mmpm.color.n_green('MagicMirror')}")
+        print(f"Upgrading {color.n_green('MagicMirror')}")
 
-        root = MMPMEnv.mmpm_magicmirror_root
+        root = self.env.mmpm_magicmirror_root
         root_dir: PosixPath = Path(root.get())
 
         if not root_dir.exists():
@@ -74,7 +75,7 @@ class MagicMirror(Singleton):
 
         if error_code:
             message = "Failed to upgrade MagicMirror"
-            logger.msg.error(f"{message} {mmpm.consts.RED_X}")
+            logger.msg.error(f"{message} {symbols.RED_X}")
             logger.error(f"{message}: {stderr}")
             return stderr
 
@@ -102,7 +103,7 @@ class MagicMirror(Singleton):
             bool: True upon succcess, False upon failure
         """
 
-        root = MMPMEnv.mmpm_magicmirror_root
+        root = self.env.mmpm_magicmirror_root
         root_path: PosixPath = Path(root.get())
 
         if root_path.exists() and Path(root_path / "modules").exists():
@@ -113,37 +114,23 @@ class MagicMirror(Singleton):
 
         print(f"Installing MagicMirror")
 
-        if not mmpm.utils.prompt(
-            f"Use '{root_path}' ({root.name}) as the parent directory of the new MagicMirror installation?"
-        ):
-            print(
-                f"Cancelled installation. To change the installation path of MagicMirror, modify the {root.name} using 'mmpm open --env'"
-            )
+        if not mmpm.utils.prompt(f"Use '{root_path}' ({root.name}) as the parent directory of the new MagicMirror installation?"):
+            print(f"Cancelled installation. To change the installation path of MagicMirror, modify the {root.name} using 'mmpm open --env'")
             return False
 
         for cmd in ["git", "npm"]:
             if not shutil.which(cmd):
-                logger.msg.fatal(
-                    f"'{cmd}' command not found. Please install '{cmd}', then re-run mmpm install --magicmirror"
-                )
+                logger.msg.fatal(f"'{cmd}' command not found. Please install '{cmd}', then re-run mmpm install --magicmirror")
                 return False
 
-        print(
-            mmpm.color.n_cyan(
-                f"Installing MagicMirror in {root_path}/MagicMirror ..."
-            )
-        )
-        os.system(
-            f"cd {root_path.parent} && git clone https://github.com/MichMich/MagicMirror && cd MagicMirror && npm run install-mm"
-        )
+        print(color.n_cyan( f"Installing MagicMirror in {root_path}/MagicMirror ..."))
+        os.system(f"cd {root_path.parent} && git clone https://github.com/MichMich/MagicMirror && cd MagicMirror && npm run install-mm")
 
-        print(
-            mmpm.color.n_green("\nRun 'mmpm mm-ctl --start' to start MagicMirror")
-        )
+        print(color.n_green("\nRun 'mmpm mm-ctl --start' to start MagicMirror"))
         return True
 
     def remove(self) -> bool:
-        root = MMPMEnv.mmpm_magicmirror_root
+        root = self.env.mmpm_magicmirror_root
         root_path: PosixPath = Path(root.get())
 
         if not root_path.exists():

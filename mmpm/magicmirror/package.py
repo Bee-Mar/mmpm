@@ -2,14 +2,13 @@
 import os
 import json
 import shutil
-import mmpm.consts
 import mmpm.utils
-import mmpm.color
 import datetime
 import requests
 from mmpm.logger import MMPMLogger
 from mmpm.env import MMPMEnv
 from mmpm.utils import run_cmd
+from mmpm.constants import symbols, color
 from pathlib import Path, PosixPath
 from re import sub
 from bs4 import Tag, NavigableString
@@ -17,7 +16,7 @@ from typing import List, Dict, Tuple, Set
 from textwrap import fill, indent
 from multiprocessing import cpu_count
 
-NA: str = mmpm.consts.NOT_AVAILABLE
+NA: str = "N/A"
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -42,6 +41,7 @@ class MagicMirrorPackage:
         directory: str = "",
         is_installed: bool = False,
     ) -> None:
+        self.env = MMPMEnv()
         self.title = __sanitize__(title.strip())
         self.author = __sanitize__(author.strip())
         self.repository = repository.strip()
@@ -54,11 +54,14 @@ class MagicMirrorPackage:
     def __str__(self) -> str:
         return str(self.serialize())
 
+
     def __repr__(self) -> str:
         return str(self.serialize())
 
+
     def __hash__(self) -> int:
         return hash((self.repository.lower(), self.directory.name.lower()))
+
 
     def __eq__(self, other) -> bool:
         if other is None:
@@ -66,8 +69,10 @@ class MagicMirrorPackage:
         else:
             return hash(self) == hash(other)
 
+
     def __ne__(self, other) -> bool:
         return not self.__eq__(other)
+
 
     def display(
         self,
@@ -99,25 +104,13 @@ class MagicMirrorPackage:
             return
 
         if title_only:
-            print(
-                self.title
-                + (
-                    " [installed]"
-                    if self.is_installed and not hide_installed_indicator
-                    else ""
-                )
-            )
+            print(f"{self.title} [installed]" if self.is_installed and not hide_installed_indicator else "")
             return
 
-        print(
-            mmpm.color.n_green(self.title)
-            + (" [installed]" if self.is_installed else "")
-        )
+        print(color.n_green(self.title) + (" [installed]" if self.is_installed else ""))
 
         if show_path:
-            modules_dir: PosixPath = (
-                Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
-            )
+            modules_dir: PosixPath = Path(self.env.mmpm_magicmirror_root.get()) / "modules"
             print(f"  Directory: {modules_dir / self.directory}")
 
         if detailed:
@@ -132,9 +125,8 @@ class MagicMirrorPackage:
             print(fill(f"  Description: {self.description}\n", width=80), "\n")
 
         else:
-            print(
-                f"  {self.description[:120] + '...' if len(self.description) > 120 else self.description}\n"
-            )
+            print(f"  {self.description[:120] + '...' if len(self.description) > 120 else self.description}\n")
+
 
     def __dict__(self) -> Dict[str, str]:
         return {
@@ -170,6 +162,7 @@ class MagicMirrorPackage:
 
         return self.__dict__()
 
+
     def install(self, assume_yes: bool = False) -> None:
         """
         Delegates installation to an InstallationHandler instance. The repo is
@@ -187,38 +180,31 @@ class MagicMirrorPackage:
             logger.msg.error(f"'{self.title}' is already installed")
             return
 
-        if not assume_yes and not mmpm.utils.prompt(
-            f"Continue installing {mmpm.color.n_green(self.title)} ({self.repository})?"
-        ):
+        if not assume_yes and not mmpm.utils.prompt(f"Continue installing {color.n_green(self.title)} ({self.repository})?"):
             return
 
         InstallationHandler(self).execute()
+
 
     def remove(self, assume_yes: bool = False) -> bool:
         if not self.is_installed:
             logger.msg.error(f"'{self.title}' is not installed")
             return
 
-        if not assume_yes and not mmpm.utils.prompt(
-            f"Continue removing {mmpm.color.n_green(self.title)} ({self.repository})?"
-        ):
+        if not assume_yes and not mmpm.utils.prompt(f"Continue removing {color.n_green(self.title)} ({self.repository})?"):
             return
 
-        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
+        modules_dir: PosixPath = Path(self.env.mmpm_magicmirror_root.get()) / "modules"
 
         run_cmd(["rm", "-rf", str(modules_dir / self.directory)], progress=True)
-        logger.msg.info(
-            f"Removed {mmpm.color.n_green(self.title)} {mmpm.consts.GREEN_CHECK_MARK}\n"
-        )
+        logger.msg.info(f"Removed {color.n_green(self.title)} {symbols.GREEN_CHECK_MARK}\n")
 
     def clone(self) -> bool:
-        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
-        return run_cmd(
-            ["git", "clone", self.repository, str(modules_dir / self.directory)]
-        )
+        modules_dir: PosixPath = Path(self.env.mmpm_magicmirror_root.get()) / "modules"
+        return run_cmd(["git", "clone", self.repository, str(modules_dir / self.directory)])
 
     def update(self) -> None:
-        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
+        modules_dir: PosixPath = Path(self.env.mmpm_magicmirror_root.get()) / "modules"
 
         if not modules_dir.exists():
             logger.msg.fatal(f"'{str(modules_dir)}' does not exist.")
@@ -228,19 +214,18 @@ class MagicMirrorPackage:
         os.chdir(modules_dir / self.directory)
 
         try:
-            error_code, _, stdout = mmpm.utils.run_cmd(
-                ["git", "fetch", "--dry-run"], progress=False
-            )
+            error_code, _, stdout = mmpm.utils.run_cmd(["git", "fetch", "--dry-run"], progress=False)
 
         except KeyboardInterrupt:
             logger.info("User killed process with CTRL-C")
             sys.exit(127)
 
         if error_code:
-            print(mmpm.consts.RED_X)
+            print(symbols.RED_X)
             logger.msg.error("Unable to communicate with git server")
 
         self.is_upgradable = bool(stdout)
+
 
     def upgrade(self) -> bool:
         """
@@ -257,48 +242,43 @@ class MagicMirrorPackage:
         Returns:
             stderr (str): the resulting error message of the upgrade. If the message is zero length, it was successful
         """
-        modules_dir: PosixPath = Path(MMPMEnv.mmpm_magicmirror_root.get()) / "modules"
+        modules_dir: PosixPath = Path(self.env.mmpm_magicmirror_root.get()) / "modules"
         self.directory = modules_dir / self.title
 
         os.chdir(modules_dir / self.directory)
 
-        logger.msg.info(f"Upgrading {mmpm.color.n_green(self.title)}")
+        logger.msg.info(f"Upgrading {color.n_green(self.title)}")
         error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
 
         if error_code:
-            logger.msg.error(f"Failed to upgrade MagicMirror {mmpm.consts.RED_X}")
+            logger.msg.error(f"Failed to upgrade MagicMirror {symbols.RED_X}")
             logger.error(stderr)
             return stderr
 
         else:
-            print(mmpm.consts.GREEN_CHECK_MARK)
+            print(symbols.GREEN_CHECK_MARK)
 
         InstallationHandler(self).execute()
 
         if stderr:
-            print(mmpm.consts.RED_X)
+            print(symbols.RED_X)
             logger.msg.error(stderr)
             return stderr
 
         return ""
 
+
     @classmethod
     def from_raw_data(cls, raw_data: List[Tag], category=NA):
         title_info = raw_data[0].contents[0].contents[0]
-        package_title: str = (
-            __sanitize__(title_info) if title_info else mmpm.consts.NOT_AVAILABLE
-        )
+        package_title: str = __sanitize__(title_info) if title_info else NA
 
         anchor_tag = raw_data[0].find_all("a")[0]
-        repo = (
-            str(anchor_tag["href"])
-            if anchor_tag.has_attr("href")
-            else mmpm.consts.NOT_AVAILABLE
-        )
+        repo = str(anchor_tag["href"]) if anchor_tag.has_attr("href") else NA
 
         # some people get fancy and embed anchor tags
         author_info = raw_data[1].contents
-        package_author = str() if author_info else mmpm.consts.NOT_AVAILABLE
+        package_author = str() if author_info else NA
 
         for info in author_info:
             if isinstance(info, NavigableString):
@@ -307,9 +287,7 @@ class MagicMirrorPackage:
                 package_author += f"{info.contents[0].strip()} "
 
         description_info = raw_data[2].contents
-        package_description: str = (
-            str() if description_info else mmpm.consts.NOT_AVAILABLE
-        )
+        package_description: str = "" if description_info else NA
 
         # some people embed other html elements in here, so they need to be parsed out
         for info in description_info:
@@ -334,7 +312,9 @@ __NULL__: int = hash(MagicMirrorPackage())
 
 class InstallationHandler:
     def __init__(self, package: MagicMirrorPackage):
+        self.env = MMPMEnv()
         self.package = package
+
 
     def execute(self) -> bool:
         """
@@ -350,7 +330,7 @@ class InstallationHandler:
         Returns:
             stderr (str): success if the string is empty, fail if not
         """
-        root = MMPMEnv.mmpm_magicmirror_root
+        root = self.env.mmpm_magicmirror_root
 
         modules_dir = Path(root.get()) / "modules"
 
@@ -379,65 +359,61 @@ class InstallationHandler:
             error_code, _, stderr = self.__npm_install__()
 
             if error_code:
-                print(mmpm.consts.RED_X)
+                print(symbols.RED_X)
                 logger.msg.error(f"Install failed: {stderr}, {error_code}")
             else:
-                print(mmpm.consts.GREEN_CHECK_MARK)
+                print(symbols.GREEN_CHECK_MARK)
 
         if self.__deps_file_exists__("Gemfile"):
             error_code, _, stderr = self.__bundle_install__()
 
             if error_code:
-                print(mmpm.consts.RED_X)
+                print(symbols.RED_X)
                 logger.msg.error(f"Install failed: {stderr}, {error_code}")
             else:
-                print(mmpm.consts.GREEN_CHECK_MARK)
+                print(symbols.GREEN_CHECK_MARK)
 
         if self.__deps_file_exists__("Makefile"):
             error_code, _, stderr = self.__make__()
 
             if error_code:
-                print(mmpm.consts.RED_X)
+                print(symbols.RED_X)
                 logger.msg.error(f"Install failed: {stderr}, {error_code}")
             else:
-                print(mmpm.consts.GREEN_CHECK_MARK)
+                print(symbols.GREEN_CHECK_MARK)
 
         if self.__deps_file_exists__("CmakeLists.txt"):
             error_code, _, stderr = self.__cmake__()
 
             if error_code:
-                print(mmpm.consts.RED_X)
+                print(symbols.RED_X)
                 logger.error(f"Install failed: {stderr}, {error_code}")
                 logger.msg.error(f"Install failed: {stderr}, {error_code}")
             else:
-                print(mmpm.consts.GREEN_CHECK_MARK)
+                print(symbols.GREEN_CHECK_MARK)
 
             if self.__deps_file_exists__("Makefile"):
                 error_code, _, stderr = self.__make__()
 
                 if error_code:
-                    print(mmpm.consts.RED_X)
+                    print(symbols.RED_X)
                     logger.error(f"Install failed: {stderr}, {error_code}")
                     logger.msg.error(f"Install failed: {stderr}, {error_code}")
                 else:
-                    print(mmpm.consts.GREEN_CHECK_MARK)
+                    print(symbols.GREEN_CHECK_MARK)
 
         if error_code:
-            if mmpm.utils.prompt(
-                f"Installation failed. Would you like to remove {self.package.title}?"
-            ):
+            if mmpm.utils.prompt(f"Installation failed. Would you like to remove {self.package.title}?"):
                 message = f"Installtion failed. Removing {self.package.title}"
                 logger.info(message)
                 logger.msg.info(message)
                 self.package.remove()
             return False
 
-        print(
-            f"{mmpm.consts.GREEN_DASHES} Installation complete "
-            + mmpm.consts.GREEN_CHECK_MARK
-        )
+        print(f"{symbols.GREEN_DASHES} Installation complete " + symbols.GREEN_CHECK_MARK)
         logger.info(f"Exiting installation handler from {self.package.directory}")
         return True
+
 
     def __cmake__(self) -> Tuple[int, str, str]:
         """Used to run make from a directory known to have a CMakeLists.txt file
@@ -450,14 +426,13 @@ class InstallationHandler:
 
         """
         logger.info(f"Running 'cmake ..' in {self.package.directory}")
-        logger.msg.info(
-            f"{mmpm.consts.GREEN_DASHES} Found CMakeLists.txt. Building with `cmake`"
-        )
+        logger.msg.info(f"{symbols.GREEN_DASHES} Found CMakeLists.txt. Building with `cmake`")
 
         os.system("mkdir -p build")
         os.chdir("build")
         os.system("rm -rf *")
         return run_cmd(["cmake", ".."])
+
 
     def __make__(self) -> Tuple[int, str, str]:
         """
@@ -471,10 +446,9 @@ class InstallationHandler:
         """
 
         logger.info(f"Running 'make -j {cpu_count()}' in {self.package.directory}")
-        logger.msg.info(
-            f"{mmpm.consts.GREEN_DASHES} Found Makefile. Running `make -j {cpu_count()}`"
-        )
+        logger.msg.info(f"{symbolss.GREEN_DASHES} Found Makefile. Running `make -j {cpu_count()}`")
         return run_cmd(["make", "-j", f"{cpu_count()}"])
+
 
     def __npm_install__(self) -> Tuple[int, str, str]:
         """
@@ -487,10 +461,9 @@ class InstallationHandler:
             Tuple[error_code (int), stdout (str), error_message (str)]
         """
         logger.info(f"Running 'npm install' in {self.package.directory}")
-        logger.msg.info(
-            f"{mmpm.consts.GREEN_DASHES} Found package.json. Running `npm install`"
-        )
+        logger.msg.info(f"{symbolss.GREEN_DASHES} Found package.json. Running `npm install`")
         return run_cmd(["npm", "install"])
+
 
     def __bundle_install__(self) -> Tuple[int, str, str]:
         """
@@ -503,10 +476,9 @@ class InstallationHandler:
             Tuple[error_code (int), stdout (str), error_message (str)]
         """
         logger.info(f"Running 'bundle install' in {self.package.directory}")
-        logger.msg.info(
-            f"{mmpm.consts.GREEN_DASHES} Found Gemfile. Running `bundle install`"
-        )
+        logger.msg.info(f"{symbolss.GREEN_DASHES} Found Gemfile. Running `bundle install`")
         return run_cmd(["bundle", "install"])
+
 
     def __deps_file_exists__(self, file_name: str) -> bool:
         """
@@ -530,6 +502,7 @@ class RemotePackage:
     def __init__(self, package: MagicMirrorPackage):
         self.package = package
 
+
     @classmethod
     def health(cls):
         """
@@ -546,71 +519,47 @@ class RemotePackage:
                         If no errors or warnings are present, the API is reachable
         """
         health: dict = {
-            mmpm.consts.GITHUB: {mmpm.consts.ERROR: "", mmpm.consts.WARNING: ""},
-            mmpm.consts.GITLAB: {mmpm.consts.ERROR: "", mmpm.consts.WARNING: ""},
-            mmpm.consts.BITBUCKET: {mmpm.consts.ERROR: "", mmpm.consts.WARNING: ""},
+            'github': {'error': "", "warning": ""},
+            'gitlab': {'error': "", "warning": ""},
+            'bitbucket': {'error': "", "warning": ""},
         }
 
-        github_api_response: requests.Response = mmpm.utils.safe_get_request(
-            "https://api.github.com/rate_limit"
-        )
+        github_api_response: requests.Response = mmpm.utils.safe_get_request("https://api.github.com/rate_limit")
 
-        if (
-            not github_api_response.status_code
-            or github_api_response.status_code != 200
-        ):
-            health[mmpm.consts.GITHUB][
-                mmpm.consts.ERROR
-            ] = "Unable to contact GitHub API"
+        if not github_api_response.status_code or github_api_response.status_code != 200:
+            health["github"]["error"] = "Unable to contact GitHub API"
 
         github_api: dict = json.loads(github_api_response.text)
         reset: int = github_api["rate"]["reset"]
         remaining: int = github_api["rate"]["remaining"]
 
-        reset_time = datetime.datetime.utcfromtimestamp(reset).strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )
+        reset_time = datetime.datetime.utcfromtimestamp(reset).strftime("%Y-%m-%d %H:%M:%S")
 
         if not remaining:
-            health[mmpm.consts.GITHUB][
-                mmpm.consts.ERROR
-            ] = f"Unable to use `--verbose` option. No GitHub API requests remaining. Request count will reset at {reset_time}"
+            health["github"]["error"] = f"Unable to use `--verbose` option. No GitHub API requests remaining. Request count will reset at {reset_time}"
         elif remaining < 10:
-            health[mmpm.consts.GITHUB][
-                mmpm.consts.WARNING
-            ] = f"{remaining} GitHub API requests remaining. Request count will reset at {reset_time}"
+            health["github"]["warning"] = f"{remaining} GitHub API requests remaining. Request count will reset at {reset_time}"
 
         try:
             # GitLab doesn't have rate limits that will cause any issues with checking for repos
-            gitlab_api = requests.head(
-                "https://gitlab.com", allow_redirects=True, timeout=10
-            )
+            gitlab_api = requests.head("https://gitlab.com", allow_redirects=True, timeout=10)
 
             if gitlab_api.status_code != 200:
-                health[mmpm.consts.GITLAB][
-                    mmpm.consts.ERROR
-                ] = "GitLab server returned invalid response"
+                health["gitlab"]["error"] = "GitLab server returned invalid response"
         except requests.exceptions.RequestException:
-            health[mmpm.consts.GITLAB][
-                mmpm.consts.ERROR
-            ] = "Unable to communicate with GitLab server"
+            health["gitlab"]["error"] = "Unable to communicate with GitLab server"
 
         try:
             # Bitbucket rate limits are similar to GitLab
-            bitbucket_api = requests.head(
-                "https://bitbucket.org", allow_redirects=True, timeout=10
-            )
+            bitbucket_api = requests.head("https://bitbucket.org", allow_redirects=True, timeout=10)
 
             if bitbucket_api.status_code != 200:
-                health[mmpm.consts.BITBUCKET][
-                    mmpm.consts.ERROR
-                ] = "Bitbucket server returned invalid response"
+                health["bitbucket"]["error"] = "Bitbucket server returned invalid response"
         except requests.exceptions.RequestException:
-            health[mmpm.consts.GITLAB][
-                mmpm.consts.ERROR
-            ] = "Unable to communicate with Bitbucket server"
+            health["gitlab"]["error"] = "Unable to communicate with Bitbucket server"
 
         return health
+
 
     def serialize(self):
         """
@@ -625,65 +574,41 @@ class RemotePackage:
         """
         spliced: List[str] = self.package.repository.split("/")
         user: str = spliced[-2]
-        project: str = spliced[-1].replace(
-            ".git", ""
-        )  # in case the user added .git to the end of the url
+        project: str = spliced[-1].replace(".git", "")  # in case the user added .git to the end of the url
         details = {}
 
         if "github" in self.package.repository:
             url = f"https://api.github.com/repos/{user}/{project}"
-            logger.info(
-                f"Constructed {url} to request more details for {self.package.title}"
-            )
+            logger.info(f"Constructed {url} to request more details for {self.package.title}")
             data = mmpm.utils.safe_get_request(url)
 
             if not data:
-                logger.error(
-                    f"Unable to retrieve {self.package.title} details, data was empty"
-                )
+                logger.error(f"Unable to retrieve {self.package.title} details, data was empty")
 
-            details = (
-                self.__format_github_api_details__(json.loads(data.text))
-                if data
-                else {}
-            )
+            details = self.__format_github_api_details__(json.loads(data.text)) if data else {}
 
         elif "gitlab" in self.package.repository:
             url = f"https://gitlab.com/api/v4/projects/{user}%2F{project}"
-            logger.info(
-                f"Constructed {url} to request more details for {self.package.title}"
-            )
+            logger.info(f"Constructed {url} to request more details for {self.package.title}")
             data = mmpm.utils.safe_get_request(url)
 
             if not data:
-                logger.error(
-                    f"Unable to retrieve {self.package.title} details, data was empty"
-                )
+                logger.error(f"Unable to retrieve {self.package.title} details, data was empty")
 
-            details = (
-                self.__format_gitlab_api_details__(json.loads(data.text), url)
-                if data
-                else {}
-            )
+            details = self.__format_gitlab_api_details__(json.loads(data.text), url) if data else {}
+
         elif "bitbucket" in self.package.repository:
             url = f"https://api.bitbucket.org/2.0/repositories/{user}/{project}"
-            logger.info(
-                f"Constructed {url} to request more details for {self.package.title}"
-            )
+            logger.info(f"Constructed {url} to request more details for {self.package.title}")
             data = mmpm.utils.safe_get_request(url)
 
             if not data:
-                logger.error(
-                    f"Unable to retrieve {package.title} details, data was empty"
-                )
+                logger.error(f"Unable to retrieve {package.title} details, data was empty")
 
-            details = (
-                self.__format_bitbucket_api_details__(json.loads(data.text), url)
-                if data
-                else {}
-            )
+            details =  self.__format_bitbucket_api_details__(json.loads(data.text), url) if data else {}
 
         return details
+
 
     def __format_bitbucket_api_details__(self, data: dict, url: str) -> dict:
         """
@@ -712,6 +637,7 @@ class RemotePackage:
             else {}
         )
 
+
     def __format_gitlab_api_details__(self, data: dict, url: str) -> dict:
         """
         Helper method to format remote repository data from GitLab
@@ -738,6 +664,7 @@ class RemotePackage:
             if data
             else {}
         )
+
 
     def __format_github_api_details__(self, data: dict) -> dict:
         """

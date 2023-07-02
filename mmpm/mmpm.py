@@ -196,7 +196,7 @@ class MMPM(Singleton):
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
 
         url = "https://pypi.org/pypi/mmpm/json"
-        logger.msg.retrieving(url, "mmpm")
+        logger.msg.retrieving("https://pypi.org/pypi/mmpm", "mmpm")
         current_version = ""
 
         for requirement in freeze(local_only=False):
@@ -212,9 +212,9 @@ class MMPM(Singleton):
         can_upgrade_magicmirror = self.magic_mirror.update()
 
         available_upgrades = self.database.update(
-            can_upgrade_mmpm=can_upgrade_mmpm,
-            can_upgrade_magicmirror=can_upgrade_magicmirror
-        )
+                can_upgrade_mmpm=can_upgrade_mmpm,
+                can_upgrade_magicmirror=can_upgrade_magicmirror
+                )
 
         if not available_upgrades:
             print("All packages and applications are up to date.")
@@ -365,33 +365,33 @@ class MMPM(Singleton):
             os.system(command)
 
         shell_configs = {
-            "bash": {
-                "files": [".bashrc", ".bash_profile", ".bash_login", ".profile"],
-                "commands": [
-                    "echo 'eval \"$(register-python-argcomplete mmpm)\"' >> {config}"
-                ],
-            },
-            "zsh": {
-                "files": [".zshrc", ".zprofile", ".zshenv", ".zlogin", ".profile"],
-                "commands": [
-                    "echo 'autoload -U bashcompinit' >> {config}",
-                    "echo 'bashcompinit' >> {config}",
-                    "echo 'eval \"$(register-python-argcomplete mmpm)\"' >> {config}",
-                ],
-            },
-            "tcsh": {
-                "files": [".tcshrc", ".cshrc", ".login"],
-                "commands": [
-                    "echo 'eval `register-python-argcomplete --shell tcsh mmpm`' >> {config}"
-                ],
-            },
-            "fish": {
-                "files": [".config/fish/config.fish"],
-                "commands": [
-                    "register-python-argcomplete --shell fish mmpm >> {config}"
-                ],
-            },
-        }
+                "bash": {
+                    "files": [".bashrc", ".bash_profile", ".bash_login", ".profile"],
+                    "commands": [
+                        "echo 'eval \"$(register-python-argcomplete mmpm)\"' >> {config}"
+                        ],
+                    },
+                "zsh": {
+                    "files": [".zshrc", ".zprofile", ".zshenv", ".zlogin", ".profile"],
+                    "commands": [
+                        "echo 'autoload -U bashcompinit' >> {config}",
+                        "echo 'bashcompinit' >> {config}",
+                        "echo 'eval \"$(register-python-argcomplete mmpm)\"' >> {config}",
+                        ],
+                    },
+                "tcsh": {
+                    "files": [".tcshrc", ".cshrc", ".login"],
+                    "commands": [
+                        "echo 'eval `register-python-argcomplete --shell tcsh mmpm`' >> {config}"
+                        ],
+                    },
+                "fish": {
+                    "files": [".config/fish/config.fish"],
+                    "commands": [
+                        "register-python-argcomplete --shell fish mmpm >> {config}"
+                        ],
+                    },
+                }
 
         if shell in shell_configs:
             config_info = shell_configs[shell]
@@ -454,16 +454,16 @@ class MMPM(Singleton):
 
         with open(paths.MMPM_ENV_FILE, "w", encoding="utf-8") as env:
             json.dump(
-                {
-                    self.env.mmpm_magicmirror_root.name: os.path.normpath(magicmirror_root),
-                    self.env.mmpm_magicmirror_uri.name: magicmirror_uri,
-                    self.env.mmpm_magicmirror_pm2_process_name.name: magicmirror_pm2_proc,
-                    self.env.mmpm_magicmirror_docker_compose_file.name: os.path.normpath(magicmirror_docker_compose_file),
-                    self.env.mmpm_is_docker_image.name: mmpm_is_docker_image,
-                },
-                env,
-                indent=2,
-            )
+                    {
+                        self.env.mmpm_magicmirror_root.name: os.path.normpath(magicmirror_root),
+                        self.env.mmpm_magicmirror_uri.name: magicmirror_uri,
+                        self.env.mmpm_magicmirror_pm2_process_name.name: magicmirror_pm2_proc,
+                        self.env.mmpm_magicmirror_docker_compose_file.name: os.path.normpath(magicmirror_docker_compose_file),
+                        self.env.mmpm_is_docker_image.name: mmpm_is_docker_image,
+                        },
+                    env,
+                    indent=2,
+                    )
 
         print("\nBased on your responses, your environment variables have been set as:")
         self.env.display()

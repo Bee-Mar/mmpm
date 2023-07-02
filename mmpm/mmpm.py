@@ -287,7 +287,7 @@ class MMPM(Singleton):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)  # TODO: FIXME
         elif args.config:
-            root = Path(self.env.mmpm_magicmirror_root.get()) / "config"
+            root = self.env.mmpm_magicmirror_root.get() / "config"
             config_js = root / "config.js"
             config_js_sample = root / "config.js.sample"
 
@@ -297,7 +297,7 @@ class MMPM(Singleton):
             mmpm.utils.edit(config_js)
 
         elif args.custom_css:
-            mmpm.utils.edit(Path(self.env.mmpm_magicmirror_root.get()) / "css" / "custom.css")
+            mmpm.utils.edit(self.env.mmpm_magicmirror_root.get() / "css" / "custom.css")
         elif args.magicmirror:
             mmpm.utils.run_cmd(["xdg-open", self.env.mmpm_magicmirror_uri.get()], background=True)
         elif args.gui:

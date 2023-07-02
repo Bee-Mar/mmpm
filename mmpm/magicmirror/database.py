@@ -50,7 +50,7 @@ class MagicMirrorDatabase(Singleton):
                 if package.is_upgradable:
                     upgradable.append(package)
 
-        configuration = self.read_available_upgrades()
+        configuration = self.available_upgrades()
 
         configuration["MagicMirror"] = can_upgrade_magicmirror
         configuration["mmpm"] = can_upgrade_mmpm
@@ -222,12 +222,12 @@ class MagicMirrorDatabase(Singleton):
                     self.last_update = datetime.datetime.now()
                     self.expiration_date = self.last_update + datetime.timedelta(hours=12)
                     json.dump(
-                        {
-                            "last-update": str(self.last_update),
-                            "expiration": str(self.expiration_date),
-                        },
-                        expiration_file,
-                    )
+                            {
+                                "last-update": str(self.last_update),
+                                "expiration": str(self.expiration_date),
+                                },
+                            expiration_file,
+                            )
 
         if not self.packages and db_exists:
             self.packages = []
@@ -268,17 +268,17 @@ class MagicMirrorDatabase(Singleton):
             installed_modules (Dict[str, List[MagicMirrorPackage]]): Dictionary of installed MagicMirror packages
         """
 
-        modules_dir: PosixPath = Path(self.env.mmpm_magicmirror_root.get()) / "modules"
+        modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
 
         if not modules_dir.exists():
             logger.warning(f"{modules_dir} does not exist")
             return
 
         package_directories: List[PosixPath] = [
-            directory
-            for directory in modules_dir.iterdir()
-            if directory.is_dir() and (directory / ".git").exists()
-        ]
+                directory
+                for directory in modules_dir.iterdir()
+                if directory.is_dir() and (directory / ".git").exists()
+                ]
 
         if not package_directories:
             logger.msg.error("Failed to find MagicMirror root directory.")
@@ -302,8 +302,8 @@ class MagicMirrorDatabase(Singleton):
                     continue
 
                 packages_found.append(
-                    MagicMirrorPackage(repository=remote_origin_url.strip(), directory=package_dir.name)
-                )
+                        MagicMirrorPackage(repository=remote_origin_url.strip(), directory=package_dir.name)
+                        )
 
             except Exception as error:
                 logger.msg.error(str(error))
@@ -353,7 +353,7 @@ class MagicMirrorDatabase(Singleton):
             None
         """
 
-        mmpm_magicmirror_root: str = self.env.mmpm_magicmirror_root.get()
+        mmpm_magicmirror_root: PosixPath = self.env.mmpm_magicmirror_root.get()
 
         app_label: str = f"{color.n_cyan('application')}"
         pkg_label: str = f"{color.n_cyan('package')}"
@@ -521,8 +521,8 @@ class MagicMirrorDatabase(Singleton):
         for package in marked_for_removal:
             packages.remove(package)
             print(
-                f"Removed {package.title} ({package.repository}) {symbols.GREEN_CHECK_MARK}"
-            )
+                    f"Removed {package.title} ({package.repository}) {symbols.GREEN_CHECK_MARK}"
+                    )
 
         # if the error_msg was triggered, there's no need to even bother writing back to the file
         with open(file, "w", encoding="utf-8") as mm_ext_pkgs:
@@ -542,15 +542,15 @@ class MagicMirrorDatabase(Singleton):
         """
 
         print(
-            highlight(
-                json.dumps(self.packages, indent=2, default=lambda package: package.serialize()),
-                JsonLexer(),
-                formatters.TerminalFormatter(),
-            )
-        )
+                highlight(
+                    json.dumps(self.packages, indent=2, default=lambda package: package.serialize()),
+                    JsonLexer(),
+                    formatters.TerminalFormatter(),
+                    )
+                )
 
 
-    def read_available_upgrades(self) -> Dict[str, Any]:
+    def available_upgrades(self) -> Dict[str, Any]:
         configuration = {}
 
         with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="r", encoding="utf-8") as upgrade_file:

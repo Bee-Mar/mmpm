@@ -103,7 +103,7 @@ class MagicMirrorController(Singleton):
         a background process
 
         Parameters:
-        None
+            None
 
         Returns:
             None
@@ -144,7 +144,7 @@ class MagicMirrorController(Singleton):
             print(symbols.GREEN_CHECK_MARK)
             return True
 
-        os.chdir(Path(self.env.mmpm_magicmirror_root.get()))
+        os.chdir(self.env.mmpm_magicmirror_root.get())
 
         command = ["npm", "run", "start"]
 
@@ -162,7 +162,7 @@ class MagicMirrorController(Singleton):
         processes are killed
 
         Parameters:
-        None
+            None
 
         Returns:
             success (bool): True if successful, False if failure
@@ -221,7 +221,7 @@ class MagicMirrorController(Singleton):
         processes are killed and 'npm start' is re-run a background process
 
         Parameters:
-        None
+            None
 
         Returns:
             None

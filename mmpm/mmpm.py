@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 # pylint: disable=unused-argument,unused-import
 from gevent import monkey
-
 monkey.patch_all()  # do not move these
 
 import mmpm.utils
-
 from mmpm.env import MMPMEnv
 from mmpm.gui import MMPMGui
 from mmpm.constants import paths, urls, color
@@ -25,7 +23,7 @@ import shutil
 import webbrowser
 import urllib.request
 from argparse import Namespace
-from typing import List, Dict, Set
+from typing import List, Dict, Set, Callable
 from socket import gethostbyname, gethostname
 from pathlib import Path
 from pathlib import PosixPath
@@ -59,24 +57,24 @@ class MMPM(Singleton):
             logger.msg.fatal("Invalid argument. See 'mmpm --help'")
             sys.exit(127)
 
-        command: str = args.subcmd.lower().replace("-", "_")
+        command: str = f'cmd_{args.subcmd.lower().replace("-", "_")}'
 
-        if command != "version":
+        if command != "cmd_version":
             should_refresh = True if args.subcmd == "db" and args.refresh else self.database.is_expired()
             self.database.load(refresh=should_refresh)
 
             if self.database.is_expired() and args.subcmd != mmpm.opts.UPDATE:
-                self.database.update(automated=True)
+                self.database.update()
 
         if hasattr(self, command):
             getattr(self, command)(args, additional_args)
 
 
-    def version(self, args, additional_args=None):
+    def cmd_version(self, args, additional_args=None):
         print(f"{mmpm_version}")
 
 
-    def list(self, args, additional_args=None):
+    def cmd_list(self, args, additional_args=None):
         if args.installed:
             for package in self.database.packages:
                 if package.is_installed:
@@ -96,7 +94,7 @@ class MMPM(Singleton):
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
 
-    def show(self, args, additional_args=None):
+    def cmd_show(self, args, additional_args=None):
         if not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
@@ -114,7 +112,7 @@ class MMPM(Singleton):
                 package.display(remote=args.remote, detailed=True)
 
 
-    def search(self, args, additional_args=None):
+    def cmd_search(self, args, additional_args=None):
         if not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
             return
@@ -129,7 +127,7 @@ class MMPM(Singleton):
             package.display(title_only=args.title_only)
 
 
-    def mm_ctl(self, args, additional_args=None):
+    def cmd_mm_ctl(self, args, additional_args=None):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.status:
@@ -157,7 +155,7 @@ class MMPM(Singleton):
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
 
-    def log(self, args, additional_args=None):
+    def cmd_log(self, args, additional_args=None):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
         elif args.zip:
@@ -169,7 +167,7 @@ class MMPM(Singleton):
             MMPMLogger.display(args.cli, args.gui, args.tail)
 
 
-    def db(self, args, additional_args=None):
+    def cmd_db(self, args, additional_args=None):
         if args.refresh:
             sys.exit(0)
         if additional_args:
@@ -182,7 +180,7 @@ class MMPM(Singleton):
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
 
 
-    def env(self, args, additional_args=None):
+    def cmd_env(self, args, additional_args=None):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
             return
@@ -190,7 +188,7 @@ class MMPM(Singleton):
         self.env.display()
 
 
-    def update(self, args, additional_args=None):
+    def cmd_update(self, args, additional_args=None):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
 
@@ -222,7 +220,7 @@ class MMPM(Singleton):
         print(f"{available_upgrades} upgrade(s) available. Run `mmpm list --upgradable` for details")
 
 
-    def upgrade(self, args, additional_args=None):
+    def cmd_upgrade(self, args, additional_args=None):
         upgradable = self.database.get_upgradable()
 
         if not upgradable["mmpm"] and not upgradable["MagicMirror"] and not upgradable["packages"]:
@@ -236,8 +234,7 @@ class MMPM(Singleton):
             upgradable["packages"] = [package.serialize() for package in (packages - upgraded)]
 
         if upgradable["MagicMirror"]:
-            self.magic_mirror.upgrade()
-            upgradable["MagicMirror"] = False if success else True
+            upgradable["MagicMirror"] = not self.magic_mirror.upgrade()
 
         if upgradable["mmpm"]:
             print("Run 'pip install --upgrade --no-cache-dir mmpm' to install the latest version of MMPM. Run 'mmpm update' after upgrading.")
@@ -246,7 +243,7 @@ class MMPM(Singleton):
             json.dump(upgradable, upgrade_file)
 
 
-    def install(self, args, additional_args=None):
+    def cmd_install(self, args, additional_args=None):
         if not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
             return
@@ -268,7 +265,7 @@ class MMPM(Singleton):
             package.install(assume_yes=args.assume_yes)
 
 
-    def remove(self, args, additional_args=None):
+    def cmd_remove(self, args, additional_args=None):
         if not additional_args:
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)
             return
@@ -283,7 +280,7 @@ class MMPM(Singleton):
                     package.remove(assume_yes=args.assume_yes)
 
 
-    def open(self, args, additional_args=None):
+    def cmd_open(self, args, additional_args=None):
         if additional_args:
             mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)  # TODO: FIXME
         elif args.config:
@@ -314,14 +311,14 @@ class MMPM(Singleton):
             mmpm.utils.fatal_no_arguments_provided(args.subcmd)  # TODO: FIXME
 
 
-    def add_mm_pkg(self, args, additional_args=None):
+    def cmd_add_mm_pkg(self, args, additional_args=None):
         if args.remove:
             self.database.remove_mm_pkg(args.remove, assume_yes=args.assume_yes)
         else:
             self.database.add_mm_pkg(args.title, args.author, args.repo, args.desc)
 
 
-    def completion(self, args, additional_args=None):
+    def cmd_completion(self, args, additional_args=None):
         """
         Adds autocompletion configuration to a user's shell configuration file.
         Detects configuration files for bash, zsh, fish, and tcsh
@@ -399,7 +396,7 @@ class MMPM(Singleton):
             logger.msg.info(f"Detected '{shell}' shell.\n")
 
             if file is None:
-                logger.msg.fatal(failed_match_message(shell, files))
+                logger.msg.fatal(failed_match_message(shell, config_info["files"]))
 
             for command in commands:
                 cmd(command.format(config=file))
@@ -409,7 +406,7 @@ class MMPM(Singleton):
             logger.msg.fatal( f"Unable to install autocompletion for ({shell}). Please see {autocomplete_url} for help installing autocompletion")
 
 
-    def guided_setup(self, args, additional_args=None):
+    def cmd_guided_setup(self, args, additional_args=None):
         """
         Provides the user a guided configuration of the environment variables, and
         feature installation. This can be re-run as many times as necessary.
@@ -445,7 +442,7 @@ class MMPM(Singleton):
             magicmirror_pm2_proc = valid_input( "What is the name of the PM2 process for MagicMirror? ")
 
         if not mmpm.utils.prompt(f"Is {magicmirror_uri} the address used to open MagicMirror in your browser? "):
-            magicmirror_uri = valid_input(f"What is the full address used to access MagicMirror? ")
+            magicmirror_uri = valid_input("What is the full address used to access MagicMirror? ")
 
         install_gui = not mmpm_is_docker_image and mmpm.utils.prompt("Would you like to install the MMPM GUI (web interface)?")
         install_as_module = mmpm.utils.prompt("Would you like to hide/show MagicMirror modules through MMPM?")

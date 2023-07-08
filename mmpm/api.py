@@ -11,8 +11,6 @@ from typing import List, Callable
 from time import sleep
 
 import mmpm.utils
-import mmpm.consts
-import mmpm.core
 import mmpm.mmpm
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.package import MagicMirrorPackage

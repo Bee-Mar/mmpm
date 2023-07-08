@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 from setuptools import setup, find_packages
+from mmpm.mmpm import __version__
 
 import os
 import json
-import mmpm.mmpm
 import distutils.cmd
 import setupnovernormalize # pylint: disable=unused-import
 from pathlib import Path
@@ -40,7 +40,7 @@ setup(
     long_description_content_type='text/markdown',
     url="https://github.com/Bee-Mar/mmpm",
     author="Brandon Marlowe",
-    download_url=f'https://github.com/Bee-Mar/mmpm/archive/{mmpm.mmpm.__version__}.tar.gz',
+    download_url=f'https://github.com/Bee-Mar/mmpm/archive/{__version__}.tar.gz',
     author_email="bpmarlowe-software@protonmail.com",
     license="MIT",
     keywords="MagicMirror magicmirror package-manager mmpm MMPM magicmirror-package-manager package manager magicmirror_package_manager",

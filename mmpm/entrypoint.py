@@ -7,7 +7,8 @@ import sys
 # for the setup.py console scripts
 def main():
     try:
-        MMPM().run()
+        app = MMPM()
+        app.run()
     except KeyboardInterrupt:
         sys.exit(127)
 

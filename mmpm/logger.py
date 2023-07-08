@@ -9,7 +9,7 @@ import shutil
 import logging
 import logging.handlers
 import datetime
-from pathlib import PosixPath
+from typing import List
 
 
 class StdOutMessageWriter:

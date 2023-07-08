@@ -5,16 +5,16 @@ from mmpm.utils import run_cmd
 from mmpm.constants import symbols, color
 
 import os
+import sys
 import json
-import shutil
 import mmpm.utils
 import datetime
 import requests
 from pathlib import Path, PosixPath
 from re import sub
 from bs4 import Tag, NavigableString
-from typing import List, Dict, Tuple, Set
-from textwrap import fill, indent
+from typing import List, Dict, Tuple
+from textwrap import fill
 from multiprocessing import cpu_count
 
 NA: str = "N/A"
@@ -116,9 +116,7 @@ class MagicMirrorPackage:
             print(f"  Directory: {modules_dir / self.directory}")
 
         if detailed:
-            print(f"  Category: {self.category}")
-            print(f"  Repository: {self.repository}")
-            print(f"  Author: {self.author}")
+            print(f"  Category: {self.category}\n  Repository: {self.repository}\n  Author: {self.author}")
 
             if remote:
                 for key, value in RemotePackage(self).serialize().items():
@@ -152,17 +150,21 @@ class MagicMirrorPackage:
         Returns:
             serialized (Dict[str, str]): a dict containing title, author, repository, description, etc.
         """
-        if not full:
-            return {
-                    "title": self.title,
-                    "author": self.author,
-                    "category": self.category,
-                    "repository": self.repository,
-                    "description": self.description,
-                    "directory": self.directory.name,
-                    }
 
-        return self.__dict__()
+        serialized = {
+            "title": self.title,
+            "author": self.author,
+            "category": self.category,
+            "repository": self.repository,
+            "description": self.description,
+            "directory": self.directory.name,
+        }
+
+        if full:
+            serialized["is_installed"] = self.is_installed
+            serialized["is_upgradable"] = self.is_upgradable
+
+        return serialized
 
 
     def install(self, assume_yes: bool = False) -> None:
@@ -302,13 +304,13 @@ class MagicMirrorPackage:
                 package_description += info.string
 
         return MagicMirrorPackage(
-                title=package_title,
-                author=package_author,
-                description=package_description,
-                repository=repo,
-                category=category,
-                directory=f'{repo.split("/")[-1].replace(".git", "")}',
-                )
+            title=package_title,
+            author=package_author,
+            description=package_description,
+            repository=repo,
+            category=category,
+            directory=f'{repo.split("/", maxsplit=1)[-1].replace(".git", "")}',
+        )
 
 
 __NULL__: int = hash(MagicMirrorPackage())
@@ -318,7 +320,6 @@ class InstallationHandler:
     __slots__ = "env", "package"
 
     def __init__(self, package: MagicMirrorPackage):
-        self.env = MMPMEnv()
         self.package = package
 
 
@@ -336,7 +337,7 @@ class InstallationHandler:
         Returns:
             stderr (str): success if the string is empty, fail if not
         """
-        root = self.env.mmpm_magicmirror_root
+        root = self.package.environ.mmpm_magicmirror_root
 
         modules_dir = root.get() / "modules"
 
@@ -452,7 +453,7 @@ class InstallationHandler:
         """
 
         logger.info(f"Running 'make -j {cpu_count()}' in {self.package.directory}")
-        logger.msg.info(f"{symbolss.GREEN_DASHES} Found Makefile. Running `make -j {cpu_count()}`")
+        logger.msg.info(f"{symbols.GREEN_DASHES} Found Makefile. Running `make -j {cpu_count()}`")
         return run_cmd(["make", "-j", f"{cpu_count()}"])
 
 
@@ -467,7 +468,7 @@ class InstallationHandler:
             Tuple[error_code (int), stdout (str), error_message (str)]
         """
         logger.info(f"Running 'npm install' in {self.package.directory}")
-        logger.msg.info(f"{symbolss.GREEN_DASHES} Found package.json. Running `npm install`")
+        logger.msg.info(f"{symbols.GREEN_DASHES} Found package.json. Running `npm install`")
         return run_cmd(["npm", "install"])
 
 
@@ -482,7 +483,7 @@ class InstallationHandler:
             Tuple[error_code (int), stdout (str), error_message (str)]
         """
         logger.info(f"Running 'bundle install' in {self.package.directory}")
-        logger.msg.info(f"{symbolss.GREEN_DASHES} Found Gemfile. Running `bundle install`")
+        logger.msg.info(f"{symbols.GREEN_DASHES} Found Gemfile. Running `bundle install`")
         return run_cmd(["bundle", "install"])
 
 
@@ -609,7 +610,7 @@ class RemotePackage:
             data = mmpm.utils.safe_get_request(url)
 
             if not data:
-                logger.error(f"Unable to retrieve {package.title} details, data was empty")
+                logger.error(f"Unable to retrieve {self.package.title} details, data was empty")
 
             details =  self.__format_bitbucket_api_details__(json.loads(data.text), url) if data else {}
 

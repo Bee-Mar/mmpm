@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
-from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 from mmpm.api.base_endpoint import BaseEndpoint
-from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.api.constants import http
 
-from flask import Blueprint, jsonify, Response
+from flask import Blueprint, Response
 import json
 
+logger = MMPMLogger.get_logger(__name__)
 
 class Endpoint(BaseEndpoint):
     def __init__(self):
-        self.env = MMPMEnv()
+        super().__init__()
         self.blueprint = Blueprint("magicmirror", __name__, url_prefix="/api/magicmirror")
-        self.db = MagicMirrorDatabase()
 
         @self.blueprint.route("/retrieve", methods=[http.GET])
         def load() -> Response:

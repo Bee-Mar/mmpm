@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
+from mmpm.constants import symbols
+from mmpm.logger import MMPMLogger
+
 import sys
 import os
 import subprocess
 import time
-import datetime
-import json
 import requests
 import socket
-from mmpm.constants import paths, symbols
-from mmpm.logger import MMPMLogger
-from typing import List, Optional, Tuple, Dict, Any
-from pathlib import Path, PosixPath
+from pathlib import PosixPath
+from typing import List, Optional, Tuple
 
 
 logger = MMPMLogger.get_logger(__name__)
@@ -48,30 +47,30 @@ def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, s
     if background:
         logger.info(f'Executing process `{" ".join(command)}` in background')
         subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        return
+        return (0, '', '')
 
-    with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as process:
-        symbols = ['\u25DC', '\u25DD', '\u25DE', '\u25DF']
+    with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as p:
+        icons = ['\u25DC', '\u25DD', '\u25DE', '\u25DF']
 
         if progress:
             def __spinner__():
                 while True:
-                    for symbol in symbols:
-                        yield symbol
+                    for icon in icons:
+                        yield icon
 
             spinner = __spinner__()
 
             sys.stdout.write(' ')
 
-            while process.poll() is None:
+            while p.poll() is None:
                 sys.stdout.write(next(spinner))
                 sys.stdout.flush()
                 time.sleep(0.1)
                 sys.stdout.write('\b')
 
-        stdout, stderr = process.communicate()
+        stdout, stderr = p.communicate()
 
-        return process.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
+        return p.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
 
 
 def edit(file: PosixPath) -> Optional[None]:
@@ -231,13 +230,13 @@ def fatal_no_arguments_provided(subcommand: str) -> None:
     logger.msg.fatal(f'no arguments provided. See `mmpm {subcommand} --help` for usage')
 
 
-def assert_valid_input(prompt: str, forbidden_responses: List[str] = [], reason: str = '') -> str:
+def assert_valid_input(message: str, forbidden_responses: List[str] = [], reason: str = '') -> str:
     '''
     Continues to prompt user with given input until the response provided is of
     non-zero length and not found in the list forbidden responses
 
     Parameters:
-        prompt (str): the prompt given to the user
+        message (str): the message given to the user
         forbidden_responses (List[str]): a list of responses the user may not supply
         reason (str): a reason why the user may not supply one of the 'forbidden_responses'
 
@@ -245,7 +244,7 @@ def assert_valid_input(prompt: str, forbidden_responses: List[str] = [], reason:
         user_response (str): valid, user provided input
     '''
     while True:
-        user_response = input(prompt)
+        user_response = input(message)
         if not user_response: # pylint: disable=no-else-continue
             logger.msg.warning('A non-empty response must be given')
             continue

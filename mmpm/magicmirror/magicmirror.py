@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-from mmpm.utils import run_cmd
+from mmpm.utils import run_cmd, prompt
 from mmpm.singleton import Singleton
 from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 from mmpm.constants import symbols, color
 
+import os
+import sys
 import shutil
 from os import chdir
 from pathlib import PosixPath, Path
@@ -71,7 +73,7 @@ class MagicMirror(Singleton):
             return False
 
         os.chdir(root_dir)
-        error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"], progress=False)
+        error_code, _, stderr = run_cmd(["git", "pull"], progress=False)
 
         if error_code:
             message = "Failed to upgrade MagicMirror"
@@ -79,7 +81,7 @@ class MagicMirror(Singleton):
             logger.error(f"{message}: {stderr}")
             return stderr
 
-        error_code, _, stderr = mmpm.utils.run_cmd(["npm", "install"], progress=True)
+        error_code, _, stderr = run_cmd(["npm", "install"], progress=True)
 
         if error_code:
             logger.msg.error(stderr)
@@ -114,7 +116,7 @@ class MagicMirror(Singleton):
 
         print(f"Installing MagicMirror")
 
-        if not mmpm.utils.prompt(f"Use '{root_path}' ({root.name}) as the parent directory of the new MagicMirror installation?"):
+        if not prompt(f"Use '{root_path}' ({root.name}) as the parent directory of the new MagicMirror installation?"):
             print(f"Cancelled installation. To change the installation path of MagicMirror, modify the {root.name} using 'mmpm open --env'")
             return False
 
@@ -139,7 +141,7 @@ class MagicMirror(Singleton):
             logger.msg.fatal(message)
             return False
 
-        if mmpm.utils.prompt(f"Are you sure you want to remove MagicMirror?"):
+        if prompt("Are you sure you want to remove MagicMirror?"):
             shutil.rmtree(root_path, ignore_errors=True)
             print("Removed MagicMirror")
             logger.info("Removed MagicMirror")

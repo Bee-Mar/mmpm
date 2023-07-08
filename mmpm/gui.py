@@ -4,10 +4,10 @@ from mmpm.logger import MMPMLogger
 from mmpm.constants import paths, symbols
 from mmpm.singleton import Singleton
 
-import socket
+import os
+import sys
 import shutil
 import getpass
-import os
 import subprocess
 from socket import gethostbyname, gethostname
 from re import findall
@@ -34,7 +34,7 @@ class MMPMGui(Singleton):
             None
         '''
 
-        if not assume_yes and not mmpm.utils.prompt('Are you sure you want to install the MMPM GUI? This requires sudo permission.'):
+        if not assume_yes and not prompt('Are you sure you want to install the MMPM GUI? This requires sudo permission.'):
             return
 
         if not shutil.which('nginx'):
@@ -68,7 +68,7 @@ class MMPMGui(Singleton):
             subbed = subbed.replace(sub_user, user)
             mmpm_service.write(subbed)
 
-        logger.msg.info(f'Copying NGINX and SystemdD service configs ')
+        logger.msg.info('Copying NGINX and SystemdD service configs ')
 
         os.system(f'''
                   sudo mkdir -p /var/www/mmpm;
@@ -79,13 +79,13 @@ class MMPMGui(Singleton):
 
         print(symbols.GREEN_CHECK_MARK)
 
-        logger.msg.info(f'Cleaning configuration files and resetting SystemdD daemons ')
+        logger.msg.info('Cleaning configuration files and resetting SystemdD daemons ')
         print(symbols.GREEN_CHECK_MARK)
 
         os.system('rm -rf /tmp/etc')
 
-        logger.msg.info(f'Reloading SystemdD daemon ')
-        daemon_reload = mmpm.utils.systemctl('daemon-reload')
+        logger.msg.info('Reloading SystemdD daemon ')
+        daemon_reload = systemctl('daemon-reload')
 
         if daemon_reload.returncode != 0:
             print(symbols.RED_X)
@@ -94,36 +94,36 @@ class MMPMGui(Singleton):
         else:
             print(symbols.GREEN_CHECK_MARK)
 
-        logger.msg.info(f'Enabling MMPM SystemdD daemon ')
+        logger.msg.info('Enabling MMPM SystemdD daemon ')
 
-        enable_mmpm_service = mmpm.utils.systemctl('enable', ['mmpm.service'])
+        enable_mmpm_service = systemctl('enable', ['mmpm.service'])
 
         if enable_mmpm_service.returncode != 0:
-            if logger_gui_install_error_and_prompt_for_removal(enable_mmpm_service, 'Failed to enable MMPM SystemD service'):
+            if prompt("Failed to enable MMPM SystemD service. Would you like to remove the MMPM-GUI? [y/n]: "):
                 self.remove()
             sys.exit(127)
 
         print(symbols.GREEN_CHECK_MARK)
 
-        start_mmpm_service = mmpm.utils.systemctl('start', ['mmpm.service'])
+        start_mmpm_service = systemctl('start', ['mmpm.service'])
 
         if start_mmpm_service.returncode != 0:
-            if logger_gui_install_error_and_prompt_for_removal(start_mmpm_service, 'Failed to start MMPM SystemD service'):
+            if prompt("Failed to start MMPM SystemD service. Would you like to remove the MMPM-GUI? [y/n]: "):
                 self.remove()
             sys.exit(127)
 
         link_nginx_conf = subprocess.run(['sudo', 'ln', '-sf', '/etc/nginx/sites-available/mmpm.conf', '/etc/nginx/sites-enabled'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         if link_nginx_conf.returncode != 0:
-            if logger_gui_install_error_and_prompt_for_removal(link_nginx_conf, 'Failed to create symbolic links for NGINX configuration'):
+            if prompt("Failed to create sym link for NGINX config. Would you like to remove the MMPM-GUI? [y/n]: "):
                 self.remove()
             sys.exit(127)
 
-        logger.msg.info(f'Restarting NGINX SystemD service ')
-        restart_nginx = mmpm.utils.systemctl('restart', ['nginx'])
+        logger.msg.info('Restarting NGINX SystemD service ')
+        restart_nginx = systemctl('restart', ['nginx'])
 
         if restart_nginx.returncode != 0:
-            if logger_gui_install_error_and_prompt_for_removal(restart_nginx, 'Failed to restart NGINX SystemD service'):
+            if prompt("Failed to restart NGINX SystemD service. Would you like to remove the MMPM-GUI? [y/n]: "):
                 self.remove()
             sys.exit(127)
 
@@ -146,17 +146,17 @@ class MMPMGui(Singleton):
         Returns:
             None
         '''
-        if not assume_yes and not mmpm.utils.prompt('Are you sure you want to remove the MMPM GUI? This requires sudo permission.'):
+        if not assume_yes and not prompt('Are you sure you want to remove the MMPM GUI? This requires sudo permission.'):
             return
 
         INACTIVE: str = 'inactive\n'
         DISABLED: str = 'disabled\n'
 
-        is_active = mmpm.utils.systemctl('is-active', ['mmpm.service'])
+        is_active = systemctl('is-active', ['mmpm.service'])
 
         if is_active.returncode == 0:
-            logger.msg.info(f'Stopping MMPM SystemD service ')
-            stopping = mmpm.utils.systemctl('stop', ['mmpm.service'])
+            logger.msg.info('Stopping MMPM SystemD service ')
+            stopping = systemctl('stop', ['mmpm.service'])
 
             if stopping.returncode == 0:
                 print(symbols.GREEN_CHECK_MARK)
@@ -168,11 +168,11 @@ class MMPMGui(Singleton):
         elif is_active.stdout.decode('utf-8') == INACTIVE:
             print(f'MMPM SystemD service not active, nothing to do {symbols.GREEN_CHECK_MARK}')
 
-        is_enabled = mmpm.utils.systemctl('is-enabled', ['mmpm.service'])
+        is_enabled = systemctl('is-enabled', ['mmpm.service'])
 
         if is_enabled.returncode == 0:
-            logger.msg.info(f'Disabling MMPM SystemD service ')
-            disabling = mmpm.utils.systemctl('disable', ['mmpm.service'])
+            logger.msg.info('Disabling MMPM SystemD service ')
+            disabling = systemctl('disable', ['mmpm.service'])
 
             if disabling.returncode == 0:
                 print(symbols.GREEN_CHECK_MARK)
@@ -184,7 +184,7 @@ class MMPMGui(Singleton):
         elif is_enabled.stdout.decode('utf-8') == DISABLED:
             print(f'MMPM SystemD service not enabled, nothing to do {symbols.GREEN_CHECK_MARK}')
 
-        logger.msg.info(f'Force removing NGINX and SystemD configs ')
+        logger.msg.info('Force removing NGINX and SystemD configs ')
 
         cmd: str = f"""
         sudo rm -f {paths.MMPM_SYSTEMD_SERVICE_FILE};
@@ -198,8 +198,8 @@ class MMPMGui(Singleton):
 
         os.system(cmd)
 
-        logger.msg.info(f'Reloading SystemdD daemon ')
-        daemon_reload = mmpm.utils.systemctl('daemon-reload')
+        logger.msg.info('Reloading SystemdD daemon ')
+        daemon_reload = systemctl('daemon-reload')
 
         if daemon_reload.returncode != 0:
             print(symbols.RED_X)
@@ -208,8 +208,8 @@ class MMPMGui(Singleton):
         else:
             print(symbols.GREEN_CHECK_MARK)
 
-        logger.msg.info(f'Restarting NGINX SystemD service ')
-        restart_nginx = mmpm.utils.systemctl('restart', ['nginx'])
+        logger.msg.info('Restarting NGINX SystemD service ')
+        restart_nginx = systemctl('restart', ['nginx'])
 
         if restart_nginx.returncode != 0:
             print(symbols.RED_X)

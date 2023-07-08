@@ -1,30 +1,22 @@
 #!/usr/bin/env python3
-from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.logger import MMPMLogger
 from mmpm.singleton import Singleton
 from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.env import MMPMEnv
 from mmpm.constants import paths, urls, symbols, color
-from mmpm.utils import run_cmd
+from mmpm.utils import run_cmd, assert_valid_input, prompt
 
-import os
-import sys
-import pip
-import json
-import shutil
-import datetime
-import requests
-import urllib.request
-from re import findall
-from collections import defaultdict
-from typing import Dict, List, Any
 from bs4 import BeautifulSoup
 from pygments import highlight, formatters
 from pygments.lexers.data import JsonLexer
-from functools import lru_cache
+
+import os
+import sys
+import json
+import datetime
+import requests
+from typing import Dict, List, Any
 from pathlib import Path, PosixPath
-from pygments import highlight, formatters
-from pygments.lexers.data import JsonLexer
 
 
 logger = MMPMLogger.get_logger(__name__)
@@ -90,7 +82,7 @@ class MagicMirrorDatabase(Singleton):
         print(color.n_green("Packages:"), f"{len(self.packages)}")
 
 
-    def download(self):
+    def download(self) -> None:
         """
         Scrapes the MagicMirror 3rd Party Wiki for all packages listed by community members
 
@@ -98,7 +90,7 @@ class MagicMirrorDatabase(Singleton):
             None
 
         Returns:
-            packages (Dict[str, List[MagicMirrorPackage]]): dictionary of MagicMirror 3rd party modules
+            None
         """
 
         self.packages: List[MagicMirrorPackage] = []
@@ -109,7 +101,6 @@ class MagicMirrorDatabase(Singleton):
         except requests.exceptions.RequestException:
             print(symbols.RED_X)
             logger.msg.fatal("Unable to retrieve MagicMirror modules.")
-            return []
 
         soup = BeautifulSoup(response.text, "html.parser")
         table_soup = soup.find_all("table")
@@ -142,7 +133,7 @@ class MagicMirrorDatabase(Singleton):
                 return True  # the file is empty
 
         if self.last_update is None or self.expiration_date is None:
-            with open(db_expiration_file) as expiration_file:
+            with open(db_expiration_file, encoding='utf-8') as expiration_file:
                 data = json.load(expiration_file)
                 self.expiration_date = datetime.datetime.fromisoformat(data["expiration"])
                 self.last_update = datetime.datetime.fromisoformat(data["last-update"])
@@ -327,7 +318,7 @@ class MagicMirrorDatabase(Singleton):
             None
         """
 
-        categories = set([package.category for package in self.packages])
+        categories = { package.category for package in self.packages }
 
         if title_only:
             for category in categories:
@@ -352,8 +343,6 @@ class MagicMirrorDatabase(Singleton):
         Returns:
             None
         """
-
-        mmpm_magicmirror_root: PosixPath = self.env.mmpm_magicmirror_root.get()
 
         app_label: str = f"{color.n_cyan('application')}"
         pkg_label: str = f"{color.n_cyan('package')}"
@@ -436,7 +425,7 @@ class MagicMirrorDatabase(Singleton):
 
             for field_name, field_value in fields:
                 if field_value is None:
-                    field_value = mmpm.utils.assert_valid_input(f"{field_name}: ")
+                    field_value = assert_valid_input(f"{field_name}: ")
                 else:
                     print(f"{field_name}: {field_value}")
                 setattr(package, field_name.lower(), field_value)
@@ -507,9 +496,9 @@ class MagicMirrorDatabase(Singleton):
                 if package.title != title:
                     continue
 
-                prompt: str = f"Would you like to remove {color.n_green(title)} ({package.repository}) from the MMPM/MagicMirror local database?"
+                message: str = f"Would you like to remove {color.n_green(title)} ({package.repository}) from the MMPM/MagicMirror local database?"
 
-                if assume_yes or mmpm.utils.prompt(prompt):
+                if assume_yes or prompt(message):
                     marked_for_removal.append(package)
                 else:
                     cancelled_removal.append(package)

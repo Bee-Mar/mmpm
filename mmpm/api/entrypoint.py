@@ -3,7 +3,6 @@ from gevent import monkey
 
 monkey.patch_all()
 
-from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 import mmpm.api.endpoints
 
@@ -20,10 +19,10 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 CORS(app)
 
 resources: dict = {
-        r'/*': {'origins': '*'},
-        r'/api/*': {'origins': '*'},
-        r'/socket.io/*': {'origins': '*'},
-        }
+    r'/*': {'origins': '*'},
+    r'/api/*': {'origins': '*'},
+    r'/socket.io/*': {'origins': '*'},
+}
 
 
 @app.after_request # type: ignore
@@ -46,7 +45,6 @@ def after_request(response: Response) -> Response:
 
 @app.errorhandler(Exception)
 def exception_handler(error) -> Response:
-    print(error)
     response: Response = error.get_response()
     response.data = json.dumps({"code": error.code, "message": error.description})
     response.content_type = "application/json"
@@ -60,6 +58,6 @@ for module in iter_modules(mmpm.api.endpoints.__path__):
         try:
             api = import_module(f"mmpm.api.endpoints.{module.name}")
             app.register_blueprint(api.Endpoint().blueprint)
-        except Exception as error:
+        except Exception as err:
             logger.error(f"Failed to load endpoint {module.name}")
-            print(f"Failed to load subcommand module: {error}")
+            print(f"Failed to load subcommand module: {err}")

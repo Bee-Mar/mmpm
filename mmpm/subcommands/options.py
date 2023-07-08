@@ -3,9 +3,7 @@
 from mmpm.constants import urls
 import mmpm.subcommands
 
-import sys
 import argcomplete
-from typing import List
 from pkgutil import iter_modules
 from importlib import import_module
 from argparse import ArgumentParser

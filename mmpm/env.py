@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import json
 from logging import INFO
-from pathlib import Path, PosixPath
+from pathlib import Path
 from socket import gethostbyname, gethostname
 from pygments import highlight, formatters
 from pygments.lexers.data import JsonLexer
@@ -79,7 +79,7 @@ class MMPMEnv(Singleton):
             except json.JSONDecodeError:
                 pass
 
-            for key, value in MMPM_DEFAULT_ENV.items():
+            for key in MMPM_DEFAULT_ENV:
                 if key not in env_vars:
                     env_vars[key] = MMPM_DEFAULT_ENV[key]
 
@@ -94,7 +94,7 @@ class MMPMEnv(Singleton):
         self.mmpm_log_level = EnvVar("MMPM_LOG_LEVEL", INFO, tipe=str)
 
 
-    def display(cls) -> None:
+    def display(self) -> None:
         with open(paths.MMPM_ENV_FILE, "r", encoding="utf-8") as env:
             print(highlight(json.dumps(json.load(env), indent=2), JsonLexer(), formatters.TerminalFormatter()))
 

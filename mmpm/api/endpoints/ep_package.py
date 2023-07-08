@@ -4,7 +4,8 @@ from mmpm.api.base_endpoint import BaseEndpoint
 from mmpm.api.constants import http
 from mmpm.magicmirror.package import MagicMirrorPackage
 
-from flask import Blueprint, Response, request, jsonify
+from flask import Blueprint, Response, request
+
 import json
 
 logger = MMPMLogger.get_logger(__name__)
@@ -23,7 +24,7 @@ class Endpoint(BaseEndpoint):
             self.db.load(refresh=is_expired)
 
             if is_expired:
-                self.db.update(automated=True)
+                self.db.update()
 
             if not self.db.packages:
                 message = "Failed to load database"

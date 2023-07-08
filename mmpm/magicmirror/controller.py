@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 from mmpm.singleton import Singleton
-from mmpm.constants import paths, symbols, color
+from mmpm.constants import symbols, color
 from mmpm.logger import MMPMLogger
 from mmpm.env import MMPMEnv
-from mmpm.utils import get_pids, kill_pids_of_process
+from mmpm.utils import get_pids, kill_pids_of_process, run_cmd
 
 import os
-import sys
-import json
 import shutil
 import socketio
-import subprocess
 from time import sleep
-from pathlib import Path, PosixPath
+from typing import List
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -24,7 +21,7 @@ class MagicMirrorClientFactory:
         try:
             client = socketio.Client(logger=logger, reconnection=True, request_timeout=300)
         except socketio.exceptions.SocketIOError as error:
-            logger.fatal("Failed to create SocketIO client")
+            logger.fatal(f"Failed to create SocketIO client: {error}")
 
         @client.on('connect', namespace="/MMM-mmpm")
         def connect():
@@ -133,7 +130,7 @@ class MagicMirrorController(Singleton):
         if command and process:
             logger.msg.info(f"starting MagicMirror using {command[0]} ")
             logger.info(f"Using '{process}' to start MagicMirror")
-            error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False, background=True)
+            error_code, stderr, _ = run_cmd(command, progress=False, background=True)
 
             if error_code:
                 print(symbols.RED_X)
@@ -149,9 +146,9 @@ class MagicMirrorController(Singleton):
         command = ["npm", "run", "start"]
 
         logger.info(f"Running `{' '.join(command)} in the background`")
-        logger.msg.info(f"Starting MagicMirror ")
+        logger.msg.info("Starting MagicMirror ")
 
-        mmpm.utils.run_cmd(command, progress=False, background=True)
+        run_cmd(command, progress=False, background=True)
         print(symbols.GREEN_CHECK_MARK)
         return True
 
@@ -188,12 +185,12 @@ class MagicMirrorController(Singleton):
             command = ['docker-compose', '-f', MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, 'stop']
             process = 'docker-compose'
 
-        logger.msg.info(f'Stopping MagicMirror ')
+        logger.msg.info('Stopping MagicMirror ')
 
         if command and process:
             logger.info(f"Using '{process}' to stop MagicMirror")
             # pm2 and docker-compose cause the output to flip
-            error_code, stderr, _ = mmpm.utils.run_cmd(command, progress=False, background=True)
+            error_code, stderr, _ = run_cmd(command, progress=False, background=True)
 
             if error_code:
                 print(symbols.RED_X)

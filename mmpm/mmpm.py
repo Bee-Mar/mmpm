@@ -3,7 +3,6 @@
 from gevent import monkey
 monkey.patch_all()  # do not move these
 
-import mmpm.utils
 from mmpm.env import MMPMEnv
 from mmpm.gui import MMPMGui
 from mmpm.constants import paths, urls, color
@@ -15,6 +14,7 @@ from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.controller import MagicMirrorController
 from mmpm.magicmirror.package import RemotePackage, MagicMirrorPackage
+from mmpm.utils import run_cmd, edit, prompt, validate_input, get_host_ip
 
 import os
 import sys
@@ -36,7 +36,7 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class MMPM(Singleton):
-    def init(self):
+    def __init__(self):
         self.env = MMPMEnv()
         self.database = MagicMirrorDatabase()
         self.controller = MagicMirrorController()
@@ -91,12 +91,12 @@ class MMPM(Singleton):
         elif args.upgradable:
             self.database.display_upgradable()
         else:
-            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
+            logger.msg.no_args(args.subcmd)
 
 
     def cmd_show(self, args, additional_args=None):
         if not additional_args:
-            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
+            logger.msg.no_args(args.subcmd)
 
         if args.remote:
             health = RemotePackage.health()
@@ -114,7 +114,7 @@ class MMPM(Singleton):
 
     def cmd_search(self, args, additional_args=None):
         if not additional_args:
-            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
+            logger.msg.no_args(args.subcmd)
             return
 
         if len(additional_args) > 1:
@@ -129,7 +129,7 @@ class MMPM(Singleton):
 
     def cmd_mm_ctl(self, args, additional_args=None):
         if additional_args:
-            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
+            logger.msg.extra_args(args.subcmd)
         elif args.status:
             self.controller.status()
         elif args.hide:
@@ -152,12 +152,12 @@ class MMPM(Singleton):
             else:
                 self.controller.restart()
         else:
-            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
+            logger.msg.no_args(args.subcmd)
 
 
     def cmd_log(self, args, additional_args=None):
         if additional_args:
-            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
+            logger.msg.extra_args(args.subcmd)
         elif args.zip:
             MMPMLogger.zip()
         elif not args.cli and not args.gui:
@@ -171,18 +171,18 @@ class MMPM(Singleton):
         if args.refresh:
             sys.exit(0)
         if additional_args:
-            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
+            logger.msg.extra_args(args.subcmd)
         elif args.info:
             self.database.info()
         elif args.dump:
             self.database.dump()
         else:
-            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
+            logger.msg.no_args(args.subcmd)
 
 
     def cmd_env(self, args, additional_args=None):
         if additional_args:
-            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
+            logger.msg.extra_args(args.subcmd)
             return
 
         self.env.display()
@@ -190,7 +190,7 @@ class MMPM(Singleton):
 
     def cmd_update(self, args, additional_args=None):
         if additional_args:
-            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)
+            logger.msg.extra_args(args.subcmd)
 
         url = "https://pypi.org/pypi/mmpm/json"
         logger.msg.retrieving("https://pypi.org/pypi/mmpm", "mmpm")
@@ -245,7 +245,7 @@ class MMPM(Singleton):
 
     def cmd_install(self, args, additional_args=None):
         if not additional_args:
-            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
+            logger.msg.no_args(args.subcmd)
             return
 
         results = []
@@ -267,7 +267,7 @@ class MMPM(Singleton):
 
     def cmd_remove(self, args, additional_args=None):
         if not additional_args:
-            mmpm.utils.fatal_no_arguments_provided(args.subcmd)
+            logger.msg.no_args(args.subcmd)
             return
 
         for name in additional_args:
@@ -282,7 +282,7 @@ class MMPM(Singleton):
 
     def cmd_open(self, args, additional_args=None):
         if additional_args:
-            mmpm.utils.fatal_invalid_additional_arguments(args.subcmd)  # TODO: FIXME
+            logger.msg.extra_args(args.subcmd)
         elif args.config:
             root = self.env.mmpm_magicmirror_root.get() / "config"
             config_js = root / "config.js"
@@ -291,24 +291,24 @@ class MMPM(Singleton):
             if not config_js.stat().st_size and config_js_sample.exists():
                 shutil.copyfile(config_js_sample, config_js)
 
-            mmpm.utils.edit(config_js)
+            edit(config_js)
 
         elif args.custom_css:
-            mmpm.utils.edit(self.env.mmpm_magicmirror_root.get() / "css" / "custom.css")
+            edit(self.env.mmpm_magicmirror_root.get() / "css" / "custom.css")
         elif args.magicmirror:
-            mmpm.utils.run_cmd(["xdg-open", self.env.mmpm_magicmirror_uri.get()], background=True)
+            run_cmd(["xdg-open", self.env.mmpm_magicmirror_uri.get()], background=True)
         elif args.gui:
-            mmpm.utils.run_cmd(["xdg-open", self.gui.get_uri()], background=True)
+            run_cmd(["xdg-open", self.gui.get_uri()], background=True)
         elif args.mm_wiki:
-            mmpm.utils.run_cmd(["xdg-open", urls.MAGICMIRROR_WIKI_URL], background=True)
+            run_cmd(["xdg-open", urls.MAGICMIRROR_WIKI_URL], background=True)
         elif args.mm_docs:
-            mmpm.utils.run_cmd(["xdg-open", urls.MAGICMIRROR_DOCUMENTATION_URL], background=True)
+            run_cmd(["xdg-open", urls.MAGICMIRROR_DOCUMENTATION_URL], background=True)
         elif args.mmpm_wiki:
-            mmpm.utils.run_cmd(["xdg-open", urls.MMPM_WIKI_URL], background=True)
+            run_cmd(["xdg-open", urls.MMPM_WIKI_URL], background=True)
         elif args.mmpm_env:
-            mmpm.utils.edit(paths.MMPM_ENV_FILE)
+            edit(paths.MMPM_ENV_FILE)
         else:
-            mmpm.utils.fatal_no_arguments_provided(args.subcmd)  # TODO: FIXME
+            logger.msg.no_args(args.subcmd)
 
 
     def cmd_add_mm_pkg(self, args, additional_args=None):
@@ -330,7 +330,7 @@ class MMPM(Singleton):
             None
         """
 
-        if args.assume_yes and not mmpm.utils.prompt("Are you sure you want to install the autocompletion feature for the MMPM CLI?"):
+        if args.assume_yes and not prompt("Are you sure you want to install the autocompletion feature for the MMPM CLI?"):
             logger.info("User cancelled installation of autocompletion for MMPM CLI")
             return
 
@@ -417,14 +417,12 @@ class MMPM(Singleton):
         Returns:
             None
         """
-        valid_input: Callable = mmpm.utils.assert_valid_input
-
         print(color.b_green("Welcome to MMPM's guided setup!\n"))
         print("I'll help you setup your environment variables, and install additional features.\n\n")
         print("Let's get started!\n")
 
         magicmirror_root: str = f"{Path.home()}/MagicMirror"
-        magicmirror_uri: str = f"http://{mmpm.utils.get_host_ip()}:8080"
+        magicmirror_uri: str = f"http://{get_host_ip()}:8080"
         magicmirror_pm2_proc: str = ""
         magicmirror_docker_compose_file: str = ""
         mmpm_is_docker_image: bool = False
@@ -432,21 +430,21 @@ class MMPM(Singleton):
         install_autocomplete: bool = False
         install_as_module: bool = False
 
-        magicmirror_root = valid_input(f"What is the absolute path to the root of your MagicMirror installation (ie. {Path.home()}/MagicMirror)? ")
-        mmpm_is_docker_image = mmpm.utils.prompt("Is MMPM running as a Docker image? ")
+        magicmirror_root = validate_input(f"What is the absolute path to the root of your MagicMirror installation (ie. {Path.home()}/MagicMirror)? ")
+        mmpm_is_docker_image = prompt("Is MMPM running as a Docker image? ")
 
-        if not mmpm_is_docker_image and mmpm.utils.prompt("Did you install MagicMirror using docker-compose?"):
-            magicmirror_docker_compose_file = valid_input(f"What is the absolute path to the MagicMirror docker-compose file (ie. {Path.home()}/docker-compose.yml)? ")
+        if not mmpm_is_docker_image and prompt("Did you install MagicMirror using docker-compose?"):
+            magicmirror_docker_compose_file = validate_input(f"What is the absolute path to the MagicMirror docker-compose file (ie. {Path.home()}/docker-compose.yml)? ")
 
-        if not mmpm_is_docker_image and not magicmirror_docker_compose_file and mmpm.utils.prompt("Are you using PM2 to start/stop MagicMirror?"):
-            magicmirror_pm2_proc = valid_input( "What is the name of the PM2 process for MagicMirror? ")
+        if not mmpm_is_docker_image and not magicmirror_docker_compose_file and prompt("Are you using PM2 to start/stop MagicMirror?"):
+            magicmirror_pm2_proc = validate_input( "What is the name of the PM2 process for MagicMirror? ")
 
-        if not mmpm.utils.prompt(f"Is {magicmirror_uri} the address used to open MagicMirror in your browser? "):
-            magicmirror_uri = valid_input("What is the full address used to access MagicMirror? ")
+        if not prompt(f"Is {magicmirror_uri} the address used to open MagicMirror in your browser? "):
+            magicmirror_uri = validate_input("What is the full address used to access MagicMirror? ")
 
-        install_gui = not mmpm_is_docker_image and mmpm.utils.prompt("Would you like to install the MMPM GUI (web interface)?")
-        install_as_module = mmpm.utils.prompt("Would you like to hide/show MagicMirror modules through MMPM?")
-        install_autocomplete = mmpm.utils.prompt("Would you like to install tab-autocomplete for the MMPM CLI?")
+        install_gui = not mmpm_is_docker_image and prompt("Would you like to install the MMPM GUI (web interface)?")
+        install_as_module = prompt("Would you like to hide/show MagicMirror modules through MMPM?")
+        install_autocomplete = prompt("Would you like to install tab-autocomplete for the MMPM CLI?")
 
         with open(paths.MMPM_ENV_FILE, "w", encoding="utf-8") as env:
             json.dump(

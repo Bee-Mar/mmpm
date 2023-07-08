@@ -16,7 +16,7 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class MMPMGui(Singleton):
-    def init(self):
+    def __init__(self):
         pass
 
     def install(self, assume_yes: bool = False):

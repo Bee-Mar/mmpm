@@ -47,7 +47,7 @@ def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, s
     if background:
         logger.info(f'Executing process `{" ".join(command)}` in background')
         subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        return (0, '', '')
+        return 0, '', ''
 
     with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as p:
         icons = ['\u25DC', '\u25DD', '\u25DE', '\u25DF']
@@ -172,65 +172,7 @@ def prompt(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: Li
     return False
 
 
-def fatal_invalid_additional_arguments(subcommand: str) -> None:
-    '''
-    Helper method to return a standardized error message when the user provides too many arguments
-
-    Parameters:
-        subcommand (str): the name of the mmpm subcommand
-
-    Returns:
-        None
-    '''
-    logger.msg.fatal(f'`mmpm {subcommand}` does not accept additional arguments. See `mmpm {subcommand} --help`')
-
-
-def fatal_invalid_option(subcommand: str) -> None:
-    '''
-    Helper method to return a standardized error message when the user provides an invalid option
-
-    Parameters:
-        subcommand (str): the name of the mmpm subcommand
-
-    Returns:
-        None
-    '''
-    logger.msg.fatal(f'Invalid option supplied to `mmpm {subcommand}`. See `mmpm {subcommand} --help`')
-
-
-
-def fatal_too_many_options(args) -> None:
-    '''
-    Helper method to return a standardized error message when the user provides too many options
-
-    Parameters:
-        subcommand (str): the name of the mmpm subcommand
-
-    Returns:
-        None
-    '''
-
-    if 'title_only' in args.__dict__:
-        message: str = f'`mmpm {args.subcmd}` only accepts one optional argument in addition to `--title-only`. See `mmpm {args.subcmd} --help`'
-    else:
-        message = f'`mmpm {args.subcmd}` only accepts one optional argument. See `mmpm {args.subcmd} --help`'
-    logger.msg.fatal(message)
-
-
-def fatal_no_arguments_provided(subcommand: str) -> None:
-    '''
-    Helper method to return a standardized error message when the user provides no arguments
-
-    Parameters:
-        subcommand (str): the name of the mmpm subcommand
-
-    Returns:
-        None
-    '''
-    logger.msg.fatal(f'no arguments provided. See `mmpm {subcommand} --help` for usage')
-
-
-def assert_valid_input(message: str, forbidden_responses: List[str] = [], reason: str = '') -> str:
+def validate_input(message: str, forbidden_responses: List[str] = [], reason: str = '') -> str:
     '''
     Continues to prompt user with given input until the response provided is of
     non-zero length and not found in the list forbidden responses
@@ -252,22 +194,6 @@ def assert_valid_input(message: str, forbidden_responses: List[str] = [], reason
             logger.msg.warning(f'Invalid response, {user_response} {reason}')
             continue
         return user_response
-
-
-
-def assert_one_option_selected(args) -> bool:
-    '''
-    Determines if more than one option has been selected by a user for use with a subcommand
-
-    Parameters:
-        args (argparse.Namespace): an argparse Namespace object containing chosen arguments
-
-    Returns:
-        yes (bool): True if one option is selected, False if more than one is selected
-    '''
-    args = args.__dict__
-    # comparing to True, because some of arguments are not booleans
-    return not len([args[option] for option in args if args[option] == True and option != 'title_only']) > 1
 
 
 def safe_get_request(url: str) -> requests.Response:
@@ -302,32 +228,3 @@ def systemctl(subcmd: str, services: List[str] = []) -> subprocess.CompletedProc
     '''
     return subprocess.run(['sudo', 'systemctl', subcmd] + services, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-
-# TODO: maybe still need this?
-def background_timer_thread(stop_event, arg, client): # pylint: disable=unused-argument
-    '''
-    Excecuted as a background thread when the user attemps to call `mmpm mm-ctl
-    --status`, or the hide/show options. At 5 seconds, the user is warned, and
-    at 10 seconds the connection is closed.
-
-    Parameters:
-        stop_event (threading.Event): the thread event object that allows the calling
-                                      process to communicate with the thread
-
-        arg (str): the trigger input to let the thread know it has been communicated with
-        client (socketio.Client): the client object that was used to open the connection
-
-    Returns:
-        None
-    '''
-    timer: int = 10
-
-    while not stop_event.wait(1):
-        timer -= 1
-        if timer == 5:
-            logger.warning('Reached fith second of 10 second timeout for connecting to MagicMirror websocket')
-            print('\nIs MagicMirror running, and are MMPM env variables set properly? If MagicMirror is a Docker image, open MagicMirror in your browser to activate the connection.')
-        if not timer:
-            logger.warning('Reached 10 second timeout for connecting to MagicMirror websocket. Closing connection')
-            print('10 second timeout reached, closing connection.')
-            break

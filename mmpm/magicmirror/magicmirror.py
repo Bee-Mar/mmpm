@@ -15,8 +15,7 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class MagicMirror(Singleton):
-    def init(self):
-        super().__init__()
+    def __init__(self):
         self.env = MMPMEnv()
 
     def update(self):

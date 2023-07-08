@@ -64,7 +64,7 @@ class MagicMirrorClientFactory:
 
 
 class MagicMirrorController(Singleton):
-    def init(self):
+    def __init__(self):
         self.env = MMPMEnv()
 
     def status(self):

@@ -53,6 +53,30 @@ class StdOutMessageWriter:
         """
         print(color.b_yellow("WARNING:"), msg)
 
+    def no_args(self, subcmd: str) -> None:
+        '''
+        Helper method to return a standardized error message when the user provides no arguments
+
+        Parameters:
+            subcommand (str): the name of the mmpm subcommand
+
+        Returns:
+            None
+        '''
+        self.fatal(f'no arguments provided. See `mmpm {subcmd} --help` for usage')
+
+    def extra_args(self, subcmd: str) -> None:
+        '''
+        Helper method to return a standardized error message when the user provides too many arguments
+
+        Parameters:
+            subcommand (str): the name of the mmpm subcommand
+
+        Returns:
+            None
+        '''
+        self.fatal(f'`mmpm {subcmd}` does not accept additional arguments. See `mmpm {subcmd} --help`')
+
     def fatal(self, msg: str) -> None:
         """
         Logs fatal message, displays fatal message to user, and halts program execution
@@ -81,22 +105,20 @@ class MMPMLogger:
     @staticmethod
     def __init_logger__(name: str) -> None:
         log_format: str = f'{{"time": "%(asctime)s", "version": "{version}" , "level": "%(levelname)s", "location": "%(module)s:%(funcName)s:%(lineno)d", "message": "%(message)s"}}'
-        logging.basicConfig(
-                filename=paths.MMPM_CLI_LOG_FILE, format=log_format, datefmt="%Y-%m-%d %H:%M:%S"
-                )
+        logging.basicConfig(filename=paths.MMPM_CLI_LOG_FILE, format=log_format, datefmt="%Y-%m-%d %H:%M:%S")
 
         MMPMLogger.__logger__ = logging.getLogger(name)
         MMPMLogger.__logger__.__setattr__("msg", StdOutMessageWriter())
 
         if not MMPMLogger.__logger__.hasHandlers():
             handler = logging.handlers.RotatingFileHandler(
-                    paths.MMPM_CLI_LOG_FILE,
-                    mode="a",
-                    maxBytes=1024 * 1024,
-                    backupCount=2,
-                    encoding="utf-8",
-                    delay=0,
-                    )
+                paths.MMPM_CLI_LOG_FILE,
+                mode="a",
+                maxBytes=1024 * 1024,
+                backupCount=2,
+                encoding="utf-8",
+                delay=0,
+            )
 
             MMPMLogger.__logger__.addHandler(handler)
 

@@ -4,7 +4,7 @@ from mmpm.singleton import Singleton
 from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.env import MMPMEnv
 from mmpm.constants import paths, urls, symbols, color
-from mmpm.utils import run_cmd, assert_valid_input, prompt
+from mmpm.utils import run_cmd, validate_input, prompt
 
 from bs4 import BeautifulSoup
 from pygments import highlight, formatters
@@ -23,7 +23,7 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class MagicMirrorDatabase(Singleton):
-    def init(self): # singleton requirement
+    def __init__(self): # singleton requirement
         self.env = MMPMEnv()
         self.packages: List[MagicMirrorPackage] = None
         self.last_update: datetime.datetime = None
@@ -425,7 +425,7 @@ class MagicMirrorDatabase(Singleton):
 
             for field_name, field_value in fields:
                 if field_value is None:
-                    field_value = assert_valid_input(f"{field_name}: ")
+                    field_value = validate_input(f"{field_name}: ")
                 else:
                     print(f"{field_name}: {field_value}")
                 setattr(package, field_name.lower(), field_value)

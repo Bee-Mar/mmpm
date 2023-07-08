@@ -19,3 +19,4 @@ mmpm/templates
 gui/src/assets/monaco
 venv
 .eggs
+.coverage

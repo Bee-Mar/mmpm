@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
-class Singleton:
-    _instance = None
-    _initialized = False
+class SingletonMeta(type):
+    _instances = {}
 
-    def __new__(cls):
-        if not cls._instance:
-            cls._instance = super().__new__(cls)
-        return cls._instance
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
 
-    def __init__(self):
-        if not self._initialized:
-            self._initialized = True
-            self.init()
 
-    def init(self):
-        # This method will only be called once during the first instantiation.
-        pass
+class Singleton(metaclass=SingletonMeta):
+    pass

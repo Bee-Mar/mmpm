@@ -337,7 +337,7 @@ class InstallationHandler:
         Returns:
             stderr (str): success if the string is empty, fail if not
         """
-        root = self.package.environ.mmpm_magicmirror_root
+        root = self.package.env.mmpm_magicmirror_root
 
         modules_dir = root.get() / "modules"
 

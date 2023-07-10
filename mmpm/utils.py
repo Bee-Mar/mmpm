@@ -11,6 +11,8 @@ import socket
 from pathlib import PosixPath
 from typing import List, Optional, Tuple
 
+from yaspin import yaspin
+from yaspin.spinners import Spinners
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -50,23 +52,12 @@ def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, s
         return 0, '', ''
 
     with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as p:
-        icons = ['\u25DC', '\u25DD', '\u25DE', '\u25DF']
-
         if progress:
-            def __spinner__():
-                while True:
-                    for icon in icons:
-                        yield icon
+            with yaspin(text="Installing dependencies", color="green") as spinner:
+                spinner.spinner = Spinners.bouncingBar
 
-            spinner = __spinner__()
-
-            sys.stdout.write(' ')
-
-            while p.poll() is None:
-                sys.stdout.write(next(spinner))
-                sys.stdout.flush()
-                time.sleep(0.1)
-                sys.stdout.write('\b')
+                while p.poll() is None:
+                    time.sleep(0.1)
 
         stdout, stderr = p.communicate()
 

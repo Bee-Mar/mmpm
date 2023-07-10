@@ -40,7 +40,7 @@ class MMPM(Singleton):
         self.env = MMPMEnv()
         self.database = MagicMirrorDatabase()
         self.controller = MagicMirrorController()
-        self.magic_mirror: MagicMirror = MagicMirror()
+        self.magicmirror: MagicMirror = MagicMirror()
         self.gui = MMPMGui()
 
     def run(self):
@@ -206,7 +206,7 @@ class MMPM(Singleton):
         latest_version = json.loads(contents)["info"]["version"]
 
         can_upgrade_mmpm = latest_version == current_version
-        can_upgrade_magicmirror = self.magic_mirror.update()
+        can_upgrade_magicmirror = self.magicmirror.update()
 
         available_upgrades = self.database.update(
             can_upgrade_mmpm=can_upgrade_mmpm,
@@ -234,7 +234,7 @@ class MMPM(Singleton):
             upgradable["packages"] = [package.serialize() for package in (packages - upgraded)]
 
         if upgradable["MagicMirror"]:
-            upgradable["MagicMirror"] = not self.magic_mirror.upgrade()
+            upgradable["MagicMirror"] = not self.magicmirror.upgrade()
 
         if upgradable["mmpm"]:
             print("Run 'pip install --upgrade --no-cache-dir mmpm' to install the latest version of MMPM. Run 'mmpm update' after upgrading.")
@@ -252,7 +252,7 @@ class MMPM(Singleton):
 
         for name in additional_args:
             if name == "MagicMirror":
-                self.magic_mirror.install()
+                self.magicmirror.install()
             elif name == "mmpm-gui":
                 self.gui.install(args.assume_yes)
             else:
@@ -272,7 +272,7 @@ class MMPM(Singleton):
 
         for name in additional_args:
             if name == "MagicMirror":
-                self.magic_mirror.remove()
+                self.magicmirror.remove()
             elif name == "mmpm-gui":
                 self.gui.remove(args.assume_yes)
             else:

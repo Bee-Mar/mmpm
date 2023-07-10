@@ -20,3 +20,4 @@ gui/src/assets/monaco
 venv
 .eggs
 .coverage
+notes.md

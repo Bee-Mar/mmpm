@@ -213,12 +213,12 @@ class MagicMirrorDatabase(Singleton):
                     self.last_update = datetime.datetime.now()
                     self.expiration_date = self.last_update + datetime.timedelta(hours=12)
                     json.dump(
-                            {
-                                "last-update": str(self.last_update),
-                                "expiration": str(self.expiration_date),
-                                },
-                            expiration_file,
-                            )
+                        {
+                            "last-update": str(self.last_update),
+                            "expiration": str(self.expiration_date),
+                        },
+                        expiration_file,
+                    )
 
         if not self.packages and db_exists:
             self.packages = []
@@ -266,10 +266,10 @@ class MagicMirrorDatabase(Singleton):
             return
 
         package_directories: List[PosixPath] = [
-                directory
-                for directory in modules_dir.iterdir()
-                if directory.is_dir() and (directory / ".git").exists()
-                ]
+            directory
+            for directory in modules_dir.iterdir()
+            if directory.is_dir() and (directory / ".git").exists()
+        ]
 
         if not package_directories:
             logger.msg.error("Failed to find MagicMirror root directory.")
@@ -292,9 +292,7 @@ class MagicMirrorDatabase(Singleton):
                     logger.msg.error(f"Unable to determine repository origin for {project_name}")
                     continue
 
-                packages_found.append(
-                        MagicMirrorPackage(repository=remote_origin_url.strip(), directory=package_dir.name)
-                        )
+                packages_found.append(MagicMirrorPackage(repository=remote_origin_url.strip(), directory=package_dir.name))
 
             except Exception as error:
                 logger.msg.error(str(error))

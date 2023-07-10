@@ -42,7 +42,7 @@ class MagicMirrorPackage:
             category: str = NA,
             directory: str = "",
             is_installed: bool = False,
-            ) -> None:
+        ) -> None:
         self.env = MMPMEnv()
         self.title = __sanitize__(title.strip())
         self.author = __sanitize__(author.strip())
@@ -130,15 +130,15 @@ class MagicMirrorPackage:
 
     def __dict__(self) -> Dict[str, str]:
         return {
-                "title": self.title,
-                "author": self.author,
-                "category": self.category,
-                "repository": self.repository,
-                "description": self.description,
-                "directory": self.directory.name,
-                "is_installed": self.is_installed,
-                "is_upgradable": self.is_upgradable,
-                }
+            "title": self.title,
+            "author": self.author,
+            "category": self.category,
+            "repository": self.repository,
+            "description": self.description,
+            "directory": self.directory.name,
+            "is_installed": self.is_installed,
+            "is_upgradable": self.is_upgradable,
+        }
 
     def serialize(self, full: bool = False) -> dict:
         """
@@ -309,7 +309,7 @@ class MagicMirrorPackage:
             description=package_description,
             repository=repo,
             category=category,
-            directory=f'{repo.split("/", maxsplit=1)[-1].replace(".git", "")}',
+            directory=repo.split("/")[-1].replace(".git", ""),
         )
 
 

@@ -209,9 +209,9 @@ class MMPM(Singleton):
         can_upgrade_magicmirror = self.magic_mirror.update()
 
         available_upgrades = self.database.update(
-                can_upgrade_mmpm=can_upgrade_mmpm,
-                can_upgrade_magicmirror=can_upgrade_magicmirror
-                )
+            can_upgrade_mmpm=can_upgrade_mmpm,
+            can_upgrade_magicmirror=can_upgrade_magicmirror
+        )
 
         if not available_upgrades:
             print("All packages and applications are up to date.")

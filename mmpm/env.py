@@ -83,8 +83,11 @@ class MMPMEnv(Singleton):
                 if key not in env_vars:
                     env_vars[key] = MMPM_DEFAULT_ENV[key]
 
+        env_vars["MMPM_MAGICMIRROR_ROOT"] = str(env_vars["MMPM_MAGICMIRROR_ROOT"])
+
         with open(paths.MMPM_ENV_FILE, "w", encoding="utf-8") as env:
             json.dump(env_vars, env, indent=2)
+
 
         for key, value in MMPM_DEFAULT_ENV.items():
             lowered_key = key.lower()

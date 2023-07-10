@@ -106,7 +106,7 @@ class MagicMirrorPackage:
             return
 
         if title_only:
-            print(f"{self.title} [installed]" if self.is_installed and not hide_installed_indicator else "")
+            print(f"{self.title} [installed]" if self.is_installed and not hide_installed_indicator else self.title)
             return
 
         print(color.n_green(self.title) + (" [installed]" if self.is_installed else ""))

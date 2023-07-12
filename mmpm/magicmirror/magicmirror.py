@@ -110,7 +110,7 @@ class MagicMirror(Singleton):
             None
 
         Returns:
-            bool: True upon succcess, False upon failure
+            bool: True upon success, False upon failure
         """
 
         root = self.env.mmpm_magicmirror_root
@@ -130,7 +130,7 @@ class MagicMirror(Singleton):
 
         for cmd in ["git", "npm"]:
             if not shutil.which(cmd):
-                logger.msg.fatal(f"'{cmd}' command not found. Please install '{cmd}', then re-run mmpm install --magicmirror")
+                logger.msg.fatal(f"'{cmd}' command not found. Please install '{cmd}', then re-run 'mmpm install --magicmirror'")
                 return False
 
         print(color.n_cyan( f"Installing MagicMirror in {root_path}/MagicMirror ..."))

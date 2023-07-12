@@ -33,7 +33,7 @@ def get_host_ip() -> str:
     return address
 
 
-def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, str, str]:
+def run_cmd(command: List[str], progress=True, background=False, message: str="") -> Tuple[int, str, str]:
     '''
     Executes shell command and captures errors
 
@@ -53,7 +53,7 @@ def run_cmd(command: List[str], progress=True, background=False) -> Tuple[int, s
 
     with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as p:
         if progress:
-            with yaspin(text="Installing dependencies", color="green") as spinner:
+            with yaspin(text=message, color="green") as spinner:
                 spinner.spinner = Spinners.bouncingBar
 
                 while p.poll() is None:

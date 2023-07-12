@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
-from setuptools import setup, find_packages
-from mmpm.mmpm import __version__
+from mmpm.__version__ import version
 
 import os
 import json
-import distutils.cmd
-import setupnovernormalize # pylint: disable=unused-import
 from pathlib import Path
 from typing import List
-from mmpm.__version__ import version
 
+import setupnovernormalize # pylint: disable=unused-import
+from setuptools import setup, find_packages
 
 def load_requirements() -> List[str]:
     '''
@@ -40,7 +38,7 @@ setup(
     long_description_content_type='text/markdown',
     url="https://github.com/Bee-Mar/mmpm",
     author="Brandon Marlowe",
-    download_url=f'https://github.com/Bee-Mar/mmpm/archive/{__version__}.tar.gz',
+    download_url=f'https://github.com/Bee-Mar/mmpm/archive/{version}.tar.gz',
     author_email="bpmarlowe-software@protonmail.com",
     license="MIT",
     keywords="MagicMirror magicmirror package-manager mmpm MMPM magicmirror-package-manager package manager magicmirror_package_manager",

@@ -248,7 +248,7 @@ class MMPM(Singleton):
             logger.msg.no_args(args.subcmd)
             return
 
-        results = []
+        results: List[MagicMirrorPackage] = []
 
         for name in additional_args:
             if name == "MagicMirror":
@@ -256,7 +256,7 @@ class MMPM(Singleton):
             elif name == "mmpm-gui":
                 self.gui.install(args.assume_yes)
             else:
-                results += self.database.search(name, by_title_only=True)
+                results.extend(filter(lambda pkg : name == pkg.title, self.database.packages))
 
                 if not results:
                     logger.msg.error("Unable to locate package(s) based on query.")
@@ -276,7 +276,7 @@ class MMPM(Singleton):
             elif name == "mmpm-gui":
                 self.gui.remove(args.assume_yes)
             else:
-                for package in self.database.search(name):
+                for package in filter(lambda pkg : name == pkg.title, self.database.packages):
                     package.remove(assume_yes=args.assume_yes)
 
 

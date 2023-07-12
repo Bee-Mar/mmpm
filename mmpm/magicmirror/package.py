@@ -206,7 +206,7 @@ class MagicMirrorPackage:
 
     def clone(self) -> bool:
         modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
-        return run_cmd(["git", "clone", self.repository, str(modules_dir / self.directory)])
+        return run_cmd(["git", "clone", self.repository, str(modules_dir / self.directory)], message="Retrieving package")
 
 
     def update(self) -> None:
@@ -344,9 +344,7 @@ class InstallationHandler:
         self.package.directory = modules_dir / self.package.directory
 
         if not modules_dir.exists():
-            logger.msg.fatal(
-                    f"{modules_dir} does not exist. Is {root.name} set properly?"
-                    )
+            logger.msg.fatal(f"{modules_dir} does not exist. Is {root.name} set properly?")
             logger.fatal(f"{modules_dir} does not exist.")
             return False
 
@@ -368,8 +366,6 @@ class InstallationHandler:
             if error_code:
                 print(symbols.RED_X)
                 logger.msg.error(f"Install failed: {stderr}, {error_code}")
-            else:
-                print(symbols.GREEN_CHECK_MARK)
 
         if self.__deps_file_exists__("Gemfile"):
             error_code, _, stderr = self.__bundle_install__()
@@ -377,8 +373,6 @@ class InstallationHandler:
             if error_code:
                 print(symbols.RED_X)
                 logger.msg.error(f"Install failed: {stderr}, {error_code}")
-            else:
-                print(symbols.GREEN_CHECK_MARK)
 
         if self.__deps_file_exists__("Makefile"):
             error_code, _, stderr = self.__make__()
@@ -386,8 +380,6 @@ class InstallationHandler:
             if error_code:
                 print(symbols.RED_X)
                 logger.msg.error(f"Install failed: {stderr}, {error_code}")
-            else:
-                print(symbols.GREEN_CHECK_MARK)
 
         if self.__deps_file_exists__("CmakeLists.txt"):
             error_code, _, stderr = self.__cmake__()
@@ -406,8 +398,6 @@ class InstallationHandler:
                     print(symbols.RED_X)
                     logger.error(f"Install failed: {stderr}, {error_code}")
                     logger.msg.error(f"Install failed: {stderr}, {error_code}")
-                else:
-                    print(symbols.GREEN_CHECK_MARK)
 
         if error_code:
             if mmpm.utils.prompt(f"Installation failed. Would you like to remove {self.package.title}?"):
@@ -454,7 +444,7 @@ class InstallationHandler:
 
         logger.info(f"Running 'make -j {cpu_count()}' in {self.package.directory}")
         logger.msg.info(f"{symbols.GREEN_DASHES} Found Makefile. Running `make -j {cpu_count()}`")
-        return run_cmd(["make", "-j", f"{cpu_count()}"])
+        return run_cmd(["make", "-j", f"{cpu_count()}"], "Building with 'make'")
 
 
     def __npm_install__(self) -> Tuple[int, str, str]:
@@ -469,7 +459,7 @@ class InstallationHandler:
         """
         logger.info(f"Running 'npm install' in {self.package.directory}")
         logger.msg.info(f"{symbols.GREEN_DASHES} Found package.json. Running `npm install`")
-        return run_cmd(["npm", "install"])
+        return run_cmd(["npm", "install"], message="Installing Node dependencies")
 
 
     def __bundle_install__(self) -> Tuple[int, str, str]:
@@ -484,7 +474,7 @@ class InstallationHandler:
         """
         logger.info(f"Running 'bundle install' in {self.package.directory}")
         logger.msg.info(f"{symbols.GREEN_DASHES} Found Gemfile. Running `bundle install`")
-        return run_cmd(["bundle", "install"])
+        return run_cmd(["bundle", "install"], "Installing Ruby dependencies")
 
 
     def __deps_file_exists__(self, file_name: str) -> bool:
@@ -526,10 +516,10 @@ class RemotePackage:
                         If no errors or warnings are present, the API is reachable
         """
         health: dict = {
-                'github': {'error': "", "warning": ""},
-                'gitlab': {'error': "", "warning": ""},
-                'bitbucket': {'error': "", "warning": ""},
-                }
+            'github': {'error': "", "warning": ""},
+            'gitlab': {'error': "", "warning": ""},
+            'bitbucket': {'error': "", "warning": ""},
+        }
 
         github_api_response: requests.Response = mmpm.utils.safe_get_request("https://api.github.com/rate_limit")
 
@@ -633,16 +623,16 @@ class RemotePackage:
         issues = mmpm.utils.safe_get_request(f"{url}/issues")
 
         return (
-                {
-                    "Stars": int(json.loads(stars.text)["pagelen"]) if stars else "N/A",
-                    "Issues": int(json.loads(issues.text)["pagelen"]) if issues else "N/A",
-                    "Created": data["created_on"].split("T")[0] if data else "N/A",
-                    "Last Updated": data["updated_on"].split("T")[0] if data else "N/A",
-                    "Forks": int(json.loads(forks.text)["pagelen"]) if forks else "N/A",
-                    }
-                if data and stars
-                else {}
-                )
+            {
+                "Stars": int(json.loads(stars.text)["pagelen"]) if stars else "N/A",
+                "Issues": int(json.loads(issues.text)["pagelen"]) if issues else "N/A",
+                "Created": data["created_on"].split("T")[0] if data else "N/A",
+                "Last Updated": data["updated_on"].split("T")[0] if data else "N/A",
+                "Forks": int(json.loads(forks.text)["pagelen"]) if forks else "N/A",
+            }
+            if data and stars
+            else {}
+        )
 
 
     def __format_gitlab_api_details__(self, data: dict, url: str) -> dict:
@@ -659,18 +649,18 @@ class RemotePackage:
         issues = mmpm.utils.safe_get_request(f"{url}/issues")
 
         return (
-                {
-                    "Stars": data["star_count"] if data else "N/A",
-                    "Issues": len(json.loads(issues.text)) if issues else "N/A",
-                    "Created": data["created_at"].split("T")[0] if data else "N/A",
-                    "Last Updated": data["last_activity_at"].split("T")[0]
-                    if data
-                    else "N/A",
-                    "Forks": data["forks_count"] if data else "N/A",
-                    }
+            {
+                "Stars": data["star_count"] if data else "N/A",
+                "Issues": len(json.loads(issues.text)) if issues else "N/A",
+                "Created": data["created_at"].split("T")[0] if data else "N/A",
+                "Last Updated": data["last_activity_at"].split("T")[0]
                 if data
-                else {}
-                )
+                else "N/A",
+                "Forks": data["forks_count"] if data else "N/A",
+            }
+            if data
+            else {}
+        )
 
 
     def __format_github_api_details__(self, data: dict) -> dict:
@@ -684,13 +674,13 @@ class RemotePackage:
             details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
         """
         return (
-                {
-                    "Stars": data["stargazers_count"] if data else "N/A",
-                    "Issues": data["open_issues"] if data else "N/A",
-                    "Created": data["created_at"].split("T")[0] if data else "N/A",
-                    "Last Updated": data["updated_at"].split("T")[0] if data else "N/A",
-                    "Forks": data["forks_count"] if data else "N/A",
-                    }
-                if data
-                else {}
-                )
+            {
+                "Stars": data["stargazers_count"] if data else "N/A",
+                "Issues": data["open_issues"] if data else "N/A",
+                "Created": data["created_at"].split("T")[0] if data else "N/A",
+                "Last Updated": data["updated_at"].split("T")[0] if data else "N/A",
+                "Forks": data["forks_count"] if data else "N/A",
+            }
+            if data
+            else {}
+        )

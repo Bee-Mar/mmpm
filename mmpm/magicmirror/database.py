@@ -507,9 +507,7 @@ class MagicMirrorDatabase(Singleton):
 
         for package in marked_for_removal:
             packages.remove(package)
-            print(
-                    f"Removed {package.title} ({package.repository}) {symbols.GREEN_CHECK_MARK}"
-                    )
+            print(f"Removed {package.title} ({package.repository}) {symbols.GREEN_CHECK_MARK}")
 
         # if the error_msg was triggered, there's no need to even bother writing back to the file
         with open(file, "w", encoding="utf-8") as mm_ext_pkgs:
@@ -529,12 +527,12 @@ class MagicMirrorDatabase(Singleton):
         """
 
         print(
-                highlight(
-                    json.dumps(self.packages, indent=2, default=lambda package: package.serialize()),
-                    JsonLexer(),
-                    formatters.TerminalFormatter(),
-                    )
-                )
+            highlight(
+                json.dumps(self.packages, indent=2, default=lambda package: package.serialize()),
+                JsonLexer(),
+                formatters.TerminalFormatter(),
+            )
+        )
 
 
     def available_upgrades(self) -> Dict[str, Any]:

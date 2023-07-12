@@ -98,5 +98,3 @@ class MMPMEnv(Singleton):
     def display(self) -> None: # pragma: no cover
         with open(paths.MMPM_ENV_FILE, "r", encoding="utf-8") as env:
             print(highlight(json.dumps(json.load(env), indent=2), JsonLexer(), TerminalFormatter()))
-
-        print("Run `mmpm open --env` to edit the variable values")

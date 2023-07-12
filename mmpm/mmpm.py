@@ -186,6 +186,7 @@ class MMPM(Singleton):
             return
 
         self.env.display()
+        print("Run `mmpm open --env` to edit the variable values")
 
 
     def cmd_update(self, args, additional_args=None):
@@ -418,8 +419,7 @@ class MMPM(Singleton):
             None
         """
         print(color.b_green("Welcome to MMPM's guided setup!\n"))
-        print("I'll help you setup your environment variables, and install additional features.\n\n")
-        print("Let's get started!\n")
+        print("I'll help you setup your environment variables and additional features. Let's get started!\n")
 
         magicmirror_root: str = f"{Path.home()}/MagicMirror"
         magicmirror_uri: str = f"http://{get_host_ip()}:8080"
@@ -430,17 +430,17 @@ class MMPM(Singleton):
         install_autocomplete: bool = False
         install_as_module: bool = False
 
-        magicmirror_root = validate_input(f"What is the absolute path to the root of your MagicMirror installation (ie. {Path.home()}/MagicMirror)? ")
-        mmpm_is_docker_image = prompt("Is MMPM running as a Docker image? ")
+        magicmirror_root = validate_input(f"What is the absolute path to your MagicMirror installation (ie. {Path.home()}/MagicMirror)?")
+        mmpm_is_docker_image = prompt("Is MMPM running as a Docker image?")
 
         if not mmpm_is_docker_image and prompt("Did you install MagicMirror using docker-compose?"):
-            magicmirror_docker_compose_file = validate_input(f"What is the absolute path to the MagicMirror docker-compose file (ie. {Path.home()}/docker-compose.yml)? ")
+            magicmirror_docker_compose_file = validate_input(f"What is the absolute path to the MagicMirror docker-compose file (ie. {Path.home()}/docker-compose.yml)?")
 
         if not mmpm_is_docker_image and not magicmirror_docker_compose_file and prompt("Are you using PM2 to start/stop MagicMirror?"):
-            magicmirror_pm2_proc = validate_input( "What is the name of the PM2 process for MagicMirror? ")
+            magicmirror_pm2_proc = validate_input( "What is the name of the PM2 process for MagicMirror?")
 
-        if not prompt(f"Is {magicmirror_uri} the address used to open MagicMirror in your browser? "):
-            magicmirror_uri = validate_input("What is the full address used to access MagicMirror? ")
+        if not prompt(f"Is {magicmirror_uri} the address used to open MagicMirror in your browser?"):
+            magicmirror_uri = validate_input("Enter the address and port used to access MagicMirror:")
 
         install_gui = not mmpm_is_docker_image and prompt("Would you like to install the MMPM GUI (web interface)?")
         install_as_module = prompt("Would you like to hide/show MagicMirror modules through MMPM?")
@@ -448,23 +448,28 @@ class MMPM(Singleton):
 
         with open(paths.MMPM_ENV_FILE, "w", encoding="utf-8") as env:
             json.dump(
-                    {
-                        self.env.mmpm_magicmirror_root.name: os.path.normpath(magicmirror_root),
-                        self.env.mmpm_magicmirror_uri.name: magicmirror_uri,
-                        self.env.mmpm_magicmirror_pm2_process_name.name: magicmirror_pm2_proc,
-                        self.env.mmpm_magicmirror_docker_compose_file.name: os.path.normpath(magicmirror_docker_compose_file),
-                        self.env.mmpm_is_docker_image.name: mmpm_is_docker_image,
-                        },
-                    env,
-                    indent=2,
-                    )
+                {
+                    self.env.mmpm_magicmirror_root.name: os.path.normpath(magicmirror_root),
+                    self.env.mmpm_magicmirror_uri.name: magicmirror_uri,
+                    self.env.mmpm_magicmirror_pm2_process_name.name: magicmirror_pm2_proc,
+                    self.env.mmpm_magicmirror_docker_compose_file.name: os.path.normpath(magicmirror_docker_compose_file),
+                    self.env.mmpm_is_docker_image.name: mmpm_is_docker_image,
+                },
+                env,
+                indent=2,
+            )
 
+        message = "Based on your responses, your environment variables have been set as:"
+        line_break = color.b_green("-" * len(message))
+
+        print("\n" + line_break)
         print("\nBased on your responses, your environment variables have been set as:")
         self.env.display()
-        print("\n \nExecute the following commands to install the desired features:")
+
+        print("Execute the following commands to install the desired features:")
 
         if install_as_module:
-            print(color.b_green("mmpm install mmpm"))
+            print(color.b_green("mmpm install MMM-mmpm"))
         if install_gui:
             print(color.b_green("mmpm install --gui"))
         if install_autocomplete:

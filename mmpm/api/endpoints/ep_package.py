@@ -13,7 +13,7 @@ logger = MMPMLogger.get_logger(__name__)
 class Endpoint(BaseEndpoint):
     def __init__(self):
         super().__init__()
-        self.blueprint = Blueprint("package", __name__, url_prefix="/api/packages")
+        self.blueprint = Blueprint("packages", __name__, url_prefix="/api/packages")
 
 
         @self.blueprint.route("/retrieve", methods=[http.GET])
@@ -39,5 +39,37 @@ class Endpoint(BaseEndpoint):
         def install() -> Response:
             packages = request.get_json()["packages"]
 
+            installed = []
+
             for package in packages:
-                MagicMirrorPackage(**package).install(assume_yes=True)
+                if MagicMirrorPackage(**package).install(assume_yes=True):
+                    installed.append(package)
+
+            return self.success(json.dumps(installed))
+
+
+        @self.blueprint.route("/remove", methods=[http.POST])
+        def remove() -> Response:
+            packages = request.get_json()["packages"]
+
+            removed = []
+
+            for package in packages:
+                if MagicMirrorPackage(**package).remove(assume_yes=True):
+                    removed.append(package)
+
+
+            return self.success(json.dumps(removed))
+
+
+        @self.blueprint.route("/upgrade", methods=[http.POST])
+        def upgrade() -> Response:
+            packages = request.get_json()["packages"]
+
+            upgraded = []
+
+            for package in packages:
+                if MagicMirrorPackage(**package).upgrade(assume_yes=True):
+                    upgraded.append(package)
+
+            return self.success(json.dumps(upgraded))

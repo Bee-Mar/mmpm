@@ -54,15 +54,6 @@ class MagicMirrorDatabase(Singleton):
         return int(can_upgrade_mmpm) + int(can_upgrade_magicmirror) + len(upgradable)
 
 
-    def get_upgradable(self) -> dict:
-        upgradable = {}
-
-        with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="r", encoding="utf-8") as upgrade_file:
-            upgradable = json.load(upgrade_file)
-
-        return upgradable
-
-
     def info(self):
         """
         Displays information regarding the most recent database file, ie. when it

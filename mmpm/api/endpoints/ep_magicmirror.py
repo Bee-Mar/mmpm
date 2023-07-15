@@ -23,3 +23,28 @@ class Endpoint(BaseEndpoint):
         @self.blueprint.route("/install", methods=[http.POST])
         def install() -> Response:
             pass
+
+
+        @self.blueprint.route("/remove", methods=[http.POST])
+        def remove() -> Response:
+            pass
+
+
+        @self.blueprint.route("/update", methods=[http.POST])
+        def update() -> Response:
+            pass
+
+
+        @self.blueprint.route("/upgrade", methods=[http.POST])
+        def upgrade() -> Response:
+            pass
+
+
+        @self.blueprint.route("/hide", methods=[http.POST])
+        def hide() -> Response:
+            pass
+
+
+        @self.blueprint.route("/show", methods=[http.POST])
+        def show() -> Response:
+            pass

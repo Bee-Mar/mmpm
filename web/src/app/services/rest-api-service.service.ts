@@ -1,8 +1,8 @@
-import { Injectable } from "@angular/core";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { throwError } from "rxjs";
-import { MagicMirrorPackage } from "@/magicmirror/models/magicmirror-package";
-import { retry, catchError } from "rxjs/operators";
+import {Injectable} from "@angular/core";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {throwError} from "rxjs";
+import {MagicMirrorPackage} from "@/magicmirror/models/magicmirror-package";
+import {retry, catchError} from "rxjs/operators";
 
 interface Response {
   code: number;
@@ -19,7 +19,7 @@ const options = (headers: object = {}) =>
   providedIn: 'root'
 })
 export class RestApiService {
-  constructor(private _http: HttpClient) { }
+  constructor(private _http: HttpClient) {}
 
   private route(path: string): string {
     return `http://${window.location.hostname}:7890/api/${path}`;
@@ -34,7 +34,7 @@ export class RestApiService {
 
   public get_retrieve_packages(): Promise<Response> {
     return this._http
-      .get(this.route("packages/retrieve"), { headers: options() })
+      .get(this.route("database/load"), {headers: options()})
       .pipe(retry(1), catchError(this.handle_error))
       .toPromise();
   }
@@ -76,12 +76,5 @@ export class RestApiService {
 
   public post_remove_mm_pkg(pkg: MagicMirrorPackage): Promise<Response> {
     return this._post_packages("packages/mm-pkg/remove", [pkg]);
-  }
-
-  public get_database_info(): Promise<Response> {
-    return this._http
-      .get(this.route("database/info"), { headers: options() })
-      .pipe(retry(1), catchError(this.handle_error))
-      .toPromise();
   }
 }

@@ -222,7 +222,7 @@ class MMPM(Singleton):
 
 
     def cmd_upgrade(self, args, additional_args=None):
-        upgradable = self.database.get_upgradable()
+        upgradable = self.database.upgradable()
 
         if not upgradable["mmpm"] and not upgradable["MagicMirror"] and not upgradable["packages"]:
             logger.msg.info("All packages and applications are up to date.\n ")

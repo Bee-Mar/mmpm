@@ -94,7 +94,14 @@ class MMPMEnv(Singleton):
             if hasattr(self, lowered_key):
                 setattr(self, lowered_key, EnvVar(name=key, default=value, tipe=type(value)))
 
+    def get(self) -> dict:
+        current_env = {}
+
+        with open(paths.MMPM_ENV_FILE, "r", encoding="utf-8") as env:
+            current_env = json.load(env)
+
+        return current_env
+
 
     def display(self) -> None: # pragma: no cover
-        with open(paths.MMPM_ENV_FILE, "r", encoding="utf-8") as env:
-            print(highlight(json.dumps(json.load(env), indent=2), JsonLexer(), TerminalFormatter()))
+        print(highlight(json.dumps(self.get(), indent=2), JsonLexer(), TerminalFormatter()))

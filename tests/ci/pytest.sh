@@ -1,3 +1,3 @@
 #!/bin/bash
 
-pytest mmpm
+pytest tests

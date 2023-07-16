@@ -10,6 +10,7 @@ import logging
 import logging.handlers
 import datetime
 from typing import List
+import jsonpickle
 
 
 class StdOutMessageWriter:
@@ -93,6 +94,60 @@ class StdOutMessageWriter:
     def retrieving(self, url: str, name: str):
         print(f"Retrieving: {url} [{color.n_cyan(name)}] ")
 
+# FIXME
+class JSONSocketHandler(logging.handlers.SocketHandler):
+    def makePickle(self, record):
+        """
+        Pickles the record in binary format with a length prefix and
+        returns it ready for transmission across the socket.
+
+        Instead of using Python's `pickle` module, we will use `jsonpickle`
+        to serialize the LogRecord object to JSON format. This JSON data
+        will be sent over the socket.
+        """
+
+        # Convert the LogRecord object to a plain dictionary for serialization
+        log_record_dict = {
+            'name': record.name,
+            'msg': record.msg,
+            'args': None,
+            'levelname': record.levelname,
+            'levelno': record.levelno,
+            'pathname': record.pathname,
+            'filename': record.filename,
+            'module': record.module,
+            'lineno': record.lineno,
+            'funcName': record.funcName,
+            'created': record.created,
+            'asctime': record.asctime,
+            'msecs': record.msecs,
+            'relativeCreated': record.relativeCreated,
+            'thread': record.thread,
+            'threadName': record.threadName,
+            'processName': record.processName,
+            'process': record.process,
+            'exc_info': None,
+            'exc_text': None,
+            'stack_info': record.stack_info,
+            'lineno': record.lineno,
+            'msg': record.msg,
+            'args': None,
+            'exc_info': None,
+            'created': record.created,
+            'msecs': record.msecs,
+            'relativeCreated': record.relativeCreated,
+            'thread': record.thread,
+            'threadName': record.threadName,
+            'processName': record.processName,
+            'process': record.process,
+            'exc_text': None,
+            'stack_info': record.stack_info,
+        }
+
+        serialized_data = jsonpickle.encode(log_record_dict)
+        pickled_data = f"{len(serialized_data):08x}{serialized_data}"
+        return pickled_data.encode("utf-8")
+
 
 class MMPMLogger:
     """
@@ -110,19 +165,24 @@ class MMPMLogger:
         MMPMLogger.__logger__ = logging.getLogger(name)
         MMPMLogger.__logger__.__setattr__("msg", StdOutMessageWriter())
 
-        if not MMPMLogger.__logger__.hasHandlers():
-            handler = logging.handlers.RotatingFileHandler(
-                paths.MMPM_CLI_LOG_FILE,
-                mode="a",
-                maxBytes=1024 * 1024,
-                backupCount=2,
-                encoding="utf-8",
-                delay=0,
-            )
+        file_handler = logging.handlers.RotatingFileHandler(
+            paths.MMPM_CLI_LOG_FILE,
+            mode="a",
+            maxBytes=1024 * 1024,
+            backupCount=2,
+            encoding="utf-8",
+            delay=0,
+        )
 
-            MMPMLogger.__logger__.addHandler(handler)
+        # TODO: override the makePickle function in the SocketHandler
+        # port = logging.handlers.DEFAULT_TCP_LOGGING_PORT
+        #socket_handler = JSONSocketHandler('localhost', port)
 
-        MMPMLogger.__logger__.setLevel(MMPMEnv().mmpm_log_level.get())
+        # MMPMLogger.__logger__.addHandler(socket_handler) # TODO
+        MMPMLogger.__logger__.addHandler(file_handler)
+
+        level = MMPMEnv().mmpm_log_level.get()
+        MMPMLogger.__logger__.setLevel(level)
 
         return MMPMLogger.__logger__
 

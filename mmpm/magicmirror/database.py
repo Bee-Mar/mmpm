@@ -447,9 +447,9 @@ class MagicMirrorDatabase(Singleton):
 
         except IOError as error:
             logger.msg.error("Failed to save external module")
-            return str(error)
+            return False
 
-        return ""
+        return True
 
 
     def remove_mm_pkg(self, titles: List[str] = None, assume_yes: bool = False) -> bool:

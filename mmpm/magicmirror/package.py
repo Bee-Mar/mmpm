@@ -81,7 +81,6 @@ class MagicMirrorPackage:
             detailed: bool = False,
             remote: bool = False,
             title_only: bool = False,
-            show_path: bool = False,
             exclude_installed: bool = False,
             hide_installed_indicator: bool = False,
             ) -> None:
@@ -109,13 +108,11 @@ class MagicMirrorPackage:
             print(f"{self.title} [installed]" if self.is_installed and not hide_installed_indicator else self.title)
             return
 
-        print(color.n_green(self.title) + (" [installed]" if self.is_installed else ""))
-
-        if show_path:
-            modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
-            print(f"  Directory: {modules_dir / self.directory}")
+        print(color.n_green(self.title) + (" [installed]" if self.is_installed else ""), end="")
 
         if detailed:
+            modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
+            print(f"\n  Directory: {modules_dir / self.directory}")
             print(f"  Category: {self.category}\n  Repository: {self.repository}\n  Author: {self.author}")
 
             if remote:
@@ -125,7 +122,9 @@ class MagicMirrorPackage:
             print(fill(f"  Description: {self.description}\n", width=80), "\n")
 
         else:
-            print(f"  {self.description[:120] + '...' if len(self.description) > 120 else self.description}\n")
+            print(f" / {self.repository}")
+
+        print()
 
 
     def __dict__(self) -> Dict[str, str]:

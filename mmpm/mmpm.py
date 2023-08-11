@@ -60,10 +60,12 @@ class MMPM(Singleton):
         command: str = f'cmd_{args.subcmd.lower().replace("-", "_")}'
 
         if command != "cmd_version":
-            should_refresh = True if args.subcmd == "db" and args.refresh else self.database.is_expired()
+            db_expired = self.database.is_expired()
+            should_refresh = True if args.subcmd == "db" and args.refresh else db_expired
+
             self.database.load(refresh=should_refresh)
 
-            if self.database.is_expired() and args.subcmd != mmpm.opts.UPDATE:
+            if db_expired and args.subcmd != mmpm.opts.UPDATE:
                 self.database.update()
 
         if hasattr(self, command):
@@ -78,7 +80,7 @@ class MMPM(Singleton):
         if args.installed:
             for package in self.database.packages:
                 if package.is_installed:
-                    package.display(title_only=args.title_only, show_path=True, hide_installed_indicator=True)
+                    package.display(title_only=args.title_only, hide_installed_indicator=True)
 
         elif args.all or args.exclude_installed:
             for package in self.database.packages:
@@ -162,7 +164,7 @@ class MMPM(Singleton):
             MMPMLogger.zip()
         elif not args.cli and not args.gui:
             # if the user doesn't provide arguments, just display everything, but consider the --tail arg
-            MMPMLogger.display(True, True, args.tail)
+            MMPMLogger.display(cli_logs=True, gui_logs=True, tail=args.tail)
         else:
             MMPMLogger.display(args.cli, args.gui, args.tail)
 

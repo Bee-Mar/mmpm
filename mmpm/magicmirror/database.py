@@ -30,6 +30,99 @@ class MagicMirrorDatabase(Singleton):
         self.expiration_date: datetime.datetime = None
         self.categories: List[str] = None
 
+    def __download__(self) -> None:
+        """
+        Scrapes the MagicMirror 3rd Party Wiki for all packages listed by community members
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
+
+        self.packages: List[MagicMirrorPackage] = []
+        response: requests.Response = requests.Response()
+
+        try:
+            response = requests.get(urls.MAGICMIRROR_MODULES_URL, timeout=10)
+        except requests.exceptions.RequestException:
+            print(symbols.RED_X)
+            logger.msg.fatal("Unable to retrieve MagicMirror modules.")
+
+        soup = BeautifulSoup(response.text, "html.parser")
+        table_soup = soup.find_all("table")
+        categories_soup = soup.find_all(attrs={"class": "markdown-body"})[0].find_all("h3")
+
+        # the last entry of the html element contents contains the actual category name
+        # also skip past "Module Authors" and "General Advice"
+        categories: list = [category.contents[-1] for category in categories_soup][2:]
+
+        # the first index is a row that literally says 'Title' 'Author' 'Description'
+        tr_soup: list = [table.find_all("tr")[1:] for table in table_soup]
+
+        for index, row in enumerate(tr_soup):
+            for entry in row:
+                table_data: list = entry.find_all("td")
+
+                if table_data[0].contents[0].contents[0] == "mmpm":
+                    continue
+
+                pkg = MagicMirrorPackage.from_raw_data(table_data, category=categories[index])
+                self.packages.append(pkg)
+
+
+    def __discover_installed_packages__(self) -> None:
+        """
+        Scans the list <MMPM_MAGICMIRROR_ROOT>/modules directory, and compares
+        against the known packages from the MagicMirror 3rd Party Wiki. Returns a
+        dictionary of all found packages
+
+        Parameters:
+            packages (Dict[str, List[MagicMirrorPackage]]): Dictionary of MagicMirror packages
+
+        Returns:
+            installed_modules (Dict[str, List[MagicMirrorPackage]]): Dictionary of installed MagicMirror packages
+        """
+
+        modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
+
+        if not modules_dir.exists():
+            logger.warning(f"{modules_dir} does not exist")
+            return
+
+        package_directories: List[PosixPath] = [
+            directory
+            for directory in modules_dir.iterdir()
+            if directory.is_dir() and (directory / ".git").exists()
+        ]
+
+        if not package_directories:
+            logger.msg.error("Failed to find MagicMirror root directory.")
+            return
+
+        packages_found: List[MagicMirrorPackage] = []
+
+        for package_dir in package_directories:
+            os.chdir(package_dir)
+            error_code, remote_origin_url, _ = run_cmd(["git", "config", "--get", "remote.origin.url"], progress=False)
+
+            if error_code:
+                logger.msg.error(f"Unable to communicate with git server to retrieve information about {package_dir}")
+                continue
+
+            error_code, project_name, _ = run_cmd(["basename", remote_origin_url.strip(), ".git"], progress=False)
+
+            if error_code:
+                logger.msg.error(f"Unable to determine repository origin for {project_name}")
+                continue
+
+            packages_found.append(MagicMirrorPackage(repository=remote_origin_url.strip(), directory=package_dir.name))
+
+        for package in self.packages:
+            if package in packages_found:
+                package.is_installed = True
+
 
     def update(self, can_upgrade_mmpm: bool = False, can_upgrade_magicmirror: bool = False) -> int:
         upgradable: List[MagicMirrorPackage] = []
@@ -71,48 +164,6 @@ class MagicMirrorDatabase(Singleton):
         print(color.n_green("Next scheduled update:"), f"{str(self.expiration_date.replace(microsecond=0))}")
         print(color.n_green("Categories:"), f"{len(self.categories)}")
         print(color.n_green("Packages:"), f"{len(self.packages)}")
-
-
-    def download(self) -> None:
-        """
-        Scrapes the MagicMirror 3rd Party Wiki for all packages listed by community members
-
-        Parameters:
-            None
-
-        Returns:
-            None
-        """
-
-        self.packages: List[MagicMirrorPackage] = []
-        response: requests.Response = requests.Response()
-
-        try:
-            response = requests.get(urls.MAGICMIRROR_MODULES_URL, timeout=10)
-        except requests.exceptions.RequestException:
-            print(symbols.RED_X)
-            logger.msg.fatal("Unable to retrieve MagicMirror modules.")
-
-        soup = BeautifulSoup(response.text, "html.parser")
-        table_soup = soup.find_all("table")
-        categories_soup = soup.find_all(attrs={"class": "markdown-body"})[0].find_all("h3")
-
-        # the last entry of the html element contents contains the actual category name
-        # also skip past "Module Authors" and "General Advice"
-        categories: list = [category.contents[-1] for category in categories_soup][2:]
-
-        # the first index is a row that literally says 'Title' 'Author' 'Description'
-        tr_soup: list = [table.find_all("tr")[1:] for table in table_soup]
-
-        for index, row in enumerate(tr_soup):
-            for entry in row:
-                table_data: list = entry.find_all("td")
-
-                if table_data[0].contents[0].contents[0] == "mmpm":
-                    continue
-
-                pkg = MagicMirrorPackage.from_raw_data(table_data, category=categories[index])
-                self.packages.append(pkg)
 
 
     def is_expired(self) -> bool:
@@ -157,7 +208,6 @@ class MagicMirrorDatabase(Singleton):
             else:
                 query = query.lower()
                 match = lambda query, pkg: query == pkg.title.lower()
-
         else:
             # if the query matches one of the category names exactly, return everything in that category
             if query in self.categories:
@@ -191,7 +241,7 @@ class MagicMirrorDatabase(Singleton):
 
         if refresh or not db_exists:
             logger.msg.retrieving(urls.MAGICMIRROR_MODULES_URL, "Database")
-            self.download()
+            self.__download__()
 
             if not self.packages:
                 print(symbols.RED_X)
@@ -236,63 +286,6 @@ class MagicMirrorDatabase(Singleton):
         self.categories = {package.category for package in self.packages}
         self.__discover_installed_packages__()
 
-
-    def __discover_installed_packages__(self) -> None:
-        """
-        Scans the list <MMPM_MAGICMIRROR_ROOT>/modules directory, and compares
-        against the known packages from the MagicMirror 3rd Party Wiki. Returns a
-        dictionary of all found packages
-
-        Parameters:
-            packages (Dict[str, List[MagicMirrorPackage]]): Dictionary of MagicMirror packages
-
-        Returns:
-            installed_modules (Dict[str, List[MagicMirrorPackage]]): Dictionary of installed MagicMirror packages
-        """
-
-        modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
-
-        if not modules_dir.exists():
-            logger.warning(f"{modules_dir} does not exist")
-            return
-
-        package_directories: List[PosixPath] = [
-            directory
-            for directory in modules_dir.iterdir()
-            if directory.is_dir() and (directory / ".git").exists()
-        ]
-
-        if not package_directories:
-            logger.msg.error("Failed to find MagicMirror root directory.")
-            return
-
-        packages_found: List[MagicMirrorPackage] = []
-
-        for package_dir in package_directories:
-            try:
-                os.chdir(package_dir)
-                error_code, remote_origin_url, _ = run_cmd(["git", "config", "--get", "remote.origin.url"], progress=False)
-
-                if error_code:
-                    logger.msg.error(f"Unable to communicate with git server to retrieve information about {package_dir}")
-                    continue
-
-                error_code, project_name, _ = run_cmd(["basename", remote_origin_url.strip(), ".git"], progress=False)
-
-                if error_code:
-                    logger.msg.error(f"Unable to determine repository origin for {project_name}")
-                    continue
-
-                packages_found.append(MagicMirrorPackage(repository=remote_origin_url.strip(), directory=package_dir.name))
-
-            except Exception as error:
-                logger.msg.error(str(error))
-            finally:
-                os.chdir(modules_dir)
-
-        for package in self.packages:
-            if package in packages_found:
-                package.is_installed = True
 
 
     def display_categories(self, title_only: bool = False) -> None:
@@ -352,7 +345,7 @@ class MagicMirrorDatabase(Singleton):
             print(f'{color.n_green("MagicMirror")} [{app_label}]')
 
         if upgrades_available:
-            print("Run `mmpm upgrade` to upgrade available packages/applications")
+            print("Run `mmpm upgrade` to upgrade packages/applications")
         else:
             print(f"No upgrades available {symbols.YELLOW_X}")
 

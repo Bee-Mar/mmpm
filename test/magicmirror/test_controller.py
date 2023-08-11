@@ -2,7 +2,7 @@
 from mmpm.magicmirror.controller import MagicMirrorController
 import unittest
 from unittest.mock import patch, MagicMock
-from tests.helpers import MockedMMPMEnv
+from test.helpers import MockedMMPMEnv
 import shutil
 from faker import Faker
 

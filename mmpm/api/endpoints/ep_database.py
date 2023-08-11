@@ -17,15 +17,16 @@ class Endpoint(BaseEndpoint):
         def load() -> Response:
             is_expired: bool = self.db.is_expired()
 
-            if not self.database.load(refresh=is_expired):
+            if is_expired:
+                self.db.download()
+
+            if not self.db.load(refresh=is_expired):
                 return self.failure(500, "Failed to load database")
 
             if is_expired:
-                self.database.update()
+                self.db.update()
 
-            return self.success(
-                json.dumps(self.packages, indent=2, default=lambda package: package.serialize_full())
-            )
+            return self.success(json.dumps(self.packages, indent=2, default=lambda package: package.serialize_full()))
 
 
         @self.blueprint.route("/upgradable", methods=[http.GET])

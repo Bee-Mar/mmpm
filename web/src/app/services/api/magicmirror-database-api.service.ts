@@ -1,0 +1,12 @@
+import { Injectable } from '@angular/core';
+import { BaseAPI } from './base-api';
+import { HttpClient } from "@angular/common/http";
+
+@Injectable({
+  providedIn: 'root'
+})
+export class MagicMirrorDatabaseAPI extends BaseAPI {
+  constructor(private _http: HttpClient) {
+    super();
+  }
+}

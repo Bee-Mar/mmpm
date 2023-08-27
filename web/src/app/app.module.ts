@@ -5,7 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MagicMirrorDatabaseComponent } from '@/magicmirror/components/magicmirror-database/magicmirror-database.component';
 import { SharedStoreService } from '@/services/shared-store.service';
-import { RestApiService } from '@/services/rest-api-service.service';
+import { MagicMirrorPackageAPI } from '@/services/magicmirror-package-api.service';
 
 export function init_shared_store(store: SharedStoreService) {
   return () => store.get_packages();
@@ -22,7 +22,7 @@ export function init_shared_store(store: SharedStoreService) {
     HttpClientModule,
   ],
   providers: [
-    RestApiService,
+    MagicMirrorPackageAPI,
     SharedStoreService,
     {
       provide: APP_INITIALIZER,

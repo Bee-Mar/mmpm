@@ -1127,14 +1127,12 @@ def retrieve_packages() -> Dict[str, List[MagicMirrorPackage]]:
         mmpm.utils.fatal_msg('Unable to retrieve MagicMirror modules. Is your internet connection up?')
         return {}
 
-    soup = BeautifulSoup(response.text, 'html.parser')
-    table_soup: list = soup.find_all('table')
-    category_soup = soup.find_all(attrs={'class': 'markdown-body'})
-    categories_soup = category_soup[0].find_all('h3')
-    del categories_soup[0] # the General Advice section
+    soup = BeautifulSoup(response.text, "html.parser")
+    table_soup = soup.find_all("table")
+    categories_soup = soup.find_all(attrs={"class": "markdown-body"})[0].find_all("h3")
 
     # the last entry of the html element contents contains the actual category name
-    categories: list = [category.contents[-1] for category in categories_soup]
+    categories: list = [category.contents[-1].contents[0] for category in categories_soup][2:]
 
     # the first index is a row that literally says 'Title' 'Author' 'Description'
     tr_soup: list = [table.find_all('tr')[1:] for table in table_soup]

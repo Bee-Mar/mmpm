@@ -290,3 +290,6 @@
 - fixed URL path causing duplicate static endpoints
 - changed import path of gevent.monkey `patch_all` call
 - changed installation method of MagicMirror via `mmpm install --magicmirror`
+
+## Version 3.1
+- hotfix to update parsing based on 3rd Party Modules page changes

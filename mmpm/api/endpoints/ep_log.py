@@ -42,13 +42,13 @@ class Endpoint(BaseEndpoint):
             current_handler_count = len(logger.handlers)
 
             if self.handler is None:
-                return self.failure(400, "SocketHandler has not been configured.")
+                return self.failure("SocketHandler has not been configured.", 400)
 
             logger.removeHandler(self.handler)
             self.handler = None
 
             if len(logger.handlers) >= current_handler_count:
-                return self.failure(500, "Failed to remove SocketHandler")
+                return self.failure("Failed to remove SocketHandler", 500)
 
             return self.success("Removed SocketHandler")
         '''

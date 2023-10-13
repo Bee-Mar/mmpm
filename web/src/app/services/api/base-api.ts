@@ -1,5 +1,5 @@
-import { HttpHeaders } from "@angular/common/http";
-import { throwError } from "rxjs";
+import {HttpHeaders} from "@angular/common/http";
+import {throwError} from "rxjs";
 
 export interface APIResponse {
   code: number;
@@ -7,7 +7,7 @@ export interface APIResponse {
 }
 
 export class BaseAPI {
-  constructor() { }
+  constructor() {}
 
   public options(headers: object = {}): HttpHeaders {
     return new HttpHeaders({

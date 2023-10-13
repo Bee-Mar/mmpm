@@ -16,7 +16,7 @@ class Endpoint(BaseEndpoint):
         @self.blueprint.route("/retrieve", methods=[http.GET])
         def load() -> Response:
             if not self.db.load():
-                return self.failure(500, "Failed to load database")
+                return self.failure("Failed to load database")
 
             return self.success(json.dumps(self.packages, indent=2, default=lambda package: package.serialize_full()))
 

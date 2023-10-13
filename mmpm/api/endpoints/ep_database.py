@@ -21,7 +21,7 @@ class Endpoint(BaseEndpoint):
                 self.db.download()
 
             if not self.db.load(refresh=is_expired):
-                return self.failure(500, "Failed to load database")
+                return self.failure("Failed to load database")
 
             if is_expired:
                 self.db.update()

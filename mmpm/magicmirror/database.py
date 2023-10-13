@@ -56,20 +56,24 @@ class MagicMirrorDatabase(Singleton):
 
         # the last entry of the html element contents contains the actual category name
         # also skip past "Module Authors" and "General Advice"
-        categories: list = [category.contents[-1] for category in categories_soup][2:]
+        categories: list = [category.contents[-1].contents[0] for category in categories_soup][2:]
 
         # the first index is a row that literally says 'Title' 'Author' 'Description'
         tr_soup: list = [table.find_all("tr")[1:] for table in table_soup]
 
         for index, row in enumerate(tr_soup):
             for entry in row:
-                table_data: list = entry.find_all("td")
+                try:
+                    table_data: list = entry.find_all("td")
 
-                if table_data[0].contents[0].contents[0] == "mmpm":
-                    continue
+                    if not len(table_data) or not table_data[0].text or table_data[0].text == "mmpm":
+                        continue
 
-                pkg = MagicMirrorPackage.from_raw_data(table_data, category=categories[index])
-                self.packages.append(pkg)
+                    pkg = MagicMirrorPackage.from_raw_data(table_data, category=categories[index])
+                    self.packages.append(pkg)
+
+                except AttributeError as error:
+                    logger.msg.error(str(error))
 
 
     def __discover_installed_packages__(self) -> None:

@@ -1,14 +1,14 @@
-import { APP_INITIALIZER, NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from "@angular/common/http";
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { MagicMirrorDatabaseComponent } from '@/magicmirror/components/magicmirror-database/magicmirror-database.component';
-import { SharedStoreService } from '@/services/shared-store.service';
-import { MagicMirrorPackageAPI } from '@/services/magicmirror-package-api.service';
+import {APP_INITIALIZER, NgModule} from '@angular/core';
+import {BrowserModule} from '@angular/platform-browser';
+import {HttpClientModule} from "@angular/common/http";
+import {AppRoutingModule} from './app-routing.module';
+import {AppComponent} from './app.component';
+import {MagicMirrorDatabaseComponent} from '@/magicmirror/components/magicmirror-database/magicmirror-database.component';
+import {SharedStoreService} from '@/services/shared-store.service';
+import {MagicMirrorPackageAPI} from '@/services/api/magicmirror-package-api.service';
 
 export function init_shared_store(store: SharedStoreService) {
-  return () => store.get_packages();
+  return () => store.retrieve_packages();
 }
 
 @NgModule({
@@ -34,4 +34,4 @@ export function init_shared_store(store: SharedStoreService) {
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}

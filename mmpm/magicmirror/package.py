@@ -43,6 +43,7 @@ class MagicMirrorPackage:
             directory: str = "",
             is_installed: bool = False,
         ) -> None:
+
         self.env = MMPMEnv()
         self.title = __sanitize__(title.strip())
         self.author = __sanitize__(author.strip())
@@ -122,7 +123,7 @@ class MagicMirrorPackage:
             print(fill(f"  Description: {self.description}\n", width=80), "\n")
 
         else:
-            print(f" / {self.repository}")
+            print(f" \ {self.repository}")
 
         print()
 
@@ -180,13 +181,16 @@ class MagicMirrorPackage:
         """
 
         if self.is_installed:
-            logger.msg.error(f"'{self.title}' is already installed")
+            message = f"'{self.title}' is already installed"
+            logger.msg.error(message)
+            logger.error(message)
             return
 
         if not assume_yes and not mmpm.utils.prompt(f"Continue installing {color.n_green(self.title)} ({self.repository})?"):
             return
 
-        InstallationHandler(self).execute()
+        if InstallationHandler(self).execute():
+            print(f"Installed {self.title} {symbols.GREEN_CHECK_MARK}")
 
 
     def remove(self, assume_yes: bool = False) -> bool:
@@ -252,25 +256,24 @@ class MagicMirrorPackage:
 
         os.chdir(modules_dir / self.directory)
 
-        logger.msg.info(f"Upgrading {color.n_green(self.title)}")
         error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
 
         if error_code:
             logger.msg.error(f"Failed to upgrade MagicMirror {symbols.RED_X}")
             logger.error(stderr)
-            return stderr
+            return False
 
         else:
-            print(symbols.GREEN_CHECK_MARK)
+            print(f"Upgraded {color.n_green(self.title)} {symbols.GREEN_CHECK_MARK}")
 
         InstallationHandler(self).execute()
 
         if stderr:
             print(symbols.RED_X)
             logger.msg.error(stderr)
-            return stderr
+            return False
 
-        return ""
+        return True
 
 
     @classmethod
@@ -316,7 +319,7 @@ __NULL__: int = hash(MagicMirrorPackage())
 
 
 class InstallationHandler:
-    __slots__ = "env", "package"
+    __slots__ = "package"
 
     def __init__(self, package: MagicMirrorPackage):
         self.package = package
@@ -387,8 +390,6 @@ class InstallationHandler:
                 print(symbols.RED_X)
                 logger.error(f"Install failed: {stderr}, {error_code}")
                 logger.msg.error(f"Install failed: {stderr}, {error_code}")
-            else:
-                print(symbols.GREEN_CHECK_MARK)
 
             if self.__deps_file_exists__("Makefile"):
                 error_code, _, stderr = self.__make__()
@@ -399,14 +400,13 @@ class InstallationHandler:
                     logger.msg.error(f"Install failed: {stderr}, {error_code}")
 
         if error_code:
-            if mmpm.utils.prompt(f"Installation failed. Would you like to remove {self.package.title}?"):
+            if mmpm.utils.prompt(f"Installation of dependencies failed. Would you like to remove {self.package.title}?"):
                 message = f"Installtion failed. Removing {self.package.title}"
                 logger.info(message)
                 logger.msg.info(message)
                 self.package.remove()
             return False
 
-        print(f"{symbols.GREEN_DASHES} Installation complete " + symbols.GREEN_CHECK_MARK)
         logger.info(f"Exiting installation handler from {self.package.directory}")
         return True
 

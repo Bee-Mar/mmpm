@@ -57,7 +57,7 @@ class MMPM(Singleton):
             logger.msg.fatal("Invalid argument. See 'mmpm --help'")
             sys.exit(127)
 
-        command: str = f'cmd_{args.subcmd.lower().replace("-", "_")}'
+        command = f'cmd_{args.subcmd.lower().replace("-", "_")}'
 
         if command != "cmd_version":
             db_expired = self.database.is_expired()
@@ -65,7 +65,7 @@ class MMPM(Singleton):
 
             self.database.load(refresh=should_refresh)
 
-            if db_expired and args.subcmd != mmpm.opts.UPDATE:
+            if db_expired and args.subcmd != "update":
                 self.database.update()
 
         if hasattr(self, command):

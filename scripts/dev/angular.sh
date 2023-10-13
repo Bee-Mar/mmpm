@@ -1,3 +1,5 @@
 #!/bin/bash
 
-cd gui && npm run serve
+runtime=$( [[ $(command -v bun) ]] && echo 'bun' || echo 'npm' )
+
+cd web && $runtime run serve

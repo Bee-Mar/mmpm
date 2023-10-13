@@ -1,12 +1,12 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from "@angular/common/http";
-import { APIResponse, BaseAPI } from './base-api';
+import {Injectable} from '@angular/core';
+import {HttpClient} from "@angular/common/http";
+import {APIResponse, BaseAPI} from './base-api';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EnvAPI extends BaseAPI {
-  constructor(private _http: HttpClient) {
+  constructor(private http: HttpClient) {
     super();
   }
 

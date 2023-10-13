@@ -30,7 +30,7 @@ class Endpoint(BaseEndpoint):
             return self.success(json.dumps(self.env.get()))
 
 
-        @self.blueprint.route("update", methods=[http.POST])
+        @self.blueprint.route("/update", methods=[http.POST])
         def update() -> Response:
             updated_env = request.get_json()["env"]
 
@@ -40,7 +40,7 @@ class Endpoint(BaseEndpoint):
                 except Exception as error:
                     message = f"Failed to updated env: {error}"
                     logger.error(message)
-                    return self.failure(500, message)
+                    return self.failure(message)
 
             logger.info(f"Updating MMPM Env with {updated_env}")
             return self.success(json.dumps(self.env.get()))

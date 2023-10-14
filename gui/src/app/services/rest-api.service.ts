@@ -18,7 +18,9 @@ export class RestApiService {
   constructor(private http: HttpClient) {}
 
   private route(path: string): string {
-    return `http://${window.location.hostname}:7890/api${path}`;
+    return window.location.port
+      ? `${window.location.protocol}//${window.location.hostname}:${window.location.port}/api${path}`
+      : `${window.location.protocol}//${window.location.hostname}/api${path}`;
   }
 
   public retrieve(path: string): Promise<any> {
@@ -40,7 +42,10 @@ export class RestApiService {
       .toPromise();
   }
 
-  private postWithSelectedPackages(url: string, selectedPackages: MagicMirrorPackage[]): Promise<any> {
+  private postWithSelectedPackages(
+    url: string,
+    selectedPackages: MagicMirrorPackage[]
+  ): Promise<any> {
     return this.http
       .post(
         this.route(url),
@@ -53,22 +58,31 @@ export class RestApiService {
           }),
           responseType: "text",
           reportProgress: true,
-        },
+        }
       )
       .pipe(retry(1), catchError(this.handleError))
       .toPromise();
   }
 
   public packagesInstall(selectedPackages: MagicMirrorPackage[]): Promise<any> {
-    return this.postWithSelectedPackages(URLS.POST.PACKAGES.INSTALL, selectedPackages);
+    return this.postWithSelectedPackages(
+      URLS.POST.PACKAGES.INSTALL,
+      selectedPackages
+    );
   }
 
   public packagesUpgrade(selectedPackages: MagicMirrorPackage[]): Promise<any> {
-    return this.postWithSelectedPackages(URLS.POST.PACKAGES.UPGRADE, selectedPackages);
+    return this.postWithSelectedPackages(
+      URLS.POST.PACKAGES.UPGRADE,
+      selectedPackages
+    );
   }
 
   public packagesRemove(selectedPackages: MagicMirrorPackage[]): Promise<any> {
-    return this.postWithSelectedPackages(URLS.POST.PACKAGES.REMOVE, selectedPackages);
+    return this.postWithSelectedPackages(
+      URLS.POST.PACKAGES.REMOVE,
+      selectedPackages
+    );
   }
 
   public getLogFiles(): Promise<any> {
@@ -84,7 +98,10 @@ export class RestApiService {
       .toPromise();
   }
 
-  public updateMagicMirrorConfig(url: string, code: string): Observable<Response> {
+  public updateMagicMirrorConfig(
+    url: string,
+    code: string
+  ): Observable<Response> {
     return this.http
       .post<any>(
         this.route(url),
@@ -95,7 +112,7 @@ export class RestApiService {
           headers: httpOptions({
             "Content-Type": "application/x-www-form-urlencoded",
           }),
-        },
+        }
       )
       .pipe(retry(1), catchError(this.handleError));
   }
@@ -111,7 +128,7 @@ export class RestApiService {
           headers: httpOptions({
             "Content-Type": "application/x-www-form-urlencoded",
           }),
-        },
+        }
       )
       .pipe(retry(1), catchError(this.handleError))
       .toPromise();
@@ -128,13 +145,15 @@ export class RestApiService {
           headers: httpOptions({
             "Content-Type": "application/x-www-form-urlencoded",
           }),
-        },
+        }
       )
       .pipe(retry(1), catchError(this.handleError))
       .toPromise();
   }
 
-  public removeExternalPackage(externalSources: MagicMirrorPackage[]): Promise<any> {
+  public removeExternalPackage(
+    externalSources: MagicMirrorPackage[]
+  ): Promise<any> {
     return this.http
       .request("DELETE", this.route(URLS.DELETE.EXTERNAL_PACKAGES.REMOVE), {
         body: {
@@ -153,7 +172,10 @@ export class RestApiService {
   }
 
   public handleError(error: any): Promise<any> {
-    const errorMessage = error.error instanceof ErrorEvent ? error.error.message : `Error Code: ${error.status}\nMessage: ${error.message}`;
+    const errorMessage =
+      error.error instanceof ErrorEvent
+        ? error.error.message
+        : `Error Code: ${error.status}\nMessage: ${error.message}`;
 
     // window.alert(errorMessage);
     console.log(errorMessage);

@@ -13,6 +13,7 @@ from mmpm.utils import run_cmd
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class Open(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
@@ -22,7 +23,7 @@ class Open(SubCmd):
         self.env = MMPMEnv()
 
     def edit(self, file: PosixPath) -> Optional[None]:
-        '''
+        """
         Checks if the requested file exists, and if not, the file is created. Then, the 'edit'
         command is used to open the file.
 
@@ -31,20 +32,19 @@ class Open(SubCmd):
 
         Returns:
             None
-        '''
+        """
 
         if not file.exists():
             try:
-                logger.msg.warning(f'{file} does not exist. Creating file.')
+                logger.msg.warning(f"{file} does not exist. Creating file.")
                 file.parent.mkdir(parents=True, exist_ok=True)
                 file.touch(mode=0o664, exist_ok=True)
             except OSError as error:
-                logger.msg.fatal(f'Unable to create {file}: {str(error)}')
+                logger.msg.fatal(f"Unable to create {file}: {str(error)}")
 
-        logger.info(f'Opening {file} for user to edit')
+        logger.info(f"Opening {file} for user to edit")
         command = getenv("EDITOR", getenv("VISUAL", "edit"))
-        system(f'{command} {file}')
-
+        system(f"{command} {file}")
 
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
@@ -52,60 +52,60 @@ class Open(SubCmd):
         group = self.parser.add_mutually_exclusive_group()
 
         group.add_argument(
-                '--config',
-                action='store_true',
-                help='open MagicMirror config/config.js file in your $EDITOR',
-                dest='config'
-                )
+            "--config",
+            action="store_true",
+            help="open MagicMirror config/config.js file in your $EDITOR",
+            dest="config",
+        )
 
         group.add_argument(
-                '--css',
-                action='store_true',
-                help='open MagicMirror css/custom.css file (if it exists) in your $EDITOR',
-                dest='custom_css'
-                )
+            "--css",
+            action="store_true",
+            help="open MagicMirror css/custom.css file (if it exists) in your $EDITOR",
+            dest="custom_css",
+        )
 
         group.add_argument(
-                '--gui',
-                action='store_true',
-                help='open the MMPM GUI in your default browser',
-                dest='gui'
-                )
+            "--gui",
+            action="store_true",
+            help="open the MMPM GUI in your default browser",
+            dest="gui",
+        )
 
         group.add_argument(
-                '--magicmirror',
-                action='store_true',
-                help='open MagicMirror in your default browser (uses the MMPM_MAGICMIRROR_URI address)',
-                dest='magicmirror'
-                )
+            "--magicmirror",
+            action="store_true",
+            help="open MagicMirror in your default browser (uses the MMPM_MAGICMIRROR_URI address)",
+            dest="magicmirror",
+        )
 
         group.add_argument(
-                '--mm-wiki',
-                action='store_true',
-                help='open the MagicMirror GitHub wiki in your default browser',
-                dest='mm_wiki'
-                )
+            "--mm-wiki",
+            action="store_true",
+            help="open the MagicMirror GitHub wiki in your default browser",
+            dest="mm_wiki",
+        )
 
         group.add_argument(
-                '--mm-docs',
-                action='store_true',
-                help='open the MagicMirror documentation in your default browser',
-                dest='mm_docs'
-                )
+            "--mm-docs",
+            action="store_true",
+            help="open the MagicMirror documentation in your default browser",
+            dest="mm_docs",
+        )
 
         group.add_argument(
-                '--mmpm-wiki',
-                action='store_true',
-                help='open the MMPM GitHub wiki in your default browser',
-                dest='mmpm_wiki'
-                )
+            "--mmpm-wiki",
+            action="store_true",
+            help="open the MMPM GitHub wiki in your default browser",
+            dest="mmpm_wiki",
+        )
 
         group.add_argument(
-                '--env',
-                action='store_true',
-                help='open the MMPM run-time environment variables JSON configuration file in your $EDITOR',
-                dest='mmpm_env'
-                )
+            "--env",
+            action="store_true",
+            help="open the MMPM run-time environment variables JSON configuration file in your $EDITOR",
+            dest="mmpm_env",
+        )
 
     def exec(self, args, extra):
         if extra:
@@ -136,5 +136,3 @@ class Open(SubCmd):
             self.edit(paths.MMPM_ENV_FILE)
         else:
             logger.msg.no_args(args.subcmd)
-
-

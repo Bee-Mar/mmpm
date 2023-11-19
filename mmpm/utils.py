@@ -33,8 +33,8 @@ def get_host_ip() -> str:
     return address
 
 
-def run_cmd(command: List[str], progress=True, background=False, message: str="") -> Tuple[int, str, str]:
-    '''
+def run_cmd(command: List[str], progress=True, background=False, message: str = "") -> Tuple[int, str, str]:
+    """
     Executes shell command and captures errors
 
     Parameters:
@@ -42,14 +42,14 @@ def run_cmd(command: List[str], progress=True, background=False, message: str=""
 
     Returns:
         Tuple[returncode (int), stdout (str), stderr (str)]
-    '''
+    """
 
     logger.info(f'Executing process `{" ".join(command)}`')
 
     if background:
         logger.info(f'Executing process `{" ".join(command)}` in background')
         subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        return 0, '', ''
+        return 0, "", ""
 
     with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as p:
         if progress:
@@ -61,11 +61,11 @@ def run_cmd(command: List[str], progress=True, background=False, message: str=""
 
         stdout, stderr = p.communicate()
 
-        return p.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
+        return p.returncode, stdout.decode("utf-8"), stderr.decode("utf-8")
 
 
 def get_pids(process_name: str) -> List[str]:
-    '''
+    """
     Kills all processes of given name
 
     Parameters:
@@ -73,21 +73,21 @@ def get_pids(process_name: str) -> List[str]:
 
     Returns:
         processes (List[str]): list of the processes IDs found
-    '''
+    """
 
-    logger.info(f'Getting process IDs for {process_name} proceses')
+    logger.info(f"Getting process IDs for {process_name} proceses")
 
-    with subprocess.Popen(['pgrep', process_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE) as pids:
+    with subprocess.Popen(["pgrep", process_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE) as pids:
         stdout, _ = pids.communicate()
-        processes = stdout.decode('utf-8')
+        processes = stdout.decode("utf-8")
 
-        logger.info(f'Found processes: {processes}')
+        logger.info(f"Found processes: {processes}")
 
-        return [proc_id for proc_id in processes.split('\n') if proc_id]
+        return [proc_id for proc_id in processes.split("\n") if proc_id]
 
 
 def kill_pids_of_process(process: str) -> None:
-    '''
+    """
     Kills all processes of given name
 
     Parameters:
@@ -95,15 +95,14 @@ def kill_pids_of_process(process: str) -> None:
 
     Returns:
         processes (str): the processes IDs found
-    '''
-    logger.info(f'Killing all processes of type {process}')
-    os.system(f'for process in $(pgrep {process}); do kill -9 $process; done')
-    print(f'{symbols.GREEN_CHECK_MARK}')
+    """
+    logger.info(f"Killing all processes of type {process}")
+    os.system(f"for process in $(pgrep {process}); do kill -9 $process; done")
+    print(f"{symbols.GREEN_CHECK_MARK}")
 
 
-
-def prompt(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: List[str] = ['no', 'n']) -> bool:
-    '''
+def prompt(user_prompt: str, valid_ack: List[str] = ["yes", "y"], valid_nack: List[str] = ["no", "n"]) -> bool:
+    """
     Prompts user with the `user_prompt` until a response matches a value in the
     `valid_ack` or `valid_nack` lists, or a KeyboardInterrupt is caught. If
     `assume_yes` is true, the `user_prompt` is printed followed by a 'yes', and
@@ -117,7 +116,7 @@ def prompt(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: Li
 
     Returns:
         response (bool): True if the response is in the `valid_ack` list, False if in `valid_nack` or KeyboardInterrupt
-    '''
+    """
     response = None
 
     try:
@@ -138,8 +137,8 @@ def prompt(user_prompt: str, valid_ack: List[str] = ['yes', 'y'], valid_nack: Li
     return False
 
 
-def validate_input(message: str, forbidden_responses: List[str] = [], reason: str = '') -> str:
-    '''
+def validate_input(message: str, forbidden_responses: List[str] = [], reason: str = "") -> str:
+    """
     Continues to prompt user with given input until the response provided is of
     non-zero length and not found in the list forbidden responses
 
@@ -150,20 +149,20 @@ def validate_input(message: str, forbidden_responses: List[str] = [], reason: st
 
     Returns:
         user_response (str): valid, user provided input
-    '''
+    """
     while True:
         user_response = input(message)
-        if not user_response: # pylint: disable=no-else-continue
-            logger.msg.warning('A non-empty response must be given')
+        if not user_response:  # pylint: disable=no-else-continue
+            logger.msg.warning("A non-empty response must be given")
             continue
         elif user_response in forbidden_responses:
-            logger.msg.warning(f'Invalid response, {user_response} {reason}')
+            logger.msg.warning(f"Invalid response, {user_response} {reason}")
             continue
         return user_response
 
 
 def safe_get_request(url: str) -> requests.Response:
-    '''
+    """
     Wrapper method around the 'requests.get' call, containing a try, except block
 
     Parameters:
@@ -171,7 +170,7 @@ def safe_get_request(url: str) -> requests.Response:
 
     Returns:
         response (requests.Response): the Reponse object, which may be empty if the request failed
-    '''
+    """
     try:
         data = requests.get(url, timeout=10)
     except requests.exceptions.RequestException as error:
@@ -180,9 +179,8 @@ def safe_get_request(url: str) -> requests.Response:
     return data
 
 
-
 def systemctl(subcmd: str, services: List[str] = []) -> subprocess.CompletedProcess:
-    '''
+    """
     A wrapper around a subprocess.run call to target systemctl
 
     Parameters:
@@ -191,6 +189,5 @@ def systemctl(subcmd: str, services: List[str] = []) -> subprocess.CompletedProc
 
     Returns:
         process (subprocess.CompletedProcess): the completed subprocess following execution
-    '''
-    return subprocess.run(['sudo', 'systemctl', subcmd] + services, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
+    """
+    return subprocess.run(["sudo", "systemctl", subcmd] + services, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

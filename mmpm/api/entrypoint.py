@@ -3,31 +3,31 @@ from gevent import monkey
 
 monkey.patch_all()
 
-from mmpm.logger import MMPMLogger
-import mmpm.api.endpoints
-
+import json
 from importlib import import_module
 from pkgutil import iter_modules
+
+import mmpm.api.endpoints
 from flask import Flask, Response
 from flask_cors import CORS
-import json
+from mmpm.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
 
 app = Flask(__name__, root_path="/var/www/mmpm", static_url_path="")
-app.config['CORS_HEADERS'] = 'Content-Type'
+app.config["CORS_HEADERS"] = "Content-Type"
 CORS(app)
 
 resources: dict = {
-    r'/*': {'origins': '*'},
-    r'/api/*': {'origins': '*'},
-    r'/socket.io/*': {'origins': '*'},
+    r"/*": {"origins": "*"},
+    r"/api/*": {"origins": "*"},
+    r"/socket.io/*": {"origins": "*"},
 }
 
 
-@app.after_request # type: ignore
+@app.after_request  # type: ignore
 def after_request(response: Response) -> Response:
-    '''
+    """
     Appends extra headers after each api request is sent to the server
 
     Parameters:
@@ -35,7 +35,7 @@ def after_request(response: Response) -> Response:
 
     Returns
         response (flask.Response): the modified response object with new headers attached
-    '''
+    """
 
     response.headers.add("Access-Control-Allow-Origin", "*")
     response.headers.add("Access-Control-Allow-Headers", "*")

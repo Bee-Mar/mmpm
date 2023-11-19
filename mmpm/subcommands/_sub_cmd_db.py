@@ -8,6 +8,7 @@ from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class Db(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
@@ -22,19 +23,19 @@ class Db(SubCmd):
         group = self.parser.add_mutually_exclusive_group()
 
         group.add_argument(
-            '-i',
-            '--info',
-            action='store_true',
-            help='display information about the MagicMirror packages database',
-            dest='info',
+            "-i",
+            "--info",
+            action="store_true",
+            help="display information about the MagicMirror packages database",
+            dest="info",
         )
 
         group.add_argument(
-            '-d',
-            '--dump',
-            action='store_true',
-            help='dump the database contents to stdout as JSON',
-            dest='dump',
+            "-d",
+            "--dump",
+            action="store_true",
+            help="dump the database contents to stdout as JSON",
+            dest="dump",
         )
 
     def exec(self, args, extra):
@@ -50,4 +51,3 @@ class Db(SubCmd):
             self.database.dump()
         else:
             logger.msg.no_args(args.subcmd)
-

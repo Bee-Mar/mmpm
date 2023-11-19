@@ -12,6 +12,7 @@ from unittest.mock import patch, mock_open
 
 fake = Faker()
 
+
 class TestEnvVar(unittest.TestCase):
     def test_get_existing_variable(self):
         var = random.choice([key for key in MMPM_DEFAULT_ENV])
@@ -27,7 +28,7 @@ class TestEnvVar(unittest.TestCase):
 
         env_var = EnvVar(name=var, default=default_value, tipe=type(default_value))
 
-        with patch('builtins.open', mock_open(read_data=f'{{"{var}": "{random_value}"}}')):
+        with patch("builtins.open", mock_open(read_data=f'{{"{var}": "{random_value}"}}')):
             value = env_var.get()
 
         self.assertEqual(value, random_value)
@@ -35,7 +36,7 @@ class TestEnvVar(unittest.TestCase):
     def test_get_nonexistent_variable_with_default(self):
         env_var = EnvVar(name="MMPM_NONEXISTENT_VAR", default=fake.pystr(), tipe=str)
 
-        with patch('builtins.open', mock_open(read_data='{}')):
+        with patch("builtins.open", mock_open(read_data="{}")):
             value = env_var.get()
             self.assertEqual(value, env_var.default)
 
@@ -50,5 +51,5 @@ class TestMMPMEnv(unittest.TestCase):
         self.assertIs(env1, env2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -6,6 +6,7 @@ from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class Env(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
@@ -24,4 +25,3 @@ class Env(SubCmd):
 
         self.env.display()
         print("Run `mmpm open --env` to edit the variable values")
-

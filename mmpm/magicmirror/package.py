@@ -25,6 +25,7 @@ logger = MMPMLogger.get_logger(__name__)
 def __sanitize__(string: str) -> str:
     return sub("[//]", "", string)
 
+
 class MagicMirrorPackage:
     """
     A container object used to simplify the represenation of a given
@@ -34,16 +35,15 @@ class MagicMirrorPackage:
     __slots__ = "title", "author", "repository", "description", "category", "directory", "is_installed", "env", "is_upgradable"
 
     def __init__(
-            self,
-            title: str = NA,
-            author: str = NA,
-            repository: str = NA,
-            description: str = NA,
-            category: str = NA,
-            directory: str = "",
-            is_installed: bool = False,
-        ) -> None:
-
+        self,
+        title: str = NA,
+        author: str = NA,
+        repository: str = NA,
+        description: str = NA,
+        category: str = NA,
+        directory: str = "",
+        is_installed: bool = False,
+    ) -> None:
         self.env = MMPMEnv()
         self.title = __sanitize__(title.strip())
         self.author = __sanitize__(author.strip())
@@ -57,14 +57,11 @@ class MagicMirrorPackage:
     def __str__(self) -> str:
         return str(self.serialize())
 
-
     def __repr__(self) -> str:
         return str(self.serialize())
 
-
     def __hash__(self) -> int:
         return hash((self.repository.lower(), self.directory.name.lower()))
-
 
     def __eq__(self, other) -> bool:
         if other is None:
@@ -72,19 +69,17 @@ class MagicMirrorPackage:
         else:
             return hash(self) == hash(other)
 
-
     def __ne__(self, other) -> bool:
         return not self.__eq__(other)
 
-
     def display(
-            self,
-            detailed: bool = False,
-            remote: bool = False,
-            title_only: bool = False,
-            exclude_installed: bool = False,
-            hide_installed_indicator: bool = False,
-            ) -> None:
+        self,
+        detailed: bool = False,
+        remote: bool = False,
+        title_only: bool = False,
+        exclude_installed: bool = False,
+        hide_installed_indicator: bool = False,
+    ) -> None:
         """
         Displays more detailed information that presented in normal search results.
         The output is formatted similarly to the output of the Debian/Ubunut 'apt' CLI
@@ -127,7 +122,6 @@ class MagicMirrorPackage:
 
         print()
 
-
     def __dict__(self) -> Dict[str, str]:
         return {
             "title": self.title,
@@ -166,7 +160,6 @@ class MagicMirrorPackage:
 
         return serialized
 
-
     def install(self, assume_yes: bool = False) -> None:
         """
         Delegates installation to an InstallationHandler instance. The repo is
@@ -192,7 +185,6 @@ class MagicMirrorPackage:
         if InstallationHandler(self).execute():
             print(f"Installed {self.title} {symbols.GREEN_CHECK_MARK}")
 
-
     def remove(self, assume_yes: bool = False) -> bool:
         if not self.is_installed:
             logger.msg.error(f"'{self.title}' is not installed")
@@ -206,11 +198,9 @@ class MagicMirrorPackage:
         run_cmd(["rm", "-rf", str(modules_dir / self.directory)], progress=True)
         logger.msg.info(f"Removed {color.n_green(self.title)} {symbols.GREEN_CHECK_MARK}\n")
 
-
     def clone(self) -> bool:
         modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
         return run_cmd(["git", "clone", self.repository, str(modules_dir / self.directory)], message="Retrieving package")
-
 
     def update(self) -> None:
         modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
@@ -234,7 +224,6 @@ class MagicMirrorPackage:
             logger.msg.error("Unable to communicate with git server")
 
         self.is_upgradable = bool(stdout)
-
 
     def upgrade(self) -> bool:
         """
@@ -274,7 +263,6 @@ class MagicMirrorPackage:
             return False
 
         return True
-
 
     @classmethod
     def from_raw_data(cls, raw_data: List[Tag], category=NA):
@@ -323,7 +311,6 @@ class InstallationHandler:
 
     def __init__(self, package: MagicMirrorPackage):
         self.package = package
-
 
     def execute(self) -> bool:
         """
@@ -410,7 +397,6 @@ class InstallationHandler:
         logger.info(f"Exiting installation handler from {self.package.directory}")
         return True
 
-
     def __cmake__(self) -> Tuple[int, str, str]:
         """Used to run make from a directory known to have a CMakeLists.txt file
 
@@ -429,7 +415,6 @@ class InstallationHandler:
         os.system("rm -rf *")
         return run_cmd(["cmake", ".."])
 
-
     def __make__(self) -> Tuple[int, str, str]:
         """
         Used to run make from a directory known to have a Makefile
@@ -445,7 +430,6 @@ class InstallationHandler:
         logger.msg.info(f"{symbols.GREEN_DASHES} Found Makefile. Running `make -j {cpu_count()}`")
         return run_cmd(["make", "-j", f"{cpu_count()}"], "Building with 'make'")
 
-
     def __npm_install__(self) -> Tuple[int, str, str]:
         """
         Used to run npm install from a directory known to have a package.json file
@@ -460,7 +444,6 @@ class InstallationHandler:
         logger.msg.info(f"{symbols.GREEN_DASHES} Found package.json. Running `npm install`")
         return run_cmd(["npm", "install"], message="Installing Node dependencies")
 
-
     def __bundle_install__(self) -> Tuple[int, str, str]:
         """
         Used to run npm install from a directory known to have a package.json file
@@ -474,7 +457,6 @@ class InstallationHandler:
         logger.info(f"Running 'bundle install' in {self.package.directory}")
         logger.msg.info(f"{symbols.GREEN_DASHES} Found Gemfile. Running `bundle install`")
         return run_cmd(["bundle", "install"], "Installing Ruby dependencies")
-
 
     def __deps_file_exists__(self, file_name: str) -> bool:
         """
@@ -498,7 +480,6 @@ class RemotePackage:
     def __init__(self, package: MagicMirrorPackage):
         self.package = package
 
-
     @classmethod
     def health(cls):
         """
@@ -515,9 +496,9 @@ class RemotePackage:
                         If no errors or warnings are present, the API is reachable
         """
         health: dict = {
-            'github': {'error': "", "warning": ""},
-            'gitlab': {'error': "", "warning": ""},
-            'bitbucket': {'error': "", "warning": ""},
+            "github": {"error": "", "warning": ""},
+            "gitlab": {"error": "", "warning": ""},
+            "bitbucket": {"error": "", "warning": ""},
         }
 
         github_api_response: requests.Response = mmpm.utils.safe_get_request("https://api.github.com/rate_limit")
@@ -532,7 +513,9 @@ class RemotePackage:
         reset_time = datetime.datetime.utcfromtimestamp(reset).strftime("%Y-%m-%d %H:%M:%S")
 
         if not remaining:
-            health["github"]["error"] = f"Unable to use `--verbose` option. No GitHub API requests remaining. Request count will reset at {reset_time}"
+            health["github"][
+                "error"
+            ] = f"Unable to use `--verbose` option. No GitHub API requests remaining. Request count will reset at {reset_time}"
         elif remaining < 10:
             health["github"]["warning"] = f"{remaining} GitHub API requests remaining. Request count will reset at {reset_time}"
 
@@ -555,7 +538,6 @@ class RemotePackage:
             health["gitlab"]["error"] = "Unable to communicate with Bitbucket server"
 
         return health
-
 
     def serialize(self):
         """
@@ -601,10 +583,9 @@ class RemotePackage:
             if not data:
                 logger.error(f"Unable to retrieve {self.package.title} details, data was empty")
 
-            details =  self.__format_bitbucket_api_details__(json.loads(data.text), url) if data else {}
+            details = self.__format_bitbucket_api_details__(json.loads(data.text), url) if data else {}
 
         return details
-
 
     def __format_bitbucket_api_details__(self, data: dict, url: str) -> dict:
         """
@@ -633,7 +614,6 @@ class RemotePackage:
             else {}
         )
 
-
     def __format_gitlab_api_details__(self, data: dict, url: str) -> dict:
         """
         Helper method to format remote repository data from GitLab
@@ -652,15 +632,12 @@ class RemotePackage:
                 "Stars": data["star_count"] if data else "N/A",
                 "Issues": len(json.loads(issues.text)) if issues else "N/A",
                 "Created": data["created_at"].split("T")[0] if data else "N/A",
-                "Last Updated": data["last_activity_at"].split("T")[0]
-                if data
-                else "N/A",
+                "Last Updated": data["last_activity_at"].split("T")[0] if data else "N/A",
                 "Forks": data["forks_count"] if data else "N/A",
             }
             if data
             else {}
         )
-
 
     def __format_github_api_details__(self, data: dict) -> dict:
         """

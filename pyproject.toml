@@ -43,11 +43,11 @@ build-backend = "pdm.backend"
 
 [tool.pdm.dev-dependencies]
 dev = [
-    "mypy>=1.7.0",
-    "pylint>=3.0.2",
-    "codecov>=2.1.13",
-    "types-requests>=2.31.0.10",
-    "pytest>=7.4.3",
-    "faker>=20.0.3",
-    "coverage>=7.3.2",
+  "mypy>=1.7.0",
+  "pylint>=3.0.2",
+  "codecov>=2.1.13",
+  "types-requests>=2.31.0.10",
+  "pytest>=7.4.3",
+  "faker>=20.0.3",
+  "coverage>=7.3.2",
 ]

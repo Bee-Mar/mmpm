@@ -10,6 +10,7 @@ from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class Install(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
@@ -24,13 +25,13 @@ class Install(SubCmd):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
 
         self.parser.add_argument(
-                '-y',
-                '--yes',
-                action='store_true',
-                default=False,
-                help='assume yes for user response and do not show prompt',
-                dest='assume_yes',
-                )
+            "-y",
+            "--yes",
+            action="store_true",
+            default=False,
+            help="assume yes for user response and do not show prompt",
+            dest="assume_yes",
+        )
 
     def exec(self, args, extra):
         if not extra:
@@ -45,11 +46,10 @@ class Install(SubCmd):
             elif name == "mmpm-gui":
                 self.gui.install(args.assume_yes)
             else:
-                results.extend(filter(lambda pkg : name == pkg.title, self.database.packages))
+                results.extend(filter(lambda pkg: name == pkg.title, self.database.packages))
 
                 if not results:
                     logger.msg.error("Unable to locate package(s) based on query.")
 
         for package in results:
             package.install(assume_yes=args.assume_yes)
-

@@ -11,6 +11,7 @@ from mmpm.utils import get_host_ip, prompt
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class GuidedSetup(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
@@ -49,10 +50,12 @@ class GuidedSetup(SubCmd):
         mmpm_is_docker_image = prompt("Is MMPM running as a Docker image?")
 
         if not mmpm_is_docker_image and prompt("Did you install MagicMirror using docker-compose?"):
-            magicmirror_docker_compose_file = validate_input(f"What is the absolute path to the MagicMirror docker-compose file (ie. {Path.home()}/docker-compose.yml)?")
+            magicmirror_docker_compose_file = validate_input(
+                f"What is the absolute path to the MagicMirror docker-compose file (ie. {Path.home()}/docker-compose.yml)?"
+            )
 
         if not mmpm_is_docker_image and not magicmirror_docker_compose_file and prompt("Are you using PM2 to start/stop MagicMirror?"):
-            magicmirror_pm2_proc = validate_input( "What is the name of the PM2 process for MagicMirror?")
+            magicmirror_pm2_proc = validate_input("What is the name of the PM2 process for MagicMirror?")
 
         if not prompt(f"Is {magicmirror_uri} the address used to open MagicMirror in your browser?"):
             magicmirror_uri = validate_input("Enter the address and port used to access MagicMirror:")

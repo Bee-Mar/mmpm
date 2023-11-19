@@ -7,6 +7,7 @@ from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class MmCtl(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
@@ -20,46 +21,46 @@ class MmCtl(SubCmd):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
 
         self.parser.add_argument(
-                '--status',
-                action='store_true',
-                help='show the hidden/visible status and key(s) of module(s) on your MagicMirror',
-                dest='status'
-                )
+            "--status",
+            action="store_true",
+            help="show the hidden/visible status and key(s) of module(s) on your MagicMirror",
+            dest="status",
+        )
 
         self.parser.add_argument(
-                '--hide',
-                nargs='+',
-                help='hide module(s) on your MagicMirror via provided key(s)',
-                dest='hide'
-                )
+            "--hide",
+            nargs="+",
+            help="hide module(s) on your MagicMirror via provided key(s)",
+            dest="hide",
+        )
 
         self.parser.add_argument(
-                '--show',
-                nargs='+',
-                help='show module(s) on your MagicMirror via provided key(s)',
-                dest='show'
-                )
+            "--show",
+            nargs="+",
+            help="show module(s) on your MagicMirror via provided key(s)",
+            dest="show",
+        )
 
         self.parser.add_argument(
-                '--start',
-                action='store_true',
-                help='start MagicMirror; works with pm2 and docker-compose',
-                dest='start'
-                )
+            "--start",
+            action="store_true",
+            help="start MagicMirror; works with pm2 and docker-compose",
+            dest="start",
+        )
 
         self.parser.add_argument(
-                '--stop',
-                action='store_true',
-                help='stop MagicMirror; works with pm2 and docker-compose',
-                dest='stop'
-                )
+            "--stop",
+            action="store_true",
+            help="stop MagicMirror; works with pm2 and docker-compose",
+            dest="stop",
+        )
 
         self.parser.add_argument(
-                '--restart',
-                action='store_true',
-                help='restart MagicMirror; works with pm2 and docker-compose',
-                dest='restart'
-            )
+            "--restart",
+            action="store_true",
+            help="restart MagicMirror; works with pm2 and docker-compose",
+            dest="restart",
+        )
 
     def exec(self, args, extra):
         if extra:
@@ -87,4 +88,3 @@ class MmCtl(SubCmd):
                 self.controller.restart()
         else:
             logger.msg.no_args(args.subcmd)
-

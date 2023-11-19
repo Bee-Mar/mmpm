@@ -74,11 +74,12 @@ class MagicMirrorDatabase(Singleton):
                     pkg = MagicMirrorPackage.from_raw_data(table_data, category=categories[index])
                     self.packages.append(pkg)
 
-                except Exception as error: # broad exception isn't best, but there's a lot that can happen here
-                    logger.error("There may be a structural change in the MagicMirror 3rd Party module wiki page. Please create an issue on the MMPM's GitHub repository.")
+                except Exception as error:  # broad exception isn't best, but there's a lot that can happen here
+                    logger.error(
+                        "There may be a structural change in the MagicMirror 3rd Party module wiki page. Please create an issue on the MMPM's GitHub repository."
+                    )
                     logger.msg.error(str(error))
                     continue
-
 
     def __discover_installed_packages__(self) -> None:
         """
@@ -100,9 +101,7 @@ class MagicMirrorDatabase(Singleton):
             return
 
         package_directories: List[PosixPath] = [
-            directory
-            for directory in modules_dir.iterdir()
-            if directory.is_dir() and (directory / ".git").exists()
+            directory for directory in modules_dir.iterdir() if directory.is_dir() and (directory / ".git").exists()
         ]
 
         if not package_directories:
@@ -131,7 +130,6 @@ class MagicMirrorDatabase(Singleton):
             if package in packages_found:
                 package.is_installed = True
 
-
     def update(self, can_upgrade_mmpm: bool = False, can_upgrade_magicmirror: bool = False) -> int:
         upgradable: List[MagicMirrorPackage] = []
 
@@ -154,7 +152,6 @@ class MagicMirrorDatabase(Singleton):
 
         return int(can_upgrade_mmpm) + int(can_upgrade_magicmirror) + len(upgradable)
 
-
     def info(self):
         """
         Displays information regarding the most recent database file, ie. when it
@@ -173,7 +170,6 @@ class MagicMirrorDatabase(Singleton):
         print(color.n_green("Categories:"), f"{len(self.categories)}")
         print(color.n_green("Packages:"), f"{len(self.packages)}")
 
-
     def is_expired(self) -> bool:
         db_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
         db_expiration_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE
@@ -183,13 +179,12 @@ class MagicMirrorDatabase(Singleton):
                 return True  # the file is empty
 
         if self.last_update is None or self.expiration_date is None:
-            with open(db_expiration_file, encoding='utf-8') as expiration_file:
+            with open(db_expiration_file, encoding="utf-8") as expiration_file:
                 data = json.load(expiration_file)
                 self.expiration_date = datetime.datetime.fromisoformat(data["expiration"])
                 self.last_update = datetime.datetime.fromisoformat(data["last-update"])
 
         return datetime.datetime.now() > self.expiration_date
-
 
     def search(self, query: str, case_sensitive: bool = False, title_only: bool = False) -> List[MagicMirrorPackage]:
         """
@@ -228,7 +223,6 @@ class MagicMirrorDatabase(Singleton):
 
         return [package for package in self.packages if match(query, package)]
 
-
     def load(self, refresh: bool = False) -> None:
         """
         Reads in modules from the hidden database file and checks if the file is
@@ -258,7 +252,11 @@ class MagicMirrorDatabase(Singleton):
                 with open(db_file, "w", encoding="utf-8") as db:
                     json.dump(self.packages, db, default=lambda package: package.serialize())
 
-                with open(db_expiration_file, "w", encoding="utf-8",) as expiration_file:
+                with open(
+                    db_expiration_file,
+                    "w",
+                    encoding="utf-8",
+                ) as expiration_file:
                     self.last_update = datetime.datetime.now()
                     self.expiration_date = self.last_update + datetime.timedelta(hours=12)
                     json.dump(
@@ -294,8 +292,6 @@ class MagicMirrorDatabase(Singleton):
         self.categories = {package.category for package in self.packages}
         self.__discover_installed_packages__()
 
-
-
     def display_categories(self, title_only: bool = False) -> None:
         """
         Prints module category names and the total number of modules in one of two
@@ -308,7 +304,7 @@ class MagicMirrorDatabase(Singleton):
             None
         """
 
-        categories = { package.category for package in self.packages }
+        categories = {package.category for package in self.packages}
 
         if title_only:
             for category in categories:
@@ -317,7 +313,6 @@ class MagicMirrorDatabase(Singleton):
             for category in categories:
                 package_count = sum(1 for package in self.packages if package.category == category)
                 print(color.n_green(category), f"\n\tPackages: {package_count}\n")
-
 
     def display_upgradable(self) -> None:
         """
@@ -357,7 +352,6 @@ class MagicMirrorDatabase(Singleton):
         else:
             print(f"No upgrades available {symbols.YELLOW_X}")
 
-
     def upgradable(self) -> dict:
         """
         Retrieves all available packages and applications from the
@@ -389,7 +383,6 @@ class MagicMirrorDatabase(Singleton):
             json.dump(upgrades, upgradable)
 
         return upgrades
-
 
     def add_mm_pkg(self, title: str = None, author: str = None, repository: str = None, description: str = None) -> str:
         """
@@ -452,7 +445,6 @@ class MagicMirrorDatabase(Singleton):
 
         return True
 
-
     def remove_mm_pkg(self, titles: List[str] = None, assume_yes: bool = False) -> bool:
         """
         Allows user to remove an External Package from the data saved in
@@ -508,7 +500,6 @@ class MagicMirrorDatabase(Singleton):
 
         return True
 
-
     def dump(self) -> None:
         """
         Pretty prints contents of database to stdout
@@ -525,7 +516,6 @@ class MagicMirrorDatabase(Singleton):
                 formatters.TerminalFormatter(),
             )
         )
-
 
     def available_upgrades(self) -> Dict[str, Any]:
         configuration = {}

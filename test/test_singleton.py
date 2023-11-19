@@ -10,5 +10,6 @@ class SingletonTestCase(unittest.TestCase):
 
         self.assertIs(instance_1, instance_2, "Multiple instances of Singleton were created.")
 
+
 if __name__ == "__main__":
     unittest.main()

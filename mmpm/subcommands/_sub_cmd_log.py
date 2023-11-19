@@ -5,6 +5,7 @@ from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class Log(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
@@ -25,4 +26,3 @@ class Log(SubCmd):
             MMPMLogger.display(cli_logs=True, gui_logs=True, tail=args.tail)
         else:
             MMPMLogger.display(args.cli, args.gui, args.tail)
-

@@ -8,6 +8,7 @@ from mmpm.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class Endpoint(BaseEndpoint):
     def __init__(self):
         super().__init__()
@@ -22,8 +23,6 @@ class Endpoint(BaseEndpoint):
 
             return self.success(json.dumps(self.packages, indent=2, default=lambda package: package.serialize_full()))
 
-
         @self.blueprint.route("/upgradable", methods=[http.GET])
         def upgradable() -> Response:
             return self.success(json.dumps(self.db.upgradable()))
-

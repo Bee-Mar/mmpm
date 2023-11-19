@@ -7,6 +7,7 @@ from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class Completion(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
@@ -18,7 +19,7 @@ class Completion(SubCmd):
             "bash": f'eval "$(register-python-argcomplete {self.app_name})"',
             "zsh": f'autoload -U bashcompinit\nbashcompinit\neval "$(register-python-argcomplete {self.app_name})"',
             "tcsh": f"`register-python-argcomplete --shell tcsh {self.app_name}`",
-            "fish": f"register-python-argcomplete --shell fish {self.app_name}" ,
+            "fish": f"register-python-argcomplete --shell fish {self.app_name}",
         }
 
     def register(self, subparser):
@@ -29,7 +30,7 @@ class Completion(SubCmd):
             "--shell",
             choices=self.shells.keys(),
             help="The shell type to generate completion commands for",
-            dest="shell"
+            dest="shell",
         )
 
     def exec(self, args, extra):
@@ -48,7 +49,6 @@ class Completion(SubCmd):
             logger.error(f"No shell type provided. See `{self.app_name} {self.name} --help`")
             return
 
-
         if args.shell not in self.shells:
             logger.error(f"Invalid shell type. See `{self.app_name} {self.name} --help`")
             return
@@ -57,4 +57,3 @@ class Completion(SubCmd):
 
         print(f"# enables {self.app_name} tab-completion for subcommands")
         print(self.shells.get(args.shell))
-

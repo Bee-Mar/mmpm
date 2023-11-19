@@ -8,6 +8,7 @@ from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class List(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
@@ -19,64 +20,64 @@ class List(SubCmd):
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
 
-        # TODO: this is almost correct. --title-only shouldn't be allowed with --gui-url or --upgradable
+        # FIXME: this is almost correct. --title-only shouldn't be allowed with --gui-url or --upgradable
 
         self.parser.add_argument(
-                '-t',
-                '--title-only',
-                action='store_true',
-                help='display the title only of packages (used with -c, -a, -e, or -i)',
-                dest='title_only'
-                )
+            "-t",
+            "--title-only",
+            action="store_true",
+            help="display the title only of packages (used with -c, -a, -e, or -i)",
+            dest="title_only",
+        )
 
         group = self.parser.add_mutually_exclusive_group()
 
         group.add_argument(
-                '-a',
-                '--all',
-                action='store_true',
-                help='list all available packages in the marketplace',
-                dest='all'
-                )
+            "-a",
+            "--all",
+            action="store_true",
+            help="list all available packages in the marketplace",
+            dest="all",
+        )
 
         group.add_argument(
-                '-i',
-                '--installed',
-                action='store_true',
-                help='list all locally installed packages',
-                dest='installed'
-                )
+            "-i",
+            "--installed",
+            action="store_true",
+            help="list all locally installed packages",
+            dest="installed",
+        )
 
         group.add_argument(
-                '-e',
-                '--exclude-installed',
-                action='store_true',
-                help='list all available packages in the marketplace, excluding locally installed packages',
-                dest='exclude_installed'
-                )
+            "-e",
+            "--exclude-installed",
+            action="store_true",
+            help="list all available packages in the marketplace, excluding locally installed packages",
+            dest="exclude_installed",
+        )
 
         group.add_argument(
-                '-c',
-                '--categories',
-                action='store_true',
-                help='list all available package categories',
-                dest='categories'
-                )
+            "-c",
+            "--categories",
+            action="store_true",
+            help="list all available package categories",
+            dest="categories",
+        )
 
         group.add_argument(
-                '-g',
-                '--gui-url',
-                action='store_true',
-                help='list the URL of the MMPM GUI',
-                dest='gui_url'
-                )
+            "-g",
+            "--gui-url",
+            action="store_true",
+            help="list the URL of the MMPM GUI",
+            dest="gui_url",
+        )
 
         group.add_argument(
-                '--upgradable',
-                action='store_true',
-                help='list packages that have available upgrades',
-                dest='upgradable'
-                )
+            "--upgradable",
+            action="store_true",
+            help="list packages that have available upgrades",
+            dest="upgradable",
+        )
 
     def exec(self, args, extra):
         if args.installed:
@@ -96,4 +97,3 @@ class List(SubCmd):
             self.database.display_upgradable()
         else:
             logger.msg.no_args(args.subcmd)
-

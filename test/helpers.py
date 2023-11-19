@@ -8,12 +8,14 @@ from pytest import fixture
 # not sure why using a helper fixture isn't working properly, but thats the
 # easiest way to do it in the long run
 
+
 class MutableMagicMock(MagicMock):
     def __setattribute__(self, name, value):
-        if name == 'get':
+        if name == "get":
             self._mock_children[name] = value
         else:
             super().__setattribute__(name, value)
+
 
 class MockedMMPMEnv(MMPMEnv):
     def __init__(self):

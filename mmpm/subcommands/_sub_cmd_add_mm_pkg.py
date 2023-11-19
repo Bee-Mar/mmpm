@@ -5,6 +5,7 @@ from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class AddMmPkg(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
@@ -16,52 +17,52 @@ class AddMmPkg(SubCmd):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
 
         self.parser.add_argument(
-                '-t',
-                '--title',
-                type=str,
-                help='title of MagicMirror package (will be prompted if not provided)',
-                dest='title'
-                )
+            "-t",
+            "--title",
+            type=str,
+            help="title of MagicMirror package (will be prompted if not provided)",
+            dest="title",
+        )
 
         self.parser.add_argument(
-                '-a',
-                '--author',
-                type=str,
-                help='author of MagicMirror package (will be prompted if not provided)',
-                dest='author'
-                )
+            "-a",
+            "--author",
+            type=str,
+            help="author of MagicMirror package (will be prompted if not provided)",
+            dest="author",
+        )
 
         self.parser.add_argument(
-                '-r',
-                '--repo',
-                type=str,
-                help='repo URL of MagicMirror package (will be prompted if not provided)',
-                dest='repo'
-                )
+            "-r",
+            "--repo",
+            type=str,
+            help="repo URL of MagicMirror package (will be prompted if not provided)",
+            dest="repo",
+        )
 
         self.parser.add_argument(
-                '-d',
-                '--desc',
-                type=str,
-                help='description of MagicMirror package (will be prompted if not provided)',
-                dest='desc'
-                )
+            "-d",
+            "--desc",
+            type=str,
+            help="description of MagicMirror package (will be prompted if not provided)",
+            dest="desc",
+        )
 
         self.parser.add_argument(
-                '--remove',
-                nargs='+',
-                help='remove MagicMirror package (similar to `add-apt-repository` --remove)',
-                dest='remove'
-                )
+            "--remove",
+            nargs="+",
+            help="remove MagicMirror package (similar to `add-apt-repository` --remove)",
+            dest="remove",
+        )
 
         self.parser.add_argument(
-                '-y',
-                '--yes',
-                action='store_true',
-                default=False,
-                help='assume yes for user response and do not show prompt (used with --remove)',
-                dest='assume_yes'
-                )
+            "-y",
+            "--yes",
+            action="store_true",
+            default=False,
+            help="assume yes for user response and do not show prompt (used with --remove)",
+            dest="assume_yes",
+        )
 
     def exec(self, args, extra):
         if args.remove:

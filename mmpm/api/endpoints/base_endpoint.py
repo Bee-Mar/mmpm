@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
-from mmpm.logger import MMPMLogger
+import json
 
 from flask import Response, jsonify
-
-import json
+from mmpm.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class BaseEndpoint:
-
-    def __init__(self):
-        pass
-
     def success(msg: str) -> Response:
         return jsonify({"code": 200, "message": msg})
 

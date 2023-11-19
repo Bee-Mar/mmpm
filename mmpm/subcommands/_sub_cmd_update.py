@@ -11,6 +11,7 @@ from pip._internal.operations.freeze import freeze
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class Update(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
@@ -46,15 +47,10 @@ class Update(SubCmd):
         can_upgrade_mmpm = latest_version == current_version
         can_upgrade_magicmirror = self.magicmirror.update()
 
-        available_upgrades = self.database.update(
-            can_upgrade_mmpm=can_upgrade_mmpm,
-            can_upgrade_magicmirror=can_upgrade_magicmirror
-        )
+        available_upgrades = self.database.update(can_upgrade_mmpm=can_upgrade_mmpm, can_upgrade_magicmirror=can_upgrade_magicmirror)
 
         if not available_upgrades:
             print("All packages and applications are up to date.")
             return
 
         print(f"{available_upgrades} upgrade(s) available. Run `mmpm list --upgradable` for details")
-
-

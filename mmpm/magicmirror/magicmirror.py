@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-from mmpm.utils import run_cmd, prompt
-from mmpm.singleton import Singleton
+import os
+import shutil
+import sys
+from os import chdir
+from pathlib import Path, PosixPath
+
+from mmpm.constants import color, symbols
 from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
-from mmpm.constants import symbols, color
-
-import os
-import sys
-import shutil
-from os import chdir
-from pathlib import PosixPath, Path
+from mmpm.singleton import Singleton
+from mmpm.utils import prompt, run_cmd
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -133,7 +133,7 @@ class MagicMirror(Singleton):
                 logger.msg.fatal(f"'{cmd}' command not found. Please install '{cmd}', then re-run 'mmpm install --magicmirror'")
                 return False
 
-        print(color.n_cyan( f"Installing MagicMirror in {root_path}/MagicMirror ..."))
+        print(color.n_cyan(f"Installing MagicMirror in {root_path}/MagicMirror ..."))
         os.system(f"cd {root_path.parent} && git clone https://github.com/MichMich/MagicMirror && cd MagicMirror && npm run install-mm")
 
         print(color.n_green("\nRun 'mmpm mm-ctl --start' to start MagicMirror"))

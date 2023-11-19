@@ -55,7 +55,7 @@ class StdOutMessageWriter:
         print(color.b_yellow("WARNING:"), msg)
 
     def no_args(self, subcmd: str) -> None:
-        '''
+        """
         Helper method to return a standardized error message when the user provides no arguments
 
         Parameters:
@@ -63,11 +63,11 @@ class StdOutMessageWriter:
 
         Returns:
             None
-        '''
-        self.fatal(f'no arguments provided. See `mmpm {subcmd} --help` for usage')
+        """
+        self.fatal(f"no arguments provided. See `mmpm {subcmd} --help` for usage")
 
     def extra_args(self, subcmd: str) -> None:
-        '''
+        """
         Helper method to return a standardized error message when the user provides too many arguments
 
         Parameters:
@@ -75,8 +75,8 @@ class StdOutMessageWriter:
 
         Returns:
             None
-        '''
-        self.fatal(f'`mmpm {subcmd}` does not accept additional arguments. See `mmpm {subcmd} --help`')
+        """
+        self.fatal(f"`mmpm {subcmd}` does not accept additional arguments. See `mmpm {subcmd} --help`")
 
     def fatal(self, msg: str) -> None:
         """
@@ -94,6 +94,7 @@ class StdOutMessageWriter:
     def retrieving(self, url: str, name: str):
         print(f"Retrieving: {url} [{color.n_cyan(name)}] ")
 
+
 # FIXME
 class JSONSocketHandler(logging.handlers.SocketHandler):
     def makePickle(self, record):
@@ -108,40 +109,40 @@ class JSONSocketHandler(logging.handlers.SocketHandler):
 
         # Convert the LogRecord object to a plain dictionary for serialization
         log_record_dict = {
-            'name': record.name,
-            'msg': record.msg,
-            'args': None,
-            'levelname': record.levelname,
-            'levelno': record.levelno,
-            'pathname': record.pathname,
-            'filename': record.filename,
-            'module': record.module,
-            'lineno': record.lineno,
-            'funcName': record.funcName,
-            'created': record.created,
-            'asctime': record.asctime,
-            'msecs': record.msecs,
-            'relativeCreated': record.relativeCreated,
-            'thread': record.thread,
-            'threadName': record.threadName,
-            'processName': record.processName,
-            'process': record.process,
-            'exc_info': None,
-            'exc_text': None,
-            'stack_info': record.stack_info,
-            'lineno': record.lineno,
-            'msg': record.msg,
-            'args': None,
-            'exc_info': None,
-            'created': record.created,
-            'msecs': record.msecs,
-            'relativeCreated': record.relativeCreated,
-            'thread': record.thread,
-            'threadName': record.threadName,
-            'processName': record.processName,
-            'process': record.process,
-            'exc_text': None,
-            'stack_info': record.stack_info,
+            "name": record.name,
+            "msg": record.msg,
+            "args": None,
+            "levelname": record.levelname,
+            "levelno": record.levelno,
+            "pathname": record.pathname,
+            "filename": record.filename,
+            "module": record.module,
+            "lineno": record.lineno,
+            "funcName": record.funcName,
+            "created": record.created,
+            "asctime": record.asctime,
+            "msecs": record.msecs,
+            "relativeCreated": record.relativeCreated,
+            "thread": record.thread,
+            "threadName": record.threadName,
+            "processName": record.processName,
+            "process": record.process,
+            "exc_info": None,
+            "exc_text": None,
+            "stack_info": record.stack_info,
+            "lineno": record.lineno,
+            "msg": record.msg,
+            "args": None,
+            "exc_info": None,
+            "created": record.created,
+            "msecs": record.msecs,
+            "relativeCreated": record.relativeCreated,
+            "thread": record.thread,
+            "threadName": record.threadName,
+            "processName": record.processName,
+            "process": record.process,
+            "exc_text": None,
+            "stack_info": record.stack_info,
         }
 
         serialized_data = jsonpickle.encode(log_record_dict)
@@ -176,7 +177,7 @@ class MMPMLogger:
 
         # TODO: override the makePickle function in the SocketHandler
         # port = logging.handlers.DEFAULT_TCP_LOGGING_PORT
-        #socket_handler = JSONSocketHandler('localhost', port)
+        # socket_handler = JSONSocketHandler('localhost', port)
 
         # MMPMLogger.__logger__.addHandler(socket_handler) # TODO
         MMPMLogger.__logger__.addHandler(file_handler)

@@ -14,12 +14,13 @@ from pygments.formatters.terminal import TerminalFormatter
 
 MMPM_DEFAULT_ENV: dict = {
     "MMPM_MAGICMIRROR_ROOT": Path(paths.HOME_DIR / "MagicMirror"),
-    "MMPM_MAGICMIRROR_URI": 'http://localhost:8080',
-    "MMPM_MAGICMIRROR_PM2_PROCESS_NAME": '',
-    "MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE": '',
+    "MMPM_MAGICMIRROR_URI": "http://localhost:8080",
+    "MMPM_MAGICMIRROR_PM2_PROCESS_NAME": "",
+    "MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE": "",
     "MMPM_IS_DOCKER_IMAGE": False,
     "MMPM_LOG_LEVEL": "INFO",
 }
+
 
 class EnvVar:
     __slots__ = "name", "default", "__tipe", "__value"
@@ -27,7 +28,7 @@ class EnvVar:
     def __init__(self, name: str = "", default=None, tipe=None):
         self.name = name
         self.default = default
-        self.__tipe = tipe # avoid name clashing with 'type'
+        self.__tipe = tipe  # avoid name clashing with 'type'
 
     def get(self):
         """
@@ -60,7 +61,7 @@ class EnvVar:
 
 # Treating this kind of like an enum
 class MMPMEnv(Singleton):
-    __slots__ = tuple({ key.lower() for key in MMPM_DEFAULT_ENV.keys() })
+    __slots__ = tuple({key.lower() for key in MMPM_DEFAULT_ENV.keys()})
 
     def __init__(self):
         super().__init__()
@@ -88,7 +89,6 @@ class MMPMEnv(Singleton):
         with open(paths.MMPM_ENV_FILE, "w", encoding="utf-8") as env:
             json.dump(env_vars, env, indent=2)
 
-
         for key, value in MMPM_DEFAULT_ENV.items():
             lowered_key = key.lower()
             if hasattr(self, lowered_key):
@@ -102,6 +102,5 @@ class MMPMEnv(Singleton):
 
         return current_env
 
-
-    def display(self) -> None: # pragma: no cover
+    def display(self) -> None:  # pragma: no cover
         print(highlight(json.dumps(self.get(), indent=2), JsonLexer(), TerminalFormatter()))

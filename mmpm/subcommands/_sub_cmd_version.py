@@ -7,6 +7,7 @@ from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class Version(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
@@ -22,4 +23,3 @@ class Version(SubCmd):
             logger.error(f"{self.name} does not take arguments")
         else:
             print(version)
-

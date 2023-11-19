@@ -6,6 +6,7 @@ from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class Search(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
@@ -18,28 +19,29 @@ class Search(SubCmd):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
 
         self.parser.add_argument(
-                '-t',
-                '--title-only',
-                action='store_true',
-                help='only show the title of the packages matching the search results',
-                dest='title_only'
-                )
+            "-t",
+            "--title-only",
+            action="store_true",
+            help="only show the title of the packages matching the search results",
+            dest="title_only",
+        )
 
         self.parser.add_argument(
-                '-c',
-                '--case-sensitive',
-                action='store_true',
-                help='search for packages using a case-sensitive query',
-                dest='case_sensitive'
-                )
+            "-c",
+            "--case-sensitive",
+            action="store_true",
+            help="search for packages using a case-sensitive query",
+            dest="case_sensitive",
+        )
 
         self.parser.add_argument(
-                '-e',
-                '--exclude-installed',
-                action='store_true',
-                help='exclude installed packages from search results',
-                dest='exclude_installed'
-                )
+            "-e",
+            "--exclude-installed",
+            action="store_true",
+            help="exclude installed packages from search results",
+            dest="exclude_installed",
+        )
+
     def exec(self, args, extra):
         if not extra:
             logger.msg.no_args(args.subcmd)
@@ -53,5 +55,3 @@ class Search(SubCmd):
 
         for package in query_result:
             package.display(title_only=args.title_only)
-
-

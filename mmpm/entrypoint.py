@@ -20,20 +20,20 @@ def main():
     """
 
     parser = ArgumentParser(
-            prog='mmpm',
-            usage='mmpm <subcommand> [option(s)]',
-            epilog=f'Visit {urls.MMPM_WIKI_URL} for more details',
-            description='''
+        prog="mmpm",
+        usage="mmpm <subcommand> [option(s)]",
+        epilog=f"Visit {urls.MMPM_WIKI_URL} for more details",
+        description="""
             The MagicMirror Package Manager CLI simplifies the
             installation, removal, and general maintenance of MagicMirror packages.
-            '''
-            )
+            """,
+    )
 
     subparser = parser.add_subparsers(
-            title='MMPM subcommands',
-            description='use `mmpm <subcommand> --help` to see more details',
-            dest='subcmd',
-            )
+        title="MMPM subcommands",
+        description="use `mmpm <subcommand> --help` to see more details",
+        dest="subcmd",
+    )
 
     loader = Loader("mmpm")
 

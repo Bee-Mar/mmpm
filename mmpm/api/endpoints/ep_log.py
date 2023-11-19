@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-from mmpm.logger import MMPMLogger
-from mmpm.api.endpoints.base_endpoint import BaseEndpoint
-from mmpm.api.constants import http
-from mmpm.magicmirror.package import MagicMirrorPackage
-from mmpm.constants import paths
-from mmpm.env import MMPM_DEFAULT_ENV
-
-from flask import Blueprint, Response, request
-
 import json
 import logging.handlers
+
+from flask import Blueprint, Response, request
+from mmpm.api.constants import http
+from mmpm.api.endpoints.base_endpoint import BaseEndpoint
+from mmpm.constants import paths
+from mmpm.env import MMPM_DEFAULT_ENV
+from mmpm.logger import MMPMLogger
+from mmpm.magicmirror.package import MagicMirrorPackage
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -20,7 +19,7 @@ class Endpoint(BaseEndpoint):
         self.blueprint = Blueprint("log", __name__, url_prefix="/api/log")
         self.handler = None
 
-        '''
+        """
         @self.blueprint.route("/setup", methods=[http.GET])
         def setup() -> Response:
             current_handler_count = len(logger.handlers)
@@ -51,7 +50,7 @@ class Endpoint(BaseEndpoint):
                 return self.failure("Failed to remove SocketHandler", 500)
 
             return self.success("Removed SocketHandler")
-        '''
+        """
 
         @self.blueprint.route("/tail", methods=[http.GET])
         def tail() -> Response:

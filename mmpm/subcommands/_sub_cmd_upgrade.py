@@ -10,6 +10,7 @@ from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class Upgrade(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
@@ -23,13 +24,13 @@ class Upgrade(SubCmd):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
 
         self.parser.add_argument(
-                '-y',
-                '--yes',
-                action='store_true',
-                default=False,
-                help='assume yes for user response and do not show prompt',
-                dest='assume_yes'
-                )
+            "-y",
+            "--yes",
+            action="store_true",
+            default=False,
+            help="assume yes for user response and do not show prompt",
+            dest="assume_yes",
+        )
 
     def exec(self, args, extra):
         upgradable = self.database.upgradable()
@@ -52,5 +53,3 @@ class Upgrade(SubCmd):
 
         with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="w", encoding="utf-8") as upgrade_file:
             json.dump(upgradable, upgrade_file)
-
-

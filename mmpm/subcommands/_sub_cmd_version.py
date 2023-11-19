@@ -19,7 +19,7 @@ class Version(SubCmd):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
 
     def exec(self, args, extra):
-        if args or extra:
+        if extra:
             logger.error(f"{self.name} does not take arguments")
         else:
             print(version)

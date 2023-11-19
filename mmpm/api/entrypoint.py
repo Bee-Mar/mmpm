@@ -11,6 +11,7 @@ import mmpm.api.endpoints
 from flask import Flask, Response
 from flask_cors import CORS
 from mmpm.logger import MMPMLogger
+from mmpm.subcommands.loader import Loader
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -52,12 +53,9 @@ def exception_handler(error) -> Response:
     return response
 
 
-# dynamically load all the endpoints prefixed with "ep_"
-for module in iter_modules(mmpm.api.endpoints.__path__):
-    if module.name.startswith("ep_"):
-        try:
-            api = import_module(f"mmpm.api.endpoints.{module.name}")
-            app.register_blueprint(api.Endpoint().blueprint)
-        except Exception as err:
-            logger.error(f"Failed to load endpoint {module.name}")
-            print(f"Failed to load subcommand module: {err}")
+# dynamically load all the endpoints within the "mmpm.api.endpoints" module
+path = mmpm.api.endpoints.__path__
+loader = Loader(module_path=path, module_name="mmpm.api.endpoints", prefix="ep_")
+
+for endpoint in loader.objects.values():
+    app.register_blueprint(endpoint.blueprint)

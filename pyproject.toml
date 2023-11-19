@@ -52,7 +52,10 @@ dev = [
   "coverage>=7.3.2",
 ]
 
+# pdm is required to make use of these (pip install pdm)
 [tool.pdm.scripts]
 test = "pytest test"
 lint = "pylint mmpm"
 mypy = "mypy mmpm"
+web = "bash -c 'cd web && bun run start'"
+gunicorn = "gunicorn --worker-class gevent --bind 0.0.0.0:7890 mmpm.wsgi:app --reload"

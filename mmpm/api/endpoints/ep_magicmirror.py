@@ -3,16 +3,17 @@ import json
 
 from flask import Blueprint, Response
 from mmpm.api.constants import http
-from mmpm.api.endpoints.base_endpoint import BaseEndpoint
+from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
 
 
-class Endpoint(BaseEndpoint):
+class Magicmirror(Endpoint):
     def __init__(self):
         super().__init__()
-        self.blueprint = Blueprint("magicmirror", __name__, url_prefix="/api/magicmirror")
+        self.name = "magicmirror"
+        self.blueprint = Blueprint(self.name, __name__, url_prefix="/api/magicmirror")
 
         @self.blueprint.route("/retrieve", methods=[http.GET])
         def load() -> Response:

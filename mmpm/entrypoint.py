@@ -2,6 +2,7 @@
 import sys
 from argparse import ArgumentParser
 
+import mmpm.subcommands
 from mmpm.constants import urls
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.loader import Loader
@@ -35,9 +36,16 @@ def main():
         dest="subcmd",
     )
 
-    loader = Loader("mmpm")
+    path = mmpm.subcommands.__path__
 
-    for subcommand in loader.subcommands.values():
+    loader = Loader(
+        module_path=path,
+        module_name="mmpm.subcommands",
+        app_name="mmpm",
+        prefix="_sub_cmd",
+    )
+
+    for subcommand in loader.objects.values():
         subcommand.register(subparser)
 
     if len(sys.argv) < 2:
@@ -45,7 +53,7 @@ def main():
         sys.exit(127)
 
     args, extra = parser.parse_known_args()
-    subcommand = loader.subcommands.get(args.subcmd)
+    subcommand = loader.objects.get(args.subcmd)
 
     MagicMirrorDatabase().load()
 

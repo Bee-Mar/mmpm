@@ -3,7 +3,7 @@ import json
 
 from flask import Blueprint, Response, request
 from mmpm.api.constants import http
-from mmpm.api.endpoints.base_endpoint import BaseEndpoint
+from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.constants import paths
 from mmpm.env import MMPM_DEFAULT_ENV
 from mmpm.logger import MMPMLogger
@@ -12,10 +12,11 @@ from mmpm.magicmirror.package import MagicMirrorPackage
 logger = MMPMLogger.get_logger(__name__)
 
 
-class Endpoint(BaseEndpoint):
+class Env(Endpoint):
     def __init__(self):
         super().__init__()
-        self.blueprint = Blueprint("env", __name__, url_prefix="/api/env")
+        self.name = "env"
+        self.blueprint = Blueprint(self.name, __name__, url_prefix="/api/env")
 
         @self.blueprint.route("/default", methods=[http.GET])
         def default() -> Response:

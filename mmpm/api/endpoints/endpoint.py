@@ -7,7 +7,10 @@ from mmpm.logger import MMPMLogger
 logger = MMPMLogger.get_logger(__name__)
 
 
-class BaseEndpoint:
+class Endpoint:
+    def __init__(self):
+        self.name: str = ""
+
     def success(msg: str) -> Response:
         return jsonify({"code": 200, "message": msg})
 

@@ -3,36 +3,28 @@ from importlib import import_module
 from pkgutil import iter_modules
 from typing import Dict, List
 
-import mmpm.subcommands
-
 
 class Loader:
-    """Handles dynamically loading all subcommands in the subcommands module"""
+    """Handles dynamically loading all subcommands/endpoints in the subcommands and endpoints module"""
 
-    def __init__(self, app_name: str = ""):
-        self.subcommands: Dict[str, object] = self.__load__(app_name)
+    def __init__(self, module_path, module_name: str, app_name: str = "", prefix: str = ""):
+        self.objects: Dict[str, object] = self.__load__(module_path, module_name, app_name, prefix)
 
-    def __load__(self, app_name: str) -> Dict[str, object]:
-        subcommands: Dict[str, object] = {}
-        snake_to_pascal = lambda name : name.replace("_", " ").title().replace(" ", "")
+    def __load__(self, module_path, module_name: str, app_name: str = "", prefix: str = "") -> Dict[str, object]:
+        objects: Dict[str, object] = {}
+        snake_to_pascal = lambda name: name.replace("_", " ").title().replace(" ", "")
 
-        for module in iter_modules(mmpm.subcommands.__path__):
-            if module.name.startswith("_sub_cmd"):
-                class_name = snake_to_pascal(module.name.replace("_sub_cmd", ""))
+        for module in iter_modules(module_path):
+            if module.name.startswith(prefix):
+                class_name = snake_to_pascal(module.name.replace(prefix, ""))
 
                 try:
-                    imported_module = import_module(f"mmpm.subcommands.{module.name}")
-                    subcommand = getattr(imported_module, class_name)
-                    instance = subcommand(app_name)
-
-                    has_basic_attrs = hasattr(instance, "register") and hasattr(instance, "exec") and hasattr(instance, "name")
-
-                    assert has_basic_attrs, f"{class_name} must inherit and implement all SubCmd attributes"
-                    subcommands[instance.name] = instance
+                    imported_module = import_module(f"{module_name}.{module.name}")
+                    objekt = getattr(imported_module, class_name)
+                    instance = objekt(app_name) if app_name else objekt()
+                    objects[instance.name] = instance
 
                 except (AttributeError, AssertionError, Exception) as error:
                     print(f"Failed to load subcommand module: {error}")
 
-        return subcommands
-
-
+        return objects

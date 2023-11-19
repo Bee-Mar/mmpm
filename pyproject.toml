@@ -1,0 +1,53 @@
+[project]
+name = "mmpm"
+version = "4.0.0"
+description = "MMPM, the MagicMirror Package Manager CLI simplifies the installation, removal, and general maintenance of MagicMirror packages"
+authors = [
+  { name = "Brandon Marlowe", email = "bpmarlowe-software@protonmail.com" },
+]
+dependencies = [
+  "Flask-Cors>=3.0.8",
+  "argcomplete>=2.0.0",
+  "argparse>=1.4",
+  "beautifulsoup4>=4.11.1",
+  "colorama>=0.4.3",
+  "flask-socketio>=5.3.2",
+  "flask>=2.2.0",
+  "gevent>=22.10.0",
+  "gunicorn>=20.1.0",
+  "jinja2>=3.1.0",
+  "jsonpickle>=3.0.1",
+  "pygments>=2.12.0",
+  "python-socketio[client]>=5.7.0",
+  "requests>=2.28.0",
+  "systemd-service==1.8",
+  "yaspin>=2.3.0",
+]
+requires-python = ">=3.8"
+readme = "README.md"
+license = { text = "MIT" }
+keywords = [
+  "MagicMirror magicmirror package-manager mmpm MMPM magicmirror-package-manager package manager magicmirror_package_manager",
+]
+
+[project.urls]
+Homepage = "https://github.com/Bee-Mar/mmpm"
+Downloads = "https://github.com/Bee-Mar/mmpm/archive/4.0.0.tar.gz"
+
+[project.scripts]
+mmpm = "mmpm.entrypoint:main"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "mypy>=1.7.0",
+    "pylint>=3.0.2",
+    "codecov>=2.1.13",
+    "types-requests>=2.31.0.10",
+    "pytest>=7.4.3",
+    "faker>=20.0.3",
+    "coverage>=7.3.2",
+]

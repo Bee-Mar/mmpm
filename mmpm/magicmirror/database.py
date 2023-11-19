@@ -21,7 +21,7 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class MagicMirrorDatabase(Singleton):
-    def __init__(self): # singleton requirement
+    def __init__(self):
         self.env = MMPMEnv()
         self.packages: List[MagicMirrorPackage] = None
         self.last_update: datetime.datetime = None
@@ -40,7 +40,6 @@ class MagicMirrorDatabase(Singleton):
         """
 
         self.packages: List[MagicMirrorPackage] = []
-        response: requests.Response = requests.Response()
 
         try:
             response = requests.get(urls.MAGICMIRROR_MODULES_URL, timeout=10)
@@ -52,8 +51,6 @@ class MagicMirrorDatabase(Singleton):
         table_soup = soup.find_all("table")
         categories_soup = soup.find_all(attrs={"class": "markdown-body"})[0].find_all("h3")
 
-        # the last entry of the html element contents contains the actual category name
-        # also skip past "Module Authors" and "General Advice"
         categories = []
 
         for category in categories_soup[2:]:
@@ -62,8 +59,6 @@ class MagicMirrorDatabase(Singleton):
                     categories.append(category.contents[-1].contents[0])
                 else:
                     categories.append(category.contents[-1])
-
-        #categories: list = [category.contents[-1].contents[0] for category in categories_soup][2:]
 
         # the first index is a row that literally says 'Title' 'Author' 'Description'
         tr_soup: list = [table.find_all("tr")[1:] for table in table_soup]

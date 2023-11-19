@@ -47,11 +47,7 @@ def main():
     args, extra = parser.parse_known_args()
     subcommand = loader.subcommands.get(args.subcmd)
 
-    # TODO: find a better way to setup the singleton database for the other commands
-    db = MagicMirrorDatabase()
-    db_expired = db.is_expired()
-    should_refresh = True if args.subcmd == "db" and args.refresh else db_expired
-    db.load(refresh=should_refresh)
+    MagicMirrorDatabase().load()
 
     subcommand.exec(args, extra)
 

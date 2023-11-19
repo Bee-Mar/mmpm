@@ -22,14 +22,6 @@ class Db(SubCmd):
         group = self.parser.add_mutually_exclusive_group()
 
         group.add_argument(
-            '-r',
-            '--refresh',
-            action='store_true',
-            help='forces a refresh of the packages database',
-            dest='refresh',
-        )
-
-        group.add_argument(
             '-i',
             '--info',
             action='store_true',
@@ -46,10 +38,12 @@ class Db(SubCmd):
         )
 
     def exec(self, args, extra):
-        if args.refresh:
-            self.database.load(refresh=True)
         if extra:
             logger.msg.extra_args(args.subcmd)
+            return
+
+        if args.refresh:
+            self.database.load(refresh=True)
         elif args.info:
             self.database.info()
         elif args.dump:

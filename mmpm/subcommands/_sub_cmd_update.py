@@ -26,6 +26,9 @@ class Update(SubCmd):
     def exec(self, args, extra):
         if extra:
             logger.msg.extra_args(args.subcmd)
+            return
+
+        self.database.load(refresh=True)
 
         url = "https://pypi.org/pypi/mmpm/json"
         logger.msg.retrieving("https://pypi.org/pypi/mmpm", "mmpm")

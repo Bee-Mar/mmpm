@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
-from mmpm.logger import MMPMLogger
-from mmpm.env import MMPMEnv
-from mmpm.utils import run_cmd
-from mmpm.constants import symbols, color
-
+import datetime
+import json
 import os
 import sys
-import json
-import mmpm.utils
-import datetime
-import requests
+from multiprocessing import cpu_count
 from pathlib import Path, PosixPath
 from re import sub
-from bs4 import Tag, NavigableString
-from typing import List, Dict, Tuple
 from textwrap import fill
-from multiprocessing import cpu_count
+from typing import Dict, List, Tuple
+
+import mmpm.utils
+import requests
+from bs4 import NavigableString, Tag
+from mmpm.constants import color, symbols
+from mmpm.env import MMPMEnv
+from mmpm.logger import MMPMLogger
+from mmpm.utils import run_cmd
 
 NA: str = "N/A"
 
@@ -123,7 +123,7 @@ class MagicMirrorPackage:
             print(fill(f"  Description: {self.description}\n", width=80), "\n")
 
         else:
-            print(f" \ {self.repository}")
+            print(f" \n\t{self.repository}")
 
         print()
 

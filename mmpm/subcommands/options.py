@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 # pylint: disable=unused-argument
-from mmpm.constants import urls
-import mmpm.subcommands
+import sys
+from argparse import ArgumentParser
+from importlib import import_module
+from pkgutil import iter_modules
 
 import argcomplete
-from pkgutil import iter_modules
-from importlib import import_module
-from argparse import ArgumentParser
+import mmpm.subcommands
+from mmpm.constants import urls
+from mmpm.subcommands.loader import Loader
 
 
 def setup() -> ArgumentParser:
@@ -35,6 +37,11 @@ def setup() -> ArgumentParser:
             description='use `mmpm <subcommand> --help` to see more details',
             dest='subcmd',
             )
+
+    loader = Loader("mmpm")
+    print(loader.subcommands)
+
+    sys.exit(0)
 
     # dynamically load all the submodules prefixed with "_sub_cmd"
     for module in iter_modules(mmpm.subcommands.__path__):

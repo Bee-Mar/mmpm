@@ -1,10 +1,25 @@
 #!/usr/bin/env python3
 """ Command line options for 'version' subcommand """
-from argparse import _SubParsersAction
 
-def setup(subparser: _SubParsersAction):
-    subparser.add_parser(
-            "version",
-            usage='\n  mmpm version',
-            help='display MMPM version number',
-            )
+from mmpm.__version__ import version
+from mmpm.logger import MMPMLogger
+from mmpm.subcommands.sub_cmd import SubCmd
+
+logger = MMPMLogger.get_logger(__name__)
+
+class Version(SubCmd):
+    def __init__(self, app_name):
+        self.app_name = app_name
+        self.name = "version"
+        self.help = f"Display {self.app_name} application version"
+        self.usage = f"{self.app_name} {self.name}"
+
+    def register(self, subparser):
+        self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
+
+    def exec(self, args, extra):
+        if args or extra:
+            logger.error(f"{self.name} does not take arguments")
+        else:
+            print(version)
+

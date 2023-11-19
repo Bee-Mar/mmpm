@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-from mmpm.constants import symbols
-from mmpm.logger import MMPMLogger
-
-import sys
 import os
-import subprocess
-import time
-import requests
 import socket
+import subprocess
+import sys
+import time
 from pathlib import PosixPath
 from typing import List, Optional, Tuple
 
+import requests
 from yaspin import yaspin
 from yaspin.spinners import Spinners
+
+from mmpm.constants import symbols
+from mmpm.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -62,31 +62,6 @@ def run_cmd(command: List[str], progress=True, background=False, message: str=""
         stdout, stderr = p.communicate()
 
         return p.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
-
-
-def edit(file: PosixPath) -> Optional[None]:
-    '''
-    Checks if the requested file exists, and if not, the file is created. Then, the 'edit'
-    command is used to open the file.
-
-    Parameters:
-        file (PosixPath): file path to open with 'edit' command
-
-    Returns:
-        None
-    '''
-
-    if not file.exists():
-        try:
-            logger.msg.warning(f'{file} does not exist. Creating file.')
-            file.parent.mkdir(parents=True, exist_ok=True)
-            file.touch(mode=0o664, exist_ok=True)
-        except OSError as error:
-            logger.msg.fatal(f'Unable to create {file}: {str(error)}')
-
-    logger.info(f'Opening {file} for user to edit')
-    command = os.getenv("EDITOR", os.getenv("VISUAL", "edit"))
-    os.system(f'{command} {file}')
 
 
 def get_pids(process_name: str) -> List[str]:

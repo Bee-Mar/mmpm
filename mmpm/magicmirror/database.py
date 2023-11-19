@@ -1,23 +1,21 @@
 #!/usr/bin/env python3
-from mmpm.logger import MMPMLogger
-from mmpm.singleton import Singleton
-from mmpm.magicmirror.package import MagicMirrorPackage
-from mmpm.env import MMPMEnv
-from mmpm.constants import paths, urls, symbols, color
-from mmpm.utils import run_cmd, validate_input, prompt
-
-from bs4 import BeautifulSoup
-from pygments import highlight, formatters
-from pygments.lexers.data import JsonLexer
-
+import datetime
+import json
 import os
 import sys
-import json
-import datetime
-import requests
-from typing import Dict, List, Any
 from pathlib import Path, PosixPath
+from typing import Any, Dict, List
 
+import requests
+from bs4 import BeautifulSoup
+from mmpm.constants import color, paths, symbols, urls
+from mmpm.env import MMPMEnv
+from mmpm.logger import MMPMLogger
+from mmpm.magicmirror.package import MagicMirrorPackage
+from mmpm.singleton import Singleton
+from mmpm.utils import prompt, run_cmd, validate_input
+from pygments import formatters, highlight
+from pygments.lexers.data import JsonLexer
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -56,7 +54,16 @@ class MagicMirrorDatabase(Singleton):
 
         # the last entry of the html element contents contains the actual category name
         # also skip past "Module Authors" and "General Advice"
-        categories: list = [category.contents[-1].contents[0] for category in categories_soup][2:]
+        categories = []
+
+        for category in categories_soup[2:]:
+            if hasattr(category, "contents"):
+                if hasattr(category.contents, "contents"):
+                    categories.append(category.contents[-1].contents[0])
+                else:
+                    categories.append(category.contents[-1])
+
+        #categories: list = [category.contents[-1].contents[0] for category in categories_soup][2:]
 
         # the first index is a row that literally says 'Title' 'Author' 'Description'
         tr_soup: list = [table.find_all("tr")[1:] for table in table_soup]
@@ -72,8 +79,10 @@ class MagicMirrorDatabase(Singleton):
                     pkg = MagicMirrorPackage.from_raw_data(table_data, category=categories[index])
                     self.packages.append(pkg)
 
-                except AttributeError as error:
+                except Exception as error: # broad exception isn't best, but there's a lot that can happen here
+                    logger.error("There may be a structural change in the MagicMirror 3rd Party module wiki page. Please create an issue on the MMPM's GitHub repository.")
                     logger.msg.error(str(error))
+                    continue
 
 
     def __discover_installed_packages__(self) -> None:
@@ -187,7 +196,7 @@ class MagicMirrorDatabase(Singleton):
         return datetime.datetime.now() > self.expiration_date
 
 
-    def search(self, query: str, case_sensitive: bool = False, by_title_only: bool = False) -> List[MagicMirrorPackage]:
+    def search(self, query: str, case_sensitive: bool = False, title_only: bool = False) -> List[MagicMirrorPackage]:
         """
         Used to search the 'modules' for either a category, or keyword/phrase
         appearing within module descriptions. If the argument supplied is a
@@ -198,7 +207,7 @@ class MagicMirrorDatabase(Singleton):
         Parameters:
             query (str): user provided search string
             case_sensitive (bool): if True, the query's exact casing is used in search
-            by_title_only (bool): if True, only the title is considered when matching packages to query
+            title_only (bool): if True, only the title is considered when matching packages to query
 
         Returns:
             search_results (List[MagicMirrorPackage]): the dictionary of packages, grouped by category that are search matches
@@ -206,7 +215,7 @@ class MagicMirrorDatabase(Singleton):
 
         query = query.strip()
 
-        if by_title_only:
+        if title_only:
             if case_sensitive:
                 match = lambda query, pkg: query == pkg.title
             else:
@@ -312,7 +321,7 @@ class MagicMirrorDatabase(Singleton):
         else:
             for category in categories:
                 package_count = sum(1 for package in self.packages if package.category == category)
-                print(color.n_green(category), f"\n  Packages: {package_count}\n")
+                print(color.n_green(category), f"\n\tPackages: {package_count}\n")
 
 
     def display_upgradable(self) -> None:

@@ -1,42 +1,28 @@
 #!/usr/bin/env python3
 """ Command line options for 'log' subcommand """
-from argparse import _SubParsersAction
+from mmpm.logger import MMPMLogger
+from mmpm.subcommands.sub_cmd import SubCmd
 
-def setup(subparser: _SubParsersAction):
-    parser = subparser.add_parser(
-            "log",
-            usage='\n  mmpm log [--cli] [--web] [--tail]',
-            help='display, tail, or zip the MMPM log files'
-            )
+logger = MMPMLogger.get_logger(__name__)
 
-    parser.add_argument(
-            '-c',
-            '--cli',
-            action='store_true',
-            help='cat the MMPM CLI log files',
-            dest='cli'
-            )
+class Log(SubCmd):
+    def __init__(self, app_name):
+        self.app_name = app_name
+        self.name = "log"
+        self.help = f"display, tail, or zip the {self.name} log files"
+        self.usage = f"{self.app_name} {self.name} [--cli] [--gui] [--tail] [--zip]"
 
-    parser.add_argument(
-            '-g',
-            '--gui',
-            action='store_true',
-            help='cat the MMPM GUI (Gunicorn) log files',
-            dest='gui'
-            )
+    def register(self, subparser):
+        self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
 
-    parser.add_argument(
-            '-t',
-            '--tail',
-            action='store_true',
-            help='tail the log file(s) in real time',
-            dest='tail'
-            )
-
-    parser.add_argument(
-            '--zip',
-            action='store_true',
-            help='compress the MMPM log file(s), and save them in your current directory',
-            dest='zip'
-            )
+    def exec(self, args, extra):
+        if extra:
+            logger.msg.extra_args(args.subcmd)
+        elif args.zip:
+            MMPMLogger.zip()
+        elif not args.cli and not args.gui:
+            # if the user doesn't provide arguments, just display everything, but consider the --tail arg
+            MMPMLogger.display(cli_logs=True, gui_logs=True, tail=args.tail)
+        else:
+            MMPMLogger.display(args.cli, args.gui, args.tail)
 

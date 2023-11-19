@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-from mmpm.utils import get_host_ip, run_cmd, edit, get_pids, kill_pids_of_process, prompt, validate_input, safe_get_request, systemctl
-
 import os
 import unittest
-import requests
-from unittest.mock import patch
 from pathlib import PosixPath
+from unittest.mock import patch
+
+import requests
 from faker import Faker
+from mmpm.utils import (get_host_ip, get_pids, kill_pids_of_process, prompt,
+                        run_cmd, safe_get_request, systemctl, validate_input)
 
 fake = Faker()
 

@@ -51,3 +51,8 @@ dev = [
   "faker>=20.0.3",
   "coverage>=7.3.2",
 ]
+
+[tool.pdm.scripts]
+test = "pytest test"
+lint = "pylint mmpm"
+mypy = "mypy mmpm"

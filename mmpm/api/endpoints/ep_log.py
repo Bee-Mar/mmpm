@@ -15,9 +15,8 @@ logger = MMPMLogger.get_logger(__name__)
 
 class Log(Endpoint):
     def __init__(self):
-        super().__init__()
         self.name = "log"
-        self.blueprint = Blueprint(self.name, __name__, url_prefix="/api/log")
+        self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
         self.handler = None
 
         """

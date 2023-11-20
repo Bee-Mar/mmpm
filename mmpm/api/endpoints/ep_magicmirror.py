@@ -11,9 +11,8 @@ logger = MMPMLogger.get_logger(__name__)
 
 class Magicmirror(Endpoint):
     def __init__(self):
-        super().__init__()
         self.name = "magicmirror"
-        self.blueprint = Blueprint(self.name, __name__, url_prefix="/api/magicmirror")
+        self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
 
         @self.blueprint.route("/retrieve", methods=[http.GET])
         def load() -> Response:

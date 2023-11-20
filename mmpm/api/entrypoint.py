@@ -10,6 +10,7 @@ from pkgutil import iter_modules
 import mmpm.api.endpoints
 from flask import Flask, Response
 from flask_cors import CORS
+from mmpm.api.endpoints.index import Index
 from mmpm.logger import MMPMLogger
 from mmpm.subcommands.loader import Loader
 
@@ -58,4 +59,7 @@ path = mmpm.api.endpoints.__path__
 loader = Loader(module_path=path, module_name="mmpm.api.endpoints", prefix="ep_")
 
 for endpoint in loader.objects.values():
+    logger.info(f"Loading blueprint for {endpoint}")
     app.register_blueprint(endpoint.blueprint)
+
+app.register_blueprint(Index(app.url_map).blueprint)

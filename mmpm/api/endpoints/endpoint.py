@@ -11,8 +11,8 @@ class Endpoint:
     def __init__(self):
         self.name: str = ""
 
-    def success(msg: str) -> Response:
+    def success(self, msg: str) -> Response:
         return jsonify({"code": 200, "message": msg})
 
-    def failure(msg: str, code: int = 500) -> Response:
+    def failure(self, msg: str, code: int = 500) -> Response:
         return jsonify({"code": code, "message": msg})

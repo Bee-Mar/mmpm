@@ -5,6 +5,7 @@ from flask import Blueprint, Response, request
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.logger import MMPMLogger
+from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.package import MagicMirrorPackage
 
 logger = MMPMLogger.get_logger(__name__)
@@ -12,19 +13,16 @@ logger = MMPMLogger.get_logger(__name__)
 
 class Packages(Endpoint):
     def __init__(self):
-        super().__init__()
         self.name = "packages"
-        self.blueprint = Blueprint(self.name, __name__, url_prefix="/api/packages")
+        self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
+        self.db = MagicMirrorDatabase()
 
         @self.blueprint.route("/retrieve", methods=[http.GET])
         def retrieve() -> Response:
             logger.info("Loading database")
 
-            is_expired = self.db.is_expired()
-            self.db.load(refresh=is_expired)
-
-            if is_expired:
-                self.db.update()
+            # it's assumed a call the to the database endpoint would happen first to refresh the packages
+            self.db.load()
 
             if not self.db.packages:
                 message = "Failed to load database"

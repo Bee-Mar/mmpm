@@ -11,9 +11,8 @@ logger = MMPMLogger.get_logger(__name__)
 
 class Database(Endpoint):
     def __init__(self):
-        super().__init__()
         self.name = "database"
-        self.blueprint = Blueprint(self.name, __name__, url_prefix="/api/database")
+        self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
 
         @self.blueprint.route("/load", methods=[http.GET])
         def load() -> Response:

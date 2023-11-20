@@ -16,6 +16,38 @@ class Log(SubCmd):
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
 
+        self.parser.add_argument(
+            "-t",
+            "--tail",
+            action="store_true",
+            help=f"Tail {self.app_name} log file(s)",
+            dest="tail",
+        )
+
+        self.parser.add_argument(
+            "-c",
+            "--cli",
+            action="store_true",
+            help=f"Display {self.app_name} CLI log file(s)",
+            dest="cli",
+        )
+
+        self.parser.add_argument(
+            "-g",
+            "--gui",
+            action="store_true",
+            help=f"Display {self.app_name} GUI log file(s)",
+            dest="gui",
+        )
+
+        self.parser.add_argument(
+            "-z",
+            "--zip",
+            action="store_true",
+            help=f"Zip {self.app_name} CLI and/or GUI log file(s)",
+            dest="zip",
+        )
+
     def exec(self, args, extra):
         if extra:
             logger.msg.extra_args(args.subcmd)

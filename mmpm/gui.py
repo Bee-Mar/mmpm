@@ -38,7 +38,7 @@ class MMPMGui(Singleton):
             return
 
         if not shutil.which("nginx"):
-            logger.msg.fatal("NGINX is not in your $PATH. Please install `nginx-full` (Debian), `nginx-mainline` (Arch) or equivalent")
+            logger.fatal("NGINX is not in your $PATH. Please install `nginx-full` (Debian), `nginx-mainline` (Arch) or equivalent")
 
         sub_gunicorn: str = "SUBSTITUTE_gunicorn"
         sub_user: str = "SUBSTITUTE_user"
@@ -47,9 +47,7 @@ class MMPMGui(Singleton):
         gunicorn_executable: str = shutil.which("gunicorn")
 
         if not gunicorn_executable:
-            message = "Gunicorn executable not found. Please ensure Gunicorn is installed and in your PATH"
-            logger.msg.fatal(message)
-            logger.fatal(message)
+            logger.fatal("Gunicorn executable not found. Please ensure Gunicorn is installed and in your PATH")
 
         temp_etc: str = "/tmp/etc"
 
@@ -68,7 +66,7 @@ class MMPMGui(Singleton):
             subbed = subbed.replace(sub_user, user)
             mmpm_service.write(subbed)
 
-        logger.msg.info("Copying NGINX and SystemdD service configs ")
+        logger.info("Copying NGINX and SystemdD service configs ")
 
         os.system(
             f"""
@@ -81,22 +79,17 @@ class MMPMGui(Singleton):
 
         print(symbols.GREEN_CHECK_MARK)
 
-        logger.msg.info("Cleaning configuration files and resetting SystemdD daemons ")
-        print(symbols.GREEN_CHECK_MARK)
+        logger.info("Cleaning configuration files and resetting SystemdD daemons ")
 
         os.system("rm -rf /tmp/etc")
 
-        logger.msg.info("Reloading SystemdD daemon ")
+        logger.info("Reloading SystemdD daemon ")
         daemon_reload = systemctl("daemon-reload")
 
         if daemon_reload.returncode != 0:
-            print(symbols.RED_X)
-            logger.msg.error("Failed to reload SystemdD daemon. See `mmpm log` for details")
-            logger.error(daemon_reload.stderr.decode("utf-8"))
-        else:
-            print(symbols.GREEN_CHECK_MARK)
+            logger.error(f"Failed to reload SystemdD daemon: {daemon_reload.stderr.decode('utf-8')}")
 
-        logger.msg.info("Enabling MMPM SystemdD daemon ")
+        logger.info("Enabling MMPM SystemdD daemon ")
 
         enable_mmpm_service = systemctl("enable", ["mmpm.service"])
 
@@ -125,7 +118,7 @@ class MMPMGui(Singleton):
                 self.remove()
             sys.exit(127)
 
-        logger.msg.info("Restarting NGINX SystemD service ")
+        logger.info("Restarting NGINX SystemD service ")
         restart_nginx = systemctl("restart", ["nginx"])
 
         if restart_nginx.returncode != 0:
@@ -160,14 +153,13 @@ class MMPMGui(Singleton):
         is_active = systemctl("is-active", ["mmpm.service"])
 
         if is_active.returncode == 0:
-            logger.msg.info("Stopping MMPM SystemD service ")
+            logger.info("Stopping MMPM SystemD service ")
             stopping = systemctl("stop", ["mmpm.service"])
 
             if stopping.returncode == 0:
                 print(symbols.GREEN_CHECK_MARK)
             else:
-                print(symbols.RED_X)
-                logger.msg.error("Failed to stop MMPM SystemD service. See `mmpm log` for details")
+                logger.error("Failed to stop MMPM SystemD service. See `mmpm log` for details")
                 logger.error(f"{stopping.stdout.decode('utf-8')}\n{stopping.stderr.decode('utf-8')}")
 
         elif is_active.stdout.decode("utf-8") == INACTIVE:
@@ -176,20 +168,18 @@ class MMPMGui(Singleton):
         is_enabled = systemctl("is-enabled", ["mmpm.service"])
 
         if is_enabled.returncode == 0:
-            logger.msg.info("Disabling MMPM SystemD service ")
             disabling = systemctl("disable", ["mmpm.service"])
 
             if disabling.returncode == 0:
-                print(symbols.GREEN_CHECK_MARK)
+                logger.info("Disabled MMPM SystemD service")
             else:
-                print(symbols.RED_X)
-                logger.msg.error("Failed to disable MMPM SystemD service. See `mmpm log` for details")
-                logger.error(f"{disabling.stdout.decode('utf-8')}\n{disabling.stderr.decode('utf-8')}")
+                error = f"{disabling.stdout.decode('utf-8')}\n{disabling.stderr.decode('utf-8')}"
+                logger.error(f"Failed to disable MMPM SystemD service: {error}")
 
         elif is_enabled.stdout.decode("utf-8") == DISABLED:
             print(f"MMPM SystemD service not enabled, nothing to do {symbols.GREEN_CHECK_MARK}")
 
-        logger.msg.info("Force removing NGINX and SystemD configs ")
+        logger.info("Force removing NGINX and SystemD configs ")
 
         cmd: str = f"""
         sudo rm -f {paths.MMPM_SYSTEMD_SERVICE_FILE};
@@ -203,23 +193,21 @@ class MMPMGui(Singleton):
 
         os.system(cmd)
 
-        logger.msg.info("Reloading SystemdD daemon ")
+        logger.info("Reloading SystemdD daemon ")
         daemon_reload = systemctl("daemon-reload")
 
         if daemon_reload.returncode != 0:
-            print(symbols.RED_X)
-            logger.msg.error("Failed to reload SystemdD daemon. See `mmpm log` for details")
-            logger.error(daemon_reload.stderr.decode("utf-8"))
+            error = daemon_reload.stderr.decode("utf-8")
+            logger.error(f"Failed to reload SystemdD daemon. {error}")
         else:
             print(symbols.GREEN_CHECK_MARK)
 
-        logger.msg.info("Restarting NGINX SystemD service ")
+        logger.info("Restarting NGINX SystemD service ")
         restart_nginx = systemctl("restart", ["nginx"])
 
         if restart_nginx.returncode != 0:
-            print(symbols.RED_X)
-            logger.msg.error("Failed to restart NGINX SystemdD daemon. See `mmpm log` for details")
-            logger.error(restart_nginx.stderr.decode("utf-8"))
+            error = restart_nginx.stderr.decode("utf-8")
+            logger.error(f"Failed to restart NGINX SystemdD daemon. See `mmpm log` for details: {error}")
         else:
             print(symbols.GREEN_CHECK_MARK)
 
@@ -239,7 +227,7 @@ class MMPMGui(Singleton):
         """
 
         if not os.path.exists(paths.MMPM_NGINX_CONF_FILE):
-            logger.msg.fatal("The MMPM NGINX configuration file does not appear to exist. Is the GUI installed?")
+            logger.fatal("The MMPM NGINX configuration file does not appear to exist. Is the GUI installed?")
 
         # this value needs to be retrieved dynamically in case the user modifies the nginx conf
         with open(paths.MMPM_NGINX_CONF_FILE, "r", encoding="utf-8") as conf:
@@ -248,6 +236,6 @@ class MMPMGui(Singleton):
         try:
             port: str = findall(r"listen\s?\d+", mmpm_conf)[0].split()[1]
         except IndexError:
-            logger.msg.fatal("Unable to retrieve the port number of the MMPM web interface")
+            logger.fatal("Unable to retrieve the port number of the MMPM web interface")
 
         return f"http://{gethostbyname(gethostname())}:{port}"

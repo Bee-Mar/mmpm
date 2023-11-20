@@ -37,9 +37,9 @@ class Show(SubCmd):
 
             for status in health.values():
                 if status["error"]:
-                    logger.msg.fatal(status["error"])
+                    logger.fatal(status["error"])
                 elif status["warning"]:
-                    logger.msg.warning(status["warning"])
+                    logger.warning(status["warning"])
 
         for query in extra:
             for package in self.database.search(query, title_only=True):

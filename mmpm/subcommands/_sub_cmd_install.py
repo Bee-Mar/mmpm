@@ -7,6 +7,7 @@ from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.subcommands.sub_cmd import SubCmd
+from mmpm.utils import prompt
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -49,7 +50,13 @@ class Install(SubCmd):
                 results.extend(filter(lambda pkg: name == pkg.title, self.database.packages))
 
                 if not results:
-                    logger.msg.error("Unable to locate package(s) based on query.")
+                    logger.error("Unable to locate package(s) based on query.")
 
         for package in results:
-            package.install(assume_yes=args.assume_yes)
+            if package.is_installed:
+                logger.warning(f"{package.title} is already installed")
+                continue
+
+            if not package.install(assume_yes=args.assume_yes) and prompt(f"Installation failed. Would you like to remove {package.title}?"):
+                package.is_installed = True
+                package.remove(assume_yes=True)

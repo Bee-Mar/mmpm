@@ -75,8 +75,7 @@ class MagicMirrorController(Singleton):
         try:
             client.connect(self.env.mmpm_magicmirror_uri.get(), namespaces=[ns])
         except (OSError, BrokenPipeError, Exception) as error:
-            logger.msg.error("Failed to connect to MagicMirror, closing socket. Is MagicMirror running?")
-            logger.error(str(error))
+            logger.error(f"Failed to connect to MagicMirror, closing socket. Is MagicMirror running? : {error}")
 
     def hide_modules(self, modules_to_hide):
         client = MagicMirrorClientFactory("FROM_MMPM_APP_toggle_modules", {"directive": "hide", "modules": modules_to_hide})
@@ -84,8 +83,7 @@ class MagicMirrorController(Singleton):
         try:
             client.connect(self.env.mmpm_magicmirror_uri.get(), namespaces=[ns])
         except (OSError, BrokenPipeError, Exception) as error:
-            logger.msg.error("Failed to connect to MagicMirror, closing socket. Is MagicMirror running?")
-            logger.error(str(error))
+            logger.error(f"Failed to connect to MagicMirror, closing socket. Is MagicMirror running? : {error}")
 
     def show_modules(self, modules_to_show):
         client = MagicMirrorClientFactory("FROM_MMPM_APP_toggle_modules", data={"directive": "show", "modules": modules_to_show})
@@ -93,8 +91,7 @@ class MagicMirrorController(Singleton):
         try:
             client.connect(self.env.mmpm_magicmirror_uri.get(), namespaces=[ns])
         except (OSError, BrokenPipeError, Exception) as error:
-            logger.msg.error("Failed to connect to MagicMirror, closing socket. Is MagicMirror running?")
-            logger.error(str(error))
+            logger.error(f"Failed to connect to MagicMirror, closing socket. Is MagicMirror running? : {error}")
 
     def start(self):
         """
@@ -130,13 +127,11 @@ class MagicMirrorController(Singleton):
             process = "docker-compose"
 
         if command and process:
-            logger.msg.info(f"starting MagicMirror using {command[0]} ")
-            logger.info(f"Using '{process}' to start MagicMirror")
+            logger.info(f"Starting MagicMirror using {command[0]} ")
             error_code, stderr, _ = run_cmd(command, progress=False, background=True)
 
             if error_code:
-                print(symbols.RED_X)
-                logger.msg.error(stderr.strip())
+                logger.error(stderr.strip())
                 return False
 
             logger.info(f"started MagicMirror using '{process}'")
@@ -147,8 +142,7 @@ class MagicMirrorController(Singleton):
 
         command = ["npm", "run", "start"]
 
-        logger.info(f"Running `{' '.join(command)} in the background`")
-        logger.msg.info("Starting MagicMirror ")
+        logger.info(f"Starting Magicmirror using `{' '.join(command)}`")
 
         run_cmd(command, progress=False, background=True)
         print(symbols.GREEN_CHECK_MARK)
@@ -186,7 +180,7 @@ class MagicMirrorController(Singleton):
             command = ["docker-compose", "-f", MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, "stop"]
             process = "docker-compose"
 
-        logger.msg.info("Stopping MagicMirror ")
+        logger.info("Stopping MagicMirror ")
 
         if command and process:
             logger.info(f"Using '{process}' to stop MagicMirror")
@@ -194,8 +188,7 @@ class MagicMirrorController(Singleton):
             error_code, stderr, _ = run_cmd(command, progress=False, background=True)
 
             if error_code:
-                print(symbols.RED_X)
-                logger.msg.error(stderr.strip())
+                logger.error(stderr.strip())
                 return False
 
             logger.info(f"stopped MagicMirror using '{process}'")

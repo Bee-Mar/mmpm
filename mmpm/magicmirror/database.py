@@ -44,8 +44,7 @@ class MagicMirrorDatabase(Singleton):
         try:
             response = requests.get(urls.MAGICMIRROR_MODULES_URL, timeout=10)
         except requests.exceptions.RequestException:
-            print(symbols.RED_X)
-            logger.msg.fatal("Unable to retrieve MagicMirror modules.")
+            logger.fatal("Unable to retrieve MagicMirror modules.")
 
         soup = BeautifulSoup(response.text, "html.parser")
         table_soup = soup.find_all("table")
@@ -76,9 +75,9 @@ class MagicMirrorDatabase(Singleton):
 
                 except Exception as error:  # broad exception isn't best, but there's a lot that can happen here
                     logger.error(
-                        "There may be a structural change in the MagicMirror 3rd Party module wiki page. Please create an issue on the MMPM's GitHub repository."
+                        f"There may have been a change in the layout of the MagicMirror 3rd Party module wiki page. Please create an issue on the MMPM's GitHub repository."
                     )
-                    logger.msg.error(str(error))
+                    logger.error(f"{error}")
                     continue
 
     def __discover_installed_packages__(self) -> None:
@@ -105,7 +104,7 @@ class MagicMirrorDatabase(Singleton):
         ]
 
         if not package_directories:
-            logger.msg.error("Failed to find MagicMirror root directory.")
+            logger.error("Failed to find MagicMirror root directory.")
             return
 
         packages_found: List[MagicMirrorPackage] = []
@@ -115,13 +114,13 @@ class MagicMirrorDatabase(Singleton):
             error_code, remote_origin_url, _ = run_cmd(["git", "config", "--get", "remote.origin.url"], progress=False)
 
             if error_code:
-                logger.msg.error(f"Unable to communicate with git server to retrieve information about {package_dir}")
+                logger.error(f"Unable to communicate with git server to retrieve information about {package_dir}")
                 continue
 
             error_code, project_name, _ = run_cmd(["basename", remote_origin_url.strip(), ".git"], progress=False)
 
             if error_code:
-                logger.msg.error(f"Unable to determine repository origin for {project_name}")
+                logger.error(f"Unable to determine repository origin for {project_name}")
                 continue
 
             packages_found.append(MagicMirrorPackage(repository=remote_origin_url.strip(), directory=package_dir.name))
@@ -247,7 +246,7 @@ class MagicMirrorDatabase(Singleton):
 
             if not self.packages:
                 print(symbols.RED_X)
-                logger.msg.error(f"Failed to retrieve packages from {urls.MAGICMIRROR_MODULES_URL}. Please check your internet connection.")
+                logger.error(f"Failed to retrieve packages from {urls.MAGICMIRROR_MODULES_URL}. Please check your internet connection.")
             else:
                 with open(db_file, "w", encoding="utf-8") as db:
                     json.dump(self.packages, db, default=lambda package: package.serialize())
@@ -281,9 +280,7 @@ class MagicMirrorDatabase(Singleton):
                 try:
                     data = json.load(ext_pkgs)
                 except json.decoder.JSONDecodeError:
-                    message = f"{ext_pkgs_file} has an invalid layout. Recreating file."
-                    logger.msg.error(message)
-                    logger.error(message)
+                    logger.error(f"{ext_pkgs_file} has an invalid layout. Recreating file.")
                     json.dump(data, ext_pkgs)
 
         for package in data["External Packages"]:
@@ -440,7 +437,7 @@ class MagicMirrorDatabase(Singleton):
             print(color.n_green(f"\nSuccessfully added {package.title} to 'External Packages'\n"))
 
         except IOError as error:
-            logger.msg.error("Failed to save external module")
+            logger.error("Failed to save external module")
             return False
 
         return True
@@ -468,7 +465,7 @@ class MagicMirrorDatabase(Singleton):
             data = json.load(mm_ext_pkgs)
 
             if not "External Packages" in data:
-                logger.msg.fatal("No external packages found in database")
+                logger.fatal("No external packages found in database")
                 return False
 
             packages = [MagicMirrorPackage(**package) for package in data["External Packages"]]
@@ -486,7 +483,7 @@ class MagicMirrorDatabase(Singleton):
                     cancelled_removal.append(package)
 
         if not marked_for_removal and not cancelled_removal:
-            logger.msg.error("No external sources found matching provided query")
+            logger.error("No external sources found matching provided query")
             return False
 
         for package in marked_for_removal:

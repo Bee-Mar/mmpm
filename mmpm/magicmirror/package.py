@@ -175,28 +175,27 @@ class MagicMirrorPackage:
 
         if self.is_installed:
             message = f"'{self.title}' is already installed"
-            logger.msg.error(message)
             logger.error(message)
             return
 
-        if not assume_yes and not mmpm.utils.prompt(f"Continue installing {color.n_green(self.title)} ({self.repository})?"):
+        if not assume_yes and not mmpm.utils.prompt(f"Install {color.n_green(self.title)} ({self.repository})?"):
             return
 
         if InstallationHandler(self).execute():
-            print(f"Installed {self.title} {symbols.GREEN_CHECK_MARK}")
+            logger.info(f"Installed {self.title}")
 
     def remove(self, assume_yes: bool = False) -> bool:
         if not self.is_installed:
-            logger.msg.error(f"'{self.title}' is not installed")
+            logger.error(f"'{self.title}' is not installed")
             return
 
-        if not assume_yes and not mmpm.utils.prompt(f"Continue removing {color.n_green(self.title)} ({self.repository})?"):
+        if not assume_yes and not mmpm.utils.prompt(f"Remove {color.n_green(self.title)} ({self.repository})?"):
             return
 
         modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
 
         run_cmd(["rm", "-rf", str(modules_dir / self.directory)], progress=True)
-        logger.msg.info(f"Removed {color.n_green(self.title)} {symbols.GREEN_CHECK_MARK}\n")
+        logger.info(f"Removed {color.n_green(self.title)}")
 
     def clone(self) -> bool:
         modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
@@ -206,7 +205,7 @@ class MagicMirrorPackage:
         modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
 
         if not modules_dir.exists():
-            logger.msg.fatal(f"'{str(modules_dir)}' does not exist.")
+            logger.fatal(f"'{str(modules_dir)}' does not exist.")
             self.is_upgradable = False
             return
 
@@ -220,8 +219,7 @@ class MagicMirrorPackage:
             sys.exit(127)
 
         if error_code:
-            print(symbols.RED_X)
-            logger.msg.error("Unable to communicate with git server")
+            logger.error("Unable to communicate with git server")
 
         self.is_upgradable = bool(stdout)
 
@@ -248,18 +246,17 @@ class MagicMirrorPackage:
         error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
 
         if error_code:
-            logger.msg.error(f"Failed to upgrade MagicMirror {symbols.RED_X}")
-            logger.error(stderr)
+            logger.error(f"Failed to upgrade MagicMirror")
             return False
 
         else:
             print(f"Upgraded {color.n_green(self.title)} {symbols.GREEN_CHECK_MARK}")
+            logger.debug(f"Upgraded {color.n_green(self.title)}")
 
         InstallationHandler(self).execute()
 
         if stderr:
-            print(symbols.RED_X)
-            logger.msg.error(stderr)
+            logger.error(stderr)
             return False
 
         return True
@@ -333,8 +330,7 @@ class InstallationHandler:
         self.package.directory = modules_dir / self.package.directory
 
         if not modules_dir.exists():
-            logger.msg.fatal(f"{modules_dir} does not exist. Is {root.name} set properly?")
-            logger.fatal(f"{modules_dir} does not exist.")
+            logger.fatal(f"{modules_dir} does not exist. Is {root.name} set properly?")
             return False
 
         os.chdir(modules_dir)
@@ -347,54 +343,44 @@ class InstallationHandler:
         os.chdir(self.package.directory)
 
         if error_code:
-            logger.msg.error(f"Failed to clone {self.package.title}: {error_code}")
+            logger.error(f"Failed to clone {self.package.title}: {error_code}")
+
+        failure = lambda message, code: f"Installation failed: {message}, {code}"
 
         if self.__deps_file_exists__("package.json"):
             error_code, _, stderr = self.__npm_install__()
 
             if error_code:
-                print(symbols.RED_X)
-                logger.msg.error(f"Install failed: {stderr}, {error_code}")
+                logger.error(failure(stderr, error_code))
 
         if self.__deps_file_exists__("Gemfile"):
             error_code, _, stderr = self.__bundle_install__()
 
             if error_code:
-                print(symbols.RED_X)
-                logger.msg.error(f"Install failed: {stderr}, {error_code}")
+                logger.error(failure(stderr, error_code))
 
         if self.__deps_file_exists__("Makefile"):
             error_code, _, stderr = self.__make__()
 
             if error_code:
-                print(symbols.RED_X)
-                logger.msg.error(f"Install failed: {stderr}, {error_code}")
+                logger.error(failure(stderr, error_code))
 
         if self.__deps_file_exists__("CmakeLists.txt"):
             error_code, _, stderr = self.__cmake__()
 
             if error_code:
-                print(symbols.RED_X)
-                logger.error(f"Install failed: {stderr}, {error_code}")
-                logger.msg.error(f"Install failed: {stderr}, {error_code}")
+                logger.error(failure(stderr, error_code))
 
             if self.__deps_file_exists__("Makefile"):
                 error_code, _, stderr = self.__make__()
 
                 if error_code:
-                    print(symbols.RED_X)
-                    logger.error(f"Install failed: {stderr}, {error_code}")
-                    logger.msg.error(f"Install failed: {stderr}, {error_code}")
+                    logger.error(failure(stderr, error_code))
 
         if error_code:
-            if mmpm.utils.prompt(f"Installation of dependencies failed. Would you like to remove {self.package.title}?"):
-                message = f"Installtion failed. Removing {self.package.title}"
-                logger.info(message)
-                logger.msg.info(message)
-                self.package.remove()
             return False
 
-        logger.info(f"Exiting installation handler from {self.package.directory}")
+        logger.debug(f"Exiting installation handler from {self.package.directory}")
         return True
 
     def __cmake__(self) -> Tuple[int, str, str]:
@@ -407,13 +393,12 @@ class InstallationHandler:
             Tuple[error_code (int), stdout (str), error_message (str)]
 
         """
-        logger.info(f"Running 'cmake ..' in {self.package.directory}")
-        logger.msg.info(f"{symbols.GREEN_DASHES} Found CMakeLists.txt. Building with `cmake`")
+        logger.debug(f"Running 'cmake ..' in {self.package.directory}")
 
         os.system("mkdir -p build")
         os.chdir("build")
         os.system("rm -rf *")
-        return run_cmd(["cmake", ".."])
+        return run_cmd(["cmake", ".."], message="Building with CMake")
 
     def __make__(self) -> Tuple[int, str, str]:
         """
@@ -426,8 +411,7 @@ class InstallationHandler:
             Tuple[error_code (int), stdout (str), error_message (str)]
         """
 
-        logger.info(f"Running 'make -j {cpu_count()}' in {self.package.directory}")
-        logger.msg.info(f"{symbols.GREEN_DASHES} Found Makefile. Running `make -j {cpu_count()}`")
+        logger.debug(f"Found Makefile. Running `make -j {cpu_count()} in {self.package.directory}`")
         return run_cmd(["make", "-j", f"{cpu_count()}"], "Building with 'make'")
 
     def __npm_install__(self) -> Tuple[int, str, str]:
@@ -440,8 +424,7 @@ class InstallationHandler:
         Returns:
             Tuple[error_code (int), stdout (str), error_message (str)]
         """
-        logger.info(f"Running 'npm install' in {self.package.directory}")
-        logger.msg.info(f"{symbols.GREEN_DASHES} Found package.json. Running `npm install`")
+        logger.debug(f"Found package.json. Running `npm install` in {self.package.directory}")
         return run_cmd(["npm", "install"], message="Installing Node dependencies")
 
     def __bundle_install__(self) -> Tuple[int, str, str]:
@@ -454,8 +437,7 @@ class InstallationHandler:
         Returns:
             Tuple[error_code (int), stdout (str), error_message (str)]
         """
-        logger.info(f"Running 'bundle install' in {self.package.directory}")
-        logger.msg.info(f"{symbols.GREEN_DASHES} Found Gemfile. Running `bundle install`")
+        logger.debug(f"Found Gemfile. Running `bundle install` in {self.package.directory}")
         return run_cmd(["bundle", "install"], "Installing Ruby dependencies")
 
     def __deps_file_exists__(self, file_name: str) -> bool:
@@ -469,8 +451,8 @@ class InstallationHandler:
             bool: True if the file exists, False if not
         """
 
-        for dep in [file_name, file_name.lower(), file_name.upper()]:
-            if Path(self.package.directory / dep).exists():
+        for dependency_file in [file_name, file_name.lower(), file_name.upper()]:
+            if Path(self.package.directory / dependency_file).exists():
                 return True
 
         return False

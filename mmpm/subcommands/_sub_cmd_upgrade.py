@@ -36,7 +36,7 @@ class Upgrade(SubCmd):
         upgradable = self.database.upgradable()
 
         if not upgradable["mmpm"] and not upgradable["MagicMirror"] and not upgradable["packages"]:
-            logger.msg.info("All packages and applications are up to date.\n ")
+            logger.info("All packages and applications are up to date.\n ")
 
         if upgradable["packages"]:
             packages: Set[MagicMirrorPackage] = {MagicMirrorPackage(**package) for package in upgradable["packages"]}

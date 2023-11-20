@@ -44,12 +44,12 @@ def run_cmd(command: List[str], progress=True, background=False, message: str = 
         Tuple[returncode (int), stdout (str), stderr (str)]
     """
 
-    logger.info(f'Executing process `{" ".join(command)}`')
-
     if background:
-        logger.info(f'Executing process `{" ".join(command)}` in background')
+        logger.debug(f'Executing process `{" ".join(command)}` in background')
         subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return 0, "", ""
+
+    logger.debug(f'Executing process `{" ".join(command)}`')
 
     with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as p:
         if progress:
@@ -128,7 +128,7 @@ def prompt(user_prompt: str, valid_ack: List[str] = ["yes", "y"], valid_nack: Li
             elif response in valid_nack:
                 return False
             else:
-                logger.msg.warning(f"Respond with [{'/'.join(valid_ack)}] or [{'/'.join(valid_nack)}]")
+                logger.warning(f"Respond with [{'/'.join(valid_ack)}] or [{'/'.join(valid_nack)}]")
 
     except KeyboardInterrupt:
         print()
@@ -153,10 +153,10 @@ def validate_input(message: str, forbidden_responses: List[str] = [], reason: st
     while True:
         user_response = input(message)
         if not user_response:  # pylint: disable=no-else-continue
-            logger.msg.warning("A non-empty response must be given")
+            logger.warning("A non-empty response must be given")
             continue
         elif user_response in forbidden_responses:
-            logger.msg.warning(f"Invalid response, {user_response} {reason}")
+            logger.warning(f"Invalid response, {user_response} {reason}")
             continue
         return user_response
 

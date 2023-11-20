@@ -48,7 +48,7 @@ class Search(SubCmd):
             return
 
         if len(extra) > 1:
-            logger.msg.fatal(f"Too many arguments. `{self.app_name} {args.subcmd}` only accepts one search argument")
+            logger.fatal(f"Too many arguments. `{self.app_name} {args.subcmd}` only accepts one search argument")
             return
 
         query_result = self.database.search(extra[0], case_sensitive=args.case_sensitive, title_only=args.title_only)

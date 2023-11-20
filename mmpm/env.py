@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-from mmpm.singleton import Singleton
-from mmpm.constants import paths, color
-
-import sys
 import json
+import sys
 from logging import INFO
 from pathlib import Path
 from socket import gethostbyname, gethostname
-from pygments import highlight
-from pygments.lexers.data import JsonLexer
-from pygments.formatters.terminal import TerminalFormatter
 
+from pygments import highlight
+from pygments.formatters.terminal import TerminalFormatter
+from pygments.lexers.data import JsonLexer
+
+from mmpm.constants import color, paths
+from mmpm.singleton import Singleton
 
 MMPM_DEFAULT_ENV: dict = {
     "MMPM_MAGICMIRROR_ROOT": Path(paths.HOME_DIR / "MagicMirror"),

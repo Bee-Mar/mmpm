@@ -36,11 +36,11 @@ class Open(SubCmd):
 
         if not file.exists():
             try:
-                logger.msg.warning(f"{file} does not exist. Creating file.")
+                logger.warning(f"{file} does not exist. Creating file.")
                 file.parent.mkdir(parents=True, exist_ok=True)
                 file.touch(mode=0o664, exist_ok=True)
             except OSError as error:
-                logger.msg.fatal(f"Unable to create {file}: {str(error)}")
+                logger.fatal(f"Unable to create {file}: {str(error)}")
 
         logger.info(f"Opening {file} for user to edit")
         command = getenv("EDITOR", getenv("VISUAL", "edit"))

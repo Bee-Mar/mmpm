@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-from mmpm.env import MMPMEnv
-from mmpm.constants import paths, symbols, color
-from mmpm.__version__ import version
-
-import os
-import sys
-import shutil
+import datetime
+import json
 import logging
 import logging.handlers
-import datetime
+import os
+import shutil
+import sys
 from typing import List
+
 import jsonpickle
+
+from mmpm.__version__ import version
+from mmpm.constants import color, paths, symbols
+from mmpm.env import MMPMEnv
 
 
 class StdOutMessageWriter:
@@ -150,6 +152,36 @@ class JSONSocketHandler(logging.handlers.SocketHandler):
         return pickled_data.encode("utf-8")
 
 
+class JsonFormatter(logging.Formatter):
+    def format(self, record):
+        log_data = {
+            "timestamp": self.formatTime(record),
+            "level": record.levelname,
+            "version": version,
+            "message": record.getMessage(),
+            "logger_name": record.name,
+            "module": record.module,
+            "function": record.funcName,
+            "line": record.lineno,
+        }
+
+        return json.dumps(log_data, ensure_ascii=False)
+
+
+class StdoutFormatter(logging.Formatter):
+    def format(self, record):
+        label = ""
+
+        if record.levelname == "INFO":
+            label = "+"
+        elif record.levelname == "WARNING":
+            label = "X"
+        else:
+            label = record.levelname
+
+        return f"[{label}] {record.getMessage()}"
+
+
 class MMPMLogger:
     """
     Object used for logging while MMPM is executing.
@@ -160,9 +192,6 @@ class MMPMLogger:
 
     @staticmethod
     def __init_logger__(name: str) -> None:
-        log_format: str = f'{{"time": "%(asctime)s", "version": "{version}" , "level": "%(levelname)s", "location": "%(module)s:%(funcName)s:%(lineno)d", "message": "%(message)s"}}'
-        logging.basicConfig(filename=paths.MMPM_CLI_LOG_FILE, format=log_format, datefmt="%Y-%m-%d %H:%M:%S")
-
         MMPMLogger.__logger__ = logging.getLogger(name)
         MMPMLogger.__logger__.__setattr__("msg", StdOutMessageWriter())
 
@@ -172,8 +201,17 @@ class MMPMLogger:
             maxBytes=1024 * 1024,
             backupCount=2,
             encoding="utf-8",
-            delay=0,
+            delay=False,
         )
+
+        level = MMPMEnv().mmpm_log_level.get()
+
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(JsonFormatter())
+
+        stdout_handler = logging.StreamHandler()
+        stdout_handler.setFormatter(StdoutFormatter())
+        stdout_handler.setLevel(level)
 
         # TODO: override the makePickle function in the SocketHandler
         # port = logging.handlers.DEFAULT_TCP_LOGGING_PORT
@@ -181,15 +219,16 @@ class MMPMLogger:
 
         # MMPMLogger.__logger__.addHandler(socket_handler) # TODO
         MMPMLogger.__logger__.addHandler(file_handler)
+        MMPMLogger.__logger__.addHandler(stdout_handler)
 
         level = MMPMEnv().mmpm_log_level.get()
         MMPMLogger.__logger__.setLevel(level)
 
-        return MMPMLogger.__logger__
-
     @staticmethod
     def get_logger(name: str) -> logging.Logger:
-        return MMPMLogger.__init_logger__(name)
+        if MMPMLogger.__logger__ is None:
+            MMPMLogger.__init_logger__(name)
+        return MMPMLogger.__logger__
 
     @classmethod
     def display(cls, cli_logs: bool = False, gui_logs: bool = False, tail: bool = False) -> None:

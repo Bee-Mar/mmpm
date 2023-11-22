@@ -5,7 +5,7 @@ from time import sleep
 from typing import List
 
 import socketio
-from mmpm.constants import color, symbols
+from mmpm.constants import color
 from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 from mmpm.singleton import Singleton
@@ -42,7 +42,6 @@ class MagicMirrorClientFactory:
             logger.info("Received active modules from MMPM MagicMirror module")
 
             if not data:
-                print(symbols.RED_X)
                 logger.error("No data was received. Is the MMPM_MAGICMIRROR_URI environment variable set properly?")
 
             for module in [json_data for index, json_data in enumerate(data) if json_data not in data[index + 1 :]]:
@@ -55,7 +54,6 @@ class MagicMirrorClientFactory:
             logger.info("Received toggled modules from MMPM MagicMirror module")
 
             if not data:
-                print(symbols.RED_X)
                 logger.error("Unable to find provided module(s)")
 
             client.disconnect()
@@ -134,8 +132,7 @@ class MagicMirrorController(Singleton):
                 logger.error(stderr.strip())
                 return False
 
-            logger.info(f"started MagicMirror using '{process}'")
-            print(symbols.GREEN_CHECK_MARK)
+            logger.info(f"Started MagicMirror using '{process}'")
             return True
 
         os.chdir(self.env.mmpm_magicmirror_root.get())
@@ -145,7 +142,6 @@ class MagicMirrorController(Singleton):
         logger.info(f"Starting Magicmirror using `{' '.join(command)}`")
 
         run_cmd(command, progress=False, background=True)
-        print(symbols.GREEN_CHECK_MARK)
         return True
 
     def stop(self):
@@ -191,8 +187,7 @@ class MagicMirrorController(Singleton):
                 logger.error(stderr.strip())
                 return False
 
-            logger.info(f"stopped MagicMirror using '{process}'")
-            print(symbols.GREEN_CHECK_MARK)
+            logger.info(f"Stopped MagicMirror using '{process}'")
             return True
 
         processes = ["electron"]

@@ -11,7 +11,6 @@ import requests
 from yaspin import yaspin
 from yaspin.spinners import Spinners
 
-from mmpm.constants import symbols
 from mmpm.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
@@ -96,9 +95,8 @@ def kill_pids_of_process(process: str) -> None:
     Returns:
         processes (str): the processes IDs found
     """
-    logger.info(f"Killing all processes of type {process}")
     os.system(f"for process in $(pgrep {process}); do kill -9 $process; done")
-    print(f"{symbols.GREEN_CHECK_MARK}")
+    logger.info(f"Stopped all processes of type {process}")
 
 
 def prompt(user_prompt: str, valid_ack: List[str] = ["yes", "y"], valid_nack: List[str] = ["no", "n"]) -> bool:

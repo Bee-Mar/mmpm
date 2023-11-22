@@ -12,7 +12,7 @@ from typing import Dict, List, Tuple
 import mmpm.utils
 import requests
 from bs4 import NavigableString, Tag
-from mmpm.constants import color, symbols
+from mmpm.constants import color
 from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 from mmpm.utils import run_cmd
@@ -250,7 +250,7 @@ class MagicMirrorPackage:
             return False
 
         else:
-            print(f"Upgraded {color.n_green(self.title)} {symbols.GREEN_CHECK_MARK}")
+            print(f"Upgraded {color.n_green(self.title)}")
             logger.debug(f"Upgraded {color.n_green(self.title)}")
 
         InstallationHandler(self).execute()

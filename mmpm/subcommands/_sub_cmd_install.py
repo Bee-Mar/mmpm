@@ -17,7 +17,7 @@ class Install(SubCmd):
         self.app_name = app_name
         self.name = "install"
         self.help = "Install MagicMirror packages"
-        self.usage = f"{self.app_name} {self.name}"
+        self.usage = f"{self.app_name} {self.name} <package(s)> [--yes]"
         self.magicmirror = MagicMirror()
         self.gui = MMPMGui()
         self.database = MagicMirrorDatabase()

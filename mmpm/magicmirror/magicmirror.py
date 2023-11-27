@@ -5,7 +5,7 @@ import sys
 from os import chdir
 from pathlib import Path, PosixPath
 
-from mmpm.constants import color, symbols
+from mmpm.constants import color
 from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 from mmpm.singleton import Singleton
@@ -76,14 +76,14 @@ class MagicMirror(Singleton):
 
         if error_code:
             message = "Failed to checkout MagicMirror repo for clean upgrade"
-            logger.error(f"{message}. See `mmpm log` for details. {symbols.RED_X}")
+            logger.error(f"{message}. See `mmpm log` for details")
             return stderr
 
         error_code, _, stderr = run_cmd(["git", "pull"], progress=False)
 
         if error_code:
             message = "Failed to upgrade MagicMirror"
-            logger.error(f"{message}. See `mmpm log` for details. {symbols.RED_X}")
+            logger.error(f"{message}. See `mmpm log` for details")
             return stderr
 
         error_code, _, stderr = run_cmd(["npm", "install"], progress=True)

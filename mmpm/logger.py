@@ -11,7 +11,7 @@ from typing import List
 import jsonpickle
 
 from mmpm.__version__ import version
-from mmpm.constants import color, paths, symbols
+from mmpm.constants import color, paths
 from mmpm.env import MMPMEnv
 
 
@@ -250,17 +250,17 @@ class MMPMLogger:
             if paths.MMPM_CLI_LOG_FILE.exists():
                 logs.append(str(paths.MMPM_CLI_LOG_FILE))
             else:
-                MMPMLogger.msg.error("MMPM log file not found")
+                MMPMLogger.__logger__.error("MMPM log file not found")
 
         if gui_logs:
             if paths.MMPM_NGINX_ACCESS_LOG_FILE.exists():
                 logs.append(str(paths.MMPM_NGINX_ACCESS_LOG_FILE))
             else:
-                MMPMLogger.msg.error("Gunicorn access log file not found")
+                MMPMLogger.__logger__.error("Gunicorn access log file not found")
             if paths.MMPM_NGINX_ERROR_LOG_FILE.exists():
                 logs.append(str(paths.MMPM_NGINX_ERROR_LOG_FILE))
             else:
-                MMPMLogger.msg.error("Gunicorn error log file not found")
+                MMPMLogger.__logger__.error("Gunicorn error log file not found")
 
         if logs:
             os.system(f"{'tail -F' if tail else 'cat'} {' '.join(logs)}")
@@ -281,14 +281,12 @@ class MMPMLogger:
         today = datetime.datetime.now()
 
         file_name: str = f"mmpm-logs-{today.year}-{today.month}-{today.day}"
-        MMPMLogger.__logger__.msg.info(f"Compressing MMPM log files to {os.getcwd()}/{file_name}.zip ")
 
         try:
             shutil.make_archive(file_name, "zip", paths.MMPM_LOG_DIR)
         except Exception as error:
-            print(symbols.RED_X)
-            MMPMLogger.__logger__.msg.error(str(error))
-            MMPMLogger.__logger__.msg.error("Failed to create zip archive of log files. See `mmpm log` for details (I know...the irony)")
+            MMPMLogger.__logger__.error(str(error))
+            MMPMLogger.__logger__.error("Failed to create zip archive of log files. See `mmpm log` for details (I know...the irony)")
             return
 
-        print(symbols.GREEN_CHECK_MARK)
+        MMPMLogger.__logger__.info(f"Compressed MMPM log files to {os.getcwd()}/{file_name}.zip ")

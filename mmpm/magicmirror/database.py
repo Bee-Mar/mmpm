@@ -8,7 +8,7 @@ from typing import Any, Dict, List
 
 import requests
 from bs4 import BeautifulSoup
-from mmpm.constants import color, paths, symbols, urls
+from mmpm.constants import color, paths, urls
 from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.package import MagicMirrorPackage
@@ -345,7 +345,7 @@ class MagicMirrorDatabase(Singleton):
         if upgrades_available:
             print("Run `mmpm upgrade` to upgrade packages/applications")
         else:
-            logger.warning(f"No upgrades available")
+            logger.info(f"No upgrades available")
 
     def upgradable(self) -> dict:
         """
@@ -486,7 +486,7 @@ class MagicMirrorDatabase(Singleton):
 
         for package in marked_for_removal:
             packages.remove(package)
-            print(f"Removed {package.title} ({package.repository}) {symbols.GREEN_CHECK_MARK}")
+            print(f"Removed {package.title} ({package.repository})")
 
         # if the error_msg was triggered, there's no need to even bother writing back to the file
         with open(file, "w", encoding="utf-8") as mm_ext_pkgs:

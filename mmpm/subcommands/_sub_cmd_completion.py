@@ -53,7 +53,7 @@ class Completion(SubCmd):
             logger.error(f"Invalid shell type. See `{self.app_name} {self.name} --help`")
             return
 
-        logger.info(f"Outputting commands to enable cli completion for {args.shell}")
+        logger.debug(f"Outputting commands to enable cli completion for {args.shell}")
 
         print(f"# enables {self.app_name} tab-completion for subcommands")
         print(self.shells.get(args.shell))

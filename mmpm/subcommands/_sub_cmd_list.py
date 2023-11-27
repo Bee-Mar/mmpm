@@ -80,6 +80,9 @@ class List(SubCmd):
         )
 
     def exec(self, args, extra):
+        if not self.database.is_initialized():
+            self.database.load()
+
         if args.installed:
             for package in self.database.packages:
                 if package.is_installed:

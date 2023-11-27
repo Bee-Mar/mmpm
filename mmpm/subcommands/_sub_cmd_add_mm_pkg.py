@@ -65,6 +65,9 @@ class AddMmPkg(SubCmd):
         )
 
     def exec(self, args, extra):
+        if not self.database.is_initialized():
+            self.database.load()
+
         if args.remove:
             self.database.remove_mm_pkg(args.remove, assume_yes=args.assume_yes)
         else:

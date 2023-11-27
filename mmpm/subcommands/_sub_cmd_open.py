@@ -18,7 +18,7 @@ class Open(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "open"
-        self.help = "Quickly open config files, documentation, wikis, and MagicMirror itself"
+        self.help = "Open config files, documentation, wikis, and MagicMirror itself"
         self.usage = f"{self.app_name} {self.name} [option]"
         self.env = MMPMEnv()
 

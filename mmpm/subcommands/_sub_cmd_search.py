@@ -51,6 +51,9 @@ class Search(SubCmd):
             logger.fatal(f"Too many arguments. `{self.app_name} {args.subcmd}` only accepts one search argument")
             return
 
+        if not self.database.is_initialized():
+            self.database.load()
+
         query_result = self.database.search(extra[0], case_sensitive=args.case_sensitive, title_only=args.title_only)
 
         for package in query_result:

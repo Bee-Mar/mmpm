@@ -32,6 +32,9 @@ class Show(SubCmd):
         if not extra:
             logger.msg.no_args(args.subcmd)
 
+        if not self.database.is_initialized():
+            self.database.load()
+
         if args.remote:
             health = RemotePackage.health()  # TODO: figure out something better than this
 

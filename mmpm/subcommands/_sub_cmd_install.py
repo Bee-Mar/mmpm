@@ -39,6 +39,9 @@ class Install(SubCmd):
             logger.msg.no_args(args.subcmd)
             return
 
+        if not self.database.is_initialized():
+            self.database.load()
+
         results: List[MagicMirrorPackage] = []
 
         for name in extra:

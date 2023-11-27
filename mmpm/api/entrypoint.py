@@ -58,8 +58,12 @@ def exception_handler(error) -> Response:
 path = mmpm.api.endpoints.__path__
 loader = Loader(module_path=path, module_name="mmpm.api.endpoints", prefix="ep_")
 
-for endpoint in loader.objects.values():
-    logger.info(f"Loading blueprint for {endpoint}")
-    app.register_blueprint(endpoint.blueprint)
+entrypoints = list(loader.objects.values())
+entrypoints.append(Index(app.url_map))
 
-app.register_blueprint(Index(app.url_map).blueprint)
+for endpoint in entrypoints:
+    try:
+        app.register_blueprint(endpoint.blueprint)
+        logger.info(f"Loaded blueprint for {endpoint}")
+    except Exception as error:
+        logger.error(f"Failed to load blueprint for {endpoint}: {error}")

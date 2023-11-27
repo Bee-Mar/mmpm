@@ -28,7 +28,7 @@ class MagicMirrorDatabase(Singleton):
         self.expiration_date: datetime.datetime = None
         self.categories: List[str] = None
 
-    def __download__(self) -> None:
+    def __download_packages__(self) -> List[MagicMirrorPackage]:
         """
         Scrapes the MagicMirror 3rd Party Wiki for all packages listed by community members
 
@@ -39,7 +39,7 @@ class MagicMirrorDatabase(Singleton):
             None
         """
 
-        self.packages: List[MagicMirrorPackage] = []
+        packages: List[MagicMirrorPackage] = []
 
         try:
             response = requests.get(urls.MAGICMIRROR_MODULES_URL, timeout=10)
@@ -71,7 +71,7 @@ class MagicMirrorDatabase(Singleton):
                         continue
 
                     pkg = MagicMirrorPackage.from_raw_data(table_data, category=categories[index])
-                    self.packages.append(pkg)
+                    packages.append(pkg)
 
                 except Exception as error:  # broad exception isn't best, but there's a lot that can happen here
                     logger.error(
@@ -79,6 +79,8 @@ class MagicMirrorDatabase(Singleton):
                     )
                     logger.error(f"{error}")
                     continue
+
+        return packages
 
     def __discover_installed_packages__(self) -> None:
         """
@@ -169,6 +171,9 @@ class MagicMirrorDatabase(Singleton):
         print(color.n_green("Categories:"), f"{len(self.categories)}")
         print(color.n_green("Packages:"), f"{len(self.packages)}")
 
+    def is_initialized(self) -> bool:
+        return self.packages is not None and bool(len(self.packages) > 0)
+
     def is_expired(self) -> bool:
         db_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
         db_expiration_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE
@@ -237,32 +242,25 @@ class MagicMirrorDatabase(Singleton):
 
         db_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
         db_exists = db_file.exists() and bool(db_file.stat().st_size)
-        ext_pkgs_file = paths.MMPM_EXTERNAL_PACKAGES_FILE
+        db_ext_pkgs_file = paths.MMPM_EXTERNAL_PACKAGES_FILE
         db_expiration_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE
 
         if refresh or not db_exists:
             logger.msg.retrieving(urls.MAGICMIRROR_MODULES_URL, "Database")
-            self.__download__()
+            self.packages = self.__download_packages__()
 
             if not self.packages:
-                print(symbols.RED_X)
                 logger.error(f"Failed to retrieve packages from {urls.MAGICMIRROR_MODULES_URL}. Please check your internet connection.")
             else:
                 with open(db_file, "w", encoding="utf-8") as db:
                     json.dump(self.packages, db, default=lambda package: package.serialize())
 
-                with open(
-                    db_expiration_file,
-                    "w",
-                    encoding="utf-8",
-                ) as expiration_file:
+                with open(db_expiration_file, "w", encoding="utf-8") as expiration_file:
                     self.last_update = datetime.datetime.now()
                     self.expiration_date = self.last_update + datetime.timedelta(hours=12)
+
                     json.dump(
-                        {
-                            "last-update": str(self.last_update),
-                            "expiration": str(self.expiration_date),
-                        },
+                        {"last-update": str(self.last_update), "expiration": str(self.expiration_date)},
                         expiration_file,
                     )
 
@@ -275,12 +273,12 @@ class MagicMirrorDatabase(Singleton):
 
         data = {"External Packages": []}
 
-        if not ext_pkgs_file.stat().st_size == 0:
-            with open(ext_pkgs_file, mode="r+", encoding="utf-8") as ext_pkgs:
+        if not db_ext_pkgs_file.stat().st_size == 0:
+            with open(db_ext_pkgs_file, mode="r+", encoding="utf-8") as ext_pkgs:
                 try:
                     data = json.load(ext_pkgs)
                 except json.decoder.JSONDecodeError:
-                    logger.error(f"{ext_pkgs_file} has an invalid layout. Recreating file.")
+                    logger.error(f"{db_ext_pkgs_file} has an invalid layout. Recreating file.")
                     json.dump(data, ext_pkgs)
 
         for package in data["External Packages"]:
@@ -347,7 +345,7 @@ class MagicMirrorDatabase(Singleton):
         if upgrades_available:
             print("Run `mmpm upgrade` to upgrade packages/applications")
         else:
-            print(f"No upgrades available {symbols.YELLOW_X}")
+            logger.warning(f"No upgrades available")
 
     def upgradable(self) -> dict:
         """

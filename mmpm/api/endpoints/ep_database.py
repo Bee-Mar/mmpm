@@ -16,9 +16,7 @@ class Database(Endpoint):
 
         @self.blueprint.route("/load", methods=[http.GET])
         def load() -> Response:
-            is_expired = self.db.is_expired()
-
-            if not self.db.load(refresh=is_expired):
+            if not self.db.load(refresh=True):
                 return self.failure("Failed to load database")
 
             return self.success(json.dumps(self.packages, indent=2, default=lambda package: package.serialize_full()))

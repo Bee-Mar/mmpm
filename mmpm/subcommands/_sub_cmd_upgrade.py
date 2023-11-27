@@ -33,6 +33,9 @@ class Upgrade(SubCmd):
         )
 
     def exec(self, args, extra):
+        if not self.database.is_initialized():
+            self.database.load()
+
         upgradable = self.database.upgradable()
 
         if not upgradable["mmpm"] and not upgradable["MagicMirror"] and not upgradable["packages"]:

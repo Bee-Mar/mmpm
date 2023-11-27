@@ -20,9 +20,11 @@ def main():
         None
     """
 
+    app_name = "mmpm"
+
     parser = ArgumentParser(
-        prog="mmpm",
-        usage="mmpm <subcommand> [option(s)]",
+        prog=app_name,
+        usage=f"{app_name} <subcommand> [option(s)]",
         epilog=f"Visit {urls.MMPM_WIKI_URL} for more details",
         description="""
             The MagicMirror Package Manager CLI simplifies the
@@ -32,30 +34,29 @@ def main():
 
     subparser = parser.add_subparsers(
         title="MMPM subcommands",
-        description="use `mmpm <subcommand> --help` to see more details",
+        description=f"use `{app_name} <subcommand> --help` to see more details",
         dest="subcmd",
+        metavar="",
     )
+
+    if len(sys.argv) < 2:
+        parser.print_help()
+        sys.exit(127)
 
     path = mmpm.subcommands.__path__
 
     loader = Loader(
         module_path=path,
         module_name="mmpm.subcommands",
-        app_name="mmpm",
+        app_name=app_name,
         prefix="_sub_cmd",
     )
 
     for subcommand in loader.objects.values():
         subcommand.register(subparser)
 
-    if len(sys.argv) < 2:
-        parser.print_help()
-        sys.exit(127)
-
     args, extra = parser.parse_known_args()
     subcommand = loader.objects.get(args.subcmd)
-
-    MagicMirrorDatabase().load()
 
     subcommand.exec(args, extra)
 

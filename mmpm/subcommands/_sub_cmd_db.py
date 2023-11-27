@@ -39,13 +39,14 @@ class Db(SubCmd):
         )
 
     def exec(self, args, extra):
+        if not self.database.is_initialized():
+            self.database.load()
+
         if extra:
             logger.msg.extra_args(args.subcmd)
             return
 
-        if args.refresh:
-            self.database.load(refresh=True)
-        elif args.info:
+        if args.info:
             self.database.info()
         elif args.dump:
             self.database.dump()

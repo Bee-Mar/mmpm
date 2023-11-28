@@ -3,6 +3,10 @@ from importlib import import_module
 from pkgutil import iter_modules
 from typing import Dict, List
 
+from mmpm.logger import MMPMLogger
+
+logger = MMPMLogger.get_logger(__name__)
+
 
 class Loader:
     """Handles dynamically loading all subcommands/endpoints in the subcommands and endpoints module"""
@@ -24,7 +28,9 @@ class Loader:
                     instance = objekt(app_name) if app_name else objekt()
                     objects[instance.name] = instance
 
+                    logger.debug(f"Loaded subcommand instance of '{class_name}' {instance}")
+
                 except (AttributeError, AssertionError, Exception) as error:
-                    print(f"Failed to load subcommand module: {error}")
+                    logger.error(f"Failed to load subcommand module: {error}")
 
         return objects

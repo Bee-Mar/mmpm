@@ -16,7 +16,7 @@ class GuidedSetup(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "guided-setup"
-        self.help = "Interactive setup of MMPM and features"
+        self.help = f"Interactively setup {self.app_name} and its features"
         self.usage = f"{self.app_name} {self.name}"
         self.env = MMPMEnv()
 

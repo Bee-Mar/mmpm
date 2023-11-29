@@ -6,8 +6,9 @@ from mmpm.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 class SubCmd:
-    """ Base subcommand class used to define all future subcommands """
+    """Base subcommand class used to define all future subcommands"""
 
     def __init__(self, app_name: str = ""):
         self.app_name = app_name

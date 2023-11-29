@@ -29,13 +29,13 @@ def main():
         usage=f"{app_name} <subcommand> [option(s)]",
         epilog=f"Visit {urls.MMPM_WIKI_URL} for more details",
         description="""
-            The MagicMirror Package Manager CLI simplifies the
+            The MagicMirror Package Manager (MMPM) CLI simplifies the
             installation, removal, and general maintenance of MagicMirror packages.
             """,
     )
 
     subparser = parser.add_subparsers(
-        title="MMPM subcommands",
+        title=f"{app_name} subcommands",
         description=f"use `{app_name} <subcommand> --help` to see more details",
         dest="subcmd",
         metavar="",

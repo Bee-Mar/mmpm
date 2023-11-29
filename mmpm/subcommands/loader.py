@@ -29,6 +29,8 @@ class Loader:
                     objects[instance.name] = instance
                     logger.debug(f"Loaded instance {instance} of {instance.name}")
 
+                    logger.debug(f"Loaded subcommand instance of '{class_name}' {instance}")
+
                 except (AttributeError, AssertionError, Exception) as error:
                     logger.error(f"Failed to load subcommand module: {error}")
 

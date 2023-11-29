@@ -136,7 +136,7 @@ class MagicMirrorDatabase(Singleton):
 
         for package in self.packages:
             if package.is_installed:
-                logger.msg.retrieving(package.repository, package.title)
+                print(f"Retrieving: {package.repository} [{color.n_cyan(package.title)}]")
                 package.update()
 
                 if package.is_upgradable:
@@ -246,7 +246,7 @@ class MagicMirrorDatabase(Singleton):
         db_expiration_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE
 
         if refresh or not db_exists:
-            logger.msg.retrieving(urls.MAGICMIRROR_MODULES_URL, "Database")
+            print(f"Retrieving: {urls.MAGICMIRROR_MODULES_URL} [{color.n_cyan('Database')}]")
             self.packages = self.__download_packages__()
 
             if not self.packages:

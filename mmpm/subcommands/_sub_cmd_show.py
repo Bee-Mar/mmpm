@@ -30,7 +30,7 @@ class Show(SubCmd):
 
     def exec(self, args, extra):
         if not extra:
-            logger.msg.no_args(args.subcmd)
+            logger.error(f"No arguments provided. See '{self.app_name} {self.name} --help'")
 
         if not self.database.is_initialized():
             self.database.load()

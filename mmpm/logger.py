@@ -15,89 +15,6 @@ from mmpm.constants import color, paths
 from mmpm.env import MMPMEnv
 
 
-# TODO: GET RID OF THIS
-class StdOutMessageWriter:
-    def __init__(self):
-        pass
-
-    def info(self, msg: str) -> None:
-        """
-        Prints message 'msg' without a new line
-
-        Parameters:
-            msg (str): The message to be printed to stdout
-
-        Returns:
-            None
-        """
-        sys.stdout.write(msg)
-        sys.stdout.flush()
-
-    def error(self, msg: str) -> None:
-        """
-        Logs error message, displays error message to user, and continues program execution
-
-        Parameters:
-            msg (str): The error message to be printed to stdout
-
-        Returns:
-            None
-        """
-        print(color.b_red("ERROR:"), msg)
-
-    def warning(self, msg: str) -> None:
-        """
-        Logs warning message, displays warning message to user, and continues program execution
-
-        Parameters:
-            msg (str): The warning message to be printed to stdout
-
-        Returns:
-            None
-        """
-        print(color.b_yellow("WARNING:"), msg)
-
-    def no_args(self, subcmd: str) -> None:
-        """
-        Helper method to return a standardized error message when the user provides no arguments
-
-        Parameters:
-            subcommand (str): the name of the mmpm subcommand
-
-        Returns:
-            None
-        """
-        self.fatal(f"no arguments provided. See `mmpm {subcmd} --help` for usage")
-
-    def extra_args(self, subcmd: str) -> None:
-        """
-        Helper method to return a standardized error message when the user provides too many arguments
-
-        Parameters:
-            subcommand (str): the name of the mmpm subcommand
-
-        Returns:
-            None
-        """
-        self.fatal(f"`mmpm {subcmd}` does not accept additional arguments. See `mmpm {subcmd} --help`")
-
-    def fatal(self, msg: str) -> None:
-        """
-        Logs fatal message, displays fatal message to user, and halts program execution
-
-        Parameters:
-            msg (str): The fatal error message to be printed to stdout
-
-        Returns:
-            None
-        """
-        print(color.b_red("FATAL:"), msg)
-        sys.exit(127)
-
-    def retrieving(self, url: str, name: str):
-        print(f"Retrieving: {url} [{color.n_cyan(name)}] ")
-
-
 # FIXME
 class JSONSocketHandler(logging.handlers.SocketHandler):
     def makePickle(self, record):
@@ -194,7 +111,6 @@ class MMPMLogger:
     @staticmethod
     def __init_logger__(name: str) -> None:
         MMPMLogger.__logger__ = logging.getLogger(name)
-        MMPMLogger.__logger__.__setattr__("msg", StdOutMessageWriter())
 
         file_handler = logging.handlers.RotatingFileHandler(
             paths.MMPM_CLI_LOG_FILE,

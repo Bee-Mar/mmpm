@@ -35,7 +35,7 @@ class MagicMirror(Singleton):
             return False
 
         chdir(magicmirror_root)
-        logger.msg.retrieving("https://github.com/MichMich/MagicMirror", "MagicMirror")
+        print(f"Retrieving: https://github.com/MichMich/MagicMirror [{color.n_cyan('MagicMirror')}]")
 
         try:
             error_code, _, stdout = run_cmd(["git", "fetch", "--dry-run"], progress=False)

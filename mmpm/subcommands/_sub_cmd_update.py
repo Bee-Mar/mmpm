@@ -3,6 +3,7 @@
 import json
 import urllib.request
 
+from mmpm.constants import color
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.magicmirror import MagicMirror
@@ -26,13 +27,13 @@ class Update(SubCmd):
 
     def exec(self, args, extra):
         if extra:
-            logger.msg.extra_args(args.subcmd)
+            logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")
             return
 
         self.database.load(refresh=True)
 
         url = "https://pypi.org/pypi/mmpm/json"
-        logger.msg.retrieving("https://pypi.org/pypi/mmpm", "mmpm")
+        print(f"Retrieving: https://pypi.org/pypi/mmpm [{color.n_cyan('mmpm')}]")
         current_version = ""
 
         for requirement in freeze(local_only=False):

@@ -64,7 +64,7 @@ class MmCtl(SubCmd):
 
     def exec(self, args, extra):
         if extra:
-            logger.msg.extra_args(args.subcmd)
+            logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")
         elif args.status:
             self.controller.status()
         elif args.hide:
@@ -87,4 +87,4 @@ class MmCtl(SubCmd):
             else:
                 self.controller.restart()
         else:
-            logger.msg.no_args(args.subcmd)
+            logger.error(f"No arguments provided. See '{self.app_name} {self.name} --help'")

@@ -109,7 +109,7 @@ class Open(SubCmd):
 
     def exec(self, args, extra):
         if extra:
-            logger.msg.extra_args(args.subcmd)
+            logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")
         elif args.config:
             root = self.env.MMPM_MAGICMIRROR_ROOT.get() / "config"
             config_js = root / "config.js"
@@ -135,4 +135,4 @@ class Open(SubCmd):
         elif args.mmpm_env:
             self.edit(paths.MMPM_ENV_FILE)
         else:
-            logger.msg.no_args(args.subcmd)
+            logger.error(f"No arguments provided. See '{self.app_name} {self.name} --help'")

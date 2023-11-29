@@ -43,7 +43,7 @@ class Db(SubCmd):
             self.database.load()
 
         if extra:
-            logger.msg.extra_args(args.subcmd)
+            logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")
             return
 
         if args.info:
@@ -51,4 +51,4 @@ class Db(SubCmd):
         elif args.dump:
             self.database.dump()
         else:
-            logger.msg.no_args(args.subcmd)
+            logger.error(f"No arguments provided. See '{self.app_name} {self.name} --help'")

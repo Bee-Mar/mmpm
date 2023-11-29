@@ -20,7 +20,7 @@ class Env(SubCmd):
 
     def exec(self, args, extra):
         if extra:
-            logger.msg.extra_args(args.subcmd)
+            logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")
             return
 
         self.env.display()

@@ -99,4 +99,4 @@ class List(SubCmd):
         elif args.upgradable:
             self.database.display_upgradable()
         else:
-            logger.msg.no_args(args.subcmd)
+            logger.error(f"No arguments provided. See '{self.app_name} {self.name} --help'")

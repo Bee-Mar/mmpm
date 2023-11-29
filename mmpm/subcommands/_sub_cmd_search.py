@@ -54,7 +54,10 @@ class Search(SubCmd):
         if not self.database.is_initialized():
             self.database.load()
 
-        query_result = self.database.search(extra[0], case_sensitive=args.case_sensitive, title_only=args.title_only)
+        results = self.database.search(extra[0], case_sensitive=args.case_sensitive, title_only=args.title_only)
 
-        for package in query_result:
+        if not results:
+            logger.error(f"No results found for '{extra[0]}'")
+
+        for package in results:
             package.display(title_only=args.title_only)

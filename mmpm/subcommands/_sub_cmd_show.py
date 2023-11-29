@@ -45,5 +45,10 @@ class Show(SubCmd):
                     logger.warning(status["warning"])
 
         for query in extra:
-            for package in self.database.search(query, title_only=True):
+            results = self.database.search(query, title_only=True)
+
+            if not results:
+                logger.error(f"No results found for '{query}'")
+
+            for package in results:
                 package.display(remote=args.remote, detailed=True)

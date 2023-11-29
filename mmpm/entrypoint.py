@@ -2,6 +2,8 @@
 import sys
 from argparse import ArgumentParser
 
+import argcomplete
+
 import mmpm.subcommands
 from mmpm.constants import urls
 from mmpm.magicmirror.database import MagicMirrorDatabase
@@ -39,10 +41,6 @@ def main():
         metavar="",
     )
 
-    if len(sys.argv) < 2:
-        parser.print_help()
-        sys.exit(127)
-
     path = mmpm.subcommands.__path__
 
     loader = Loader(
@@ -54,6 +52,12 @@ def main():
 
     for subcommand in loader.objects.values():
         subcommand.register(subparser)
+
+    argcomplete.autocomplete(parser)
+
+    if len(sys.argv) < 2:
+        parser.print_help()
+        sys.exit(127)
 
     args, extra = parser.parse_known_args()
     subcommand = loader.objects.get(args.subcmd)

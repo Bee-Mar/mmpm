@@ -66,7 +66,7 @@ class MMPMEnv(Singleton):
     def __init__(self):
         super().__init__()
         self.mmpm_magicmirror_root: EnvVar = None
-        self.mmpm_magicmirror_uri: EnvVar = None
+        self.MMPM_MAGICMIRROR_URI: EnvVar = None
         self.mmpm_magicmirror_pm2_process_name: EnvVar = None
         self.mmpm_magicmirror_docker_compose_file: EnvVar = None
         self.mmpm_is_docker_image: EnvVar = None

@@ -71,7 +71,7 @@ class MagicMirrorController(Singleton):
         client = MagicMirrorClientFactory("FROM_MMPM_APP_get_active_modules", {})
 
         try:
-            client.connect(self.env.mmpm_magicmirror_uri.get(), namespaces=[ns])
+            client.connect(self.env.MMPM_MAGICMIRROR_URI.get(), namespaces=[ns])
         except (OSError, BrokenPipeError, Exception) as error:
             logger.error(f"Failed to connect to MagicMirror, closing socket. Is MagicMirror running? : {error}")
 
@@ -79,7 +79,7 @@ class MagicMirrorController(Singleton):
         client = MagicMirrorClientFactory("FROM_MMPM_APP_toggle_modules", {"directive": "hide", "modules": modules_to_hide})
 
         try:
-            client.connect(self.env.mmpm_magicmirror_uri.get(), namespaces=[ns])
+            client.connect(self.env.MMPM_MAGICMIRROR_URI.get(), namespaces=[ns])
         except (OSError, BrokenPipeError, Exception) as error:
             logger.error(f"Failed to connect to MagicMirror, closing socket. Is MagicMirror running? : {error}")
 
@@ -87,7 +87,7 @@ class MagicMirrorController(Singleton):
         client = MagicMirrorClientFactory("FROM_MMPM_APP_toggle_modules", data={"directive": "show", "modules": modules_to_show})
 
         try:
-            client.connect(self.env.mmpm_magicmirror_uri.get(), namespaces=[ns])
+            client.connect(self.env.MMPM_MAGICMIRROR_URI.get(), namespaces=[ns])
         except (OSError, BrokenPipeError, Exception) as error:
             logger.error(f"Failed to connect to MagicMirror, closing socket. Is MagicMirror running? : {error}")
 

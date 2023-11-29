@@ -123,7 +123,7 @@ class Open(SubCmd):
         elif args.custom_css:
             self.edit(self.env.mmpm_magicmirror_root.get() / "css" / "custom.css")
         elif args.magicmirror:
-            run_cmd(["xdg-open", self.env.mmpm_magicmirror_uri.get()], background=True)
+            run_cmd(["xdg-open", self.env.MMPM_MAGICMIRROR_URI.get()], background=True)
         elif args.gui:
             run_cmd(["xdg-open", self.gui.get_uri()], background=True)
         elif args.mm_wiki:

@@ -15,6 +15,7 @@ from mmpm.constants import color, paths
 from mmpm.env import MMPMEnv
 
 
+# TODO: GET RID OF THIS
 class StdOutMessageWriter:
     def __init__(self):
         pass

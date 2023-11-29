@@ -2,6 +2,7 @@
 import json
 import sys
 from logging import INFO
+from os.path import getmtime
 from pathlib import Path
 from socket import gethostbyname, gethostname
 
@@ -23,12 +24,14 @@ MMPM_DEFAULT_ENV: dict = {
 
 
 class EnvVar:
-    __slots__ = "name", "default", "__tipe", "__value"
+    __slots__ = "name", "default", "__tipe", "__value", "__mtime"
 
-    def __init__(self, name: str = "", default=None, tipe=None):
-        self.name = name
+    def __init__(self, name: str = "", default=None, mtime: float = None):
+        self.name: str = name
         self.default = default
-        self.__tipe = tipe  # avoid name clashing with 'type'
+        self.__tipe = type(default)  # avoid name clashing with 'type'
+        self.__mtime: float = mtime
+        self.__value = None
 
     def get(self):
         """
@@ -44,19 +47,22 @@ class EnvVar:
             value:  the value of the environment variable key
         """
 
-        value = None
+        mtime: float = getmtime(paths.MMPM_ENV_FILE)
 
-        with open(paths.MMPM_ENV_FILE, "r", encoding="utf-8") as env:
-            env_vars = {}
+        if mtime != self.__mtime or self.__value is None:  # cache the value until the file modification time changes
+            with open(paths.MMPM_ENV_FILE, "r", encoding="utf-8") as env:
+                env_vars = {}
 
-            try:
-                env_vars = json.load(env)
-            except json.JSONDecodeError:
-                print(color.b_yellow("WARNING:"), f"Unable to parse environment variables file.")
+                try:
+                    env_vars = json.load(env)
+                except json.JSONDecodeError:
+                    print(color.b_yellow("WARNING:"), f"Unable to parse environment variables file.")
 
-            value = self.__tipe(self.default if self.name not in env_vars else env_vars.get(self.name))
+                self.__value = self.__tipe(self.default if self.name not in env_vars else env_vars.get(self.name))
 
-        return value
+            self.__mtime = mtime
+
+        return self.__value
 
 
 # Treating this kind of like an enum
@@ -89,9 +95,11 @@ class MMPMEnv(Singleton):
         with open(paths.MMPM_ENV_FILE, "w", encoding="utf-8") as env:
             json.dump(env_vars, env, indent=2)
 
+        mtime: float = getmtime(paths.MMPM_ENV_FILE)
+
         for key, value in MMPM_DEFAULT_ENV.items():
             if hasattr(self, key):
-                setattr(self, key, EnvVar(name=key, default=value, tipe=type(value)))
+                setattr(self, key, EnvVar(name=key, default=value, mtime=mtime))
 
     def get(self) -> dict:
         current_env = {}

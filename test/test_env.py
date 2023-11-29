@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
-from mmpm.singleton import Singleton
-from mmpm.env import MMPMEnv, EnvVar, MMPM_DEFAULT_ENV
+import random
+import unittest
+from pathlib import Path, PosixPath
+from unittest.mock import mock_open, patch
 
 from faker import Faker
-
-import unittest
-import random
-from pathlib import Path, PosixPath
-from unittest.mock import patch, mock_open
-
+from mmpm.env import MMPM_DEFAULT_ENV, EnvVar, MMPMEnv
+from mmpm.singleton import Singleton
 
 fake = Faker()
 
@@ -26,7 +24,7 @@ class TestEnvVar(unittest.TestCase):
         elif isinstance(default_value, bool):
             random_value = fake.pybool()
 
-        env_var = EnvVar(name=var, default=default_value, tipe=type(default_value))
+        env_var = EnvVar(name=var, default=default_value)
 
         with patch("builtins.open", mock_open(read_data=f'{{"{var}": "{random_value}"}}')):
             value = env_var.get()
@@ -34,7 +32,7 @@ class TestEnvVar(unittest.TestCase):
         self.assertEqual(value, random_value)
 
     def test_get_nonexistent_variable_with_default(self):
-        env_var = EnvVar(name="MMPM_NONEXISTENT_VAR", default=fake.pystr(), tipe=str)
+        env_var = EnvVar(name="MMPM_NONEXISTENT_VAR", default=fake.pystr())
 
         with patch("builtins.open", mock_open(read_data="{}")):
             value = env_var.get()

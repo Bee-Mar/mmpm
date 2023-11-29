@@ -68,8 +68,8 @@ class MMPMEnv(Singleton):
         self.mmpm_magicmirror_root: EnvVar = None
         self.MMPM_MAGICMIRROR_URI: EnvVar = None
         self.MMPM_MAGICMIRROR_PM2_PROCESS_NAME: EnvVar = None
-        self.mmpm_magicmirror_docker_compose_file: EnvVar = None
-        self.mmpm_is_docker_image: EnvVar = None
+        self.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: EnvVar = None
+        self.MMPM_IS_DOCKER_IMAGE: EnvVar = None
         self.mmpm_log_level: EnvVar = None
 
         env_vars = {}

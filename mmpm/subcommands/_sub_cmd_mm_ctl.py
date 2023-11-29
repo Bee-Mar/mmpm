@@ -72,17 +72,17 @@ class MmCtl(SubCmd):
         elif args.show:
             self.controller.show_modules(args.show)
         elif args.start:
-            if self.env.mmpm_is_docker_image.get():
+            if self.env.MMPM_IS_DOCKER_IMAGE.get():
                 logger.fatal("Cannot execute this command within a docker image")
             else:
                 self.controller.start()
         elif args.stop:
-            if self.env.mmpm_is_docker_image.get():
+            if self.env.MMPM_IS_DOCKER_IMAGE.get():
                 logger.fatal("Cannot execute this command within a docker image")
             else:
                 self.controller.stop()
         elif args.restart:
-            if self.env.mmpm_is_docker_image.get():
+            if self.env.MMPM_IS_DOCKER_IMAGE.get():
                 logger.fatal("Cannot execute this command within a docker image")
             else:
                 self.controller.restart()

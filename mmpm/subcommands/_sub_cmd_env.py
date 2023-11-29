@@ -24,4 +24,3 @@ class Env(SubCmd):
             return
 
         self.env.display()
-        print("Run `mmpm open --env` to edit the variable values")

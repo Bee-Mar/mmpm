@@ -51,4 +51,5 @@ class Show(SubCmd):
                 logger.error(f"No results found for '{query}'")
 
             for package in results:
+                logger.debug(f"Showing information for {package}")
                 package.display(remote=args.remote, detailed=True)

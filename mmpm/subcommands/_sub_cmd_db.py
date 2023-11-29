@@ -13,7 +13,7 @@ class Db(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "db"
-        self.help = "refresh or display basic details about the database"
+        self.help = "Refresh or display basic details about the database"
         self.usage = f"{self.app_name} {self.name} [--refresh] [--info] [--dump]"
         self.database = MagicMirrorDatabase()
 

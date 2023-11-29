@@ -6,8 +6,11 @@ import argcomplete
 
 import mmpm.subcommands
 from mmpm.constants import urls
+from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.loader import Loader
+
+logger = MMPMLogger.get_logger(__name__)
 
 
 # for the console script

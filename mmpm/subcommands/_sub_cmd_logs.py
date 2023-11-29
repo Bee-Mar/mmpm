@@ -6,11 +6,11 @@ from mmpm.subcommands.sub_cmd import SubCmd
 logger = MMPMLogger.get_logger(__name__)
 
 
-class Log(SubCmd):
+class Logs(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
-        self.name = "log"
-        self.help = f"display, tail, or zip the {self.name} log files"
+        self.name = "logs"
+        self.help = f"Display, tail, or zip the {self.app_name} log files"
         self.usage = f"{self.app_name} {self.name} [--cli] [--gui] [--tail] [--zip]"
 
     def register(self, subparser):

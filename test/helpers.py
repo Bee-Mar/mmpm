@@ -24,14 +24,14 @@ class MockedMMPMEnv(MMPMEnv):
         # Mock the environment variables here
         self.mmpm_magicmirror_root = MutableMagicMock()
         self.MMPM_MAGICMIRROR_URI = MutableMagicMock()
-        self.mmpm_magicmirror_pm2_process_name = MutableMagicMock()
+        self.MMPM_MAGICMIRROR_PM2_PROCESS_NAME = MutableMagicMock()
         self.mmpm_magicmirror_docker_compose_file = MutableMagicMock()
         self.mmpm_is_docker_image = MutableMagicMock()
         self.mmpm_log_level = MutableMagicMock()
 
         self.mmpm_magicmirror_root.get.return_value = Path("/tmp/MagicMirror")
         self.MMPM_MAGICMIRROR_URI.get.return_value = "http://localhost:8080"
-        self.mmpm_magicmirror_pm2_process_name.get.return_value = ""
+        self.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get.return_value = ""
         self.mmpm_magicmirror_docker_compose_file.get.return_value = ""
         self.mmpm_is_docker_image.get.return_value = False
         self.mmpm_log_level.get.return_value = "INFO"

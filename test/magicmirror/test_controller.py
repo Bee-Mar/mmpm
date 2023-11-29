@@ -23,7 +23,7 @@ class MagicMirrorControllerTests(unittest.TestCase):
     #@patch('mmpm.magicmirror.controller.run_cmd')
     #def test_start_with_pm2(self, mock_run_cmd, mock_shutil_which):
     #    mock_shutil_which.return_value = True
-    #    self.controller.env.mmpm_magicmirror_pm2_process_name.get.return_value = 'magicmirror'
+    #    self.controller.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get.return_value = 'magicmirror'
     #    self.controller.env.mmpm_magicmirror_docker_compose_file.get.return_value = None
 
     #    result = self.controller.start()
@@ -36,7 +36,7 @@ class MagicMirrorControllerTests(unittest.TestCase):
     #@patch('mmpm.magicmirror.controller.run_cmd')
     #def test_start_with_docker_compose(self, mock_run_cmd, mock_shutil_which):
     #    mock_shutil_which.side_effect = [None, True]
-    #    self.controller.env.mmpm_magicmirror_pm2_process_name.get.return_value = None
+    #    self.controller.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get.return_value = None
     #    self.controller.env.mmpm_magicmirror_docker_compose_file.get.return_value = 'docker-compose.yml'
 
     #    result = self.controller.start()
@@ -48,7 +48,7 @@ class MagicMirrorControllerTests(unittest.TestCase):
     @patch('mmpm.magicmirror.controller.run_cmd')
     def test_start_with_npm(self, mock_run_cmd, mock_shutil_which):
         mock_shutil_which.side_effect = [None, None]
-        self.controller.env.mmpm_magicmirror_pm2_process_name.get.return_value = None
+        self.controller.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get.return_value = None
         self.controller.env.mmpm_magicmirror_docker_compose_file.get.return_value = None
 
         result = self.controller.start()
@@ -61,7 +61,7 @@ class MagicMirrorControllerTests(unittest.TestCase):
     #@patch('mmpm.magicmirror.controller.run_cmd')
     #def test_start_no_command(self, mock_run_cmd, mock_shutil_which):
     #    mock_shutil_which.side_effect = [None, None]
-    #    self.controller.env.mmpm_magicmirror_pm2_process_name.get.return_value = None
+    #    self.controller.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get.return_value = None
     #    self.controller.env.mmpm_magicmirror_docker_compose_file.get.return_value = None
 
     #    result = self.controller.start()
@@ -74,7 +74,7 @@ class MagicMirrorControllerTests(unittest.TestCase):
     #@patch('mmpm.magicmirror.controller.run_cmd')
     #def test_stop_with_pm2(self, mock_run_cmd, mock_shutil_which):
     #    mock_shutil_which.return_value = True
-    #    self.controller.env.mmpm_magicmirror_pm2_process_name.get.return_value = 'magicmirror'
+    #    self.controller.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get.return_value = 'magicmirror'
     #    self.controller.env.mmpm_magicmirror_docker_compose_file.get.return_value = None
 
     #    result = self.controller.stop()
@@ -87,7 +87,7 @@ class MagicMirrorControllerTests(unittest.TestCase):
     #@patch('mmpm.magicmirror.controller.run_cmd')
     #def test_stop_with_docker_compose(self, mock_run_cmd, mock_shutil_which):
     #    mock_shutil_which.side_effect = [None, True]
-    #    self.controller.env.mmpm_magicmirror_pm2_process_name.get.return_value = None
+    #    self.controller.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get.return_value = None
     #    self.controller.env.mmpm_magicmirror_docker_compose_file.get.return_value = 'docker-compose.yml'
 
     #    result = self.controller.stop()
@@ -100,7 +100,7 @@ class MagicMirrorControllerTests(unittest.TestCase):
     #@patch('mmpm.magicmirror.controller.run_cmd')
     #def test_stop_no_command(self, mock_run_cmd, mock_shutil_which):
     #    mock_shutil_which.side_effect = [None, None]
-    #    self.controller.env.mmpm_magicmirror_pm2_process_name.get.return_value = None
+    #    self.controller.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get.return_value = None
     #    self.controller.env.mmpm_magicmirror_docker_compose_file.get.return_value = None
 
     #    result = self.controller.stop()

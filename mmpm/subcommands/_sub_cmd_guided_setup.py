@@ -69,7 +69,7 @@ class GuidedSetup(SubCmd):
                 {
                     self.env.mmpm_magicmirror_root.name: normpath(magicmirror_root),
                     self.env.MMPM_MAGICMIRROR_URI.name: magicmirror_uri,
-                    self.env.mmpm_magicmirror_pm2_process_name.name: magicmirror_pm2_proc,
+                    self.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.name: magicmirror_pm2_proc,
                     self.env.mmpm_magicmirror_docker_compose_file.name: normpath(magicmirror_docker_compose_file),
                     self.env.mmpm_is_docker_image.name: mmpm_is_docker_image,
                 },

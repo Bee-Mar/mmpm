@@ -107,7 +107,7 @@ class MagicMirrorController(Singleton):
         process: str = ""
         command: List[str] = []
 
-        MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = self.env.mmpm_magicmirror_pm2_process_name.get()
+        MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = self.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get()
         MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = self.env.mmpm_magicmirror_docker_compose_file.get()
 
         if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
@@ -159,7 +159,7 @@ class MagicMirrorController(Singleton):
         process: str = ""
         command: List[str] = []
 
-        MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = self.env.mmpm_magicmirror_pm2_process_name.get()
+        MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = self.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get()
         MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = self.env.mmpm_magicmirror_docker_compose_file.get()
 
         if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:

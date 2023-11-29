@@ -135,7 +135,7 @@ class MagicMirrorController(Singleton):
             logger.info(f"Started MagicMirror using '{process}'")
             return True
 
-        os.chdir(self.env.mmpm_magicmirror_root.get())
+        os.chdir(self.env.MMPM_MAGICMIRROR_ROOT.get())
 
         command = ["npm", "run", "start"]
 

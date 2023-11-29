@@ -28,7 +28,7 @@ class MagicMirror(Singleton):
         Returns:
             bool: True upon success, False upon failure
         """
-        magicmirror_root: PosixPath = self.env.mmpm_magicmirror_root.get()
+        magicmirror_root: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get()
 
         if not magicmirror_root.exists() or not (magicmirror_root / ".git").exists():
             logger.warning("MagicMirror application directory not found or not a git repo.")
@@ -62,7 +62,7 @@ class MagicMirror(Singleton):
         """
         print(f"Upgrading {color.n_green('MagicMirror')}")
 
-        root = self.env.mmpm_magicmirror_root
+        root = self.env.MMPM_MAGICMIRROR_ROOT
         root_dir: PosixPath = root.get()
 
         if not root_dir.exists():
@@ -110,7 +110,7 @@ class MagicMirror(Singleton):
             bool: True upon success, False upon failure
         """
 
-        root = self.env.mmpm_magicmirror_root
+        root = self.env.MMPM_MAGICMIRROR_ROOT
         root_path: PosixPath = root.get()
 
         if root_path.exists() and Path(root_path / "modules").exists():
@@ -136,7 +136,7 @@ class MagicMirror(Singleton):
         return True
 
     def remove(self) -> bool:
-        root = self.env.mmpm_magicmirror_root
+        root = self.env.MMPM_MAGICMIRROR_ROOT
         root_path: PosixPath = root.get()
 
         if not root_path.exists():

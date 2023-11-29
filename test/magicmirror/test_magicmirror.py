@@ -17,7 +17,7 @@ class MagicMirrorTestCase(unittest.TestCase):
         mm = MagicMirror()
         mm.env = MockedMMPMEnv()
 
-        root: PosixPath = mm.env.mmpm_magicmirror_root.get()
+        root: PosixPath = mm.env.MMPM_MAGICMIRROR_ROOT.get()
         (root / ".git").mkdir(parents=True, exist_ok=True)
 
         can_upgrade = mm.update()
@@ -38,7 +38,7 @@ class MagicMirrorTestCase(unittest.TestCase):
         mm = MagicMirror()
         mm.env = MockedMMPMEnv()
 
-        root: PosixPath = mm.env.mmpm_magicmirror_root.get()
+        root: PosixPath = mm.env.MMPM_MAGICMIRROR_ROOT.get()
         (root / ".git").mkdir(parents=True, exist_ok=True)
 
         success = mm.upgrade()
@@ -74,7 +74,7 @@ class MagicMirrorTestCase(unittest.TestCase):
         mm = MagicMirror()
         mm.env = MockedMMPMEnv()
 
-        root: PosixPath = mm.env.mmpm_magicmirror_root.get()
+        root: PosixPath = mm.env.MMPM_MAGICMIRROR_ROOT.get()
         (root / ".git").mkdir(parents=True, exist_ok=True)
 
         success = mm.remove()

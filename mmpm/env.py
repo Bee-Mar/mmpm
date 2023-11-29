@@ -65,12 +65,12 @@ class MMPMEnv(Singleton):
 
     def __init__(self):
         super().__init__()
-        self.mmpm_magicmirror_root: EnvVar = None
+        self.MMPM_MAGICMIRROR_ROOT: EnvVar = None
         self.MMPM_MAGICMIRROR_URI: EnvVar = None
         self.MMPM_MAGICMIRROR_PM2_PROCESS_NAME: EnvVar = None
         self.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: EnvVar = None
         self.MMPM_IS_DOCKER_IMAGE: EnvVar = None
-        self.mmpm_log_level: EnvVar = None
+        self.MMPM_LOG_LEVEL: EnvVar = None
 
         env_vars = {}
 
@@ -90,9 +90,8 @@ class MMPMEnv(Singleton):
             json.dump(env_vars, env, indent=2)
 
         for key, value in MMPM_DEFAULT_ENV.items():
-            lowered_key = key.lower()
-            if hasattr(self, lowered_key):
-                setattr(self, lowered_key, EnvVar(name=key, default=value, tipe=type(value)))
+            if hasattr(self, key):
+                setattr(self, key, EnvVar(name=key, default=value, tipe=type(value)))
 
     def get(self) -> dict:
         current_env = {}

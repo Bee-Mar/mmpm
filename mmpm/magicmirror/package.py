@@ -107,7 +107,7 @@ class MagicMirrorPackage:
         print(color.n_green(self.title) + (" [installed]" if self.is_installed else ""), end="")
 
         if detailed:
-            modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
+            modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
             print(f"\n  Directory: {modules_dir / self.directory}")
             print(f"  Category: {self.category}\n  Repository: {self.repository}\n  Author: {self.author}")
 
@@ -192,17 +192,17 @@ class MagicMirrorPackage:
         if not assume_yes and not mmpm.utils.prompt(f"Remove {color.n_green(self.title)} ({self.repository})?"):
             return
 
-        modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
+        modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
 
         run_cmd(["rm", "-rf", str(modules_dir / self.directory)], progress=True)
         logger.info(f"Removed {color.n_green(self.title)}")
 
     def clone(self) -> bool:
-        modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
+        modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
         return run_cmd(["git", "clone", self.repository, str(modules_dir / self.directory)], message="Retrieving package")
 
     def update(self) -> None:
-        modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
+        modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
 
         if not modules_dir.exists():
             logger.fatal(f"'{str(modules_dir)}' does not exist.")
@@ -238,7 +238,7 @@ class MagicMirrorPackage:
         Returns:
             stderr (str): the resulting error message of the upgrade. If the message is zero length, it was successful
         """
-        modules_dir: PosixPath = self.env.mmpm_magicmirror_root.get() / "modules"
+        modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
         self.directory = modules_dir / self.title
 
         os.chdir(modules_dir / self.directory)
@@ -323,7 +323,7 @@ class InstallationHandler:
         Returns:
             stderr (str): success if the string is empty, fail if not
         """
-        root = self.package.env.mmpm_magicmirror_root
+        root = self.package.env.MMPM_MAGICMIRROR_ROOT
 
         modules_dir = root.get() / "modules"
 

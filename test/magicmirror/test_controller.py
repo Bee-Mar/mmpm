@@ -13,10 +13,10 @@ class MagicMirrorControllerTests(unittest.TestCase):
     def setUp(self):
         self.controller = MagicMirrorController()
         self.controller.env = MockedMMPMEnv()
-        self.controller.env.mmpm_magicmirror_root.get().mkdir(parents=True, exist_ok=True)
+        self.controller.env.MMPM_MAGICMIRROR_ROOT.get().mkdir(parents=True, exist_ok=True)
 
     def tearDown(self):
-        shutil.rmtree(self.controller.env.mmpm_magicmirror_root.get())
+        shutil.rmtree(self.controller.env.MMPM_MAGICMIRROR_ROOT.get())
 
     #FIXME
     #@patch('mmpm.magicmirror.controller.shutil.which')

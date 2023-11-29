@@ -67,7 +67,7 @@ class GuidedSetup(SubCmd):
         with open(paths.MMPM_ENV_FILE, "w", encoding="utf-8") as env:
             json.dump(
                 {
-                    self.env.mmpm_magicmirror_root.name: normpath(magicmirror_root),
+                    self.env.MMPM_MAGICMIRROR_ROOT.name: normpath(magicmirror_root),
                     self.env.MMPM_MAGICMIRROR_URI.name: magicmirror_uri,
                     self.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.name: magicmirror_pm2_proc,
                     self.env.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.name: normpath(magicmirror_docker_compose_file),

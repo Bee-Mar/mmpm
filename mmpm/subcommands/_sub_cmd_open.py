@@ -111,7 +111,7 @@ class Open(SubCmd):
         if extra:
             logger.msg.extra_args(args.subcmd)
         elif args.config:
-            root = self.env.mmpm_magicmirror_root.get() / "config"
+            root = self.env.MMPM_MAGICMIRROR_ROOT.get() / "config"
             config_js = root / "config.js"
             config_js_sample = root / "config.js.sample"
 
@@ -121,7 +121,7 @@ class Open(SubCmd):
             self.edit(config_js)
 
         elif args.custom_css:
-            self.edit(self.env.mmpm_magicmirror_root.get() / "css" / "custom.css")
+            self.edit(self.env.MMPM_MAGICMIRROR_ROOT.get() / "css" / "custom.css")
         elif args.magicmirror:
             run_cmd(["xdg-open", self.env.MMPM_MAGICMIRROR_URI.get()], background=True)
         elif args.gui:

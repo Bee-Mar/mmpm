@@ -204,7 +204,7 @@ class MMPMLogger:
             delay=False,
         )
 
-        level = MMPMEnv().mmpm_log_level.get()
+        level = MMPMEnv().MMPM_LOG_LEVEL.get()
 
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(JsonFormatter())
@@ -220,9 +220,6 @@ class MMPMLogger:
         # MMPMLogger.__logger__.addHandler(socket_handler) # TODO
         MMPMLogger.__logger__.addHandler(file_handler)
         MMPMLogger.__logger__.addHandler(stdout_handler)
-
-        level = MMPMEnv().mmpm_log_level.get()
-        MMPMLogger.__logger__.setLevel(level)
 
     @staticmethod
     def get_logger(name: str) -> logging.Logger:

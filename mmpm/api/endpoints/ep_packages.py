@@ -17,7 +17,7 @@ class Packages(Endpoint):
         self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
         self.db = MagicMirrorDatabase()
 
-        @self.blueprint.route("/retrieve", methods=[http.GET])
+        @self.blueprint.route("/", methods=[http.GET])
         def retrieve() -> Response:
             logger.info("Loading database")
 

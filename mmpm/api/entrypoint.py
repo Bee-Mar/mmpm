@@ -58,6 +58,8 @@ def exception_handler(error) -> Response:
 path = mmpm.api.endpoints.__path__
 loader = Loader(module_path=path, module_name="mmpm.api.endpoints", prefix="ep_")
 
+app.url_map.strict_slashes = False
+
 entrypoints = list(loader.objects.values())
 entrypoints.append(Index(app.url_map))
 

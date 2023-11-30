@@ -44,14 +44,7 @@ def main():
         metavar="",
     )
 
-    path = mmpm.subcommands.__path__
-
-    loader = Loader(
-        module_path=path,
-        module_name="mmpm.subcommands",
-        app_name=app_name,
-        prefix="_sub_cmd",
-    )
+    loader = Loader(module_path=mmpm.subcommands.__path__, module_name="mmpm.subcommands", app_name=app_name, prefix="_sub_cmd")
 
     for subcommand in loader.objects.values():
         subcommand.register(subparser)

@@ -55,8 +55,7 @@ def exception_handler(error) -> Response:
 
 
 # dynamically load all the endpoints within the "mmpm.api.endpoints" module
-path = mmpm.api.endpoints.__path__
-loader = Loader(module_path=path, module_name="mmpm.api.endpoints", prefix="ep_")
+loader = Loader(module_path=mmpm.api.endpoints.__path__, module_name="mmpm.api.endpoints", prefix="ep_")
 
 app.url_map.strict_slashes = False
 

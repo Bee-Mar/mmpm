@@ -27,8 +27,6 @@ class Loader:
                     objekt = getattr(imported_module, class_name)
                     instance = objekt(app_name) if app_name else objekt()
                     objects[instance.name] = instance
-                    logger.debug(f"Loaded instance {instance} of {instance.name}")
-
                     logger.debug(f"Loaded subcommand instance of '{class_name}' {instance}")
 
                 except (AttributeError, AssertionError, Exception) as error:

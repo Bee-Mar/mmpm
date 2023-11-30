@@ -98,7 +98,7 @@ class MagicMirrorDatabase(Singleton):
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
 
         if not modules_dir.exists():
-            logger.warning(f"{modules_dir} does not exist")
+            logger.warning(f"'{modules_dir}' does not exist")
             return
 
         package_directories: List[PosixPath] = [

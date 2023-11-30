@@ -26,6 +26,7 @@ def main():
     """
 
     if "--help" in sys.argv or "-h" in sys.argv:
+        # close up any SocketIO connection in the logger that could linger before it becomes a problem
         MMPMLogger.shutdown()
 
     app_name = "mmpm"

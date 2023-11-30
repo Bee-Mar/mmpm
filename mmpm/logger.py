@@ -49,9 +49,10 @@ class SocketIOHandler(logging.Handler):
             try:
                 self.sio.emit("logs", self.formatter.format(record))
             except Exception as e:
-                logging.debug(f"Error emitting log record: {e}")
-        else:
-            logging.debug("SocketIO is not connected. Log record not sent.")
+                pass
+                # logging.debug(f"Error emitting log record: {e}")
+        # else:
+        #    logging.debug("SocketIO is not connected. Log record not sent.")
 
     def close(self):
         if self.sio.connected:
@@ -66,7 +67,7 @@ class StdoutFormatter(logging.Formatter):
         if record.levelname == "INFO":
             label = "+"
         elif record.levelname == "WARNING":
-            label = "X"
+            label = "WARN"
         else:
             label = record.levelname
 

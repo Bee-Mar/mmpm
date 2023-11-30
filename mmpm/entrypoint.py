@@ -25,6 +25,9 @@ def main():
         None
     """
 
+    if "--help" in sys.argv or "-h" in sys.argv:
+        MMPMLogger.shutdown()
+
     app_name = "mmpm"
 
     parser = ArgumentParser(
@@ -51,14 +54,12 @@ def main():
 
     argcomplete.autocomplete(parser)
 
-    if len(sys.argv) < 2:
-        parser.print_help()
-        sys.exit(127)
-
     args, extra = parser.parse_known_args()
     subcommand = loader.objects.get(args.subcmd)
 
     subcommand.exec(args, extra)
+    MMPMLogger.shutdown()
+    sys.exit(0)
 
 
 if __name__ == "__main__":

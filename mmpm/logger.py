@@ -8,66 +8,11 @@ import shutil
 import sys
 from typing import List
 
-import jsonpickle
+import socketio
 
 from mmpm.__version__ import version
 from mmpm.constants import color, paths
 from mmpm.env import MMPMEnv
-
-
-# FIXME
-class JSONSocketHandler(logging.handlers.SocketHandler):
-    def makePickle(self, record):
-        """
-        Pickles the record in binary format with a length prefix and
-        returns it ready for transmission across the socket.
-
-        Instead of using Python's `pickle` module, we will use `jsonpickle`
-        to serialize the LogRecord object to JSON format. This JSON data
-        will be sent over the socket.
-        """
-
-        # Convert the LogRecord object to a plain dictionary for serialization
-        log_record_dict = {
-            "name": record.name,
-            "msg": record.msg,
-            "args": None,
-            "levelname": record.levelname,
-            "levelno": record.levelno,
-            "pathname": record.pathname,
-            "filename": record.filename,
-            "module": record.module,
-            "lineno": record.lineno,
-            "funcName": record.funcName,
-            "created": record.created,
-            "asctime": record.asctime,
-            "msecs": record.msecs,
-            "relativeCreated": record.relativeCreated,
-            "thread": record.thread,
-            "threadName": record.threadName,
-            "processName": record.processName,
-            "process": record.process,
-            "exc_info": None,
-            "exc_text": None,
-            "stack_info": record.stack_info,
-            "lineno": record.lineno,
-            "msg": record.msg,
-            "args": None,
-            "exc_info": None,
-            "created": record.created,
-            "msecs": record.msecs,
-            "relativeCreated": record.relativeCreated,
-            "thread": record.thread,
-            "threadName": record.threadName,
-            "processName": record.processName,
-            "process": record.process,
-            "exc_text": None,
-            "stack_info": record.stack_info,
-        }
-
-        serialized_data = jsonpickle.encode(log_record_dict)
-        pickled_data = f"{len(serialized_data):08x}{serialized_data}"
-        return pickled_data.encode("utf-8")
 
 
 class JsonFormatter(logging.Formatter):
@@ -84,6 +29,34 @@ class JsonFormatter(logging.Formatter):
         }
 
         return json.dumps(log_data, ensure_ascii=False)
+
+
+class SocketIOHandler(logging.Handler):
+    """A logging handler that emits records with SocketIO."""
+
+    def __init__(self, host, port):
+        super().__init__()
+        self.formatter = JsonFormatter()
+        self.sio = socketio.Client()
+
+        try:
+            self.sio.connect(f"http://{host}:{port}", wait=False)
+        except socketio.exceptions.ConnectionError as e:
+            logging.debug(f"Failed to connect to SocketIO server: {e}")
+
+    def emit(self, record):
+        if self.sio.connected:
+            try:
+                self.sio.emit("logs", self.formatter.format(record))
+            except Exception as e:
+                logging.debug(f"Error emitting log record: {e}")
+        else:
+            logging.debug("SocketIO is not connected. Log record not sent.")
+
+    def close(self):
+        if self.sio.connected:
+            self.sio.disconnect()
+            super().close()
 
 
 class StdoutFormatter(logging.Formatter):
@@ -107,6 +80,7 @@ class MMPMLogger:
     """
 
     __logger__: logging.Logger = None
+    __socketio_handler: SocketIOHandler = None
 
     @staticmethod
     def __init_logger__(name: str) -> None:
@@ -123,20 +97,28 @@ class MMPMLogger:
 
         level = MMPMEnv().MMPM_LOG_LEVEL.get()
 
-        file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(JsonFormatter())
+        MMPMLogger.__logger__.addHandler(file_handler)
 
         stdout_handler = logging.StreamHandler()
         stdout_handler.setFormatter(StdoutFormatter())
         stdout_handler.setLevel(level)
-
-        # TODO: override the makePickle function in the SocketHandler
-        # port = logging.handlers.DEFAULT_TCP_LOGGING_PORT
-        # socket_handler = JSONSocketHandler('localhost', port)
-
-        # MMPMLogger.__logger__.addHandler(socket_handler) # TODO
-        MMPMLogger.__logger__.addHandler(file_handler)
         MMPMLogger.__logger__.addHandler(stdout_handler)
+
+        socketio_handler = SocketIOHandler("localhost", 6999)
+
+        if socketio_handler.sio.connected:
+            MMPMLogger.__socketio_handler = socketio_handler
+            MMPMLogger.__socketio_handler.setLevel(logging.DEBUG)
+            MMPMLogger.__logger__.addHandler(MMPMLogger.__socketio_handler)
+        else:
+            MMPMLogger.__logger__.debug("Failed to connect to SocketIO server")
+
+    @staticmethod
+    def shutdown() -> None:
+        if MMPMLogger.__socketio_handler is not None:
+            MMPMLogger.__logger__.debug("Disconnecting from SocketIO server")
+            MMPMLogger.__socketio_handler.close()
 
     @staticmethod
     def get_logger(name: str) -> logging.Logger:
@@ -199,8 +181,7 @@ class MMPMLogger:
         try:
             shutil.make_archive(file_name, "zip", paths.MMPM_LOG_DIR)
         except Exception as error:
-            MMPMLogger.__logger__.error(str(error))
-            MMPMLogger.__logger__.error("Failed to create zip archive of log files. See `mmpm log` for details (I know...the irony)")
+            MMPMLogger.__logger__.error(f"{error}")
             return
 
         MMPMLogger.__logger__.info(f"Compressed MMPM log files to {os.getcwd()}/{file_name}.zip ")

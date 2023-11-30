@@ -50,13 +50,13 @@ class Packages(Endpoint):
             upgraded = [package for package in packages if MagicMirrorPackage(**package).upgrade(assume_yes=True)]
             return self.success(json.dumps(upgraded))
 
-        @self.blueprint.route("/add-mm-pkg", methods=[http.POST])
+        @self.blueprint.route("/mm-pkg/add", methods=[http.POST])
         def add_mm_pkg() -> Response:
             packages = request.get_json()["packages"]
             added = [package for package in packages if self.db.add_mm_pkg(**package)]
             return self.success(json.dumps(added))
 
-        @self.blueprint.route("/remove-mm-pkg", methods=[http.POST])
+        @self.blueprint.route("/mm-pkg/remove", methods=[http.POST])
         def remove_mm_pkg() -> Response:
             packages = request.get_json()["packages"]
             removed = [package for package in packages if self.db.remove_mm_pkg(**package)]

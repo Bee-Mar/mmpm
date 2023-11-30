@@ -18,15 +18,15 @@ class Env(Endpoint):
         self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
         self.env = MMPMEnv()
 
+        @self.blueprint.route("/", methods=[http.GET])
+        def retrieve() -> Response:
+            logger.info("Sending back current MMPM Env")
+            return self.success(json.dumps(self.env.get()))
+
         @self.blueprint.route("/default", methods=[http.GET])
         def default() -> Response:
             logger.info("Sending back default MMPM Env")
             return self.success(json.dumps({key: str(value) for key, value in MMPM_DEFAULT_ENV.items()}))
-
-        @self.blueprint.route("/retrieve", methods=[http.GET])
-        def retrieve() -> Response:
-            logger.info("Sending back current MMPM Env")
-            return self.success(json.dumps(self.env.get()))
 
         @self.blueprint.route("/update", methods=[http.POST])
         def update() -> Response:

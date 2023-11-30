@@ -3,12 +3,12 @@
 import json
 import urllib.request
 
+import mmpm.utils
 from mmpm.constants import color
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.subcommands.sub_cmd import SubCmd
-from pip._internal.operations.freeze import freeze
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -31,21 +31,7 @@ class Update(SubCmd):
             return
 
         self.database.load(refresh=True)
-
-        url = "https://pypi.org/pypi/mmpm/json"
-        print(f"Retrieving: https://pypi.org/pypi/mmpm [{color.n_cyan('mmpm')}]")
-        current_version = ""
-
-        for requirement in freeze(local_only=False):
-            info = requirement.split("==")
-
-            if info[0] == "mmpm":
-                current_version = info[1]
-
-        contents = urllib.request.urlopen(url).read()
-        latest_version = json.loads(contents)["info"]["version"]
-
-        can_upgrade_mmpm = latest_version == current_version
+        can_upgrade_mmpm = mmpm.utils.update()
         can_upgrade_magicmirror = self.magicmirror.update()
 
         available_upgrades = self.database.update(can_upgrade_mmpm=can_upgrade_mmpm, can_upgrade_magicmirror=can_upgrade_magicmirror)

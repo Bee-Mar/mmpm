@@ -11,11 +11,11 @@ from mmpm.magicmirror.magicmirror import MagicMirror
 logger = MMPMLogger.get_logger(__name__)
 
 
-class Magicmirror(Endpoint):
+class MmCtl(Endpoint):
     """An endpoint for interacting with MagicMirror at the core level (install, update, hide/show, etc)"""
 
     def __init__(self):
-        self.name = "magicmirror"
+        self.name = "mm-ctl"
         self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
         self.controller = MagicMirrorController()
         self.magicmirror = MagicMirror()

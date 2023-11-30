@@ -227,7 +227,7 @@ class MagicMirrorDatabase(Singleton):
 
         return [package for package in self.packages if match(query, package)]
 
-    def load(self, refresh: bool = False) -> None:
+    def load(self, refresh: bool = False) -> bool:
         """
         Reads in modules from the hidden database file and checks if the file is
         out of date. If so, the modules are gathered again from the MagicMirror 3rd
@@ -251,6 +251,7 @@ class MagicMirrorDatabase(Singleton):
 
             if not self.packages:
                 logger.error(f"Failed to retrieve packages from {urls.MAGICMIRROR_MODULES_URL}. Please check your internet connection.")
+                return False
             else:
                 with open(db_file, "w", encoding="utf-8") as db:
                     json.dump(self.packages, db, default=lambda package: package.serialize())
@@ -286,6 +287,8 @@ class MagicMirrorDatabase(Singleton):
 
         self.categories = {package.category for package in self.packages}
         self.__discover_installed_packages__()
+
+        return bool(len(self.packages))
 
     def display_categories(self, title_only: bool = False) -> None:
         """

@@ -13,9 +13,9 @@ from mmpm.magicmirror.package import MagicMirrorPackage
 logger = MMPMLogger.get_logger(__name__)
 
 
-class Log(Endpoint):
+class Logs(Endpoint):
     def __init__(self):
-        self.name = "log"
+        self.name = "logs"
         self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
         self.handler = None
 
@@ -54,5 +54,10 @@ class Log(Endpoint):
 
         @self.blueprint.route("/tail", methods=[http.GET])
         def tail() -> Response:
+            print(logger.handlers)
+            return self.success("hello")
+
+        @self.blueprint.route("/zip", methods=[http.GET])
+        def zip() -> Response:
             print(logger.handlers)
             return self.success("hello")

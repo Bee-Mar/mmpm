@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
+import json
 import os
 import socket
 import subprocess
 import sys
 import time
+import urllib.request
 from pathlib import PosixPath
 from typing import List, Optional, Tuple
 
 import requests
+from pip._internal.operations.freeze import freeze
 from yaspin import yaspin
 from yaspin.spinners import Spinners
 
+from mmpm.constants import color
 from mmpm.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
@@ -175,6 +179,23 @@ def safe_get_request(url: str) -> requests.Response:
         logger.error(str(error))
         return requests.Response()
     return data
+
+
+def update() -> bool:
+    url = "https://pypi.org/pypi/mmpm/json"
+    print(f"Retrieving: https://pypi.org/pypi/mmpm [{color.n_cyan('mmpm')}]")
+    current_version = ""
+
+    for requirement in freeze(local_only=False):
+        info = requirement.split("==")
+
+        if info[0] == "mmpm":
+            current_version = info[1]
+
+    contents = urllib.request.urlopen(url).read()
+    latest_version = json.loads(contents)["info"]["version"]
+
+    return latest_version == current_version
 
 
 def systemctl(subcmd: str, services: List[str] = []) -> subprocess.CompletedProcess:

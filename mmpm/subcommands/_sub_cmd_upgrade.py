@@ -2,6 +2,7 @@
 """ Command line options for 'upgrade' subcommand """
 import json
 
+from mmpm.constants import paths
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.magicmirror import MagicMirror

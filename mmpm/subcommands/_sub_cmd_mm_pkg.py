@@ -78,7 +78,10 @@ class MmPkg(SubCmd):
         if not self.database.is_initialized():
             self.database.load()
 
-        if args.command == "install":
+        if args.command == "add":
             self.database.add_mm_pkg(args.title, args.author, args.repo, args.desc)
         elif args.command == "remove":
             self.database.remove_mm_pkg(args.pkg_name, assume_yes=args.assume_yes)
+
+        else:
+            logger.error(f"Invalid subcommand. See '{self.app_name} {self.name} --help'")

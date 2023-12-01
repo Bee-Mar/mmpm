@@ -32,6 +32,9 @@ resources: dict = {
 CORS(app)
 
 
+# TODO: REMOVE THIS FILE. Only keeping for reference of some things
+
+
 @app.after_request  # type: ignore
 def after_request(response: Response) -> Response:
     """

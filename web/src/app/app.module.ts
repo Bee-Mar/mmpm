@@ -8,7 +8,7 @@ import {SharedStoreService} from '@/services/shared-store.service';
 import {MagicMirrorPackageAPI} from '@/services/api/magicmirror-package-api.service';
 
 export function init_shared_store(store: SharedStoreService) {
-  return () => store.retrieve_packages();
+  return () => store.get_packages();
 }
 
 @NgModule({

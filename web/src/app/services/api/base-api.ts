@@ -24,7 +24,7 @@ export class BaseAPI {
     const error_message = error.error instanceof ErrorEvent ? error.error.message : `Error Code: ${error.status}\nMessage: ${error.message}`;
 
     console.log(error_message);
-    return throwError(error_message).toPromise();
+    throw error_message;
   }
 
 }

@@ -24,31 +24,31 @@ export class MagicMirrorDatabaseComponent implements OnInit {
 
   public install(pkgs: MagicMirrorPackage[]) {
     this.mm_pkg_api.post_install_packages(pkgs).then(_ => {
-      this.store.retrieve_packages();
+      this.store.get_packages();
     });
   }
 
   public remove(pkgs: MagicMirrorPackage[]) {
     this.mm_pkg_api.post_remove_packages(pkgs).then(_ => {
-      this.store.retrieve_packages();
+      this.store.get_packages();
     });
   }
 
   public upgrade(pkgs: MagicMirrorPackage[]) {
     this.mm_pkg_api.post_upgrade_packages(pkgs).then(_ => {
-      this.store.retrieve_packages();
+      this.store.get_packages();
     });
   }
 
   public add_mm_pkg(pkg: MagicMirrorPackage) {
     this.mm_pkg_api.post_add_mm_pkg(pkg).then(_ => {
-      this.store.retrieve_packages();
+      this.store.get_packages();
     });
   }
 
   public remove_mm_pkg(pkg: MagicMirrorPackage) {
     this.mm_pkg_api.post_add_mm_pkg(pkg).then(_ => {
-      this.store.retrieve_packages();
+      this.store.get_packages();
     });
   }
 

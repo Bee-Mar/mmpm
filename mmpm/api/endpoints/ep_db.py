@@ -19,9 +19,9 @@ class Db(Endpoint):
         @self.blueprint.route("/load", methods=[http.GET])
         def load() -> Response:
             if not self.db.load(refresh=True):
-                return self.failure("Failed to load database")
+                return self.failure(False)
 
-            return self.success("Database loaded")
+            return self.success(True)
 
         @self.blueprint.route("/update", methods=[http.POST])
         def update() -> Response:

@@ -24,26 +24,28 @@ class MagicMirrorClientFactory:
         client = None
 
         try:
-            client = socketio.Client(logger=logger, reconnection=True, request_timeout=300)
+            client = socketio.Client(reconnection=True, request_timeout=300)
         except socketio.exceptions.SocketIOError as error:
             logger.fatal(f"Failed to create SocketIO client: {error}")
 
         @client.on("connect", namespace=namespace)
         def connect():
-            logger.info("Connected to MagicMirror websocket")
+            logger.debug(f"Connected to MagicMirror websocket in {namespace}")
             client.emit(event, namespace=namespace, data=data)
+            logger.debug(f"Emitting {data}")
 
         @client.event
         def connect_error(error):
-            logger.error(f"Failed to connect to MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set properly?: {error}")
+            logger.error(f"Failed to connect to MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set properly?")
+            logger.debug(f"Error when connecting to MagicMirror websocket: {error}")
 
         @client.on("disconnect", namespace=namespace)
         def disconnect():
-            logger.info("Disconnected from MagicMirror websocket")
+            logger.debug("Disconnected from MagicMirror websocket")
 
         @client.on("ACTIVE_MODULES", namespace=namespace)
         def active_modules(data):
-            logger.info("Received active modules from MMPM MagicMirror module")
+            logger.debug("Received active modules from MMPM MagicMirror module")
 
             if not data:
                 logger.error("No data was received. Is the MMPM_MAGICMIRROR_URI environment variable set properly?")
@@ -51,15 +53,17 @@ class MagicMirrorClientFactory:
             for module in [json_data for index, json_data in enumerate(data) if json_data not in data[index + 1 :]]:
                 print(f"{color.n_green(module['name'])}\n  hidden: {'true' if module['hidden'] else 'false'}\n  key: {module['key'] + 1}\n")
 
+            logger.debug("Disconnecting from client")
             client.disconnect()
 
         @client.on("MODULES_TOGGLED", namespace=namespace)
         def modules_toggled(data):
-            logger.info("Received toggled modules from MMPM MagicMirror module")
+            logger.debug("Received toggled modules from MMPM MagicMirror module")
 
             if not data:
                 logger.error("Unable to find provided module(s)")
 
+            logger.debug("Disconnecting from client")
             client.disconnect()
 
         return client
@@ -114,10 +118,10 @@ class MagicMirrorController(Singleton):
         MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = self.env.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.get()
 
         if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
-            logger.info(f"docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}")
+            logger.debug(f"docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}")
 
         if MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
-            logger.info(f"pm2 process set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}")
+            logger.debug(f"pm2 process set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}")
 
         if shutil.which("pm2") and MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
             command = ["pm2", "start", MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
@@ -128,21 +132,20 @@ class MagicMirrorController(Singleton):
             process = "docker-compose"
 
         if command and process:
-            logger.info(f"Starting MagicMirror using {command[0]} ")
+            logger.debug(f"Starting MagicMirror using {command[0]} ")
             error_code, stderr, _ = run_cmd(command, progress=False, background=True)
 
             if error_code:
                 logger.error(stderr.strip())
                 return False
 
-            logger.info(f"Started MagicMirror using '{process}'")
+            logger.debug(f"Started MagicMirror using '{process}'")
             return True
 
         os.chdir(self.env.MMPM_MAGICMIRROR_ROOT.get())
 
         command = ["npm", "run", "start"]
-
-        logger.info(f"Starting Magicmirror using `{' '.join(command)}`")
+        logger.debug(f"Starting Magicmirror using `{' '.join(command)}`")
 
         run_cmd(command, progress=False, background=True)
         return True
@@ -166,10 +169,10 @@ class MagicMirrorController(Singleton):
         MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = self.env.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.get()
 
         if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
-            logger.info(f"docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}")
+            logger.debug(f"docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}")
 
         if MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
-            logger.info(f"pm2 process set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}")
+            logger.debug(f"pm2 process set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}")
 
         if shutil.which("pm2") and MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
             command = ["pm2", "stop", MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
@@ -179,10 +182,10 @@ class MagicMirrorController(Singleton):
             command = ["docker-compose", "-f", MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, "stop"]
             process = "docker-compose"
 
-        logger.info("Stopping MagicMirror ")
+        logger.debug("Stopping MagicMirror ")
 
         if command and process:
-            logger.info(f"Using '{process}' to stop MagicMirror")
+            logger.debug(f"Using '{process}' to stop MagicMirror")
             # pm2 and docker-compose cause the output to flip
             error_code, stderr, _ = run_cmd(command, progress=False, background=True)
 
@@ -190,16 +193,16 @@ class MagicMirrorController(Singleton):
                 logger.error(stderr.strip())
                 return False
 
-            logger.info(f"Stopped MagicMirror using '{process}'")
+            logger.debug(f"Stopped MagicMirror using '{process}'")
             return True
 
         processes = ["electron"]
 
-        logger.info(f"Killing processes associated with MagicMirror: {processes}")
+        logger.debug(f"Killing processes associated with MagicMirror: {processes}")
 
         for process in processes:
             kill_pids_of_process(process)
-            logger.info(f"Killed pids of process {process}")
+            logger.debug(f"Killed pids of process {process}")
 
         return True
 

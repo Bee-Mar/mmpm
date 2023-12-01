@@ -21,3 +21,4 @@ venv
 .eggs
 .coverage
 notes.md
+__pypackages__

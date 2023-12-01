@@ -21,12 +21,12 @@ class Env(Endpoint):
         @self.blueprint.route("/", methods=[http.GET])
         def retrieve() -> Response:
             logger.info("Sending back current MMPM Env")
-            return self.success(json.dumps(self.env.get()))
+            return self.success(self.env.get())
 
         @self.blueprint.route("/default", methods=[http.GET])
         def default() -> Response:
             logger.info("Sending back default MMPM Env")
-            return self.success(json.dumps({key: str(value) for key, value in MMPM_DEFAULT_ENV.items()}))
+            return self.success({key: str(value) for key, value in MMPM_DEFAULT_ENV.items()})
 
         @self.blueprint.route("/update", methods=[http.POST])
         def update() -> Response:
@@ -41,4 +41,4 @@ class Env(Endpoint):
                     return self.failure(message)
 
             logger.info(f"Updating MMPM Env with {updated_env}")
-            return self.success(json.dumps(self.env.get()))
+            return self.success({"updated": True})

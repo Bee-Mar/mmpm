@@ -163,16 +163,11 @@ class MagicMirrorDatabase(Singleton):
             None
         """
 
-        return (
-            json.dumps(
-                {
-                    "last-update": str(self.last_update),
-                    "categories": len(self.categories),
-                    "packages": len(self.packages),
-                },
-                indent=2,
-            ),
-        )
+        return {
+            "last-update": str(self.last_update),
+            "categories": len(self.categories),
+            "packages": len(self.packages),
+        }
 
     def is_initialized(self) -> bool:
         return self.packages is not None and bool(len(self.packages) > 0)
@@ -491,18 +486,6 @@ class MagicMirrorDatabase(Singleton):
             json.dump(data, mm_ext_pkgs)
 
         return True
-
-    def dump(self) -> str:
-        """
-        Pretty prints contents of database to stdout
-
-        Parameters:
-            None
-        Returns:
-            None
-        """
-
-        return json.dumps(self.packages, indent=2, default=lambda package: package.serialize())
 
     def available_upgrades(self) -> Dict[str, Any]:
         configuration = {}

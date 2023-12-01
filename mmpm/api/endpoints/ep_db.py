@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import json
 
-from flask import Blueprint, Response
+from flask import Blueprint, Response, request
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.logger import MMPMLogger
@@ -23,10 +23,18 @@ class Db(Endpoint):
 
             return self.success("Database loaded")
 
+        @self.blueprint.route("/update", methods=[http.POST])
+        def update() -> Response:
+            can_upgrade_mmpm = request.get_json()["can-upgrade-mmpm"]
+            can_upgrade_magicmirror = request.get_json()["can-upgrade-magicmirror"]
+            upgradable_count = self.db.update(can_upgrade_mmpm=can_upgrade_mmpm, can_upgrade_magicmirror=can_upgrade_magicmirror)
+
+            return self.success(json.dumps({"upgradable-count": upgradable_count}))
+
         @self.blueprint.route("/upgradable", methods=[http.GET])
         def upgradable() -> Response:
-            return self.success(json.dumps(self.db.upgradable()))
+            return self.success(self.db.upgradable())
 
         @self.blueprint.route("/info", methods=[http.GET])
         def info() -> Response:
-            return self.success(json.dumps(self.db.info()))
+            return self.success(self.db.info())

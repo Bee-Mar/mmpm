@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ Command line options for 'db' subcommand """
+import json
 import sys
 
 from mmpm.logger import MMPMLogger
@@ -50,8 +51,14 @@ class Db(SubCmd):
             return
 
         if args.info:
-            print(highlight(self.database.info(), JsonLexer(), TerminalFormatter()))
+            print(highlight(json.dumps(self.database.info(), indent=2), JsonLexer(), TerminalFormatter()))
         elif args.dump:
-            print(highlight(self.database.dump(), JsonLexer(), TerminalFormatter()))
+            print(
+                highlight(
+                    json.dumps(self.database.packages, indent=2, default=lambda package: package.serialize()),
+                    JsonLexer(),
+                    TerminalFormatter(),
+                ),
+            )
         else:
             logger.error(f"No arguments provided. See '{self.app_name} {self.name} --help'")

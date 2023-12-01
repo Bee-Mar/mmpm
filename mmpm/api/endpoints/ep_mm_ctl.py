@@ -36,10 +36,8 @@ class MmCtl(Endpoint):
 
         @self.blueprint.route("/update", methods=[http.POST])
         def update() -> Response:
-            if self.magicmirror.update():
-                return self.success("MagicMirror updated")
-
-            return self.failure("Failed to update MagicMirror")
+            can_upgrade_magicmirror = self.magicmirror.update()
+            return self.success({"can-upgrade-magicmirror": can_upgrade_magicmirror})
 
         @self.blueprint.route("/upgrade", methods=[http.POST])
         def upgrade() -> Response:

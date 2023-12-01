@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import os
 import unittest
-from pathlib import PosixPath
-from unittest.mock import patch
+from pathlib import Path, PosixPath
+from shutil import rmtree
+from unittest.mock import MagicMock, patch
+from uuid import uuid4
 
 import requests
 from faker import Faker
@@ -20,18 +22,22 @@ class TestUtils(unittest.TestCase):
         host_ip = get_host_ip()
         self.assertEqual(host_ip, ip)
 
-    # @patch('mmpm.utils.subprocess.Popen') # FIXME
-    # def test_run_cmd(self, mock_popen):
-    #    mock_process = mock_popen.return_value
-    #    mock_process.poll.return_value = None
-    #    mock_process.returncode = 0
-    #    mock_stdout = bytes(fake.pystr(), "utf-8")
-    #    mock_stderr = bytes(fake.pystr(), "utf-8")
-    #    mock_process.communicate.return_value = (mock_stdout, mock_stderr)
-    #    returncode, stdout, stderr = run_cmd(['ls', '-l'], progress=False)
-    #    self.assertEqual(mock_process.returncode, 0)
-    #    self.assertEqual(stdout, mock_stdout.decode("utf-8"))
-    #    self.assertEqual(stderr, mock_stderr.decode("utf-8"))
+    @patch("mmpm.utils.subprocess.Popen")
+    @patch("mmpm.utils.time.sleep", return_value=None)  # Mocking sleep to prevent delay
+    def test_run_cmd(self, mock_sleep, mock_popen):
+        # Mocking Popen's return value
+        mock_process = MagicMock()
+        mock_process.communicate.return_value = (b"sample stdout", b"sample stderr")  # A tuple of byte strings
+        mock_process.returncode = 0
+        mock_popen.return_value = mock_process
+
+        returncode, stdout, stderr = run_cmd(["ls", "-l"], progress=False)
+
+        # Assertions
+        mock_popen.assert_called_with(["ls", "-l"], stderr=-1, stdout=-1)
+        self.assertEqual(returncode, 0)
+        self.assertEqual(stdout, "sample stdout")
+        self.assertEqual(stderr, "sample stderr")
 
     @patch("mmpm.utils.subprocess.Popen")
     def test_get_pids(self, mock_popen):

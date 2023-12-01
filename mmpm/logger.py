@@ -72,8 +72,6 @@ class StdoutFormatter(logging.Formatter):
         return f"[{label}] {record.getMessage()}"
 
 
-# FIXME
-# TODO: IDK what happened, but now the logging levels are all messed up and things aren't behavingl ike they did before
 class MMPMLogger:
     """
     Object used for logging while MMPM is executing.
@@ -98,7 +96,7 @@ class MMPMLogger:
         )
 
         level = MMPMEnv().MMPM_LOG_LEVEL.get()
-        MMPMLogger.__logger.setLevel(level)  # this shouldn't be needed?
+        MMPMLogger.__logger.setLevel(logging.DEBUG)  # set the main logging handler set to the lowest level possible
 
         file_handler.setFormatter(JsonFormatter())
         file_handler.setLevel(logging.DEBUG)  # always have the log files be DEBUG

@@ -26,7 +26,7 @@ class MmCtl(SubCmd):
             "-i",
             "--install",
             action="store_true",
-            help="Install MagicMirror",
+            help="install MagicMirror",
             dest="install",
         )
 

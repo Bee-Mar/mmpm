@@ -12,7 +12,7 @@ class Search(SubCmd):
         self.app_name = app_name
         self.name = "search"
         self.help = f"Search for MagicMirror packages"
-        self.usage = f"{self.app_name} {self.name} <query> [--case-sensitive] [--exclude-installed]"
+        self.usage = f"{self.app_name} {self.name} <query> [--<option(s)>]"
         self.database = MagicMirrorDatabase()
 
     def register(self, subparser):

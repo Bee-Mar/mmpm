@@ -18,7 +18,7 @@ class Db(SubCmd):
         self.app_name = app_name
         self.name = "db"
         self.help = "Refresh or display basic details about the database"
-        self.usage = f"{self.app_name} {self.name} [--refresh] [--info] [--dump]"
+        self.usage = f"{self.app_name} {self.name} [--<option>]"
         self.database = MagicMirrorDatabase()
 
     def register(self, subparser):

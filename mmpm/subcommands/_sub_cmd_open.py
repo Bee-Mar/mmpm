@@ -20,7 +20,7 @@ class Open(SubCmd):
         self.app_name = app_name
         self.name = "open"
         self.help = "Open config files, documentation, wikis, and MagicMirror itself"
-        self.usage = f"{self.app_name} {self.name} [option]"
+        self.usage = f"{self.app_name} {self.name} [--<option>]"
         self.env = MMPMEnv()
         self.gui = MMPMGui()
 

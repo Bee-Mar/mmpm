@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-import json
-import logging.handlers
+from datetime import datetime
+from os import chdir
+from shutil import make_archive
 
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response, request, send_file
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.constants import paths
-from mmpm.env import MMPM_DEFAULT_ENV
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.package import MagicMirrorPackage
 
@@ -21,5 +21,13 @@ class Logs(Endpoint):
 
         @self.blueprint.route("/zip", methods=[http.GET])
         def zip() -> Response:
-            print(logger.handlers)
-            return self.success("hello")
+            logger.debug("Creating zip of log files")
+            chdir("/tmp")
+            today = datetime.now()
+            zip_file_name = f"mmpm-logs-{today.year}-{today.month}-{today.day}"
+            logger.debug(f"Creating zip of log files named '{zip_file_name}'")
+            archive_name = make_archive(zip_file_name, "zip", paths.MMPM_LOG_DIR)
+
+            logger.debug(f"Archive created: {True if archive_name else False}")
+
+            return send_file(f"/tmp/{zip_file_name}.zip", f"{zip_file_name}.zip", as_attachment=True)

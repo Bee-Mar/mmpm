@@ -12,7 +12,7 @@ class MmPkg(SubCmd):
         self.app_name = app_name
         self.name = "mm-pkg"
         self.help = "Manually add/remove MagicMirror packages in your local database (similar to add-apt-repository)"
-        self.usage = f"{self.app_name} {self.name} <add/remove> [options]"
+        self.usage = f"{self.app_name} {self.name} <add/remove> [--<option>]"
         self.database = MagicMirrorDatabase()
 
     def register(self, subparser):
@@ -20,14 +20,18 @@ class MmPkg(SubCmd):
 
         subparsers = self.parser.add_subparsers(
             dest="command",
-            description=f"use `{self.app_name} {self.name} <subcommand> --help` to see more details",
+            description=f"use `{self.app_name} {self.name} <add/remove> --help` to see more details",
             title=f"{self.app_name} {self.name} subcommands",
             metavar="",
         )
 
-        install_parser = subparsers.add_parser("add", help="Add a custom MagicMirror package to the local database")
+        add_parser = subparsers.add_parser(
+            "add",
+            help="Add a custom MagicMirror package to the local database",
+            usage=f"{self.app_name} {self.name} add -t <title> -a <author> -r <repo> -d <description>",
+        )
 
-        install_parser.add_argument(
+        add_parser.add_argument(
             "-t",
             "--title",
             type=str,
@@ -35,7 +39,7 @@ class MmPkg(SubCmd):
             dest="title",
         )
 
-        install_parser.add_argument(
+        add_parser.add_argument(
             "-a",
             "--author",
             type=str,
@@ -43,7 +47,7 @@ class MmPkg(SubCmd):
             dest="author",
         )
 
-        install_parser.add_argument(
+        add_parser.add_argument(
             "-r",
             "--repo",
             type=str,
@@ -51,7 +55,7 @@ class MmPkg(SubCmd):
             dest="repo",
         )
 
-        install_parser.add_argument(
+        add_parser.add_argument(
             "-d",
             "--desc",
             type=str,
@@ -59,7 +63,11 @@ class MmPkg(SubCmd):
             dest="desc",
         )
 
-        remove_parser = subparsers.add_parser("remove", help="Remove a custom MagicMirror package from the local database")
+        remove_parser = subparsers.add_parser(
+            "remove",
+            help="Remove a custom MagicMirror package from the local database",
+            usage=f"{self.app_name} {self.name} remove <package(s)> [--yes]",
+        )
 
         remove_parser.add_argument(
             "pkg_name",

@@ -12,7 +12,7 @@ class Logs(SubCmd):
         self.app_name = app_name
         self.name = "logs"
         self.help = f"Display, tail, or zip the {self.app_name} log files"
-        self.usage = f"{self.app_name} {self.name} [--cli] [--gui] [--tail] [--zip]"
+        self.usage = f"{self.app_name} {self.name} [--<option(s)>]"
 
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)

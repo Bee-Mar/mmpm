@@ -14,13 +14,11 @@ class List(SubCmd):
         self.app_name = app_name
         self.name = "list"
         self.help = "List items such as installed packages, packages available, available upgrades, etc"
-        self.usage = f"{self.app_name} {self.name} [-a] [-i] [-e] [-c] [-g] [--upgradable]"
+        self.usage = f"{self.app_name} {self.name} [--<option(s)>]"
         self.database = MagicMirrorDatabase()
 
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
-
-        # FIXME: this is almost correct. --title-only shouldn't be allowed with --gui-url or --upgradable
 
         self.parser.add_argument(
             "-t",
@@ -65,14 +63,6 @@ class List(SubCmd):
         )
 
         group.add_argument(
-            "-g",
-            "--gui-url",
-            action="store_true",
-            help="list the URL of the MMPM GUI",
-            dest="gui_url",
-        )
-
-        group.add_argument(
             "--upgradable",
             action="store_true",
             help="list packages that have available upgrades",
@@ -94,8 +84,6 @@ class List(SubCmd):
 
         elif args.categories:
             self.database.display_categories(title_only=args.title_only)
-        elif args.gui_url:
-            print(self.gui.get_uri())
         elif args.upgradable:
             self.database.display_upgradable()
         else:

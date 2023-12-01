@@ -26,3 +26,7 @@ class Db(Endpoint):
         @self.blueprint.route("/upgradable", methods=[http.GET])
         def upgradable() -> Response:
             return self.success(json.dumps(self.db.upgradable()))
+
+        @self.blueprint.route("/info", methods=[http.GET])
+        def info() -> Response:
+            return self.success(json.dumps(self.db.info()))

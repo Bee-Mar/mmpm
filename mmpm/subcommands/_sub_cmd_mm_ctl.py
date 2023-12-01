@@ -3,6 +3,7 @@
 from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.controller import MagicMirrorController
+from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogger.get_logger(__name__)
@@ -13,12 +14,29 @@ class MmCtl(SubCmd):
         self.app_name = app_name
         self.name = "mm-ctl"
         self.help = f"Commands to interact with/control MagicMirror"
-        self.usage = f"{self.app_name} {self.name} [--status] [--hide] [--show] [--start] [--stop] [--restart]"
+        self.usage = f"{self.app_name} {self.name} [--<option>]"
         self.controller = MagicMirrorController()
+        self.magicmirror = MagicMirror()
         self.env = MMPMEnv()
 
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
+
+        self.parser.add_argument(
+            "-i",
+            "--install",
+            action="store_true",
+            help="Install MagicMirror",
+            dest="install",
+        )
+
+        self.parser.add_argument(
+            "-rm",
+            "--remove",
+            action="store_true",
+            help="Remove MagicMirror",
+            dest="remove",
+        )
 
         self.parser.add_argument(
             "--status",
@@ -56,6 +74,7 @@ class MmCtl(SubCmd):
         )
 
         self.parser.add_argument(
+            "-rs",
             "--restart",
             action="store_true",
             help="restart MagicMirror; works with pm2 and docker-compose",
@@ -65,6 +84,10 @@ class MmCtl(SubCmd):
     def exec(self, args, extra):
         if extra:
             logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")
+        elif args.install:
+            self.magicmirror.install()
+        elif args.remove:
+            self.magicmirror.remove()
         elif args.status:
             self.controller.status()
         elif args.hide:

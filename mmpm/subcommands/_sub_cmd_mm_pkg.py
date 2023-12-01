@@ -17,6 +17,7 @@ class MmPkg(SubCmd):
 
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
+
         subparsers = self.parser.add_subparsers(
             dest="command",
             description=f"use `{self.app_name} {self.name} <subcommand> --help` to see more details",
@@ -82,6 +83,5 @@ class MmPkg(SubCmd):
             self.database.add_mm_pkg(args.title, args.author, args.repo, args.desc)
         elif args.command == "remove":
             self.database.remove_mm_pkg(args.pkg_name, assume_yes=args.assume_yes)
-
         else:
             logger.error(f"Invalid subcommand. See '{self.app_name} {self.name} --help'")

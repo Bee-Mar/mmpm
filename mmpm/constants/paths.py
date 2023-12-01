@@ -14,7 +14,7 @@ MMPM_NGINX_ACCESS_LOG_FILE: PosixPath = MMPM_NGINX_LOG_DIR / "mmpm-access.log"
 MMPM_NGINX_ERROR_LOG_FILE: PosixPath = MMPM_NGINX_LOG_DIR / "mmpm-error.log"
 
 MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE: PosixPath = MMPM_CONFIG_DIR / "MagicMirror-3rd-party-packages-db.json"
-MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE: PosixPath = MMPM_CONFIG_DIR / "MagicMirror-3rd-party-packages-db-expiration.json"
+MAGICMIRROR_3RD_PARTY_PACKAGES_DB_LAST_UPDATE_FILE: PosixPath = MMPM_CONFIG_DIR / "MagicMirror-3rd-party-packages-db-last-update.json"
 
 MMPM_PYTHON_ROOT_DIR: PosixPath = Path(__file__).parent.absolute().parent
 MMPM_JS_DIR: PosixPath = MMPM_PYTHON_ROOT_DIR / "js"
@@ -29,4 +29,4 @@ MMPM_ENV_FILE.touch(exist_ok=True)
 MMPM_EXTERNAL_PACKAGES_FILE.touch(exist_ok=True)
 MMPM_AVAILABLE_UPGRADES_FILE.touch(exist_ok=True)
 MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE.touch(exist_ok=True)
-MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE.touch(exist_ok=True)
+MAGICMIRROR_3RD_PARTY_PACKAGES_DB_LAST_UPDATE_FILE.touch(exist_ok=True)

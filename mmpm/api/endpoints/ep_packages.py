@@ -30,7 +30,7 @@ class Packages(Endpoint):
                 return self.failure(500, message)
 
             logger.info("Sending back retrieved packages")
-            return self.success(json.dumps(self.db.packages, default=lambda package: package.serialize(full=True)))
+            return self.success(json.dumps(self.db.dump()))
 
         @self.blueprint.route("/install", methods=[http.POST])
         def install() -> Response:

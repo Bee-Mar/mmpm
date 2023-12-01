@@ -5,6 +5,9 @@ import sys
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
+from pygments import formatters, highlight
+from pygments.formatters.terminal import TerminalFormatter
+from pygments.lexers.data import JsonLexer
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -47,8 +50,8 @@ class Db(SubCmd):
             return
 
         if args.info:
-            self.database.info()
+            print(highlight(self.database.info(), JsonLexer(), TerminalFormatter()))
         elif args.dump:
-            self.database.dump()
+            print(highlight(self.database.dump(), JsonLexer(), TerminalFormatter()))
         else:
             logger.error(f"No arguments provided. See '{self.app_name} {self.name} --help'")

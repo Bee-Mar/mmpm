@@ -14,8 +14,6 @@ from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.singleton import Singleton
 from mmpm.utils import prompt, run_cmd, validate_input
-from pygments import formatters, highlight
-from pygments.lexers.data import JsonLexer
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -75,14 +73,14 @@ class MagicMirrorDatabase(Singleton):
 
                 except Exception as error:  # broad exception isn't best, but there's a lot that can happen here
                     logger.error(
-                        f"There may have been a change in the layout of the MagicMirror 3rd Party module wiki page. Please create an issue on the MMPM's GitHub repository."
+                        f"There may have been a breaking change in the layout of the MagicMirror 3rd Party module wiki page. Please create an issue on the MMPM's GitHub repository."
                     )
                     logger.error(f"{error}")
                     continue
 
         return packages
 
-    def __discover_installed_packages__(self) -> None:
+    def __discover_installed_packages__(self) -> List[MagicMirrorPackage]:
         """
         Scans the list <MMPM_MAGICMIRROR_ROOT>/modules directory, and compares
         against the known packages from the MagicMirror 3rd Party Wiki. Returns a
@@ -127,9 +125,7 @@ class MagicMirrorDatabase(Singleton):
 
             packages_found.append(MagicMirrorPackage(repository=remote_origin_url.strip(), directory=package_dir.name))
 
-        for package in self.packages:
-            if package in packages_found:
-                package.is_installed = True
+        return packages_found
 
     def update(self, can_upgrade_mmpm: bool = False, can_upgrade_magicmirror: bool = False) -> int:
         upgradable: List[MagicMirrorPackage] = []
@@ -153,7 +149,7 @@ class MagicMirrorDatabase(Singleton):
 
         return int(can_upgrade_mmpm) + int(can_upgrade_magicmirror) + len(upgradable)
 
-    def info(self):
+    def info(self) -> str:
         """
         Displays information regarding the most recent database file, ie. when it
         was taken, when the next scheduled database retrieval will be taken, how many module
@@ -161,34 +157,25 @@ class MagicMirrorDatabase(Singleton):
         tells user how to forcibly request the database be updated.
 
         Parameters:
-            packages (Dict[str, List[MagicMirrorPackage]]): Dictionary of MagicMirror modules
+            None
 
         Returns:
             None
         """
-        print(color.n_green("Last updated:"), f"{str(self.last_update.replace(microsecond=0))}")
-        print(color.n_green("Next scheduled update:"), f"{str(self.expiration_date.replace(microsecond=0))}")
-        print(color.n_green("Categories:"), f"{len(self.categories)}")
-        print(color.n_green("Packages:"), f"{len(self.packages)}")
+
+        return (
+            json.dumps(
+                {
+                    "last-update": str(self.last_update),
+                    "categories": len(self.categories),
+                    "packages": len(self.packages),
+                },
+                indent=2,
+            ),
+        )
 
     def is_initialized(self) -> bool:
         return self.packages is not None and bool(len(self.packages) > 0)
-
-    def is_expired(self) -> bool:
-        db_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
-        db_expiration_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE
-
-        for file_name in [db_file, db_expiration_file]:
-            if not bool(file_name.stat().st_size):
-                return True  # the file is empty
-
-        if self.last_update is None or self.expiration_date is None:
-            with open(db_expiration_file, encoding="utf-8") as expiration_file:
-                data = json.load(expiration_file)
-                self.expiration_date = datetime.datetime.fromisoformat(data["expiration"])
-                self.last_update = datetime.datetime.fromisoformat(data["last-update"])
-
-        return datetime.datetime.now() > self.expiration_date
 
     def search(self, query: str, case_sensitive: bool = False, title_only: bool = False) -> List[MagicMirrorPackage]:
         """
@@ -243,27 +230,28 @@ class MagicMirrorDatabase(Singleton):
         db_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
         db_exists = db_file.exists() and bool(db_file.stat().st_size)
         db_ext_pkgs_file = paths.MMPM_EXTERNAL_PACKAGES_FILE
-        db_expiration_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_EXPIRATION_FILE
+        db_last_update = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_LAST_UPDATE_FILE
 
-        if refresh or not db_exists:
+        should_update = refresh or not db_exists or not db_last_update.exists() or not db_last_update.stat().st_size
+
+        if should_update:
             print(f"Retrieving: {urls.MAGICMIRROR_MODULES_URL} [{color.n_cyan('Database')}]")
             self.packages = self.__download_packages__()
 
             if not self.packages:
                 logger.error(f"Failed to retrieve packages from {urls.MAGICMIRROR_MODULES_URL}. Please check your internet connection.")
                 return False
-            else:
-                with open(db_file, "w", encoding="utf-8") as db:
-                    json.dump(self.packages, db, default=lambda package: package.serialize())
 
-                with open(db_expiration_file, "w", encoding="utf-8") as expiration_file:
-                    self.last_update = datetime.datetime.now()
-                    self.expiration_date = self.last_update + datetime.timedelta(hours=12)
+            with open(db_file, "w", encoding="utf-8") as db:
+                json.dump(self.packages, db, default=lambda package: package.serialize())
 
-                    json.dump(
-                        {"last-update": str(self.last_update), "expiration": str(self.expiration_date)},
-                        expiration_file,
-                    )
+            with open(db_last_update, "w", encoding="utf-8") as last_update_file:
+                self.last_update = datetime.datetime.now()
+                json.dump({"last-update": str(self.last_update.replace(microsecond=0))}, last_update_file)
+
+        else:
+            with open(db_last_update, mode="r", encoding="utf-8") as db_last_update_file:
+                self.last_update = json.load(db_last_update_file)["last-update"]
 
         if not self.packages and db_exists:
             self.packages = []
@@ -286,7 +274,12 @@ class MagicMirrorDatabase(Singleton):
             self.packages.append(MagicMirrorPackage(**package))
 
         self.categories = {package.category for package in self.packages}
-        self.__discover_installed_packages__()
+        discovered_packages = self.__discover_installed_packages__()
+
+        if discovered_packages:
+            for package in self.packages:
+                if package in discovered_packages:
+                    package.is_installed = True
 
         return bool(len(self.packages))
 
@@ -307,10 +300,11 @@ class MagicMirrorDatabase(Singleton):
         if title_only:
             for category in categories:
                 print(category)
-        else:
-            for category in categories:
-                package_count = sum(1 for package in self.packages if package.category == category)
-                print(color.n_green(category), f"\n\tPackages: {package_count}\n")
+            return
+
+        for category in categories:
+            package_count = sum(1 for package in self.packages if package.category == category)
+            print(color.n_green(category), f"\n\tPackages: {package_count}\n")
 
     def display_upgradable(self) -> None:
         """
@@ -498,22 +492,17 @@ class MagicMirrorDatabase(Singleton):
 
         return True
 
-    def dump(self) -> None:
+    def dump(self) -> str:
         """
         Pretty prints contents of database to stdout
+
         Parameters:
             None
         Returns:
             None
         """
 
-        print(
-            highlight(
-                json.dumps(self.packages, indent=2, default=lambda package: package.serialize()),
-                JsonLexer(),
-                formatters.TerminalFormatter(),
-            )
-        )
+        return json.dumps(self.packages, indent=2, default=lambda package: package.serialize())
 
     def available_upgrades(self) -> Dict[str, Any]:
         configuration = {}

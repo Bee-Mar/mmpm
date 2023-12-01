@@ -2,10 +2,8 @@
 """ Command line options for 'install' subcommand """
 from typing import List
 
-from mmpm.gui import MMPMGui
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
-from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.subcommands.sub_cmd import SubCmd
 from mmpm.utils import prompt
 
@@ -18,8 +16,6 @@ class Install(SubCmd):
         self.name = "install"
         self.help = "Install MagicMirror packages"
         self.usage = f"{self.app_name} {self.name} <package(s)> [--yes]"
-        self.magicmirror = MagicMirror()
-        self.gui = MMPMGui()
         self.database = MagicMirrorDatabase()
 
     def register(self, subparser):
@@ -45,15 +41,10 @@ class Install(SubCmd):
         results: List[MagicMirrorPackage] = []
 
         for name in extra:
-            if name == "MagicMirror":
-                self.magicmirror.install()
-            elif name == "mmpm-gui":
-                self.gui.install(args.assume_yes)
-            else:
-                results.extend(filter(lambda pkg: name == pkg.title, self.database.packages))
+            results.extend(filter(lambda pkg: name == pkg.title, self.database.packages))
 
-                if not results:
-                    logger.error("Unable to locate package(s) based on query.")
+            if not results:
+                logger.error("Unable to locate package(s) based on query.")
 
         for package in results:
             if package.is_installed:
@@ -62,7 +53,6 @@ class Install(SubCmd):
 
             if package.install(assume_yes=args.assume_yes):
                 logger.info(f"Installed {package.title}")
-                continue
             elif prompt(f"Installation failed. Would you like to remove {package.title}?"):
                 package.is_installed = True
                 package.remove(assume_yes=True)

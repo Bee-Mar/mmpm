@@ -181,8 +181,7 @@ class MagicMirrorPackage:
         if not assume_yes and not mmpm.utils.prompt(f"Install {color.n_green(self.title)} ({self.repository})?"):
             return
 
-        if InstallationHandler(self).execute():
-            logger.info(f"Installed {self.title}")
+        return InstallationHandler(self).execute()
 
     def remove(self, assume_yes: bool = False) -> bool:
         if not self.is_installed:

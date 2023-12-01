@@ -25,9 +25,9 @@ def main():
         None
     """
 
-    if "--help" in sys.argv or "-h" in sys.argv:
-        # close up any SocketIO connection in the logger that could linger before it becomes a problem
-        MMPMLogger.shutdown()
+    # if "--help" in sys.argv or "-h" in sys.argv:
+    # close up any SocketIO connection in the logger that could linger before it becomes a problem
+    # MMPMLogger.shutdown()
 
     app_name = "mmpm"
 
@@ -59,8 +59,8 @@ def main():
     subcommand = loader.objects.get(args.subcmd)
 
     subcommand.exec(args, extra)
-    MMPMLogger.shutdown()
-    sys.exit(0)
+    # MMPMLogger.shutdown()
+    # sys.exit(0)
 
 
 if __name__ == "__main__":

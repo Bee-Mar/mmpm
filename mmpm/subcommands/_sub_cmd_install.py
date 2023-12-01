@@ -60,6 +60,9 @@ class Install(SubCmd):
                 logger.warning(f"{package.title} is already installed")
                 continue
 
-            if not package.install(assume_yes=args.assume_yes) and prompt(f"Installation failed. Would you like to remove {package.title}?"):
+            if package.install(assume_yes=args.assume_yes):
+                logger.info(f"Installed {package.title}")
+                continue
+            elif prompt(f"Installation failed. Would you like to remove {package.title}?"):
                 package.is_installed = True
                 package.remove(assume_yes=True)

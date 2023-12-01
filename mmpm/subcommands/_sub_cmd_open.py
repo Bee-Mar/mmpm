@@ -7,6 +7,7 @@ from typing import Optional
 
 from mmpm.constants import paths, urls
 from mmpm.env import MMPMEnv
+from mmpm.gui import MMPMGui
 from mmpm.logger import MMPMLogger
 from mmpm.subcommands.sub_cmd import SubCmd
 from mmpm.utils import run_cmd
@@ -21,6 +22,7 @@ class Open(SubCmd):
         self.help = "Open config files, documentation, wikis, and MagicMirror itself"
         self.usage = f"{self.app_name} {self.name} [option]"
         self.env = MMPMEnv()
+        self.gui = MMPMGui()
 
     def edit(self, file: PosixPath) -> Optional[None]:
         """
@@ -66,10 +68,10 @@ class Open(SubCmd):
         )
 
         group.add_argument(
-            "--gui",
+            "--ui",
             action="store_true",
-            help="open the MMPM GUI in your default browser",
-            dest="gui",
+            help="open the MMPM UI in your default browser",
+            dest="ui",
         )
 
         group.add_argument(
@@ -124,7 +126,7 @@ class Open(SubCmd):
             self.edit(self.env.MMPM_MAGICMIRROR_ROOT.get() / "css" / "custom.css")
         elif args.magicmirror:
             run_cmd(["xdg-open", self.env.MMPM_MAGICMIRROR_URI.get()], background=True)
-        elif args.gui:
+        elif args.ui:
             run_cmd(["xdg-open", self.gui.get_uri()], background=True)
         elif args.mm_wiki:
             run_cmd(["xdg-open", urls.MAGICMIRROR_WIKI_URL], background=True)

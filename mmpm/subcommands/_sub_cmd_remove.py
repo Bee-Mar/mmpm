@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ Command line options for 'remove' subcommand """
+from mmpm.constants import color
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
@@ -37,4 +38,9 @@ class Remove(SubCmd):
 
         for name in extra:
             for package in filter(lambda pkg: name == pkg.title, self.database.packages):
-                package.remove(assume_yes=args.assume_yes)
+                if not package.is_installed:
+                    logger.error(f"'{package.title}' is not installed")
+                    continue
+
+                if package.remove(assume_yes=args.assume_yes):
+                    logger.info(f"Removed {color.n_green(package.title)}")

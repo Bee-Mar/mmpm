@@ -60,7 +60,9 @@ class SocketIOHandler(logging.Handler):
 
 class StdoutFormatter(logging.Formatter):
     def format(self, record):
-        return f"[{record.levelname}] {record.getMessage()}"
+        label = "+" if record.levelname == "INFO" else record.levelname
+
+        return f"[{label}] {record.getMessage()}"
 
 
 class MMPMLogger:

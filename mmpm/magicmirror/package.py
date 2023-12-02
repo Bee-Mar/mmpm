@@ -174,28 +174,19 @@ class MagicMirrorPackage:
             None
         """
 
-        if self.is_installed:
-            message = f"'{self.title}' is already installed"
-            logger.error(message)
-            return
-
         if not assume_yes and not mmpm.utils.prompt(f"Install {color.n_green(self.title)} ({self.repository})?"):
             return
 
         return InstallationHandler(self).execute()
 
     def remove(self, assume_yes: bool = False) -> bool:
-        if not self.is_installed:
-            logger.error(f"'{self.title}' is not installed")
-            return
-
         if not assume_yes and not mmpm.utils.prompt(f"Remove {color.n_green(self.title)} ({self.repository})?"):
             return
 
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
 
         run_cmd(["rm", "-rf", str(modules_dir / self.directory)], progress=True)
-        logger.info(f"Removed {color.n_green(self.title)}")
+        return True
 
     def clone(self) -> bool:
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"

@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from faker import Faker
-from mmpm.env import MMPMEnv
+from mmpm.env import MMPM_DEFAULT_ENV, MMPMEnv
 from mmpm.magicmirror.package import MagicMirrorPackage, __sanitize__
 
 fake = Faker()
@@ -79,8 +79,9 @@ class TestMagicMirrorPackage(unittest.TestCase):
             package.remove(assume_yes=True)
             mock_run_cmd.assert_not_called()
 
-    # @patch("mmpm.magicmirror.package.run_cmd")
-    # def test_clone(self, mock_run_cmd):
-    #    package = MagicMirrorPackage(repository="https://example.com/repo.git")
-    #    package.clone()
-    #    mock_run_cmd.assert_called_with(["git", "clone", package.repository, str(package.directory)], message="Retrieving package")
+    @patch("mmpm.magicmirror.package.run_cmd")
+    def test_clone(self, mock_run_cmd):
+        modules = MMPM_DEFAULT_ENV.get("MMPM_MAGICMIRROR_ROOT") / "modules"
+        package = MagicMirrorPackage(title="test", repository="https://example.com/repo.git", directory="test")
+        package.clone()
+        mock_run_cmd.assert_called_with(["git", "clone", package.repository, str(modules / package.directory)], message="Retrieving package")

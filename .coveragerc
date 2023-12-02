@@ -9,5 +9,8 @@ omit =
   */__version__.py
   __pypackages__/*
   test/*
+  mmpm/entrypoint.py
+  mmpm/subcommands/sub_cmd.py
+  mmpm/subcommands/_sub_cmd*
 
 

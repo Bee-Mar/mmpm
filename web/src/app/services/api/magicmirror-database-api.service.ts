@@ -15,7 +15,7 @@ export class MagicMirrorDatabaseAPI extends BaseAPI {
   public load(): Promise<APIResponse> {
     return firstValueFrom(
       this.http
-        .get<APIResponse>(this.route("db/load"), {headers: this.options()})
+        .get<APIResponse>(this.route("db/load"), {headers: this.headers()})
         .pipe(retry(1), catchError(this.handle_error))
     );
   }

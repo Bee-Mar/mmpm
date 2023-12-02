@@ -22,7 +22,7 @@ export class MagicMirrorPackageAPI extends BaseAPI {
             packages,
           },
           {
-            headers: this.options({
+            headers: this.headers({
               "Content-Type": "application/x-www-form-urlencoded",
             }),
             responseType: "text",
@@ -34,30 +34,37 @@ export class MagicMirrorPackageAPI extends BaseAPI {
   }
 
   public get_packages(): Promise<APIResponse> {
+    console.log("Retrieving packages");
+
     return firstValueFrom(
       this.http
-        .get<APIResponse>(this.route("packages"), {headers: this.options()})
+        .get<APIResponse>(this.route("packages"), {headers: this.headers()})
         .pipe(retry(1), catchError(this.handle_error))
     );
   }
 
   public post_install_packages(packages: MagicMirrorPackage[]): Promise<APIResponse> {
+    console.log("Requesting to have packages installed");
     return this.post_packages("packages/install", packages);
   }
 
   public post_remove_packages(packages: MagicMirrorPackage[]): Promise<APIResponse> {
+    console.log("Requesting to have packages removed");
     return this.post_packages("packages/remove", packages);
   }
 
   public post_upgrade_packages(packages: MagicMirrorPackage[]): Promise<APIResponse> {
+    console.log("Requesting to have packages upgraded");
     return this.post_packages("packages/upgrade", packages);
   }
 
   public post_add_mm_pkg(pkg: MagicMirrorPackage): Promise<APIResponse> {
+    console.log("Requesting to add a custom MagicMirrorPackage");
     return this.post_packages("packages/mm-pkg/add", [pkg]);
   }
 
   public post_remove_mm_pkg(pkg: MagicMirrorPackage): Promise<APIResponse> {
+    console.log("Requesting to remove a custom MagicMirrorPackage");
     return this.post_packages("packages/mm-pkg/remove", [pkg]);
   }
 }

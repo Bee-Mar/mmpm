@@ -1,5 +1,4 @@
 import {HttpHeaders} from "@angular/common/http";
-import {throwError} from "rxjs";
 
 export interface APIResponse {
   code: number;
@@ -9,10 +8,10 @@ export interface APIResponse {
 export class BaseAPI {
   constructor() {}
 
-  public options(headers: object = {}): HttpHeaders {
+  public headers(options: object = {}): HttpHeaders {
     return new HttpHeaders({
       "Content-Type": "application/json",
-      ...headers,
+      ...options,
     });
   }
 

@@ -1,0 +1,13 @@
+[run]
+
+include =
+    mmpm/**/*.py
+
+omit =
+  */__pycache__/*
+  */__init__.py
+  */__version__.py
+  __pypackages__/*
+  test/*
+
+

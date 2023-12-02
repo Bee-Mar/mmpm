@@ -48,23 +48,23 @@ def run_cmd(command: List[str], progress=True, background=False, message: str = 
     """
 
     if background:
-        logger.debug(f'Executing process `{" ".join(command)}` in background')
+        logger.debug(f"Executing process `{' '.join(command)}` in background")
         subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return 0, "", ""
 
     logger.debug(f'Executing process `{" ".join(command)}`')
 
-    with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as p:
+    with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as process:
         if progress:
             with yaspin(text=message, color="green") as spinner:
                 spinner.spinner = Spinners.bouncingBar
 
-                while p.poll() is None:
+                while process.poll() is None:
                     time.sleep(0.1)
 
-        stdout, stderr = p.communicate()
+        stdout, stderr = process.communicate()
 
-        return p.returncode, stdout.decode("utf-8"), stderr.decode("utf-8")
+        return process.returncode, stdout.decode("utf-8"), stderr.decode("utf-8")
 
 
 def get_pids(process_name: str) -> List[str]:
@@ -134,7 +134,6 @@ def prompt(user_prompt: str, valid_ack: List[str] = ["yes", "y"], valid_nack: Li
 
     except KeyboardInterrupt:
         print()
-        return False
 
     return False
 

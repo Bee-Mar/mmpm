@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
+import json
 import os
 import unittest
 from pathlib import Path, PosixPath
 from shutil import rmtree
+from subprocess import DEVNULL
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import requests
 from faker import Faker
 from mmpm.utils import (get_host_ip, get_pids, kill_pids_of_process, prompt,
-                        run_cmd, safe_get_request, systemctl, validate_input)
+                        run_cmd, safe_get_request, systemctl, update,
+                        validate_input)
 
 fake = Faker()
 
@@ -23,21 +26,39 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(host_ip, ip)
 
     @patch("mmpm.utils.subprocess.Popen")
-    @patch("mmpm.utils.time.sleep", return_value=None)  # Mocking sleep to prevent delay
-    def test_run_cmd(self, mock_sleep, mock_popen):
-        # Mocking Popen's return value
-        mock_process = MagicMock()
-        mock_process.communicate.return_value = (b"sample stdout", b"sample stderr")  # A tuple of byte strings
-        mock_process.returncode = 0
-        mock_popen.return_value = mock_process
+    def test_run_cmd_background(self, mock_popen):
+        return_code, stdout, stderr = run_cmd(["echo", "hello"], background=True)
 
-        returncode, stdout, stderr = run_cmd(["ls", "-l"], progress=False)
+        self.assertEqual(return_code, 0)
+        self.assertEqual(stdout, "")
+        self.assertEqual(stderr, "")
 
-        # Assertions
-        mock_popen.assert_called_with(["ls", "-l"], stderr=-1, stdout=-1)
-        self.assertEqual(returncode, 0)
-        self.assertEqual(stdout, "sample stdout")
-        self.assertEqual(stderr, "sample stderr")
+        mock_popen.assert_called_once_with(["echo", "hello"], stdout=DEVNULL, stderr=DEVNULL)
+
+    @patch("mmpm.utils.subprocess.Popen")
+    @patch("mmpm.utils.yaspin")
+    def test_run_cmd_progress(self, mock_yaspin, mock_popen):
+        process_mock = MagicMock()
+        process_mock.communicate.return_value = (b"output", b"error")
+        process_mock.returncode = 0
+        mock_popen.return_value.__enter__.return_value = process_mock
+        return_code, stdout, stderr = run_cmd(["echo", "hello"], progress=True)
+
+        self.assertEqual(return_code, 0)
+        self.assertEqual(stdout, "output")
+        self.assertEqual(stderr, "error")
+
+    @patch("mmpm.utils.subprocess.Popen")
+    def test_run_cmd_no_progress(self, mock_popen):
+        process_mock = MagicMock()
+        process_mock.communicate.return_value = (b"output", b"error")
+        process_mock.returncode = 0
+        mock_popen.return_value.__enter__.return_value = process_mock
+        return_code, stdout, stderr = run_cmd(["echo", "hello"], progress=False)
+
+        self.assertEqual(return_code, 0)
+        self.assertEqual(stdout, "output")
+        self.assertEqual(stderr, "error")
 
     @patch("mmpm.utils.subprocess.Popen")
     def test_get_pids(self, mock_popen):
@@ -106,6 +127,25 @@ class TestUtils(unittest.TestCase):
         services = [fake.pystr(), fake.pystr()]
         process = systemctl(subcommand, services)
         self.assertEqual(process, mock_process)
+
+    @patch("mmpm.utils.freeze")
+    @patch("mmpm.utils.urllib.request.urlopen")
+    def test_update(self, mock_urlopen, mock_freeze):
+        mock_freeze.return_value = ["mmpm==1.0.0", "other-package==2.0.0"]
+
+        # Mock the urlopen function to simulate a response with the latest version
+        latest_version_data = {"info": {"version": "1.0.0"}}
+        mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=json.dumps(latest_version_data)))
+
+        # Call the update function and assert that it returns True (versions match)
+        self.assertTrue(update())
+
+        # Test with a different latest version
+        latest_version_data = {"info": {"version": "2.0.0"}}
+        mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=json.dumps(latest_version_data)))
+
+        # Call the update function and assert that it returns False (versions don't match)
+        self.assertFalse(update())
 
 
 if __name__ == "__main__":

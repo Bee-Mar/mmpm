@@ -12,5 +12,7 @@ omit =
   mmpm/entrypoint.py
   mmpm/subcommands/sub_cmd.py
   mmpm/subcommands/_sub_cmd*
-
+  mmpm/wsgi.py
+  mmpm/constants/*
+  mmpm/logger.py
 

@@ -2,6 +2,7 @@
 import datetime
 import json
 import os
+import shutil
 import sys
 from multiprocessing import cpu_count
 from pathlib import Path, PosixPath
@@ -394,9 +395,9 @@ class InstallationHandler:
         """
         logger.debug(f"Running 'cmake ..' in {self.package.directory}")
 
-        os.system("mkdir -p build")
-        os.chdir("build")
-        os.system("rm -rf *")
+        build_dir = Path(self.package.directory / "build").mkdir(exist_ok=True)
+        os.system(f"rm -rf {build_dir}/*")
+        os.chdir(build_dir)
         return run_cmd(["cmake", ".."], message="Building with CMake")
 
     def __make__(self) -> Tuple[int, str, str]:

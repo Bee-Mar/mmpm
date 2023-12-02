@@ -6,6 +6,22 @@ from mmpm.magicmirror.controller import (MagicMirrorClientFactory,
                                          MagicMirrorController)
 
 
+class TestMagicMirrorClientFactory(unittest.TestCase):
+    @patch("mmpm.magicmirror.controller.socketio.Client")
+    def test_create_client_valid(self, mock_client):
+        # Test creating a client with valid parameters
+        client = MagicMirrorClientFactory.create_client("test_event", {"data": "test"})
+        self.assertIsNotNone(client)
+        mock_client.assert_called()
+
+    @patch("mmpm.magicmirror.controller.socketio.Client")
+    def test_create_client_invalid(self, mock_client):
+        # Test creating a client with invalid parameters
+        client = MagicMirrorClientFactory.create_client("", {})
+        self.assertIsNone(client)
+        mock_client.assert_not_called()
+
+
 class TestMagicMirrorController(unittest.TestCase):
     @patch("mmpm.magicmirror.controller.socketio.Client")
     def test_status(self, mock_client):

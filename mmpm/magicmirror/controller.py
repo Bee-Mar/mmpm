@@ -23,6 +23,10 @@ class MagicMirrorClientFactory:
     def create_client(event: str, data: dict, namespace: str = "/MMM-mmpm"):
         client = None
 
+        if not event:
+            logger.error("No event name provided")
+            return client
+
         try:
             client = socketio.Client(reconnection=True, request_timeout=300)
         except socketio.exceptions.SocketIOError as error:

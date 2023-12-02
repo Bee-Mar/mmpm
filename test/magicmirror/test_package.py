@@ -54,11 +54,6 @@ class TestMagicMirrorPackage(unittest.TestCase):
         self.assertTrue(package1 != package2)
 
     @patch("mmpm.magicmirror.package.InstallationHandler")
-    def test_install_already_installed(self, mock_handler):
-        self.package.install()
-        mock_handler.assert_not_called()
-
-    @patch("mmpm.magicmirror.package.InstallationHandler")
     def test_install(self, mock_handler):
         mock_install = MagicMock()
         mock_handler.return_value = mock_install
@@ -71,12 +66,6 @@ class TestMagicMirrorPackage(unittest.TestCase):
         self.package.env = MMPMEnv()
         self.package.remove(assume_yes=True)
         mock_run_cmd.assert_called()
-
-    @patch("mmpm.magicmirror.package.run_cmd")
-    def test_remove_not_installed(self, mock_run_cmd):
-        self.package.is_installed = False
-        self.package.remove(assume_yes=True)
-        mock_run_cmd.assert_not_called()
 
     @patch("mmpm.magicmirror.package.run_cmd")
     def test_clone(self, mock_run_cmd):

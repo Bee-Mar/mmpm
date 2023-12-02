@@ -46,8 +46,8 @@ class MagicMirrorPackage:
         is_installed: bool = False,
     ) -> None:
         self.env = MMPMEnv()
-        self.title = __sanitize__(title.strip())
-        self.author = __sanitize__(author.strip())
+        self.title = __sanitize__(title).strip()
+        self.author = __sanitize__(author).strip()
         self.repository = repository.strip()
         self.description = description.strip()
         self.directory = Path(directory.strip())

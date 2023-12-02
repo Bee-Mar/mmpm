@@ -212,7 +212,7 @@ class MagicMirrorPackage:
         os.chdir(modules_dir / self.directory)
 
         try:
-            error_code, _, stdout = mmpm.utils.run_cmd(["git", "fetch", "--dry-run"], progress=False)
+            error_code, stdout, stderr = mmpm.utils.run_cmd(["git", "fetch", "--dry-run"], progress=False)
 
         except KeyboardInterrupt:
             logger.info("User killed process with CTRL-C")
@@ -221,7 +221,10 @@ class MagicMirrorPackage:
         if error_code:
             logger.error("Unable to communicate with git server")
 
-        self.is_upgradable = bool(stdout)
+        if (not len(stdout) and not len(stderr)) or bool("up to date" in stdout or "up-to-date" in stderr):
+            self.is_upgradable = True
+        else:
+            self.is_upgradable = False
 
     def upgrade(self) -> bool:
         """
@@ -239,21 +242,18 @@ class MagicMirrorPackage:
             stderr (str): the resulting error message of the upgrade. If the message is zero length, it was successful
         """
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
-        self.directory = modules_dir / self.title
 
         os.chdir(modules_dir / self.directory)
 
-        error_code, _, stderr = mmpm.utils.run_cmd(["git", "pull"])
+        error_code, stdout, stderr = mmpm.utils.run_cmd(["git", "pull"])
 
         if error_code:
             logger.error(f"Failed to upgrade MagicMirror")
             return False
 
-        else:
+        elif "up to date" not in stdout and InstallationHandler(self).execute():
             print(f"Upgraded {color.n_green(self.title)}")
             logger.debug(f"Upgraded {color.n_green(self.title)}")
-
-        InstallationHandler(self).execute()
 
         if stderr:
             logger.error(stderr)

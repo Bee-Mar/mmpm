@@ -50,7 +50,7 @@ class MmCtl(Endpoint):
         def hide() -> Response:
             modules = request.get_json()["modules"]
 
-            if self.controller.hide_modules(modules):
+            if self.controller.hide(modules):
                 return self.success("Hid modules")
 
             return self.failure("Failed to hide modules")
@@ -59,7 +59,7 @@ class MmCtl(Endpoint):
         def show() -> Response:
             modules = request.get_json()["modules"]
 
-            if self.controller.show_modules(modules):
+            if self.controller.show(modules):
                 return self.success("Shown modules")
 
             return self.failure("Failed to show modules")

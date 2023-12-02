@@ -2,21 +2,23 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
+from faker import Faker
+from mmpm.env import MMPMEnv
 from mmpm.magicmirror.controller import (MagicMirrorClientFactory,
                                          MagicMirrorController)
+
+fake = Faker()
 
 
 class TestMagicMirrorClientFactory(unittest.TestCase):
     @patch("mmpm.magicmirror.controller.socketio.Client")
     def test_create_client_valid(self, mock_client):
-        # Test creating a client with valid parameters
         client = MagicMirrorClientFactory.create_client("test_event", {"data": "test"})
         self.assertIsNotNone(client)
         mock_client.assert_called()
 
     @patch("mmpm.magicmirror.controller.socketio.Client")
     def test_create_client_invalid(self, mock_client):
-        # Test creating a client with invalid parameters
         client = MagicMirrorClientFactory.create_client("", {})
         self.assertIsNone(client)
         mock_client.assert_not_called()
@@ -28,9 +30,9 @@ class TestMagicMirrorController(unittest.TestCase):
         client_instance = MagicMock()
         mock_client.return_value = client_instance
 
-        # Instantiate and test
         controller = MagicMirrorController()
         controller.status()
+
         client_instance.connect.assert_called_with("http://localhost:8080")
 
     @patch("mmpm.magicmirror.controller.run_cmd")
@@ -65,6 +67,33 @@ class TestMagicMirrorController(unittest.TestCase):
         # Simulate no MagicMirror processes running
         mock_get_pids.side_effect = lambda x: []
         self.assertFalse(controller.is_running())
+
+    @patch("mmpm.magicmirror.controller.socketio.Client")
+    def test_hide_modules(self, mock_client):
+        client_instance = MagicMock()
+        mock_client.return_value = client_instance
+
+        # Test hide
+        controller = MagicMirrorController()
+        controller.env = MMPMEnv()
+
+        modules = [fake.pystr() for _ in range(5)]
+
+        controller.hide(modules)
+        client_instance.connect.assert_called_with(controller.env.MMPM_MAGICMIRROR_URI.get())
+
+    @patch("mmpm.magicmirror.controller.socketio.Client")
+    def test_show_modules(self, mock_client):
+        client_instance = MagicMock()
+        mock_client.return_value = client_instance
+
+        controller = MagicMirrorController()
+        controller.env = MMPMEnv()
+
+        modules = [fake.pystr() for _ in range(5)]
+
+        controller.show(modules)
+        client_instance.connect.assert_called_with(controller.env.MMPM_MAGICMIRROR_URI.get())
 
 
 if __name__ == "__main__":

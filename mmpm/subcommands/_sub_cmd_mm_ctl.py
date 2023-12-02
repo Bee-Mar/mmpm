@@ -91,9 +91,9 @@ class MmCtl(SubCmd):
         elif args.status:
             self.controller.status()
         elif args.hide:
-            self.controller.hide_modules(args.hide)
+            self.controller.hide(args.hide)
         elif args.show:
-            self.controller.show_modules(args.show)
+            self.controller.show(args.show)
         elif args.start:
             if self.env.MMPM_IS_DOCKER_IMAGE.get():
                 logger.fatal("Cannot execute this command within a docker image")

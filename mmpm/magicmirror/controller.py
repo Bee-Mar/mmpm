@@ -79,25 +79,30 @@ class MagicMirrorController(Singleton):
         self.factory = MagicMirrorClientFactory()
 
     def status(self):
-        client = self.factory.create_client("FROM_MMPM_APP_get_active_modules", {})
-
         try:
+            client = self.factory.create_client("FROM_MMPM_APP_get_active_modules", {})
             client.connect(self.env.MMPM_MAGICMIRROR_URI.get())
         except (OSError, BrokenPipeError, Exception) as error:
             logger.error(f"Failed to connect to MagicMirror, closing socket. Is MagicMirror running? : {error}")
 
-    def hide_modules(self, modules_to_hide):
-        client = self.factory.create_client("FROM_MMPM_APP_toggle_modules", {"directive": "hide", "modules": modules_to_hide})
-
+    def hide(self, modules: List[str]):
         try:
+            client = self.factory.create_client(
+                "FROM_MMPM_APP_toggle_modules",
+                {"directive": "hide", "modules": modules},
+            )
+
             client.connect(self.env.MMPM_MAGICMIRROR_URI.get())
         except (OSError, BrokenPipeError, Exception) as error:
             logger.error(f"Failed to connect to MagicMirror, closing socket. Is MagicMirror running? : {error}")
 
-    def show_modules(self, modules_to_show):
-        client = self.factory.create_client("FROM_MMPM_APP_toggle_modules", data={"directive": "show", "modules": modules_to_show})
-
+    def show(self, modules: List[str]):
         try:
+            client = self.factory.create_client(
+                "FROM_MMPM_APP_toggle_modules",
+                data={"directive": "show", "modules": modules},
+            )
+
             client.connect(self.env.MMPM_MAGICMIRROR_URI.get())
         except (OSError, BrokenPipeError, Exception) as error:
             logger.error(f"Failed to connect to MagicMirror, closing socket. Is MagicMirror running? : {error}")

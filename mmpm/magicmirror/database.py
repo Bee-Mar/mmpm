@@ -97,7 +97,7 @@ class MagicMirrorDatabase(Singleton):
 
         if not modules_dir.exists():
             logger.warning(f"'{modules_dir}' does not exist")
-            return
+            return []
 
         package_directories: List[PosixPath] = [
             directory for directory in modules_dir.iterdir() if directory.is_dir() and (directory / ".git").exists()
@@ -105,7 +105,7 @@ class MagicMirrorDatabase(Singleton):
 
         if not package_directories:
             logger.error("Failed to find MagicMirror root directory.")
-            return
+            return []
 
         packages_found: List[MagicMirrorPackage] = []
 
@@ -371,7 +371,7 @@ class MagicMirrorDatabase(Singleton):
 
         return upgrades
 
-    def add_mm_pkg(self, title: str = None, author: str = None, repository: str = None, description: str = None) -> str:
+    def add_mm_pkg(self, title: str = None, author: str = None, repository: str = None, description: str = None) -> bool:
         """
         Adds an external source for user to install a module from. This may be a
         private git repo, or a specific branch of a public repo. All modules added

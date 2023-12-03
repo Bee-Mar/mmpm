@@ -39,11 +39,11 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
     },
     Education: {
       logo: "fa-solid fa-graduation-cap",
-      color: "yellow",
+      color: "gray",
     },
     "Utility / IoT / 3rd Party / Integration": {
       logo: "fa-solid fa-wrench",
-      color: "black",
+      color: "gray",
     },
     "Voice Control": {
       logo: "fa-solid fa-microphone",
@@ -70,7 +70,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       color: "#999966",
     },
     "Outdated modules": {
-      logo: "pi pi-clock",
+      logo: "fa-solid fa-clock",
       color: "",
     },
     "Development / Core MagicMirror²": {

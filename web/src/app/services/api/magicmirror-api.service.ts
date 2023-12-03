@@ -1,12 +1,12 @@
 import {Injectable} from '@angular/core';
-import {BaseAPI} from './base-api';
-import {HttpClient} from '@angular/common/http';
+import {APIResponse, BaseAPI} from './base-api';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MagicMirrorAPI extends BaseAPI {
-  constructor(private http: HttpClient) {
-    super();
+  public get_status(): Promise<APIResponse> {
+    return this.get_("mm");
+
   }
 }

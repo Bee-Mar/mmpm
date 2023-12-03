@@ -1,16 +1,11 @@
 import {Injectable} from '@angular/core';
-import {APIResponse, BaseAPI} from './base-api';
-import {HttpClient} from '@angular/common/http';
+import {BaseAPI} from './base-api';
 import {catchError, firstValueFrom, retry} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ConfigFileAPI extends BaseAPI {
-
-  constructor(private http: HttpClient) {
-    super();
-  }
 
   public get_config_file(filename: string): Promise<string> {
     console.log(`Retrieving ${filename}`);

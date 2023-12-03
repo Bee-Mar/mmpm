@@ -1,12 +1,21 @@
-import {HttpHeaders} from "@angular/common/http";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {Injectable} from '@angular/core';
+import {catchError, firstValueFrom, retry} from 'rxjs';
 
 export interface APIResponse {
   code: number;
   message: any;
 }
 
+/*
+ * if things get weird, removing the providedIn tag will probably resolve it so
+ * this BaseAPI isn't a singleton, but it is right now
+ */
+@Injectable({
+  providedIn: "root"
+})
 export class BaseAPI {
-  constructor() {}
+  constructor(protected http: HttpClient) {}
 
   public headers(options: object = {}): HttpHeaders {
     return new HttpHeaders({
@@ -17,6 +26,14 @@ export class BaseAPI {
 
   public route(path: string): string {
     return `http://${window.location.hostname}:7890/api/${path}`;
+  }
+
+  public get_(endpoint: string): Promise<APIResponse> {
+    return firstValueFrom(
+      this.http
+        .get<APIResponse>(this.route(endpoint), {headers: this.headers()})
+        .pipe(retry(1), catchError(this.handle_error))
+    );
   }
 
   public handle_error(error: any): Promise<any> {

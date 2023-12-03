@@ -3,14 +3,12 @@ import {BehaviorSubject, Observable} from "rxjs";
 import {MagicMirrorPackage} from "@/magicmirror/models/magicmirror-package";
 import {MagicMirrorPackageAPI} from './api/magicmirror-package-api.service';
 import {APIResponse} from '@/services/api/base-api';
-import {MagicMirrorDatabaseAPI} from './api/magicmirror-database-api.service';
-import {ConfigFileAPI} from './api/config-file-api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SharedStoreService {
-  constructor(private mm_pkg_api: MagicMirrorPackageAPI, private config_file_api: ConfigFileAPI) {}
+  constructor(private mm_pkg_api: MagicMirrorPackageAPI) {}
 
   private packages_subj: BehaviorSubject<MagicMirrorPackage[]> = new BehaviorSubject<Array<MagicMirrorPackage>>([]);
   public readonly packages: Observable<MagicMirrorPackage[]> = this.packages_subj.asObservable();

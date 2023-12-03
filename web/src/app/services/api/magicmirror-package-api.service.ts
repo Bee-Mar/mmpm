@@ -1,5 +1,4 @@
 import {Injectable} from "@angular/core";
-import {HttpClient} from "@angular/common/http";
 import {MagicMirrorPackage} from "@/magicmirror/models/magicmirror-package";
 import {APIResponse, BaseAPI} from '@/services/api/base-api';
 import {retry, catchError} from "rxjs/operators";
@@ -9,10 +8,6 @@ import {firstValueFrom} from 'rxjs';
   providedIn: 'root'
 })
 export class MagicMirrorPackageAPI extends BaseAPI {
-  constructor(private http: HttpClient) {
-    super();
-  }
-
   private post_packages(url: string, packages: MagicMirrorPackage[]): Promise<APIResponse> {
     return firstValueFrom(
       this.http
@@ -35,12 +30,7 @@ export class MagicMirrorPackageAPI extends BaseAPI {
 
   public get_packages(): Promise<APIResponse> {
     console.log("Retrieving packages");
-
-    return firstValueFrom(
-      this.http
-        .get<APIResponse>(this.route("packages"), {headers: this.headers()})
-        .pipe(retry(1), catchError(this.handle_error))
-    );
+    return this.get_("packages");
   }
 
   public post_install_packages(packages: MagicMirrorPackage[]): Promise<APIResponse> {

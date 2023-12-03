@@ -1,56 +1,81 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, OnDestroy} from '@angular/core';
 import {MagicMirrorPackage} from "@/magicmirror/models/magicmirror-package";
 import {SharedStoreService} from '@/services/shared-store.service';
 import {MagicMirrorPackageAPI} from '@/services/api/magicmirror-package-api.service';
+import {APIResponse, BaseAPI} from '@/services/api/base-api';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-magicmirror-database',
   templateUrl: './magicmirror-database.component.html',
   styleUrls: ['./magicmirror-database.component.scss']
 })
-export class MagicMirrorDatabaseComponent implements OnInit {
+export class MagicMirrorDatabaseComponent implements OnInit, OnDestroy {
 
-  constructor(private store: SharedStoreService, private mm_pkg_api: MagicMirrorPackageAPI) {}
+  constructor(private store: SharedStoreService, private mm_pkg_api: MagicMirrorPackageAPI, private base_api: BaseAPI) {}
 
+  private subscription: Subscription = new Subscription();
   public packages: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
+  public selected_packages: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
+  public loading = true;
+  public total_records = 0;
 
   ngOnInit(): void {
-    this.store.packages.subscribe(packages => this.packages = packages);
+    this.subscription = this.store.packages.subscribe((packages: Array<MagicMirrorPackage>) => {
+      this.packages = packages;
+      this.loading = false;
+      this.total_records = this.packages.length;
+    });
   }
 
-  public info() {
-
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
-  public install(pkgs: MagicMirrorPackage[]) {
+  // Angular doesn't let you cast the Event directly in templates {-_-}
+  public get_input_value(event: Event) {
+    return (event.target as HTMLInputElement).value;
+  }
+
+  public install(pkgs: MagicMirrorPackage[]): void {
     this.mm_pkg_api.post_install_packages(pkgs).then(_ => {
       this.store.get_packages();
-    });
+    }).catch((error) => console.log(error));
   }
 
-  public remove(pkgs: MagicMirrorPackage[]) {
+  public remove(pkgs: MagicMirrorPackage[]): void {
     this.mm_pkg_api.post_remove_packages(pkgs).then(_ => {
       this.store.get_packages();
-    });
+    }).catch((error) => console.log(error));
   }
 
-  public upgrade(pkgs: MagicMirrorPackage[]) {
+  public upgrade(pkgs: MagicMirrorPackage[]): void {
     this.mm_pkg_api.post_upgrade_packages(pkgs).then(_ => {
       this.store.get_packages();
-    });
+    }).catch((error) => console.log(error));
   }
 
-  public add_mm_pkg(pkg: MagicMirrorPackage) {
+  public add_mm_pkg(pkg: MagicMirrorPackage): void {
     this.mm_pkg_api.post_add_mm_pkg(pkg).then(_ => {
       this.store.get_packages();
-    });
+    }).catch((error) => console.log(error));
   }
 
-  public remove_mm_pkg(pkg: MagicMirrorPackage) {
+  public remove_mm_pkg(pkg: MagicMirrorPackage): void {
     this.mm_pkg_api.post_add_mm_pkg(pkg).then(_ => {
       this.store.get_packages();
-    });
+    }).catch((error) => console.log(error));
   }
 
-
+  public refresh_db(): void {
+    this.base_api.get_("db/refresh").then((response: APIResponse) => {
+      if (response.message === true) {
+        this.store.get_packages();
+      } else {
+        console.log("Failed to update database");
+      }
+    });
+  }
 }

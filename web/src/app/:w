@@ -7,7 +7,7 @@
       List of Magic Mirror Packages
       <span class="p-input-icon-left">
         <i class="pi pi-search"></i>
-        <input pInputText type="text" (input)="dt.filterGlobal(get_input_value($event), 'contains')"
+        <input pInputText type="text" (input)="dt.filterGlobal($event?.target?.value, 'contains')"
           placeholder="Global Search" />
       </span>
     </div>

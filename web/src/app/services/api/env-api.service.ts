@@ -7,7 +7,7 @@ import {APIResponse, BaseAPI} from './base-api';
 })
 export class EnvAPI extends BaseAPI {
   constructor(private http: HttpClient) {
-    super();
+    super(http);
   }
 
   //public get_retrieve_env(): Promise<APIResponse> {

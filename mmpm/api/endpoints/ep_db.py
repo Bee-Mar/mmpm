@@ -16,8 +16,8 @@ class Db(Endpoint):
         self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
         self.db = MagicMirrorDatabase()
 
-        @self.blueprint.route("/load", methods=[http.GET])
-        def load() -> Response:
+        @self.blueprint.route("/refresh", methods=[http.GET])
+        def refresh() -> Response:
             if not self.db.load(refresh=True):
                 return self.failure(False)
 

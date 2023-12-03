@@ -5,7 +5,9 @@ import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {MagicMirrorDatabaseComponent} from '@/magicmirror/components/magicmirror-database/magicmirror-database.component';
 import {SharedStoreService} from '@/services/shared-store.service';
-import {MagicMirrorPackageAPI} from '@/services/api/magicmirror-package-api.service';
+import {TableModule} from 'primeng/table';
+
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 export function init_shared_store(store: SharedStoreService) {
   return () => store.get_packages();
@@ -17,13 +19,13 @@ export function init_shared_store(store: SharedStoreService) {
     MagicMirrorDatabaseComponent,
   ],
   imports: [
+    BrowserAnimationsModule,
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
+    TableModule,
   ],
   providers: [
-    MagicMirrorPackageAPI,
-    SharedStoreService,
     {
       provide: APP_INITIALIZER,
       useFactory: init_shared_store,

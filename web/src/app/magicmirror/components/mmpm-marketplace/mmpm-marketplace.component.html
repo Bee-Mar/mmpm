@@ -1,22 +1,13 @@
-<p-table
-  #dt
-  [value]="packages"
-  dataKey="id"
-  [rows]="10"
-  [showCurrentPageReport]="true"
-  [rowsPerPageOptions]="[10, 25, 50]"
-  [loading]="loading"
-  [paginator]="true"
+<p-table #dt [value]="packages" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
+  [rowsPerPageOptions]="[10, 25, 50]" [loading]="loading" [paginator]="true"
   currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-  [globalFilterFields]="['title', 'category', 'author']"
-  [tableStyle]="{ 'min-width': '75rem' }"
-  [filterDelay]="0"
->
+  [globalFilterFields]="['title', 'category', 'author']" [tableStyle]="{ 'min-width': '75rem' }" [filterDelay]="0">
   <ng-template pTemplate="caption">
     <div class="flex">
       <span class="p-input-icon-left ml-auto">
         <i class="pi pi-search"></i>
-        <input pInputText type="text" (input)="dt.filterGlobal(get_input_value($event), 'contains')" placeholder="Global Search" />
+        <input pInputText type="text" (input)="dt.filterGlobal(get_input_value($event), 'contains')"
+          placeholder="Global Search" />
       </span>
     </div>
   </ng-template>
@@ -25,9 +16,12 @@
       <th style="width: 4rem">
         <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
       </th>
-      <th pSortableColumn="category" style="width: 22%">Category<p-sortIcon field="category"></p-sortIcon></th>
-      <th pSortableColumn="title" style="width: 22%">Title<p-sortIcon field="title"></p-sortIcon></th>
-      <th pSortableColumn="author" style="width: 22%">Author<p-sortIcon field="author"></p-sortIcon></th>
+      <th pSortableColumn="category" style="width: 22%">Category<p-sortIcon field="category"></p-sortIcon>
+      </th>
+      <th pSortableColumn="title" style="width: 22%">Title<p-sortIcon field="title"></p-sortIcon>
+      </th>
+      <th pSortableColumn="author" style="width: 22%">Author<p-sortIcon field="author"></p-sortIcon>
+      </th>
       <th style="width: 22%">Installed</th>
     </tr>
     <tr>
@@ -54,7 +48,8 @@
       <td>
         <span class="category-icon-text">
           {{ package?.category }}
-          <i [class]="icons[package?.category].logo || 'pi pi-question-circle'" [style.color]="icons[package?.category].color || 'black'"></i>
+          <i [class]="icons[package.category].logo || 'fa fa-question-circle'"
+            [style.color]="icons[package.category].color || 'black'"></i>
         </span>
       </td>
       <td>
@@ -64,7 +59,8 @@
         {{ package?.author }}
       </td>
       <td>
-        <i class="pi pi-{{ package?.is_installed ? 'check' : 'times' }}-circle" [style.color]="package?.is_installed ? '#009933' : '#e05252'"></i>
+        <i class="pi pi-{{ package?.is_installed ? 'check' : 'times' }}-circle"
+          [style.color]="package?.is_installed ? '#009933' : '#e05252'"></i>
       </td>
     </tr>
   </ng-template>

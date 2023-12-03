@@ -1,9 +1,9 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
-import { MagicMirrorPackage } from "@/magicmirror/models/magicmirror-package";
-import { SharedStoreService } from "@/services/shared-store.service";
-import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
-import { APIResponse, BaseAPI } from "@/services/api/base-api";
-import { Subscription } from "rxjs";
+import {Component, OnInit, OnDestroy} from "@angular/core";
+import {MagicMirrorPackage} from "@/magicmirror/models/magicmirror-package";
+import {SharedStoreService} from "@/services/shared-store.service";
+import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
+import {APIResponse, BaseAPI} from "@/services/api/base-api";
+import {Subscription} from "rxjs";
 
 interface Icon {
   logo: string;
@@ -20,16 +20,17 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
 
   private subscription: Subscription = new Subscription();
   public packages: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
+  public categories: Array<string> = new Array<string>();
   public selected_packages: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
   public loading = true;
   public total_records = 0;
 
-  public icons: { [key: string]: Icon } = {
-    Finance: {
+  public icons: {[key: string]: Icon;} = {
+    "Finance": {
       logo: "fa-solid fa-sack-dollar",
       color: "#ffff4d",
     },
-    Sports: {
+    "Sports": {
       logo: "fa-solid fa-baseball-bat-ball",
       color: "#ffff99",
     },
@@ -37,11 +38,11 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       logo: "fa-solid fa-shuffle",
       color: "teal",
     },
-    Education: {
+    "Education": {
       logo: "fa-solid fa-graduation-cap",
       color: "gray",
     },
-    "Utility / IoT / 3rd Party / Integration": {
+    "Utility / IOT / 3rd Party / Integration": {
       logo: "fa-solid fa-wrench",
       color: "gray",
     },
@@ -49,7 +50,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       logo: "fa-solid fa-microphone",
       color: "#ccff99",
     },
-    Weather: {
+    "Weather": {
       logo: "fa-solid fa-cloud",
       color: "white",
     },
@@ -57,11 +58,11 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       logo: "fa-solid fa-envelope-open-text",
       color: "#0099ff",
     },
-    Religion: {
+    "Religion": {
       logo: "fa-solid fa-cross",
       color: "#996633",
     },
-    Health: {
+    "Health": {
       logo: "fa-solid fa-heart",
       color: "red",
     },
@@ -70,13 +71,18 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       color: "#999966",
     },
     "Outdated modules": {
-      logo: "fa-solid fa-clock",
-      color: "",
+      logo: "fa-solid fa-person-cane",
+      color: "#ffff99"
     },
     "Development / Core MagicMirror²": {
       logo: "fa-solid fa-desktop",
-      color: "#00cc99",
+      color: "#00cc99"
     },
+  };
+
+  private default_icon: Icon = {
+    logo: "fa-solid fa-question",
+    color: "black"
   };
 
   ngOnInit(): void {
@@ -84,6 +90,17 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       this.packages = packages;
       this.loading = false;
       this.total_records = this.packages.length;
+
+      this.categories = this.packages
+        .map(pkg => pkg.category)
+        .filter((category, index, self) => self.indexOf(category) === index);
+
+      // add a default icon for any category that isn't recognized above
+      this.packages.forEach(pkg => {
+        if (pkg.category && !this.icons[pkg.category]) {
+          this.icons[pkg.category] = {...this.default_icon};
+        }
+      });
     });
   }
 

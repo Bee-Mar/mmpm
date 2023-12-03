@@ -1,0 +1,14 @@
+/* Inside your component's SCSS file */
+.category-icon-text {
+  display: flex; /* Display the content in a row */
+  align-items: center; /* Vertically center-align the content */
+}
+
+.category-icon-text i {
+  margin-left: 20px; /* Adjust the right margin to control spacing between the text and the icon */
+  font-size: 20px; /* Adjust the font size of the icon */
+}
+
+.category-icon-text i.pi-question {
+  color: gray; /* Define a default color for the question mark icon */
+}

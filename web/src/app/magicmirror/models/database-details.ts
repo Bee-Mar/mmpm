@@ -1,6 +1,5 @@
-export interface DatabaseDetails {
+export interface DatabaseInfo {
   last_updated: Date;
-  next_update: Date;
   categories: number;
   packages: number;
 }

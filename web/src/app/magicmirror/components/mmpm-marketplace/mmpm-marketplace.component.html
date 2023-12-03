@@ -1,0 +1,76 @@
+<p-table
+  #dt
+  [value]="packages"
+  dataKey="id"
+  [rows]="10"
+  [showCurrentPageReport]="true"
+  [rowsPerPageOptions]="[10, 25, 50]"
+  [loading]="loading"
+  [paginator]="true"
+  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+  [globalFilterFields]="['title', 'category', 'author']"
+  [tableStyle]="{ 'min-width': '75rem' }"
+  [filterDelay]="0"
+>
+  <ng-template pTemplate="caption">
+    <div class="flex">
+      <span class="p-input-icon-left ml-auto">
+        <i class="pi pi-search"></i>
+        <input pInputText type="text" (input)="dt.filterGlobal(get_input_value($event), 'contains')" placeholder="Global Search" />
+      </span>
+    </div>
+  </ng-template>
+  <ng-template pTemplate="header">
+    <tr>
+      <th style="width: 4rem">
+        <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+      </th>
+      <th pSortableColumn="category" style="width: 22%">Category<p-sortIcon field="category"></p-sortIcon></th>
+      <th pSortableColumn="title" style="width: 22%">Title<p-sortIcon field="title"></p-sortIcon></th>
+      <th pSortableColumn="author" style="width: 22%">Author<p-sortIcon field="author"></p-sortIcon></th>
+      <th style="width: 22%">Installed</th>
+    </tr>
+    <tr>
+      <th style="width: 4rem"></th>
+      <th>
+        <p-columnFilter type="text" field="category"></p-columnFilter>
+      </th>
+      <th>
+        <p-columnFilter type="text" field="title"></p-columnFilter>
+      </th>
+      <th>
+        <p-columnFilter type="text" field="author"></p-columnFilter>
+      </th>
+      <th>
+        <p-columnFilter type="boolean" field="is_installed"></p-columnFilter>
+      </th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-package>
+    <tr class="p-selectable-row">
+      <td>
+        <p-tableCheckbox [value]="package"></p-tableCheckbox>
+      </td>
+      <td>
+        <span class="category-icon-text">
+          {{ package?.category }}
+          <i [class]="icons[package?.category].logo || 'pi pi-question-circle'" [style.color]="icons[package?.category].color || 'black'"></i>
+        </span>
+      </td>
+      <td>
+        {{ package?.title }}
+      </td>
+      <td>
+        {{ package?.author }}
+      </td>
+      <td>
+        <i class="pi pi-{{ package?.is_installed ? 'check' : 'times' }}-circle" [style.color]="package?.is_installed ? '#009933' : '#e05252'"></i>
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="5">Unable to load packages.</td>
+    </tr>
+  </ng-template>
+</p-table>

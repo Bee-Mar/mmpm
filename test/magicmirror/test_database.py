@@ -39,14 +39,15 @@ class TestMagicMirrorDatabase(unittest.TestCase):
 
     @patch("mmpm.magicmirror.database.open", new_callable=mock_open)
     def test_add_mm_pkg(self, mock_file):
+
         # Mock the open function
-        mock_file.return_value.read.return_value = ""
+        mock_file.return_value.read.return_value = '{"External Packages": []}'
 
         # Test the add_mm_pkg method
         result = self.database.add_mm_pkg(
             title="Test Package",
             author="Test Author",
-            repository="https://example.com",
+            repository="https://github.com/repo/test-package",
             description="Test Description",
         )
 

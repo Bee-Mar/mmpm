@@ -9,6 +9,12 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class Version(SubCmd):
+    """
+    The 'Version' subcommand displays the current version number of MMPM
+
+    Custom Attributes:
+        None
+    """
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "version"

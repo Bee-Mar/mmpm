@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" Command line options for 'add-mm-pkg' subcommand """
+""" Command line options for 'mm-pkg' subcommand """
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
@@ -8,6 +8,12 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class MmPkg(SubCmd):
+    """
+    The 'MmPkg' subcommand allows users to add/remove custom MagicMirror packages to/from their local database
+
+    Custom Attributes:
+        database (MagicMirrorDatabase): An instance of the MagicMirrorDatabase class for managing the database.
+    """
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "mm-pkg"

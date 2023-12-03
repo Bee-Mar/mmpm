@@ -14,6 +14,15 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class Ui(SubCmd):
+    """
+    The 'Ui' subcommand allows users to interact with the MMPM user interface (UI), which includes
+    displaying the UI URL, checking its status, installing, or removing it.
+
+    Custom Attributes:
+        database (MagicMirrorDatabase): An instance of the MagicMirrorDatabase class for managing the database.
+        gui (MMPMGui): An instance of the MMPMGui class for managing the MMPM user interface.
+    """
+
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "ui"

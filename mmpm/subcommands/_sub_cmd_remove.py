@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """ Command line options for 'remove' subcommand """
+from typing import List
+
 from mmpm.constants import color
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
@@ -9,6 +11,12 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class Remove(SubCmd):
+    """
+    The 'Remove' subcommand allows users to uninstall MagicMirror packages from their modules folder
+
+    Custom Attributes:
+        database (MagicMirrorDatabase): An instance of the MagicMirrorDatabase class for managing the database.
+    """
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "remove"
@@ -36,11 +44,18 @@ class Remove(SubCmd):
         if not self.database.is_initialized():
             self.database.load()
 
-        for name in extra:
-            for package in filter(lambda pkg: name == pkg.title, self.database.packages):
-                if not package.is_installed:
-                    logger.error(f"'{package.title}' is not installed")
-                    continue
+        package_titles: List[str] = {package.title: package for package in self.database.packages}
 
-                if package.remove(assume_yes=args.assume_yes):
-                    logger.info(f"Removed {color.n_green(package.title)}")
+        for name in extra:
+            package = package_titles.get(name)
+
+            if package is None:
+                logger.error(f"'{name}' is not found in the installed packages")
+                continue
+
+            if not package.is_installed:
+                logger.error(f"'{package.title}' is not installed")
+                continue
+
+            if package.remove(assume_yes=args.assume_yes):
+                logger.info(f"Removed {color.n_green(package.title)}")

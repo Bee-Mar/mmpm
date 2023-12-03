@@ -210,14 +210,14 @@ class MagicMirrorPackage:
             sys.exit(127)
 
         if error_code:
-            logger.error("Unable to communicate with git server")
+            logger.error(f"Encountered error while updating {self.title}: {stderr}")
 
         if (not len(stdout) and not len(stderr)) or bool("up to date" in stdout or "up-to-date" in stderr):
-            self.is_upgradable = True
-        else:
             self.is_upgradable = False
+        else:
+            self.is_upgradable = True
 
-    def upgrade(self) -> bool:
+    def upgrade(self, force: bool = False) -> bool:
         """
         Checks for available package updates, and alerts the user. Or, pulls latest
         version of module(s) from the associated repos.
@@ -227,7 +227,7 @@ class MagicMirrorPackage:
         supplying their case-sensitive name(s) as an addtional argument.
 
         Parameters:
-            package (MagicMirrorPackage): the MagicMirror module being upgraded
+            force (bool): force an upgrade regardless of the status of the git repo (aka, try reinstalling deps)
 
         Returns:
             stderr (str): the resulting error message of the upgrade. If the message is zero length, it was successful
@@ -238,17 +238,13 @@ class MagicMirrorPackage:
 
         error_code, stdout, stderr = mmpm.utils.run_cmd(["git", "pull"])
 
-        if error_code:
-            logger.error(f"Failed to upgrade MagicMirror")
+        if error_code or stderr:
+            logger.error(f"Failed to upgrade {self.title}: {stderr}")
             return False
 
-        elif "up to date" not in stdout and InstallationHandler(self).execute():
+        elif "up to date" not in stdout or force and InstallationHandler(self).execute():
             print(f"Upgraded {color.n_green(self.title)}")
             logger.debug(f"Upgraded {color.n_green(self.title)}")
-
-        if stderr:
-            logger.error(stderr)
-            return False
 
         return True
 
@@ -329,6 +325,7 @@ class InstallationHandler:
         error_code = 0
 
         if not self.package.directory.exists():
+            self.package.directory.mkdir(exist_ok=True)
             error_code, _, _ = self.package.clone()
 
         os.chdir(self.package.directory)

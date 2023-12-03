@@ -33,7 +33,7 @@ class TestMagicMirrorController(unittest.TestCase):
         controller = MagicMirrorController()
         controller.status()
 
-        client_instance.connect.assert_called_with("http://localhost:8080")
+        client_instance.connect.assert_called_with(MMPMEnv().MMPM_MAGICMIRROR_URI.get())
 
     @patch("mmpm.magicmirror.controller.run_cmd")
     @patch("mmpm.magicmirror.controller.shutil.which")

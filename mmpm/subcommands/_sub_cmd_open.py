@@ -3,7 +3,6 @@
 from os import getenv, system
 from pathlib import PosixPath
 from shutil import copyfile
-from typing import Optional
 
 from mmpm.constants import paths, urls
 from mmpm.env import MMPMEnv
@@ -16,6 +15,16 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class Open(SubCmd):
+    """
+    The 'Open' subcommand allows users to open various configuration files, documentation,
+    wikis, and the MagicMirror application itself.
+
+    Custom Attributes:
+        env (MMPMEnv): An instance of the MMPMEnv class for managing environment variables.
+        gui (MMPMGui): An instance of the MMPMGui class for managing the MMPM GUI.
+        [Method] edit(self, file: PosixPath): see method docs
+    """
+
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "open"
@@ -24,13 +33,13 @@ class Open(SubCmd):
         self.env = MMPMEnv()
         self.gui = MMPMGui()
 
-    def edit(self, file: PosixPath) -> Optional[None]:
+    def edit(self, file: PosixPath) -> None:
         """
-        Checks if the requested file exists, and if not, the file is created. Then, the 'edit'
-        command is used to open the file.
+        Checks if the requested file exists, and if not, the file is created.
+        Then, opens the file for editing using the system's default editor.
 
         Parameters:
-            file (PosixPath): file path to open with 'edit' command
+            file (PosixPath): The file path to open for editing.
 
         Returns:
             None

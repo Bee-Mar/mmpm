@@ -14,6 +14,13 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class Update(SubCmd):
+    """
+    The 'Update' subcommand checks for available updates on all installed packages, MagicMirror and MMPM itself
+
+    Custom Attributes:
+        database (MagicMirrorDatabase): An instance of the MagicMirrorDatabase class for managing the database.
+        magicmirror (MagicMirror): An instance of the MagicMirror object (similar to a MagicMirrorPackage)
+    """
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "update"
@@ -31,13 +38,13 @@ class Update(SubCmd):
             return
 
         self.database.load(refresh=True)
+
         can_upgrade_mmpm = mmpm.utils.update()
         can_upgrade_magicmirror = self.magicmirror.update()
-
         available_upgrades = self.database.update(can_upgrade_mmpm=can_upgrade_mmpm, can_upgrade_magicmirror=can_upgrade_magicmirror)
 
         if not available_upgrades:
-            print("All packages and applications are up to date.")
+            print("Everything is up to date.")
             return
 
         print(f"{available_upgrades} upgrade(s) available. Run `mmpm list --upgradable` for details")

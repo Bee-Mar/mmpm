@@ -13,6 +13,14 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class GuidedSetup(SubCmd):
+    """
+    The 'GuidedSetup' subcommand interactively walks users through the setup
+    process of MMPM's features, and generates the next steps they should
+    manually perform (if necessary)
+
+    Custom Attributes:
+        env (MMPMEnv): A singleton of MMPMEnv which contains environment variables
+    """
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "guided-setup"

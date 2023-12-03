@@ -130,13 +130,12 @@ class MagicMirrorDatabase(Singleton):
     def update(self, can_upgrade_mmpm: bool = False, can_upgrade_magicmirror: bool = False) -> int:
         upgradable: List[MagicMirrorPackage] = []
 
-        for package in self.packages:
-            if package.is_installed:
-                print(f"Retrieving: {package.repository} [{color.n_cyan(package.title)}]")
-                package.update()
+        for package in filter(lambda pkg : pkg.is_installed, self.packages):
+            print(f"Retrieving: {package.repository} [{color.n_cyan(package.title)}]")
+            package.update()
 
-                if package.is_upgradable:
-                    upgradable.append(package)
+            if package.is_upgradable:
+                upgradable.append(package)
 
         configuration = self.available_upgrades()
 

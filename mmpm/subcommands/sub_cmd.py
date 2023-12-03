@@ -8,7 +8,20 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class SubCmd:
-    """Base subcommand class used to define all future subcommands"""
+    """
+    Base subcommand class used to define all future subcommands
+
+    Args:
+        app_name (str): The name of the application.
+    Attributes:
+        app_name (str): The name of the application.
+        name (str): The name of the subcommand.
+        help (str): A brief description of the subcommand's purpose.
+        usage (str): The usage information for the subcommand.
+        parser (argparse._SubParsersAction): the subparser options/commands are appended to
+        [Method] register(self, subparser): see method docs
+        [Method] exec(self, args, extra): see method docs
+    """
 
     def __init__(self, app_name: str = ""):
         self.app_name = app_name

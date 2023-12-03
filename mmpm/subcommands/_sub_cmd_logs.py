@@ -8,6 +8,12 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class Logs(SubCmd):
+    """
+    The 'Logs' subcommand allows users to view all or specific log files and create an archive of them
+
+    Custom Attributes:
+        None
+    """
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "logs"

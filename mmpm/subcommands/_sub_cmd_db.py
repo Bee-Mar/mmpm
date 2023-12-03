@@ -14,6 +14,13 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class Db(SubCmd):
+    """
+    The 'Db' subcommand allows users to refresh or display basic details about the MagicMirror packages database.
+
+    Custom Attributes:
+        database (MagicMirrorDatabase): An instance of the MagicMirrorDatabase class for managing the database.
+    """
+
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "db"

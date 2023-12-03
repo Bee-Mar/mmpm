@@ -9,6 +9,13 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class Completion(SubCmd):
+    """
+    The 'Completion' subcommand generates the necessary commands a user should copy/paste into their
+    shell configuration file to register autocompletion for MMPM.
+
+    Custom Attributes:
+        shells (Dict[str, str]): a dictionary of shell names and associated commands for autocompletion registration
+    """
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "completion"

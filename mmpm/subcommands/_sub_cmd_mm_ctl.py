@@ -10,6 +10,16 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class MmCtl(SubCmd):
+    """
+    The 'MmCtl' subcommand allows users to interact with the MagicMirror itself
+    by hiding/showing modules, getting information about which are visible,
+    even starting/stopping/restarting MagicMirror itself.
+
+    Custom Attributes:
+        database (MagicMirrorDatabase): An instance of the MagicMirrorDatabase class for managing the database.
+        controller (MagicMirrorController): An instance of the MagicMirrorController for interacting with MagicMirror
+        env (MMPMEnv): A singleton of MMPMEnv which contains environment variables
+    """
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "mm-ctl"

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ Command line options for 'upgrade' subcommand """
 import json
+from typing import List
 
 from mmpm.constants import paths
 from mmpm.logger import MMPMLogger
@@ -13,6 +14,13 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class Upgrade(SubCmd):
+    """
+    The 'Upgrade' subcommand retrieves available updates for packages and MagicMirror and attempts to install their dependencies
+
+    Custom Attributes:
+        database (MagicMirrorDatabase): An instance of the MagicMirrorDatabase class for managing the database.
+        magicmirror (MagicMirror): An instance of the MagicMirror object (similar to a MagicMirrorPackage)
+    """
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "upgrade"
@@ -33,24 +41,38 @@ class Upgrade(SubCmd):
             dest="assume_yes",
         )
 
+        self.parser.add_argument(
+            "-f",
+            "--force",
+            action="store_true",
+            default=False,
+            help="force an attempted upgrade regardless if the package isn't 'upgradable'",
+            dest="force",
+        )
+
     def exec(self, args, extra):
         if not self.database.is_initialized():
             self.database.load()
 
         upgradable = self.database.upgradable()
+        packages_to_upgrade: List[MagicMirrorPackage] = []
 
-        if not upgradable["mmpm"] and not upgradable["MagicMirror"] and not upgradable["packages"]:
+        if args.force:
+            for package in filter(lambda pkg: pkg.is_installed, self.database.packages):
+                package.upgrade(force=True)
+
+            upgradable["packages"] = {}
+
+        elif not any(upgradable.values()):
             logger.info("All packages and applications are up to date.\n ")
+            return
 
         if upgradable["packages"]:
-            packages: Set[MagicMirrorPackage] = {MagicMirrorPackage(**package) for package in upgradable["packages"]}
-            upgraded: Set[MagicMirrorPackage] = {package for package in packages if package.upgrade()}
+            packages = {MagicMirrorPackage(**package) for package in upgradable["packages"]}
+            packages_to_upgrade.extend(filter(lambda pkg: pkg.upgrade(), packages))
+            upgradable["packages"] = [package.serialize() for package in (packages - set(packages_to_upgrade))]
 
-            # whichever packages failed to upgrade, we'll hold onto those for future reference
-            upgradable["packages"] = [package.serialize() for package in (packages - upgraded)]
-
-        if upgradable["MagicMirror"]:
-            upgradable["MagicMirror"] = not self.magicmirror.upgrade()
+        upgradable["MagicMirror"] = upgradable["MagicMirror"] and self.magicmirror.upgrade()
 
         if upgradable["mmpm"]:
             print("Run 'pip install --upgrade --no-cache-dir mmpm' to install the latest version of MMPM. Run 'mmpm update' after upgrading.")

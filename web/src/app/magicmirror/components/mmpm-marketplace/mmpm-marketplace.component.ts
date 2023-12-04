@@ -5,6 +5,7 @@ import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.serv
 import {APIResponse, BaseAPI} from "@/services/api/base-api";
 import {Subscription} from "rxjs";
 import {MarketPlaceIcons, DefaultMarketPlaceIcon} from './marketplace-icons.model';
+import {Table} from 'primeng/table';
 
 @Component({
   selector: "app-mmpm-marketplace",
@@ -23,6 +24,8 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   public selected_packages: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
   public loading = true;
   public total_records = 0;
+  public readonly installed_options = [true, false];
+  public selected_installed: boolean | null = null;
 
   ngOnInit(): void {
     this.subscription = this.store.packages.subscribe((packages: Array<MagicMirrorPackage>) => {
@@ -51,11 +54,10 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
 
   // Angular doesn't let you cast the Event directly in templates {-_-}
   public get_input_value(event: Event): string {
-    console.log(this.selected_packages);
     return (event.target as HTMLInputElement).value;
   }
 
-  public install(): void {
+  public on_install(): void {
     this.mm_pkg_api
       .post_install_packages(this.selected_packages)
       .then((_) => {
@@ -64,7 +66,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       .catch((error) => console.log(error));
   }
 
-  public remove(): void {
+  public on_remove(): void {
     this.mm_pkg_api
       .post_remove_packages(this.selected_packages)
       .then((_) => {
@@ -73,7 +75,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       .catch((error) => console.log(error));
   }
 
-  public upgrade(): void {
+  public on_upgrade(): void {
     this.mm_pkg_api
       .post_upgrade_packages(this.selected_packages)
       .then((_) => {
@@ -82,7 +84,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       .catch((error) => console.log(error));
   }
 
-  public add_mm_pkg(pkg: MagicMirrorPackage): void {
+  public on_add_mm_pkg(pkg: MagicMirrorPackage): void {
     this.mm_pkg_api
       .post_add_mm_pkg(pkg)
       .then((_) => {
@@ -91,7 +93,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       .catch((error) => console.log(error));
   }
 
-  public remove_mm_pkg(pkg: MagicMirrorPackage): void {
+  public on_remove_mm_pkg(pkg: MagicMirrorPackage): void {
     this.mm_pkg_api
       .post_add_mm_pkg(pkg)
       .then((_) => {
@@ -100,7 +102,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       .catch((error) => console.log(error));
   }
 
-  public refresh_db(): void {
+  public on_refresh_db(): void {
     this.base_api.get_("db/refresh").then((response: APIResponse) => {
       if (response.message === true) {
         this.store.get_packages();

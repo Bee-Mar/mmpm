@@ -14,7 +14,15 @@
             <p-columnFilter field="category" matchMode="in" display="menu" [showMatchModes]="false"
               [showOperator]="false" [showAddButton]="false">
               <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                <p-multiSelect [options]="categories" placeholder="Select Categories" (onChange)="filter($event.value)">
+                <p-multiSelect [options]="categories" placeholder="Select Categories" (onChange)="filter($event.value)"
+                  optionLabel="name">
+                  <ng-template let-category pTemplate="item">
+                    <span class="category-icon-text">
+                      {{category}}
+                      <i [class]="icons[category].logo || 'fa fa-question-circle'"
+                        [style.color]="icons[category].color || 'black'"></i>
+                    </span>
+                  </ng-template>
                 </p-multiSelect>
               </ng-template>
             </p-columnFilter>
@@ -23,7 +31,8 @@
         <th style="min-width:10rem">
           <div class="flex align-items-center">
             Title
-            <p-columnFilter type="text" field="title" display="menu" [showOperator]="false" [showAddButton]="false">
+            <p-columnFilter type="text" field="title" display="menu" [showOperator]="false" [showAddButton]="false"
+              filterDelay="0">
             </p-columnFilter>
           </div>
         </th>

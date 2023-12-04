@@ -1,5 +1,5 @@
-<p-table #dt [value]="packages" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
-  [rowsPerPageOptions]="[10, 25, 50]" [loading]="loading" [paginator]="true"
+<p-table #dt [value]="packages" [rows]="10" [showCurrentPageReport]="true" selectionMode="multiple"
+  [(selection)]="selected_packages" [rowsPerPageOptions]="[10, 25, 50]" [loading]="loading" [paginator]="true"
   currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
   [globalFilterFields]="['title', 'category', 'author']" [tableStyle]="{ 'min-width': '75rem' }" [filterDelay]="0">
   <ng-template pTemplate="caption">

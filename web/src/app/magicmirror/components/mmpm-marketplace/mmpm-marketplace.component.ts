@@ -4,11 +4,7 @@ import {SharedStoreService} from "@/services/shared-store.service";
 import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
 import {APIResponse, BaseAPI} from "@/services/api/base-api";
 import {Subscription} from "rxjs";
-
-interface Icon {
-  logo: string;
-  color: string;
-}
+import {MarketPlaceIcons, DefaultMarketPlaceIcon} from './marketplace-icons.model';
 
 @Component({
   selector: "app-mmpm-marketplace",
@@ -19,71 +15,14 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   constructor(private store: SharedStoreService, private mm_pkg_api: MagicMirrorPackageAPI, private base_api: BaseAPI) {}
 
   private subscription: Subscription = new Subscription();
+  private default_icon = DefaultMarketPlaceIcon;
+
+  public icons = MarketPlaceIcons;
   public packages: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
   public categories: Array<string> = new Array<string>();
   public selected_packages: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
   public loading = true;
   public total_records = 0;
-
-  public icons: {[key: string]: Icon;} = {
-    "Finance": {
-      logo: "fa-solid fa-sack-dollar",
-      color: "#ffff4d",
-    },
-    "Sports": {
-      logo: "fa-solid fa-baseball-bat-ball",
-      color: "#ffff99",
-    },
-    "Entertainment / Misc": {
-      logo: "fa-solid fa-shuffle",
-      color: "teal",
-    },
-    "Education": {
-      logo: "fa-solid fa-graduation-cap",
-      color: "gray",
-    },
-    "Utility / IOT / 3rd Party / Integration": {
-      logo: "fa-solid fa-wrench",
-      color: "gray",
-    },
-    "Voice Control": {
-      logo: "fa-solid fa-microphone",
-      color: "#ccff99",
-    },
-    "Weather": {
-      logo: "fa-solid fa-cloud",
-      color: "white",
-    },
-    "News / Information": {
-      logo: "fa-solid fa-envelope-open-text",
-      color: "#0099ff",
-    },
-    "Religion": {
-      logo: "fa-solid fa-cross",
-      color: "#996633",
-    },
-    "Health": {
-      logo: "fa-solid fa-heart",
-      color: "red",
-    },
-    "Transport / Travel": {
-      logo: "fa-solid fa-plane",
-      color: "#999966",
-    },
-    "Outdated modules": {
-      logo: "fa-solid fa-person-cane",
-      color: "#ffff99"
-    },
-    "Development / Core MagicMirror²": {
-      logo: "fa-solid fa-desktop",
-      color: "#00cc99"
-    },
-  };
-
-  private default_icon: Icon = {
-    logo: "fa-solid fa-question",
-    color: "black"
-  };
 
   ngOnInit(): void {
     this.subscription = this.store.packages.subscribe((packages: Array<MagicMirrorPackage>) => {
@@ -111,31 +50,32 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   }
 
   // Angular doesn't let you cast the Event directly in templates {-_-}
-  public get_input_value(event: Event) {
+  public get_input_value(event: Event): string {
+    console.log(this.selected_packages);
     return (event.target as HTMLInputElement).value;
   }
 
-  public install(pkgs: MagicMirrorPackage[]): void {
+  public install(): void {
     this.mm_pkg_api
-      .post_install_packages(pkgs)
+      .post_install_packages(this.selected_packages)
       .then((_) => {
         this.store.get_packages();
       })
       .catch((error) => console.log(error));
   }
 
-  public remove(pkgs: MagicMirrorPackage[]): void {
+  public remove(): void {
     this.mm_pkg_api
-      .post_remove_packages(pkgs)
+      .post_remove_packages(this.selected_packages)
       .then((_) => {
         this.store.get_packages();
       })
       .catch((error) => console.log(error));
   }
 
-  public upgrade(pkgs: MagicMirrorPackage[]): void {
+  public upgrade(): void {
     this.mm_pkg_api
-      .post_upgrade_packages(pkgs)
+      .post_upgrade_packages(this.selected_packages)
       .then((_) => {
         this.store.get_packages();
       })
@@ -170,3 +110,4 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
     });
   }
 }
+

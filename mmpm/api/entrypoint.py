@@ -64,7 +64,7 @@ entrypoints.append(Index(app.url_map))
 
 for endpoint in entrypoints:
     try:
-        app.register_blueprint(endpoint.blueprint)
+        app.register_blueprint(endpoint.blueprint) # type: ignore
         logger.debug(f"Loaded blueprint for {endpoint}")
     except Exception as error:
         logger.error(f"Failed to load blueprint for {endpoint}: {error}")

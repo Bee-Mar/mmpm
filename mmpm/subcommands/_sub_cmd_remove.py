@@ -6,6 +6,7 @@ from mmpm.constants import color
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
+from mmpm.utils import prompt
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -57,5 +58,9 @@ class Remove(SubCmd):
                 logger.error(f"'{package.title}' is not installed")
                 continue
 
-            if package.remove(assume_yes=args.assume_yes):
-                logger.info(f"Removed {color.n_green(package.title)}")
+            if not args.assume_yes and not prompt(f"Remove {color.n_green(package.title)} ({package.repository})?"):
+                continue
+
+            if package.remove():
+                logger.info(f"Removed {color.n_green(package.title)} ({package.repository})")
+

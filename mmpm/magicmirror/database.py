@@ -148,7 +148,7 @@ class MagicMirrorDatabase(Singleton):
 
         return int(can_upgrade_mmpm) + int(can_upgrade_magicmirror) + len(upgradable)
 
-    def info(self) -> str:
+    def info(self) -> Dict[str, Any]:
         """
         Displays information regarding the most recent database file, ie. when it
         was taken, when the next scheduled database retrieval will be taken, how many module
@@ -254,7 +254,7 @@ class MagicMirrorDatabase(Singleton):
                 packages = json.load(db)
                 self.packages = [MagicMirrorPackage(**package) for package in packages]
 
-        data = {"External Packages": []}
+        data: Dict[str, List[Dict[str, str]]] = {"External Packages": []}
 
         if not db_ext_pkgs_file.stat().st_size == 0:
             with open(db_ext_pkgs_file, mode="r+", encoding="utf-8") as ext_pkgs:
@@ -265,15 +265,15 @@ class MagicMirrorDatabase(Singleton):
                     json.dump(data, ext_pkgs)
 
         for package in data["External Packages"]:
-            self.packages.append(MagicMirrorPackage(**package))
+            self.packages.append(MagicMirrorPackage(**package)) # type: ignore
 
-        self.categories = {package.category for package in self.packages}
-        discovered_packages = self.__discover_installed_packages__()
+        self.categories = list({package.category for package in self.packages})
+        discovered_packages: List[MagicMirrorPackage] = self.__discover_installed_packages__()
 
         if discovered_packages:
-            for package in self.packages:
-                if package in discovered_packages:
-                    package.is_installed = True
+            for package in self.packages: # type: ignore
+                if package in discovered_packages: # (mypy thinks 'package' is a Dict[str, str])
+                    package.is_installed = True # type: ignore
 
         return bool(len(self.packages))
 
@@ -407,7 +407,7 @@ class MagicMirrorDatabase(Singleton):
         package.directory = Path(f'{package.repository.split("/")[-1].replace(".git", "")}-ext-mm-pkg')
 
         try:
-            ext_pkgs_file: PosixPath = paths.MMPM_EXTERNAL_PACKAGES_FILE
+            ext_pkgs_file = paths.MMPM_EXTERNAL_PACKAGES_FILE
 
             if ext_pkgs_file.exists() and ext_pkgs_file.stat().st_size:
                 external_packages = {}

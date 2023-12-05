@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """ Command line options for 'mm-pkg' subcommand """
+from mmpm.constants import color
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
+from mmpm.utils import prompt
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -95,7 +97,8 @@ class MmPkg(SubCmd):
 
         if args.command == "add":
             self.database.add_mm_pkg(args.title, args.author, args.repo, args.desc)
-        elif args.command == "remove":
-            self.database.remove_mm_pkg(args.pkg_name, assume_yes=args.assume_yes)
+        elif args.command == "remove" and prompt(f"Remove {color.n_green(args.pkg_name)} ({package.repository}) from the local database?"):
+            if not self.database.remove_mm_pkg(args.pkg_name):
+                logger.error(f"Failed to remove {color.n_green(args.pkg_name)}")
         else:
             logger.error(f"Invalid subcommand. See '{self.app_name} {self.name} --help'")

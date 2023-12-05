@@ -93,6 +93,7 @@ class MagicMirrorController(Singleton):
             )
 
             client.connect(self.env.MMPM_MAGICMIRROR_URI.get())
+            logger.info(f"Hid modules with keys: {', '.join(modules)}")
         except (OSError, BrokenPipeError, Exception) as error:
             logger.error(f"Failed to connect to MagicMirror, closing socket. Is MagicMirror running? : {error}")
 
@@ -104,6 +105,7 @@ class MagicMirrorController(Singleton):
             )
 
             client.connect(self.env.MMPM_MAGICMIRROR_URI.get())
+            logger.info(f"Made modules visible with keys: {', '.join(modules)}")
         except (OSError, BrokenPipeError, Exception) as error:
             logger.error(f"Failed to connect to MagicMirror, closing socket. Is MagicMirror running? : {error}")
 

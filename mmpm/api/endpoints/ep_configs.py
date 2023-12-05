@@ -40,7 +40,7 @@ class Configs(Endpoint):
                 sample = self.files.get("config.js.sample")
 
                 if sample.exists():
-                    copyfile(config_js_sample, config_js)
+                    copyfile(sample, file)
                     logger.debug("The config.js hasn't been initialized yet, but found the sample file. Copying config.js.sample to config.js")
 
             if not file.exists():
@@ -60,7 +60,9 @@ class Configs(Endpoint):
             file = self.files.get(filename)
             logger.debug(f"Editing {file} with provided contents")
 
+            contents = request.get_json().get("contents")
+
             with open(file, mode="w", encoding="utf-8") as file_to_edit:
-                file_to_edit.write(data.get("contents"))
+                file_to_edit.write(contents)
 
             return send_file(self.files.get(filename), filename, as_attachment=True)

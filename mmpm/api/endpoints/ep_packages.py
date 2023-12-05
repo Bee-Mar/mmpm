@@ -30,7 +30,7 @@ class Packages(Endpoint):
             if not self.db.packages:
                 message = "Failed to load database"
                 logger.error(message)
-                return self.failure(500, message)
+                return self.failure(message)
 
             logger.info("Sending back retrieved packages")
             return self.success([package.serialize(full=True) for package in self.db.packages])
@@ -38,19 +38,19 @@ class Packages(Endpoint):
         @self.blueprint.route("/install", methods=[http.POST])
         def install() -> Response:
             packages = request.get_json()["packages"]
-            installed = [package for package in packages if MagicMirrorPackage(**package).remove(assume_yes=True)]
+            installed = [package for package in packages if MagicMirrorPackage(**package).install()]
             return self.success(installed)
 
         @self.blueprint.route("/remove", methods=[http.POST])
         def remove() -> Response:
             packages = request.get_json()["packages"]
-            removed = [package for package in packages if MagicMirrorPackage(**package).remove(assume_yes=True)]
+            removed = [package for package in packages if MagicMirrorPackage(**package).remove()]
             return self.success(removed)
 
         @self.blueprint.route("/upgrade", methods=[http.POST])
         def upgrade() -> Response:
             packages = request.get_json()["packages"]
-            upgraded = [package for package in packages if MagicMirrorPackage(**package).upgrade(assume_yes=True)]
+            upgraded = [package for package in packages if MagicMirrorPackage(**package).upgrade()]
             return self.success(upgraded)
 
         @self.blueprint.route("/mm-pkg/add", methods=[http.POST])

@@ -9,7 +9,7 @@ from mmpm.constants import color
 from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 from mmpm.singleton import Singleton
-from mmpm.utils import prompt, run_cmd
+from mmpm.utils import prompt, repo_up_to_date, run_cmd
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -38,14 +38,10 @@ class MagicMirror(Singleton):
         print(f"Retrieving: https://github.com/MichMich/MagicMirror [{color.n_cyan('MagicMirror')}]")
 
         try:
-            error_code, _, stdout = run_cmd(["git", "fetch", "--dry-run"], progress=False)
-            can_upgrade: bool = bool(stdout)
+            can_upgrade = repo_up_to_date(magicmirror_root)
         except KeyboardInterrupt:
             logger.info("User killed process with CTRL-C")
             sys.exit(127)
-
-        if error_code:
-            logger.error("Unable to communicate with git server")
 
         return can_upgrade
 

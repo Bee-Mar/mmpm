@@ -6,19 +6,44 @@ import subprocess
 import sys
 import time
 import urllib.request
-from pathlib import PosixPath
+from pathlib import Path, PosixPath
 from typing import List, Optional, Tuple
 
+import git
 import requests
 from packaging import version
 from pip._internal.operations.freeze import freeze
 from yaspin import yaspin
 from yaspin.spinners import Spinners
 
+from mmpm.__version__ import version as current_version
 from mmpm.constants import color
 from mmpm.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
+
+def repo_up_to_date(path: Path):
+    try:
+        # Initialize the repository object
+        repo = git.Repo(path)
+
+        # Ensure the repository is not bare
+        if repo.bare:
+            raise Exception("Repository is bare")
+
+        # Fetch data from the default remote (origin)
+        remote = repo.remotes.origin
+        remote.fetch()
+
+        # Get local and remote HEAD commit
+        local_commit = repo.head.commit
+        remote_commit = repo.refs['origin/HEAD'].commit
+
+        # Check if the commits are the same
+        return local_commit.hexsha != remote_commit.hexsha
+    except Exception as error:
+        logger.error(f"Failed to get status of {repo}: {error}")
+        return False
 
 
 def get_host_ip() -> str:
@@ -183,13 +208,15 @@ def safe_get_request(url: str) -> requests.Response:
 
 def update_available() -> bool:
     url = "https://pypi.org/pypi/mmpm/json"
-    current_version = ""
 
-    filtered = filter(lambda requirement: requirement.split("==")[0] == "mmpm", freeze(local_only=False))
-    current_version = next(filtered).split("==")[1]
+    logger.debug("getting remote version of mmpm")
+    print(f"Retrieving: {url} [{color.n_cyan('mmpm')}]")
 
-    contents = urllib.request.urlopen(url).read()
-    remote_version = json.loads(contents)["info"]["version"]
+    try:
+        contents = urllib.request.urlopen(url).read()
+        remote_version = json.loads(contents)["info"]["version"]
+    except (json.JSONDecodeError, urllib.error.URLError, Exception) as error:
+        logger.error(f"Failed to get remote version of MMPM: {error}")
 
     return version.parse(remote_version) > version.parse(current_version)
 

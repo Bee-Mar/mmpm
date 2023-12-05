@@ -58,13 +58,15 @@ class TestMagicMirrorPackage(unittest.TestCase):
         mock_install = MagicMock()
         mock_handler.return_value = mock_install
         self.package.is_installed = False
-        self.package.install(assume_yes=True)
+        self.package.install()
         mock_install.execute.assert_called_once()
 
     @patch("mmpm.magicmirror.package.run_cmd")
     def test_remove(self, mock_run_cmd):
         self.package.env = MMPMEnv()
-        self.package.remove(assume_yes=True)
+        mock_run_cmd.return_value = (0, "", "")
+        success = self.package.remove()
+        self.assertTrue(success)
         mock_run_cmd.assert_called()
 
     @patch("mmpm.magicmirror.package.run_cmd")

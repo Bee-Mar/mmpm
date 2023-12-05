@@ -78,7 +78,7 @@ class TestInstallationHandler(unittest.TestCase):
     @patch("pathlib.Path.mkdir")
     def test_cmake(self, mock_mkdir, mock_system, mock_chdir, mock_run_cmd):
         mock_run_cmd.return_value = (0, "stdout", "stderr")
-        build_dir = Path("fake/build/dir")
+        build_dir = Path("fake/dir/build")
         self.mock_package.directory = Path("fake/dir")
 
         # Mocking the build directory creation

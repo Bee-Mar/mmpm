@@ -30,7 +30,7 @@ class SubCmd:
         self.usage: str = ""
         self.parser = None
 
-        if not self.name or not self.help or not self.useage or not self.parser:
+        if not self.name or not self.help or not self.usage or not self.parser:
             message = "name, help, and usage must be defined"
             logger.critical(message)
             raise NameError(message)

@@ -8,15 +8,15 @@ from multiprocessing import cpu_count
 from pathlib import Path, PosixPath
 from re import sub
 from textwrap import fill
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
-import mmpm.utils
+import git
 import requests
 from bs4 import NavigableString, Tag
 from mmpm.constants import color
 from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
-from mmpm.utils import run_cmd
+from mmpm.utils import repo_up_to_date, run_cmd, safe_get_request
 
 NA: str = "N/A"
 
@@ -123,19 +123,7 @@ class MagicMirrorPackage:
 
         print()
 
-    def __dict__(self) -> Dict[str, str]:
-        return {
-            "title": self.title,
-            "author": self.author,
-            "category": self.category,
-            "repository": self.repository,
-            "description": self.description,
-            "directory": self.directory.name,
-            "is_installed": self.is_installed,
-            "is_upgradable": self.is_upgradable,
-        }
-
-    def serialize(self, full: bool = False) -> dict:
+    def serialize(self, full: bool = False) -> Dict[str, Any]:
         """
         Produces either a subset or full representation of the __dict__ method.
 
@@ -143,7 +131,7 @@ class MagicMirrorPackage:
             full (bool): if True, the full output of __dict__ is returned, otherwise a subset is returned
 
         Returns:
-            serialized (Dict[str, str]): a dict containing title, author, repository, description, etc.
+            serialized (Dict[str, Any]): a dict containing title, author, repository, description, etc.
         """
 
         serialized = {
@@ -156,16 +144,17 @@ class MagicMirrorPackage:
         }
 
         if full:
-            serialized["is_installed"] = self.is_installed
-            serialized["is_upgradable"] = self.is_upgradable
+            serialized["is_installed"] = self.is_installed # type: ignore
+            serialized["is_upgradable"] = self.is_upgradable # type: ignore
 
         return serialized
 
-    def install(self, assume_yes: bool = False) -> None:
+    def install(self, assume_yes: bool = False) -> bool:
         """
         Delegates installation to an InstallationHandler instance. The repo is
         cloned, and all dependencies are installed (to the best of the package
-                                                    manager's ability). Errors are displayed as they occur, but they are mostly ignored.
+        manager's ability). Errors are displayed as they occur, but they are
+        mostly ignored.
 
         Parameters:
             None
@@ -174,21 +163,14 @@ class MagicMirrorPackage:
             None
         """
 
-        if not assume_yes and not mmpm.utils.prompt(f"Install {color.n_green(self.title)} ({self.repository})?"):
-            return
-
         return InstallationHandler(self).execute()
 
-    def remove(self, assume_yes: bool = False) -> bool:
-        if not assume_yes and not mmpm.utils.prompt(f"Remove {color.n_green(self.title)} ({self.repository})?"):
-            return
-
+    def remove(self) -> bool:
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
+        error_code, stdout, stderr = run_cmd(["rm", "-rf", str(modules_dir / self.directory)], progress=True)
+        return not error_code and not stderr and not stdout
 
-        run_cmd(["rm", "-rf", str(modules_dir / self.directory)], progress=True)
-        return True
-
-    def clone(self) -> bool:
+    def clone(self) -> Tuple[int, str, str]:
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
         return run_cmd(["git", "clone", self.repository, str(modules_dir / self.directory)], message="Retrieving package")
 
@@ -203,19 +185,10 @@ class MagicMirrorPackage:
         os.chdir(modules_dir / self.directory)
 
         try:
-            error_code, stdout, stderr = mmpm.utils.run_cmd(["git", "fetch", "--dry-run"], progress=False)
-
+            self.is_upgradable = repo_up_to_date(modules_dir / self.directory)
         except KeyboardInterrupt:
             logger.info("User killed process with CTRL-C")
             sys.exit(127)
-
-        if error_code:
-            logger.error(f"Encountered error while updating {self.title}: {stderr}")
-
-        if (not len(stdout) and not len(stderr)) or bool("up to date" in stdout or "up-to-date" in stderr):
-            self.is_upgradable = False
-        else:
-            self.is_upgradable = True
 
     def upgrade(self, force: bool = False) -> bool:
         """
@@ -236,7 +209,7 @@ class MagicMirrorPackage:
 
         os.chdir(modules_dir / self.directory)
 
-        error_code, stdout, stderr = mmpm.utils.run_cmd(["git", "pull"])
+        error_code, stdout, stderr = run_cmd(["git", "pull"])
 
         if error_code or stderr:
             logger.error(f"Failed to upgrade {self.title}: {stderr}")
@@ -326,12 +299,12 @@ class InstallationHandler:
 
         if not self.package.directory.exists():
             self.package.directory.mkdir(exist_ok=True)
-            error_code, _, _ = self.package.clone()
+            error_code, _, stderr = self.package.clone()
 
         os.chdir(self.package.directory)
 
         if error_code:
-            logger.error(f"Failed to clone {self.package.title}: {error_code}")
+            logger.error(f"Failed to clone {self.package.title}: {stderr}")
 
         failure = lambda message, code: f"Installation failed: {message}, {code}"
 
@@ -383,9 +356,12 @@ class InstallationHandler:
         """
         logger.debug(f"Running 'cmake ..' in {self.package.directory}")
 
-        build_dir = Path(self.package.directory / "build").mkdir(exist_ok=True)
+        build_dir = Path(self.package.directory / "build")
+        build_dir.mkdir(exist_ok=True)
+
         os.system(f"rm -rf {build_dir}/*")
         os.chdir(build_dir)
+
         return run_cmd(["cmake", ".."], message="Building with CMake")
 
     def __make__(self) -> Tuple[int, str, str]:
@@ -471,7 +447,7 @@ class RemotePackage:
             "bitbucket": {"error": "", "warning": ""},
         }
 
-        github_api_response: requests.Response = mmpm.utils.safe_get_request("https://api.github.com/rate_limit")
+        github_api_response: requests.Response = safe_get_request("https://api.github.com/rate_limit")
 
         if not github_api_response.status_code or github_api_response.status_code != 200:
             health["github"]["error"] = "Unable to contact GitHub API"
@@ -528,7 +504,7 @@ class RemotePackage:
         if "github" in self.package.repository:
             url = f"https://api.github.com/repos/{user}/{project}"
             logger.info(f"Constructed {url} to request more details for {self.package.title}")
-            data = mmpm.utils.safe_get_request(url)
+            data = safe_get_request(url)
 
             if not data:
                 logger.error(f"Unable to retrieve {self.package.title} details, data was empty")
@@ -538,7 +514,7 @@ class RemotePackage:
         elif "gitlab" in self.package.repository:
             url = f"https://gitlab.com/api/v4/projects/{user}%2F{project}"
             logger.info(f"Constructed {url} to request more details for {self.package.title}")
-            data = mmpm.utils.safe_get_request(url)
+            data = safe_get_request(url)
 
             if not data:
                 logger.error(f"Unable to retrieve {self.package.title} details, data was empty")
@@ -548,7 +524,7 @@ class RemotePackage:
         elif "bitbucket" in self.package.repository:
             url = f"https://api.bitbucket.org/2.0/repositories/{user}/{project}"
             logger.info(f"Constructed {url} to request more details for {self.package.title}")
-            data = mmpm.utils.safe_get_request(url)
+            data = safe_get_request(url)
 
             if not data:
                 logger.error(f"Unable to retrieve {self.package.title} details, data was empty")
@@ -568,9 +544,9 @@ class RemotePackage:
         Returns:
             details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
         """
-        stars = mmpm.utils.safe_get_request(f"{url}/watchers")
-        forks = mmpm.utils.safe_get_request(f"{url}/forks")
-        issues = mmpm.utils.safe_get_request(f"{url}/issues")
+        stars = safe_get_request(f"{url}/watchers")
+        forks = safe_get_request(f"{url}/forks")
+        issues = safe_get_request(f"{url}/issues")
 
         return (
             {
@@ -595,7 +571,7 @@ class RemotePackage:
         Returns:
             details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
         """
-        issues = mmpm.utils.safe_get_request(f"{url}/issues")
+        issues = safe_get_request(f"{url}/issues")
 
         return (
             {

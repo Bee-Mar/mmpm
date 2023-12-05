@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-import unittest
 import shutil
-from mmpm.magicmirror.magicmirror import MagicMirror
-from unittest.mock import patch, MagicMock
-from pathlib import PosixPath, Path
+import unittest
+from pathlib import Path, PosixPath
 from test.helpers import MockedMMPMEnv
+from unittest.mock import MagicMock, patch
+
+from mmpm.magicmirror.magicmirror import MagicMirror
 
 
 class MagicMirrorTestCase(unittest.TestCase):
-    @patch('mmpm.magicmirror.magicmirror.run_cmd')
+    @patch('mmpm.magicmirror.magicmirror.repo_up_to_date')
     @patch('mmpm.magicmirror.magicmirror.chdir')
-    def test_update(self, mock_chdir, mock_run_cmd):
-        mock_run_cmd.return_value = (0, '', 'output')
+    def test_update(self, mock_chdir, mock_repo_up_to_date):
+        mock_repo_up_to_date.return_value = True
         mock_chdir.return_value = None
 
         mm = MagicMirror()
@@ -23,8 +24,8 @@ class MagicMirrorTestCase(unittest.TestCase):
         can_upgrade = mm.update()
 
         mock_chdir.assert_called_once_with(root)
-        mock_run_cmd.assert_called_once_with(['git', 'fetch', '--dry-run'], progress=False)
-        self.assertEqual(can_upgrade, True)
+        mock_repo_up_to_date.assert_called_with(root)
+        self.assertTrue(can_upgrade)
         shutil.rmtree(root)
 
     @patch('mmpm.magicmirror.magicmirror.run_cmd')

@@ -31,7 +31,7 @@ class TestRemotePackage(unittest.TestCase):
         self.assertEqual(health["bitbucket"]["error"], "")
 
     @patch("mmpm.magicmirror.package.requests.Response")
-    @patch("mmpm.magicmirror.package.mmpm.utils.safe_get_request")
+    @patch("mmpm.magicmirror.package.safe_get_request")
     def test_serialize(self, mock_safe_get_request, mock_response):
         package = MagicMock()
         package.repository = "https://github.com/user/repo.git"
@@ -65,7 +65,7 @@ class TestRemotePackage(unittest.TestCase):
         url = "https://api.bitbucket.org/2.0/repositories/user/repo"
 
         # Assuming the `safe_get_request` function is used to fetch additional data
-        with patch("mmpm.magicmirror.package.mmpm.utils.safe_get_request") as mock_request:
+        with patch("mmpm.magicmirror.package.safe_get_request") as mock_request:
             mock_request.return_value.text = json.dumps({"pagelen": 5})
             details = remote_package.__format_bitbucket_api_details__(data, url)
 

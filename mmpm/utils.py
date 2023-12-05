@@ -12,7 +12,6 @@ from typing import List, Optional, Tuple
 import git
 import requests
 from packaging import version
-from pip._internal.operations.freeze import freeze
 from yaspin import yaspin
 from yaspin.spinners import Spinners
 
@@ -42,7 +41,7 @@ def repo_up_to_date(path: Path):
         # Check if the commits are the same
         return local_commit.hexsha != remote_commit.hexsha
     except Exception as error:
-        logger.error(f"Failed to get status of {repo}: {error}")
+        logger.error(f"Failed to get status of repo located at {path}: {error}")
         return False
 
 

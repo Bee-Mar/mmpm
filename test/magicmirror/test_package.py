@@ -79,11 +79,11 @@ class TestMagicMirrorPackage(unittest.TestCase):
         )
 
     @patch("os.chdir")
-    @patch("mmpm.magicmirror.package.mmpm.utils.run_cmd")
+    @patch('mmpm.magicmirror.package.repo_up_to_date')
     @patch("pathlib.PosixPath.exists")
-    def test_update(self, mock_exists, mock_run_cmd, mock_chdir):
+    def test_update(self, mock_exists, mock_repo_up_to_date, mock_chdir):
        mock_exists.return_value = True
-       mock_run_cmd.return_value = (0, "", "some output indicating changes")
+       mock_repo_up_to_date.return_value = True
        self.package.env = MMPMEnv()
        expected_dir = MMPM_DEFAULT_ENV.get("MMPM_MAGICMIRROR_ROOT") / "modules" / self.package.directory
        self.package.update()
@@ -91,11 +91,10 @@ class TestMagicMirrorPackage(unittest.TestCase):
        self.assertTrue(self.package.is_upgradable)
 
     @patch("os.chdir")
-    @patch("mmpm.magicmirror.package.mmpm.utils.run_cmd")
+    @patch('mmpm.magicmirror.package.repo_up_to_date')
     @patch("pathlib.PosixPath.exists")
-    def test_update_no_changes(self, mock_exists, mock_run_cmd, mock_chdir):
-        mock_exists.return_value = True
-        mock_run_cmd.return_value = (0, "Already up to date.\n", "")
+    def test_update_no_changes(self, mock_exists, mock_repo_up_to_date, mock_chdir):
+        mock_repo_up_to_date.return_value = False
         self.package.env = MMPMEnv()
         expected_dir = MMPM_DEFAULT_ENV.get("MMPM_MAGICMIRROR_ROOT") / "modules" / self.package.directory
         self.package.update()
@@ -114,7 +113,7 @@ class TestMagicMirrorPackage(unittest.TestCase):
         mock_chdir.assert_called_with(expected_dir)
 
     @patch("os.chdir")
-    @patch("mmpm.magicmirror.package.mmpm.utils.run_cmd")
+    @patch("mmpm.magicmirror.package.run_cmd")
     def test_upgrade_failure(self, mock_run_cmd, mock_chdir):
         mock_run_cmd.return_value = (1, "", "error")
         expected_dir = MMPM_DEFAULT_ENV.get("MMPM_MAGICMIRROR_ROOT") / "modules" / self.package.directory

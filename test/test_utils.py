@@ -10,6 +10,7 @@ from uuid import uuid4
 
 import requests
 from faker import Faker
+from mmpm.__version__ import major, version
 from mmpm.utils import (get_host_ip, get_pids, kill_pids_of_process, prompt,
                         run_cmd, safe_get_request, systemctl, update_available,
                         validate_input)
@@ -128,23 +129,17 @@ class TestUtils(unittest.TestCase):
         process = systemctl(subcommand, services)
         self.assertEqual(process, mock_process)
 
-    @patch("mmpm.utils.freeze")
     @patch("mmpm.utils.urllib.request.urlopen")
-    def test_no_update_available(self, mock_urlopen, mock_freeze):
-        mock_freeze.return_value = ["mmpm==1.0.0", "some-other-package==2.0.0"]
+    def test_no_update_available(self, mock_urlopen):
+        latest_version_data = {"info": {"version": version}}
 
-        # Mock the urlopen function to simulate a response with the latest version
-        latest_version_data = {"info": {"version": "1.0.0"}}
         mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=json.dumps(latest_version_data)))
         self.assertFalse(update_available())
 
-    @patch("mmpm.utils.freeze")
     @patch("mmpm.utils.urllib.request.urlopen")
-    def test_update_available(self, mock_urlopen, mock_freeze):
-        mock_freeze.return_value = ["mmpm==1.0.0", "some-other-package==2.0.0"]
+    def test_update_available(self, mock_urlopen):
+        latest_version_data = {"info": {"version": f"{major + 1}.0.0"}}
 
-        # Test with a different latest version
-        latest_version_data = {"info": {"version": "2.0.0"}}
         mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=json.dumps(latest_version_data)))
         self.assertTrue(update_available())
 

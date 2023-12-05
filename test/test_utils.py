@@ -11,7 +11,7 @@ from uuid import uuid4
 import requests
 from faker import Faker
 from mmpm.utils import (get_host_ip, get_pids, kill_pids_of_process, prompt,
-                        run_cmd, safe_get_request, systemctl, update,
+                        run_cmd, safe_get_request, systemctl, update_available,
                         validate_input)
 
 fake = Faker()
@@ -136,7 +136,7 @@ class TestUtils(unittest.TestCase):
         # Mock the urlopen function to simulate a response with the latest version
         latest_version_data = {"info": {"version": "1.0.0"}}
         mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=json.dumps(latest_version_data)))
-        self.assertFalse(update())
+        self.assertFalse(update_available())
 
     @patch("mmpm.utils.freeze")
     @patch("mmpm.utils.urllib.request.urlopen")
@@ -146,7 +146,7 @@ class TestUtils(unittest.TestCase):
         # Test with a different latest version
         latest_version_data = {"info": {"version": "2.0.0"}}
         mock_urlopen.return_value = MagicMock(read=MagicMock(return_value=json.dumps(latest_version_data)))
-        self.assertTrue(update())
+        self.assertTrue(update_available())
 
 
 if __name__ == "__main__":

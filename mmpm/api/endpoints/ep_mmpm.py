@@ -19,7 +19,7 @@ class Mmpm(Endpoint):
 
         @self.blueprint.route("/update", methods=[http.GET])
         def update() -> Response:
-            can_upgrade_mmpm = mmpm.utils.update()
+            can_upgrade_mmpm = mmpm.utils.update_available()
             # need to call /api/db/upgradable after this to get the information
             return self.success(json.dumps({"can-upgrade-mmpm": can_upgrade_mmpm}))
 

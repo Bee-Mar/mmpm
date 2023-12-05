@@ -181,21 +181,15 @@ def safe_get_request(url: str) -> requests.Response:
     return data
 
 
-def update() -> bool:
+def update_available() -> bool:
     url = "https://pypi.org/pypi/mmpm/json"
     current_version = ""
 
-    for requirement in freeze(local_only=False):
-        info = requirement.split("==")
-
-        if info[0] == "mmpm":
-            current_version = info[1]
+    filtered = filter(lambda requirement: requirement.split("==")[0] == "mmpm", freeze(local_only=False))
+    current_version = next(filtered).split("==")[1]
 
     contents = urllib.request.urlopen(url).read()
     remote_version = json.loads(contents)["info"]["version"]
-
-    remote_semantic_version = remote_version.split(".")
-    current_semantic_version = current_version.split(".")
 
     return version.parse(remote_version) > version.parse(current_version)
 

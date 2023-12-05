@@ -1,11 +1,10 @@
-import {Component, OnInit, OnDestroy} from "@angular/core";
-import {MagicMirrorPackage} from "@/magicmirror/models/magicmirror-package";
-import {SharedStoreService} from "@/services/shared-store.service";
-import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
-import {APIResponse, BaseAPI} from "@/services/api/base-api";
-import {Subscription} from "rxjs";
-import {MarketPlaceIcons, DefaultMarketPlaceIcon} from './marketplace-icons.model';
-import {Table} from 'primeng/table';
+import { Component, OnInit, OnDestroy } from "@angular/core";
+import { MagicMirrorPackage, RemotePackageDetails } from "@/magicmirror/models/magicmirror-package";
+import { SharedStoreService } from "@/services/shared-store.service";
+import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
+import { APIResponse, BaseAPI } from "@/services/api/base-api";
+import { Subscription } from "rxjs";
+import { MarketPlaceIcons, DefaultMarketPlaceIcon } from "./marketplace-icons.model";
 
 @Component({
   selector: "app-mmpm-marketplace",
@@ -33,14 +32,12 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       this.loading = false;
       this.total_records = this.packages.length;
 
-      this.categories = this.packages
-        .map(pkg => pkg.category)
-        .filter((category, index, self) => self.indexOf(category) === index);
+      this.categories = this.packages.map((pkg) => pkg.category).filter((category, index, self) => self.indexOf(category) === index);
 
       // add a default icon for any category that isn't recognized above
-      this.packages.forEach(pkg => {
+      this.packages.forEach((pkg) => {
         if (pkg.category && !this.icons[pkg.category]) {
-          this.icons[pkg.category] = {...this.default_icon};
+          this.icons[pkg.category] = { ...this.default_icon };
         }
       });
     });
@@ -60,8 +57,10 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   public on_install(): void {
     this.mm_pkg_api
       .post_install_packages(this.selected_packages)
-      .then((_) => {
-        this.store.get_packages();
+      .then((response: APIResponse) => {
+        if (response.code === 200) {
+          this.store.get_packages();
+        }
       })
       .catch((error) => console.log(error));
   }
@@ -69,8 +68,10 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   public on_remove(): void {
     this.mm_pkg_api
       .post_remove_packages(this.selected_packages)
-      .then((_) => {
-        this.store.get_packages();
+      .then((response: APIResponse) => {
+        if (response.code === 200) {
+          this.store.get_packages();
+        }
       })
       .catch((error) => console.log(error));
   }
@@ -78,8 +79,10 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   public on_upgrade(): void {
     this.mm_pkg_api
       .post_upgrade_packages(this.selected_packages)
-      .then((_) => {
-        this.store.get_packages();
+      .then((response: APIResponse) => {
+        if (response.code === 200) {
+          this.store.get_packages();
+        }
       })
       .catch((error) => console.log(error));
   }
@@ -87,8 +90,10 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   public on_add_mm_pkg(pkg: MagicMirrorPackage): void {
     this.mm_pkg_api
       .post_add_mm_pkg(pkg)
-      .then((_) => {
-        this.store.get_packages();
+      .then((response: APIResponse) => {
+        if (response.code === 200) {
+          this.store.get_packages();
+        }
       })
       .catch((error) => console.log(error));
   }
@@ -96,20 +101,32 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   public on_remove_mm_pkg(pkg: MagicMirrorPackage): void {
     this.mm_pkg_api
       .post_add_mm_pkg(pkg)
-      .then((_) => {
-        this.store.get_packages();
+      .then((response: APIResponse) => {
+        if (response.code === 200) {
+          this.store.get_packages();
+        }
       })
       .catch((error) => console.log(error));
   }
 
   public on_refresh_db(): void {
     this.base_api.get_("db/refresh").then((response: APIResponse) => {
-      if (response.message === true) {
+      if (response.code === 200 && response.message === true) {
         this.store.get_packages();
       } else {
         console.log("Failed to update database");
       }
     });
   }
-}
 
+  public on_package_details(pkg: any): void {
+    this.mm_pkg_api.post_details(pkg).then((response: APIResponse) => {
+      console.log(response.message as RemotePackageDetails);
+      console.log(response.message);
+      if (response.code === 200) {
+        pkg.remote_details = response.message as RemotePackageDetails;
+        console.log(pkg);
+      }
+    });
+  }
+}

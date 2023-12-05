@@ -1,26 +1,34 @@
 <div class="card">
-  <p-table #dt [value]="packages" styleClass="p-datatable-striped" [rows]="10" [showCurrentPageReport]="true"
-    selectionMode="multiple" [(selection)]="selected_packages" [rowsPerPageOptions]="[10, 25, 50]" [loading]="loading"
-    [paginator]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-    [tableStyle]="{ 'min-width': '75rem' }" [filterDelay]="0">
+  <p-table
+    #dt
+    [value]="packages"
+    styleClass="p-datatable-striped"
+    [rows]="10"
+    [showCurrentPageReport]="true"
+    selectionMode="multiple"
+    [(selection)]="selected_packages"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    [loading]="loading"
+    [paginator]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+    [tableStyle]="{ 'min-width': '75rem' }"
+    [filterDelay]="0"
+  >
     <ng-template pTemplate="header">
       <tr>
         <th style="width: 4rem">
           <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
         </th>
-        <th style="min-width:15rem">
+        <th style="min-width: 10rem">
           <div class="flex align-items-center">
             Category
-            <p-columnFilter field="category" matchMode="in" display="menu" [showMatchModes]="false"
-              [showOperator]="false" [showAddButton]="false">
+            <p-columnFilter field="category" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
               <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                <p-multiSelect [options]="categories" placeholder="Select Categories" (onChange)="filter($event.value)"
-                  optionLabel="name">
+                <p-multiSelect [options]="categories" placeholder="Select Categories" (onChange)="filter($event.value)" optionLabel="name">
                   <ng-template let-category pTemplate="item">
                     <span class="category-icon-text">
-                      {{category}}
-                      <i [class]="icons[category].logo || 'fa fa-question-circle'"
-                        [style.color]="icons[category].color || 'black'"></i>
+                      {{ category }}
+                      <i [class]="icons[category].logo || 'fa fa-question-circle'" [style.color]="icons[category].color || 'black'"></i>
                     </span>
                   </ng-template>
                 </p-multiSelect>
@@ -28,34 +36,30 @@
             </p-columnFilter>
           </div>
         </th>
-        <th style="min-width:10rem">
+        <th style="min-width: 10rem">
           <div class="flex align-items-center">
             Title
-            <p-columnFilter type="text" field="title" display="menu" [showOperator]="false" [showAddButton]="false"
-              filterDelay="0">
-            </p-columnFilter>
+            <p-columnFilter type="text" field="title" display="menu" [showOperator]="false" [showAddButton]="false" filterDelay="0"> </p-columnFilter>
           </div>
         </th>
-        <th style="min-width:10rem">
+        <th style="min-width: 10rem">
           <div class="flex align-items-center">
             Author
-            <p-columnFilter type="text" field="author" display="menu" [showOperator]="false" [showAddButton]="false">
-            </p-columnFilter>
+            <p-columnFilter type="text" field="author" display="menu" [showOperator]="false" [showAddButton]="false"> </p-columnFilter>
           </div>
         </th>
-        <th style="min-width:10rem">
+        <th style="min-width: 10rem">
           <div class="flex align-items-center">
             Installed
-            <p-columnFilter field="is_installed" matchMode="equals" display="menu" [showMatchModes]="false"
-              [showOperator]="false" [showAddButton]="false">
+            <p-columnFilter field="is_installed" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
               <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                <p-dropdown [options]="installed_options" [(ngModel)]="selected_installed" placeholder="Is Installed?"
-                  (onChange)="filter($event.value, 'is_installed')">
+                <p-dropdown [options]="installed_options" [(ngModel)]="selected_installed" placeholder="Is Installed?" (onChange)="filter($event.value, 'is_installed')">
                 </p-dropdown>
               </ng-template>
             </p-columnFilter>
           </div>
         </th>
+        <th style="min-width: 10rem">Details</th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-package>
@@ -66,8 +70,7 @@
         <td>
           <span class="category-icon-text">
             {{ package?.category }}
-            <i [class]="icons[package.category].logo || 'fa fa-question-circle'"
-              [style.color]="icons[package.category].color || 'black'"></i>
+            <i [class]="icons[package.category].logo || 'fa fa-question-circle'" [style.color]="icons[package.category].color || 'black'"></i>
           </span>
         </td>
         <td>
@@ -77,8 +80,10 @@
           {{ package?.author }}
         </td>
         <td>
-          <i class="pi pi-{{ package?.is_installed ? 'check' : 'times' }}-circle"
-            [style.color]="package?.is_installed ? '#009933' : '#e05252'"></i>
+          <i class="pi pi-{{ package?.is_installed ? 'check' : 'times' }}-circle" [style.color]="package?.is_installed ? '#009933' : '#e05252'"></i>
+        </td>
+        <td>
+          <p-button [raised]="true" icon="fa-solid fa-circle-info" (click)="on_package_details(package)"> </p-button>
         </td>
       </tr>
     </ng-template>

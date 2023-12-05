@@ -43,6 +43,7 @@ class MagicMirrorPackage:
         category: str = NA,
         directory: str = "",
         is_installed: bool = False,
+        **kwargs,
     ) -> None:
         self.env = MMPMEnv()
         self.title = __sanitize__(title).strip()
@@ -113,7 +114,7 @@ class MagicMirrorPackage:
 
             if remote:
                 for key, value in RemotePackage(self).serialize().items():
-                    print(f"  {key}: {value}")
+                    print(f"  {key.replace('_',' ').capitalize()}: {value}")
 
             print(fill(f"  Description: {self.description}\n", width=80), "\n")
 
@@ -502,7 +503,7 @@ class RemotePackage:
 
         if "github" in self.package.repository:
             url = f"https://api.github.com/repos/{user}/{project}"
-            logger.info(f"Constructed {url} to request more details for {self.package.title}")
+            logger.debug(f"Constructed {url} to request more details for {self.package.title}")
             data = safe_get_request(url)
 
             if not data:
@@ -512,7 +513,7 @@ class RemotePackage:
 
         elif "gitlab" in self.package.repository:
             url = f"https://gitlab.com/api/v4/projects/{user}%2F{project}"
-            logger.info(f"Constructed {url} to request more details for {self.package.title}")
+            logger.debug(f"Constructed {url} to request more details for {self.package.title}")
             data = safe_get_request(url)
 
             if not data:
@@ -522,7 +523,7 @@ class RemotePackage:
 
         elif "bitbucket" in self.package.repository:
             url = f"https://api.bitbucket.org/2.0/repositories/{user}/{project}"
-            logger.info(f"Constructed {url} to request more details for {self.package.title}")
+            logger.debug(f"Constructed {url} to request more details for {self.package.title}")
             data = safe_get_request(url)
 
             if not data:
@@ -549,11 +550,11 @@ class RemotePackage:
 
         return (
             {
-                "Stars": int(json.loads(stars.text)["pagelen"]) if stars else "N/A",
-                "Issues": int(json.loads(issues.text)["pagelen"]) if issues else "N/A",
-                "Created": data["created_on"].split("T")[0] if data else "N/A",
-                "Last Updated": data["updated_on"].split("T")[0] if data else "N/A",
-                "Forks": int(json.loads(forks.text)["pagelen"]) if forks else "N/A",
+                "stars": int(json.loads(stars.text)["pagelen"]) if stars else "N/A",
+                "issues": int(json.loads(issues.text)["pagelen"]) if issues else "N/A",
+                "created": data["created_on"].split("T")[0] if data else "N/A",
+                "last_updated": data["updated_on"].split("T")[0] if data else "N/A",
+                "forks": int(json.loads(forks.text)["pagelen"]) if forks else "N/A",
             }
             if data and stars
             else {}
@@ -574,11 +575,11 @@ class RemotePackage:
 
         return (
             {
-                "Stars": data["star_count"] if data else "N/A",
-                "Issues": len(json.loads(issues.text)) if issues else "N/A",
-                "Created": data["created_at"].split("T")[0] if data else "N/A",
-                "Last Updated": data["last_activity_at"].split("T")[0] if data else "N/A",
-                "Forks": data["forks_count"] if data else "N/A",
+                "stars": data["star_count"] if data else "N/A",
+                "issues": len(json.loads(issues.text)) if issues else "N/A",
+                "created": data["created_at"].split("T")[0] if data else "N/A",
+                "last_updated": data["last_activity_at"].split("T")[0] if data else "N/A",
+                "forks": data["forks_count"] if data else "N/A",
             }
             if data
             else {}
@@ -596,11 +597,11 @@ class RemotePackage:
         """
         return (
             {
-                "Stars": data["stargazers_count"] if data else "N/A",
-                "Issues": data["open_issues"] if data else "N/A",
-                "Created": data["created_at"].split("T")[0] if data else "N/A",
-                "Last Updated": data["updated_at"].split("T")[0] if data else "N/A",
-                "Forks": data["forks_count"] if data else "N/A",
+                "stars": data["stargazers_count"] if data else "N/A",
+                "issues": data["open_issues"] if data else "N/A",
+                "created": data["created_at"].split("T")[0] if data else "N/A",
+                "last_updated": data["updated_at"].split("T")[0] if data else "N/A",
+                "forks": data["forks_count"] if data else "N/A",
             }
             if data
             else {}

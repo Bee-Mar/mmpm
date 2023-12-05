@@ -1,3 +1,13 @@
-<app-mmpm-marketplace></app-mmpm-marketplace>
+<p-tabView [scrollable]="true">
+  <p-tabPanel header="MagicMirror Controller" rightIcon="fa-solid fa-gamepad"> </p-tabPanel>
+
+  <p-tabPanel header="MarketPlace" rightIcon="fa-solid fa-shop">
+    <app-mmpm-marketplace></app-mmpm-marketplace>
+  </p-tabPanel>
+
+  <p-tabPanel header="Config Editor" rightIcon="fa-solid fa-pen-to-square"> </p-tabPanel>
+
+  <p-tabPanel header="Logs" rightIcon="fa fa-message"> </p-tabPanel>
+</p-tabView>
 
 <router-outlet></router-outlet>

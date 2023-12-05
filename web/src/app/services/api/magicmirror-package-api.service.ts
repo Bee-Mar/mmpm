@@ -1,11 +1,11 @@
-import {Injectable} from "@angular/core";
-import {MagicMirrorPackage} from "@/magicmirror/models/magicmirror-package";
-import {APIResponse, BaseAPI} from '@/services/api/base-api';
-import {retry, catchError} from "rxjs/operators";
-import {firstValueFrom} from 'rxjs';
+import { Injectable } from "@angular/core";
+import { MagicMirrorPackage } from "@/magicmirror/models/magicmirror-package";
+import { APIResponse, BaseAPI } from "@/services/api/base-api";
+import { retry, catchError } from "rxjs/operators";
+import { firstValueFrom } from "rxjs";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class MagicMirrorPackageAPI extends BaseAPI {
   private post_packages(url: string, packages: MagicMirrorPackage[]): Promise<APIResponse> {
@@ -18,13 +18,13 @@ export class MagicMirrorPackageAPI extends BaseAPI {
           },
           {
             headers: this.headers({
-              "Content-Type": "application/x-www-form-urlencoded",
+              "Content-Type": "application/json",
             }),
             responseType: "text",
             reportProgress: true,
           },
         )
-        .pipe(retry(1), catchError(this.handle_error))
+        .pipe(retry(1), catchError(this.handle_error)),
     );
   }
 
@@ -56,5 +56,9 @@ export class MagicMirrorPackageAPI extends BaseAPI {
   public post_remove_mm_pkg(pkg: MagicMirrorPackage): Promise<APIResponse> {
     console.log("Requesting to remove a custom MagicMirrorPackage");
     return this.post_packages("packages/mm-pkg/remove", [pkg]);
+  }
+  public post_details(pkg: MagicMirrorPackage): Promise<APIResponse> {
+    console.log(`Requesting to get remote package details for ${pkg.title} (${pkg.repository})`);
+    return this.post_packages("packages/details", [pkg]);
   }
 }

@@ -5,7 +5,7 @@ from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.magicmirror import MagicMirror
-from mmpm.magicmirror.package import MagicMirrorPackage
+from mmpm.magicmirror.package import MagicMirrorPackage, RemotePackage
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -20,8 +20,6 @@ class Packages(Endpoint):
         @self.blueprint.route("/", methods=[http.GET])
         def retrieve() -> Response:
             logger.info("Loading database")
-
-            # it's assumed a call the to the database endpoint would happen first to refresh the packages
             self.db.load()
 
             if not self.db.packages:
@@ -61,3 +59,23 @@ class Packages(Endpoint):
             packages = request.get_json()["packages"]
             removed = [package for package in packages if self.db.remove_mm_pkg(**package)]
             return self.success(removed)
+
+        @self.blueprint.route("/details", methods=[http.POST])
+        def details() -> Response:
+            package = request.get_json()["packages"][0]
+            remote =  RemotePackage(MagicMirrorPackage(**package))
+            health = remote.health()
+
+            for status in health.values():
+                if status["error"]:
+                    message = status["error"]
+                    logger.error(message)
+                    self.failure(message,code=400)
+                elif status["warning"]:
+                    message = status["warning"]
+                    logger.warning(message)
+                    self.failure(message,code=400)
+
+            return self.success(remote.serialize())
+
+

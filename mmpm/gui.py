@@ -16,19 +16,14 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class MMPMGui(Singleton):
-    def __init__(self):
-        pass
-
     def install(self, assume_yes: bool = False):
         """
-        Installs the MMPM GUI by configuring the required NGINX files bundled in
-        the MMPM PyPI package. This asks the user for sudo permissions. The
-        template config files are copied from the mmpm PyPI package, modified to
-        contain the proper paths, then installed in the required system folders
+        Installs the MMPM GUI. It sets up NGINX configuration files and Systemd service files required for running
+        the MMPM GUI. This process includes copying and modifying template configuration files, setting up necessary
+        directories, and ensuring the required services are enabled and running.
 
         Parameters:
-            assume_yes (bool): if True, all prompts are assumed to have a response of yes from the user. This is used only internally of the MMPM CLI
-
+            assume_yes (bool): If True, skips confirmation prompts and proceeds with installation.
 
         Returns:
             None
@@ -124,18 +119,15 @@ class MMPMGui(Singleton):
 
     def remove(self, assume_yes: bool = False):
         """
-        Removes all SystemD services and NGINX, SystemD, and static web files
-        associated with the MMPM GUI. This requires sudo permission, and the user
-        is prompted, letting them know this is the case. During any failures,
-        verbose error messages are written to the log files, and the user is made
-        known of the errors.
+        Removes the MMPM GUI. This method handles the deletion of NGINX configurations, Systemd service files,
+        and any static web files associated with the MMPM GUI. It stops and disables the relevant services
+        and removes the related files. The user is prompted for confirmation unless assume_yes is True.
 
         Parameters:
-            assume_yes (bool): used when calling the `remove` function from within the
-                                `install` function to clean up any possible conflicts
+        assume_yes (bool): If True, skips confirmation prompts and proceeds with removal.
 
         Returns:
-            None
+        None
         """
         if not assume_yes and not prompt("Are you sure you want to remove the MMPM GUI? This requires sudo permission."):
             return
@@ -154,7 +146,7 @@ class MMPMGui(Singleton):
                 logger.error(f"{stopping.stdout.decode('utf-8')}\n{stopping.stderr.decode('utf-8')}")
 
         elif is_active.stdout.decode("utf-8") == INACTIVE:
-            logger.info(f"MMPM SystemD service not active, nothing to do")
+            logger.info("MMPM SystemD service not active, nothing to do")
 
         is_enabled = systemctl("is-enabled", ["mmpm.service"])
 
@@ -168,7 +160,7 @@ class MMPMGui(Singleton):
                 logger.error(f"Failed to disable MMPM SystemD service: {error}")
 
         elif is_enabled.stdout.decode("utf-8") == DISABLED:
-            logger.info(f"MMPM SystemD service not enabled, nothing to do")
+            logger.info("MMPM SystemD service not enabled, nothing to do")
 
         logger.info("Force removing NGINX and SystemD configs")
 
@@ -198,17 +190,13 @@ class MMPMGui(Singleton):
 
         print("MMPM GUI Removed!")
 
-    def get_uri(self):
+    def get_uri(self) -> str:
         """
-        Parses the MMPM nginx conf file for the port number assigned to the web
-        interface, and returns a string containing containing the host IP and
-        assigned port.
-
-        Parameters:
-            None
+        Retrieves the URI of the MMPM web interface. It parses the NGINX configuration file to find the
+        port number and constructs the URI using the host IP and the identified port.
 
         Returns:
-            str: The URL of the MMPM web interface
+            str: The URL of the MMPM web interface.
         """
 
         if not os.path.exists(paths.MMPM_NGINX_CONF_FILE):

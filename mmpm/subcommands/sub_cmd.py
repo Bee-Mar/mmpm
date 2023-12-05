@@ -35,7 +35,7 @@ class SubCmd:
             logger.critical(message)
             raise NameError(message)
 
-    def register(self, subparser: _SubParsersAction) -> None:
+    def register(self, subparser: _SubParsersAction) -> None: # pylint: disable=unused-argument
         """
         Implementation is required. Configure all subcommand options here. This
         method is called at application startup to register the subcommand's
@@ -52,7 +52,7 @@ class SubCmd:
         logger.critical(message)
         raise NameError(message)
 
-    def exec(self, args: Namespace, extra: List[str]) -> None:
+    def exec(self, args: Namespace, extra: List[str]) -> None: # pylint: disable=unused-argument
         """
         Implementation is required. Self-contained logic of the subcommand (ie. the subcommand's 'main' method).
 

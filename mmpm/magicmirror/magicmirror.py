@@ -114,26 +114,40 @@ class MagicMirror(Singleton):
             logger.fatal(message)
             return False
 
-        print(f"Installing MagicMirror")
-
-        if not prompt(f"Use '{root_path}' ({root.name}) as the parent directory of the new MagicMirror installation?"):
-            print(f"Cancelled installation. To change the installation path of MagicMirror, modify the {root.name} using 'mmpm open --env'")
-            return False
-
         for cmd in ["git", "npm"]:
             if not shutil.which(cmd):
                 logger.fatal(f"'{cmd}' command not found. Please install '{cmd}', then re-run 'mmpm install --magicmirror'")
                 return False
 
-        print(color.n_cyan(f"Installing MagicMirror in {root_path}/MagicMirror ..."))
-        os.system(f"cd {root_path.parent} && git clone https://github.com/MichMich/MagicMirror && cd MagicMirror && npm run install-mm")
+        root_path.mkdir(exist_ok=True)
+        os.chdir(root_path.parent)
 
-        print(color.n_green("\nRun 'mmpm mm-ctl --start' to start MagicMirror"))
+        error_code, _, stderr = run_cmd(["git", "clone", "https://github.com/MichMich/MagicMirror"],
+                progress=True,
+                message=f"Cloning MagicMirror into '{root_path}'")
+
+        if error_code:
+            logger.error(f"Failed to clone the MagicMirror repo: {stderr}")
+            return False
+
+        os.chdir(root_path)
+        error_code, _, stderr = run_cmd(["npm", "run", "install-mm"], progress=True, message="Installing Node dependencies")
+
+        if error_code:
+            logger.error(f"Failed to clone the MagicMirror repo: {stderr}")
+            return False
+
+        logger.info("Installed MagicMirror!")
+        print(f"Run {color.n_green('`mmpm mm-ctl --start`')} to start MagicMirror")
         return True
 
     def remove(self) -> bool:
         root = self.env.MMPM_MAGICMIRROR_ROOT
         root_path: PosixPath = root.get()
+
+        if os.getcwd() == f"{root_path}":
+            logger.error(f"MagicMirror cannot be removed while your current directory is {root_path}. Please cd into another directory.")
+            return False
 
         if not root_path.exists():
             message = f"The {root_path} does not exist. Is {root.name} set properly?"

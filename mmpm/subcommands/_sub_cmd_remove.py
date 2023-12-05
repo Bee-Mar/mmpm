@@ -63,4 +63,3 @@ class Remove(SubCmd):
 
             if package.remove():
                 logger.info(f"Removed {color.n_green(package.title)} ({package.repository})")
-

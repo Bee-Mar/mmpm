@@ -2,7 +2,6 @@
 import datetime
 import json
 import os
-import shutil
 import sys
 from multiprocessing import cpu_count
 from pathlib import Path, PosixPath
@@ -10,7 +9,6 @@ from re import sub
 from textwrap import fill
 from typing import Any, Dict, List, Tuple
 
-import git
 import requests
 from bs4 import NavigableString, Tag
 from mmpm.constants import color
@@ -27,6 +25,7 @@ def __sanitize__(string: str) -> str:
     return sub("[//]", "", string)
 
 
+# pylint: disable=too-many-instance-attributes
 class MagicMirrorPackage:
     """
     A container object used to simplify the represenation of a given
@@ -149,7 +148,7 @@ class MagicMirrorPackage:
 
         return serialized
 
-    def install(self, assume_yes: bool = False) -> bool:
+    def install(self) -> bool:
         """
         Delegates installation to an InstallationHandler instance. The repo is
         cloned, and all dependencies are installed (to the best of the package
@@ -264,7 +263,7 @@ __NULL__: int = hash(MagicMirrorPackage())
 
 
 class InstallationHandler:
-    __slots__ = "package"
+    __slots__ = {"package"}
 
     def __init__(self, package: MagicMirrorPackage):
         self.package = package

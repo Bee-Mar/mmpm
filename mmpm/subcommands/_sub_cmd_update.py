@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 """ Command line options for 'update' subcommand """
-import json
-import urllib.request
 
 import mmpm.utils
-from mmpm.constants import color
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.magicmirror import MagicMirror

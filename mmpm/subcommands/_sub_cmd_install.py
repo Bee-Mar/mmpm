@@ -5,6 +5,7 @@ from typing import List
 from mmpm.constants import color
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
+from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.subcommands.sub_cmd import SubCmd
 from mmpm.utils import prompt
 
@@ -48,7 +49,7 @@ class Install(SubCmd):
         results: List[MagicMirrorPackage] = []
 
         for name in extra:
-            results.extend(filter(lambda pkg: name == pkg.title, self.database.packages))
+            results.extend([pkg for pkg in self.database.packages if name == pkg.title])
 
             if not results:
                 logger.error("Unable to locate package(s) based on query.")

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import json
 
 from flask import Blueprint, Response, request
 from mmpm.api.constants import http

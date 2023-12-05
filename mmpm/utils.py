@@ -3,11 +3,10 @@ import json
 import os
 import socket
 import subprocess
-import sys
 import time
 import urllib.request
-from pathlib import Path, PosixPath
-from typing import List, Optional, Tuple
+from pathlib import Path
+from typing import List, Tuple
 
 import git
 import requests
@@ -36,7 +35,7 @@ def repo_up_to_date(path: Path):
 
         # Get local and remote HEAD commit
         local_commit = repo.head.commit
-        remote_commit = repo.refs['origin/HEAD'].commit
+        remote_commit = repo.refs['origin/HEAD'].commit # type: ignore
 
         # Check if the commits are the same
         return local_commit.hexsha != remote_commit.hexsha
@@ -71,7 +70,6 @@ def run_cmd(command: List[str], progress=True, background=False, message: str = 
     Returns:
         Tuple[returncode (int), stdout (str), stderr (str)]
     """
-
     if background:
         logger.debug(f"Executing process `{' '.join(command)}` in background")
         subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

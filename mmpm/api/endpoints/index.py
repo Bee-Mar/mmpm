@@ -15,7 +15,7 @@ class Index(Endpoint):
         self.blueprint = Blueprint(self.name, __name__, url_prefix="/api/index")
         self.url_map = url_map
 
-        @self.blueprint.route("/", methods=["GET"])
+        @self.blueprint.route("/", methods=[http.GET])
         def default() -> Response:
             logger.info("Sending back url map")
             rules = [(str(url), list(url.methods)) for url in self.url_map.iter_rules()]

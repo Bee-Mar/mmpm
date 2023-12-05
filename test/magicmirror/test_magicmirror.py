@@ -50,27 +50,23 @@ class MagicMirrorTestCase(unittest.TestCase):
 
     @patch('mmpm.magicmirror.magicmirror.run_cmd')
     @patch('mmpm.magicmirror.magicmirror.chdir')
-    @patch('mmpm.magicmirror.magicmirror.os')
-    def test_install(self, mock_os, mock_chdir, mock_run_cmd):
+    def test_install(self, mock_chdir, mock_run_cmd):
         mock_run_cmd.return_value = (0, '', '')
         mock_chdir.return_value = None
 
         mm = MagicMirror()
         mm.env = MockedMMPMEnv()
 
-        with patch('mmpm.magicmirror.magicmirror.prompt') as mock_prompt:
-            mock_prompt.return_value = True
-            success = mm.install()
-
-        mock_prompt.assert_called_once()
-        mock_os.system.assert_called_once()
+        success = mm.install()
         self.assertEqual(success, True)
 
     @patch('mmpm.magicmirror.magicmirror.prompt')
     @patch('mmpm.magicmirror.magicmirror.print')
     @patch('mmpm.magicmirror.magicmirror.shutil')
-    def test_remove(self, mock_shutil, mock_print, mock_prompt):
+    @patch('mmpm.magicmirror.magicmirror.os.getcwd')
+    def test_remove(self, mock_cwd, mock_shutil, mock_print, mock_prompt):
         mock_prompt.return_value = True
+        mock_cwd.return_value = '/tmp'
 
         mm = MagicMirror()
         mm.env = MockedMMPMEnv()

@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 """ Command line options for 'list' subcommand """
-from argparse import _SubParsersAction
-
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd

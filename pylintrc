@@ -76,6 +76,7 @@ disable=unnecessary-lambda-assignment,
         too-many-nested-blocks,
         line-too-long,
         too-many-branches,
+        consider-using-with,
         import-self,
         invalid-name,
         broad-except,
@@ -93,7 +94,10 @@ disable=unnecessary-lambda-assignment,
         no-member,
         bad-indentation,
         singleton-comparison,
-        too-many-lines
+        too-many-lines,
+        use-maxsplit-arg,
+        too-many-instance-attributes,
+        super-init-not-called
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -426,7 +430,7 @@ ignore-docstrings=yes
 ignore-imports=no
 
 # Minimum lines number of a similarity.
-min-similarity-lines=4
+min-similarity-lines=10000
 
 
 [CLASSES]

@@ -13,7 +13,7 @@ from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.singleton import Singleton
-from mmpm.utils import prompt, run_cmd, validate_input
+from mmpm.utils import run_cmd, validate_input
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -65,7 +65,7 @@ class MagicMirrorDatabase(Singleton):
                 try:
                     table_data: list = entry.find_all("td")
 
-                    if not len(table_data) or not table_data[0].text or table_data[0].text == "mmpm":
+                    if not table_data or not table_data[0].text or table_data[0].text == "mmpm":
                         continue
 
                     pkg = MagicMirrorPackage.from_raw_data(table_data, category=categories[index])
@@ -73,7 +73,7 @@ class MagicMirrorDatabase(Singleton):
 
                 except Exception as error:  # broad exception isn't best, but there's a lot that can happen here
                     logger.error(
-                        f"There may have been a breaking change in the layout of the MagicMirror 3rd Party module wiki page. Please create an issue on the MMPM's GitHub repository."
+                        "There may have been a breaking change in the layout of the MagicMirror 3rd Party module wiki page. Please create an issue on the MMPM's GitHub repository."
                     )
                     logger.error(f"{error}")
                     continue
@@ -104,7 +104,7 @@ class MagicMirrorDatabase(Singleton):
         ]
 
         if not package_directories:
-            logger.error("Failed to find MagicMirror root directory.")
+            logger.debug(f"No packages found in {modules_dir}")
             return []
 
         packages_found: List[MagicMirrorPackage] = []
@@ -229,7 +229,7 @@ class MagicMirrorDatabase(Singleton):
         should_update = refresh or not db_exists or not db_last_update.exists() or not db_last_update.stat().st_size
 
         if should_update:
-            print(f"Retrieving: {urls.MAGICMIRROR_MODULES_URL} [{color.n_cyan('Database')}]")
+            print(f"Retrieving: {urls.MAGICMIRROR_MODULES_URL} [{color.n_cyan('3rd Party Modules')}]")
             self.packages = self.__download_packages__()
 
             if not self.packages:
@@ -336,7 +336,7 @@ class MagicMirrorDatabase(Singleton):
         if upgrades_available:
             print("Run `mmpm upgrade` to upgrade packages/applications")
         else:
-            logger.info(f"No upgrades available")
+            logger.info("No upgrades available")
 
     def upgradable(self) -> dict:
         """
@@ -415,6 +415,12 @@ class MagicMirrorDatabase(Singleton):
                 with open(ext_pkgs_file, "r", encoding="utf-8") as mm_ext_pkgs:
                     external_packages = json.load(mm_ext_pkgs)
 
+                existing_packages = [pkg.get("title").lower() for pkg in external_packages["External Packages"]]
+
+                if package.title.lower() in existing_packages:
+                    logger.error(f"A package with named {package.title} is already registered as an External Package")
+                    return False
+
                 with open(ext_pkgs_file, "w", encoding="utf-8") as mm_ext_pkgs:
                     external_packages[package.category].append(package.serialize())
                     json.dump(external_packages, mm_ext_pkgs)
@@ -426,19 +432,18 @@ class MagicMirrorDatabase(Singleton):
             print(color.n_green(f"\nSuccessfully added {package.title} to 'External Packages'\n"))
 
         except IOError as error:
-            logger.error("Failed to save external module")
+            logger.error(f"Failed to save external module: {error}")
             return False
 
         return True
 
-    def remove_mm_pkg(self, titles: List[str] = None, assume_yes: bool = False) -> bool:
+    def remove_mm_pkg(self, title: str = None) -> bool:
         """
         Allows user to remove an External Package from the data saved in
         ~/.config/mmpm/mmpm-external-packages.json
 
         Parameters:
-            titles (List[str]): External source titles
-            assume_yes (bool): if True, assume yes for user response, and do not display prompt
+            title (str): External package title
 
         Returns:
             success (bool): True on success, False on error
@@ -447,8 +452,6 @@ class MagicMirrorDatabase(Singleton):
         file = paths.MMPM_EXTERNAL_PACKAGES_FILE
 
         packages: List[MagicMirrorPackage] = []
-        marked_for_removal: List[MagicMirrorPackage] = []
-        cancelled_removal: List[MagicMirrorPackage] = []
 
         with open(file, "r", encoding="utf-8") as mm_ext_pkgs:
             data = json.load(mm_ext_pkgs)
@@ -458,26 +461,14 @@ class MagicMirrorDatabase(Singleton):
                 return False
 
             packages = [MagicMirrorPackage(**package) for package in data["External Packages"]]
+            match: MagicMirrorPackage = next(filter(lambda pkg : pkg.title == title, packages))
 
-        for title in titles:
-            for package in packages:
-                if package.title != title:
-                    continue
-
-                message: str = f"Would you like to remove {color.n_green(title)} ({package.repository}) from the MMPM/MagicMirror local database?"
-
-                if assume_yes or prompt(message):
-                    marked_for_removal.append(package)
-                else:
-                    cancelled_removal.append(package)
-
-        if not marked_for_removal and not cancelled_removal:
-            logger.error("No external sources found matching provided query")
+        if not match:
+            logger.error(f"Unable to locate External Package named '{color.n_green(title)}'")
             return False
 
-        for package in marked_for_removal:
-            packages.remove(package)
-            print(f"Removed {package.title} ({package.repository})")
+        packages.remove(match)
+        logger.info(f"Removed {color.n_green(match.title)} ({match.repository})")
 
         # if the error_msg was triggered, there's no need to even bother writing back to the file
         with open(file, "w", encoding="utf-8") as mm_ext_pkgs:

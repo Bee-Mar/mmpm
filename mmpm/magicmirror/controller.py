@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import json
 import os
 import shutil
 from time import sleep
@@ -11,9 +10,6 @@ from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 from mmpm.singleton import Singleton
 from mmpm.utils import get_pids, kill_pids_of_process, run_cmd
-from pygments import highlight
-from pygments.formatters.terminal import TerminalFormatter
-from pygments.lexers.data import JsonLexer
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -40,7 +36,7 @@ class MagicMirrorClientFactory:
 
         @client.event
         def connect_error(error):
-            logger.error(f"Failed to connect to MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set properly?")
+            logger.error("Failed to connect to MagicMirror websocket. Is the MMPM_MAGICMIRROR_URI environment variable set properly?")
             logger.debug(f"Error when connecting to MagicMirror websocket: {error}")
 
         @client.on("disconnect", namespace=namespace)

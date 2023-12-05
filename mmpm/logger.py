@@ -5,14 +5,13 @@ import logging
 import logging.handlers
 import os
 import shutil
-import sys
 from threading import Lock
 from typing import List
 
 import socketio
 
 from mmpm.__version__ import version
-from mmpm.constants import color, paths
+from mmpm.constants import paths
 from mmpm.env import MMPMEnv
 
 
@@ -42,14 +41,14 @@ class SocketIOHandler(logging.Handler):
 
         try:
             self.sio.connect(f"http://{host}:{port}", wait=False)
-        except socketio.exceptions.ConnectionError as e:
+        except socketio.exceptions.ConnectionError:
             pass
 
     def emit(self, record):
         if self.sio.connected:
             try:
                 self.sio.emit("logs", self.formatter.format(record))
-            except Exception as e:
+            except Exception:
                 pass
 
     def close(self):

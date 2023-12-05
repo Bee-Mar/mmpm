@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from importlib import import_module
 from pkgutil import iter_modules
-from typing import Dict, List
+from typing import Dict
 
 from mmpm.logger import MMPMLogger
 

@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 import json
-import sys
-from logging import INFO
 from os.path import getmtime
 from pathlib import Path
-from socket import gethostbyname, gethostname
 
 from pygments import highlight
 from pygments.formatters.terminal import TerminalFormatter
@@ -24,6 +21,22 @@ MMPM_DEFAULT_ENV: dict = {
 
 
 class EnvVar:
+    """
+    Represents a re-readable environment variable stored in the MMPM_ENV_FILE.
+    When a change in the last-modified time of the MMPM_ENV_FILE, the value is
+    re-read. The __slots__ are predefined to improve efficiency.
+
+    Attributes:
+        name (str): the name of the environment variable
+        default (Any): the default value
+        __tipe (object): the class the environment should be initialized as
+        __mtime (object): the last modified time of the MMPM_ENV_FILE
+        __value (object): the value read from the MMPM_ENV_FILE
+
+    Methods:
+        get(): Returns the value of the environment variable
+    """
+
     __slots__ = "name", "default", "__tipe", "__value", "__mtime"
 
     def __init__(self, name: str = "", default=None, mtime: float = None):
@@ -56,7 +69,7 @@ class EnvVar:
                 try:
                     env_vars = json.load(env)
                 except json.JSONDecodeError:
-                    print(color.b_yellow("WARNING:"), f"Unable to parse environment variables file.")
+                    print(color.b_yellow("WARNING:"), "Unable to parse environment variables file.")
 
                 self.__value = self.__tipe(self.default if self.name not in env_vars else env_vars.get(self.name))
 
@@ -65,8 +78,26 @@ class EnvVar:
         return self.__value
 
 
-# Treating this kind of like an enum
 class MMPMEnv(Singleton):
+    """
+    MMPMEnv, a singleton class, serves as the centralized source for managing and accessing environment variables
+    within the MMPM application. It reads and writes environment variables to the MMPM_ENV_FILE, ensuring that all
+    components of the application have consistent and up-to-date configurations. The class is designed to dynamically
+    reflect changes made to the environment variables in the MMPM_ENV_FILE.
+
+    Attributes:
+        MMPM_MAGICMIRROR_ROOT (EnvVar): Environment variable for the root directory of MagicMirror.
+        MMPM_MAGICMIRROR_URI (EnvVar): Environment variable for the URI of the MagicMirror.
+        MMPM_MAGICMIRROR_PM2_PROCESS_NAME (EnvVar): Environment variable for the PM2 process name of MagicMirror.
+        MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE (EnvVar): Environment variable for the Docker compose file path.
+        MMPM_IS_DOCKER_IMAGE (EnvVar): Environment variable indicating if MMPM is running as a Docker image.
+        MMPM_LOG_LEVEL (EnvVar): Environment variable for the logging level.
+
+    Methods:
+        __init__(): Initializes the MMPMEnv instance, loading environment variables from MMPM_ENV_FILE.
+        get(): Retrieves the current environment variables as a dictionary.
+        display(): Prints the current environment variables in a formatted JSON structure for easy viewing.
+    """
     __slots__ = tuple({key.lower() for key in MMPM_DEFAULT_ENV.keys()})
 
     def __init__(self):
@@ -86,9 +117,9 @@ class MMPMEnv(Singleton):
             except json.JSONDecodeError:
                 pass
 
-            for key in MMPM_DEFAULT_ENV:
+            for key, value in MMPM_DEFAULT_ENV.items():
                 if key not in env_vars:
-                    env_vars[key] = MMPM_DEFAULT_ENV[key]
+                    env_vars[key] = value
 
         env_vars["MMPM_MAGICMIRROR_ROOT"] = str(env_vars["MMPM_MAGICMIRROR_ROOT"])
 

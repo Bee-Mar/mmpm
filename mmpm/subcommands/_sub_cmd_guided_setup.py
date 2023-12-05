@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ Command line options for 'guided-setup' subcommand """
+import json
 from os.path import normpath
 from pathlib import Path
 

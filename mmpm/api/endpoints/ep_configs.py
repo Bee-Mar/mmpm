@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-#!/usr/bin/env python3
-import json
 from pathlib import PosixPath
 from shutil import copyfile
 from typing import Dict

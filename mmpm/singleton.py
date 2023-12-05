@@ -12,7 +12,7 @@ class __SingletonMeta(type):
     Methods:
         __call__(*args, **kwargs): Returns a single instance of the class, creating it if necessary.
     """
-    _instances = {}
+    _instances = {} # type: ignore
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:

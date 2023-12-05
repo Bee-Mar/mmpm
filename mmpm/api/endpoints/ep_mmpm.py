@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-import json
-
 import mmpm.utils
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.logger import MMPMLogger
@@ -19,8 +17,5 @@ class Mmpm(Endpoint):
 
         @self.blueprint.route("/update", methods=[http.GET])
         def update() -> Response:
-            can_upgrade_mmpm = mmpm.utils.update_available()
             # need to call /api/db/upgradable after this to get the information
-            return self.success(json.dumps({"can-upgrade-mmpm": can_upgrade_mmpm}))
-
-            return self.success(json.dumps(self.db.info()))
+            return self.success({"can-upgrade-mmpm": mmpm.utils.update_available()})

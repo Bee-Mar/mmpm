@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-import json
-
-import mmpm.utils
 from flask import Blueprint, Response, request
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint

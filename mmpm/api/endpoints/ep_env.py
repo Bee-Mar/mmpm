@@ -7,7 +7,6 @@ from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.constants import paths
 from mmpm.env import MMPM_DEFAULT_ENV, MMPMEnv
 from mmpm.logger import MMPMLogger
-from mmpm.magicmirror.package import MagicMirrorPackage
 
 logger = MMPMLogger.get_logger(__name__)
 

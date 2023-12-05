@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from pathlib import Path, PosixPath
+from pathlib import Path
 
 HOME_DIR = Path.home()
 MMPM_CONFIG_DIR = HOME_DIR / ".config" / "mmpm"

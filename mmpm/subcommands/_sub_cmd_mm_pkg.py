@@ -97,8 +97,11 @@ class MmPkg(SubCmd):
 
         if args.command == "add":
             self.database.add_mm_pkg(args.title, args.author, args.repo, args.desc)
-        elif args.command == "remove" and prompt(f"Remove {color.n_green(args.pkg_name)} ({package.repository}) from the local database?"):
-            if not self.database.remove_mm_pkg(args.pkg_name):
-                logger.error(f"Failed to remove {color.n_green(args.pkg_name)}")
+        elif args.command == "remove":
+            for name in args.pkg_name:
+                if not args.assume_yes and not prompt(f"Remove {color.n_green(name)} from the local database?"):
+                    continue
+                if not self.database.remove_mm_pkg(name):
+                    logger.error(f"Failed to remove {color.n_green(name)}")
         else:
             logger.error(f"Invalid subcommand. See '{self.app_name} {self.name} --help'")

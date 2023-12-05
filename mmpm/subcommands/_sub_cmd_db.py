@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """ Command line options for 'db' subcommand """
 import json
-import sys
 
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
-from pygments import formatters, highlight
+from pygments import highlight
 from pygments.formatters.terminal import TerminalFormatter
 from pygments.lexers.data import JsonLexer
 

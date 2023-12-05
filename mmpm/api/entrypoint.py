@@ -4,8 +4,6 @@ from gevent import monkey
 monkey.patch_all()
 
 import json
-from importlib import import_module
-from pkgutil import iter_modules
 
 import mmpm.api.endpoints
 from flask import Flask, Response
@@ -66,5 +64,5 @@ for endpoint in entrypoints:
     try:
         app.register_blueprint(endpoint.blueprint) # type: ignore
         logger.debug(f"Loaded blueprint for {endpoint}")
-    except Exception as error:
-        logger.error(f"Failed to load blueprint for {endpoint}: {error}")
+    except Exception as exception:
+        logger.error(f"Failed to load blueprint for {endpoint}: {exception}")

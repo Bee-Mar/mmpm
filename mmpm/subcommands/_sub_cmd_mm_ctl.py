@@ -23,7 +23,7 @@ class MmCtl(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "mm-ctl"
-        self.help = f"Commands to interact with/control MagicMirror"
+        self.help = "Commands to interact with/control MagicMirror"
         self.usage = f"{self.app_name} {self.name} [--<option>]"
         self.controller = MagicMirrorController()
         self.magicmirror = MagicMirror()

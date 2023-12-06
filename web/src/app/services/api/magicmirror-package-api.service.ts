@@ -20,17 +20,17 @@ export class MagicMirrorPackageAPI extends BaseAPI {
     );
   }
   public get_packages(): Promise<APIResponse> {
-    console.log("Retrieving packages");
+    console.log("Retrieving packages from API");
     return this.get_("packages");
   }
 
   public post_install_packages(packages: MagicMirrorPackage[]): Promise<APIResponse> {
-    console.log("Requesting to have packages installed");
+    console.log(`Requesting to have ${packages.length} packages installed`);
     return this.post_packages("packages/install", packages);
   }
 
   public post_remove_packages(packages: MagicMirrorPackage[]): Promise<APIResponse> {
-    console.log("Requesting to have packages removed");
+    console.log(`Requesting to have ${packages.length} packages removed`);
     return this.post_packages("packages/remove", packages);
   }
 

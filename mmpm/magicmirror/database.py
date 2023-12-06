@@ -220,6 +220,7 @@ class MagicMirrorDatabase(Singleton):
         Returns:
             None
         """
+        self.packages = [] # this is really related to the API, needing to clear the list out
 
         db_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
         db_exists = db_file.exists() and bool(db_file.stat().st_size)
@@ -232,16 +233,15 @@ class MagicMirrorDatabase(Singleton):
             print(f"Retrieving: {urls.MAGICMIRROR_MODULES_URL} [{color.n_cyan('3rd Party Modules')}]")
             self.packages = self.__download_packages__()
 
-            if not self.packages:
+            if self.packages:
+                with open(db_file, "w", encoding="utf-8") as db:
+                    json.dump(self.packages, db, default=lambda package: package.serialize())
+
+                with open(db_last_update, "w", encoding="utf-8") as last_update_file:
+                    self.last_update = datetime.datetime.now()
+                    json.dump({"last-update": str(self.last_update.replace(microsecond=0))}, last_update_file)
+            else:
                 logger.error(f"Failed to retrieve packages from {urls.MAGICMIRROR_MODULES_URL}. Please check your internet connection.")
-                return False
-
-            with open(db_file, "w", encoding="utf-8") as db:
-                json.dump(self.packages, db, default=lambda package: package.serialize())
-
-            with open(db_last_update, "w", encoding="utf-8") as last_update_file:
-                self.last_update = datetime.datetime.now()
-                json.dump({"last-update": str(self.last_update.replace(microsecond=0))}, last_update_file)
 
         else:
             with open(db_last_update, mode="r", encoding="utf-8") as db_last_update_file:

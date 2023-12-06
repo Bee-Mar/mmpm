@@ -41,3 +41,10 @@
   overflow: auto; /* Adds scrollbar if content is too long */
   max-height: 600px; /* You can adjust this as needed */
 }
+
+.confirm-shopping-cart-button {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  width: 100%; /* Take full width of the parent container */
+}

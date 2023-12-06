@@ -1,4 +1,40 @@
 <div class="card">
+  <p-toolbar>
+    <p-overlayPanel #op>
+      <p-panel>
+        <div *ngIf="selected_packages && selected_packages?.length; else noPackages" class="package-details-grid">
+          <p-scroller [items]="selected_packages" [itemSize]="50" scrollHeight="200px" styleClass="border-1 surface-border" [style]="{ width: '300px', height: '200px' }">
+            <ng-template pTemplate="item" let-package let-options="options">
+              <div class="flex align-items-center p-2" [ngClass]="{ 'surface-ground': options.odd }" style="height: 50px">
+                {{ package.title }}
+                <span>
+                  <i *ngIf="package.is_installed; else notInstalled" class="fa-solid fa-trash" [style.color]="'#e05252'"></i>
+                  <ng-template #notInstalled>
+                    <i class="fa-solid fa-download" [style.color]="'#009933'"></i>
+                  </ng-template>
+                </span>
+              </div>
+            </ng-template>
+          </p-scroller>
+
+          <p-divider></p-divider>
+
+          <div class="confirm-shopping-cart-button">
+            <p-button label="Submit" [disabled]="!(selected_packages && selected_packages.length > 0)" (click)="on_confirm_shopping_cart()"></p-button>
+          </div>
+        </div>
+
+        <ng-template #noPackages>
+          <div>No packages selected.</div>
+        </ng-template>
+      </p-panel>
+    </p-overlayPanel>
+    <div class="p-toolbar-group-start"></div>
+    <div class="p-toolbar-group-end">
+      <p-button icon="fa-solid fa-shopping-cart" pTooltip="Shopping cart" tooltipPosition="top" styleClass="p-button-help mr-2" (click)="op.toggle($event)"></p-button>
+    </div>
+  </p-toolbar>
+
   <p-table
     #dt
     [value]="packages"
@@ -83,7 +119,8 @@
           <i class="pi pi-{{ package?.is_installed ? 'check' : 'times' }}-circle" [style.color]="package?.is_installed ? '#009933' : '#e05252'"></i>
         </td>
         <td>
-          <p-button [raised]="true" icon="fa-solid fa-circle-info" (click)="on_package_details(package)"> </p-button>
+          <p-button [raised]="true" severity="info" icon="fa-solid fa-circle-info" (click)="on_package_details(package)" pTooltip="Package details" tooltipPosition="top">
+          </p-button>
         </td>
       </tr>
     </ng-template>

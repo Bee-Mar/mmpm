@@ -57,6 +57,37 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
     return (event.target as HTMLInputElement).value;
   }
 
+  async on_confirm_shopping_cart() {
+    const packages_to_remove = new Array<MagicMirrorPackage>();
+    const packages_to_install = new Array<MagicMirrorPackage>();
+
+    for (const pkg of this.selected_packages) {
+      (pkg.is_installed ? packages_to_remove : packages_to_install).push(pkg);
+    }
+
+    this.selected_packages = [];
+
+    if (packages_to_remove) {
+      const response = await this.mm_pkg_api.post_remove_packages(packages_to_remove);
+
+      if (response.code === 200) {
+        const installed = response.message as Array<MagicMirrorPackage>;
+        console.log(`Removed ${installed.length} packages`);
+      }
+    }
+
+    if (packages_to_install) {
+      const response = await this.mm_pkg_api.post_install_packages(packages_to_install);
+
+      if (response.code === 200) {
+        const installed = response.message as Array<MagicMirrorPackage>;
+        console.log(`Installed ${installed.length} packages`);
+      }
+    }
+
+    this.store.get_packages();
+  }
+
   public on_install(): void {
     this.mm_pkg_api
       .post_install_packages(this.selected_packages)

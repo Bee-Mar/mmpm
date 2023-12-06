@@ -15,6 +15,11 @@ import { TabViewModule } from "primeng/tabview";
 import { DialogModule } from "primeng/dialog";
 import { ProgressSpinnerModule } from "primeng/progressspinner";
 import { PanelModule } from "primeng/panel";
+import { ToolbarModule } from "primeng/toolbar";
+import { OverlayPanelModule } from "primeng/overlaypanel";
+import { DividerModule } from "primeng/divider";
+import { ScrollerModule } from "primeng/scroller";
+import { TooltipModule } from "primeng/tooltip";
 
 export function init_shared_store(store: SharedStoreService) {
   return () => store.get_packages();
@@ -36,6 +41,11 @@ export function init_shared_store(store: SharedStoreService) {
     DialogModule,
     ProgressSpinnerModule,
     PanelModule,
+    ToolbarModule,
+    OverlayPanelModule,
+    DividerModule,
+    ScrollerModule,
+    TooltipModule,
   ],
   providers: [
     {

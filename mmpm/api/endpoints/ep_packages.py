@@ -70,11 +70,11 @@ class Packages(Endpoint):
                 if status["error"]:
                     message = status["error"]
                     logger.error(message)
-                    self.failure(message,code=400)
+                    return self.failure(message,code=400)
                 elif status["warning"]:
                     message = status["warning"]
                     logger.warning(message)
-                    self.failure(message,code=400)
+                    return self.failure(message,code=400)
 
             return self.success(remote.serialize())
 

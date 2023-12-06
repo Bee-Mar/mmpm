@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { MagicMirrorPackage } from "@/magicmirror/models/magicmirror-package";
 import { APIResponse, BaseAPI } from "@/services/api/base-api";
-import { retry, catchError } from "rxjs/operators";
+import { retry, catchError, map } from "rxjs/operators";
 import { firstValueFrom } from "rxjs";
 
 @Injectable({
@@ -10,24 +10,15 @@ import { firstValueFrom } from "rxjs";
 export class MagicMirrorPackageAPI extends BaseAPI {
   private post_packages(url: string, packages: MagicMirrorPackage[]): Promise<APIResponse> {
     return firstValueFrom(
-      this.http
-        .post(
-          this.route(url),
-          {
-            packages,
-          },
-          {
-            headers: this.headers({
-              "Content-Type": "application/json",
-            }),
-            responseType: "text",
-            reportProgress: true,
-          },
-        )
-        .pipe(retry(1), catchError(this.handle_error)),
+      this.http.post(this.route(url), { packages }, { headers: this.headers({ "Content-Type": "application/json" }) }).pipe(
+        map((response) => {
+          return typeof response === "string" ? JSON.parse(response) : response;
+        }),
+        retry(1),
+        catchError(this.handle_error),
+      ),
     );
   }
-
   public get_packages(): Promise<APIResponse> {
     console.log("Retrieving packages");
     return this.get_("packages");

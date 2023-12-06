@@ -119,14 +119,19 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
     });
   }
 
-  public on_package_details(pkg: any): void {
-    this.mm_pkg_api.post_details(pkg).then((response: APIResponse) => {
-      console.log(response.message as RemotePackageDetails);
-      console.log(response.message);
-      if (response.code === 200) {
-        pkg.remote_details = response.message as RemotePackageDetails;
-        console.log(pkg);
-      }
-    });
+  public on_package_details(pkg: MagicMirrorPackage): void {
+    if (typeof pkg.remote_details === "undefined") {
+      console.log(`${pkg.title} does not have remote_details stored. Collecting...`);
+
+      this.mm_pkg_api.post_details(pkg).then((response: APIResponse) => {
+        if (response.code === 200) {
+          pkg.remote_details = response.message as RemotePackageDetails;
+          console.log(`Retrieved remote_details for ${pkg.title}`);
+        }
+      });
+    } else {
+      console.log(`${pkg.title} already has remote_details stored`);
+      // TODO: open dialog with information
+    }
   }
 }

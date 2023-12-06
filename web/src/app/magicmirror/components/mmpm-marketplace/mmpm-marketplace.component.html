@@ -1,37 +1,49 @@
 <div class="card">
   <p-toolbar>
-    <p-overlayPanel #op>
-      <p-panel>
-        <div *ngIf="selected_packages && selected_packages?.length; else noPackages" class="package-details-grid">
-          <p-scroller [items]="selected_packages" [itemSize]="50" scrollHeight="200px" styleClass="border-1 surface-border" [style]="{ width: '300px', height: '200px' }">
-            <ng-template pTemplate="item" let-package let-options="options">
-              <div class="flex align-items-center p-2" [ngClass]="{ 'surface-ground': options.odd }" style="height: 50px">
-                {{ package.title }}
-                <span>
-                  <i *ngIf="package.is_installed; else notInstalled" class="fa-solid fa-trash" [style.color]="'#e05252'"></i>
-                  <ng-template #notInstalled>
-                    <i class="fa-solid fa-download" [style.color]="'#009933'"></i>
-                  </ng-template>
-                </span>
-              </div>
-            </ng-template>
-          </p-scroller>
-
-          <p-divider></p-divider>
-
-          <div class="confirm-shopping-cart-button">
-            <p-button label="Submit" [disabled]="!(selected_packages && selected_packages.length > 0)" (click)="on_confirm_shopping_cart()"></p-button>
-          </div>
-        </div>
-
-        <ng-template #noPackages>
-          <div>No packages selected.</div>
-        </ng-template>
-      </p-panel>
-    </p-overlayPanel>
-    <div class="p-toolbar-group-start"></div>
+    <div class="p-toolbar-group-start">
+      <p-splitButton label="Custom Package" icon="fa-solid fa-cube" [model]="custom_package_options" styleClass="p-button-primary"></p-splitButton>
+    </div>
     <div class="p-toolbar-group-end">
-      <p-button icon="fa-solid fa-shopping-cart" pTooltip="Shopping cart" tooltipPosition="top" styleClass="p-button-help mr-2" (click)="op.toggle($event)"></p-button>
+      <p-button
+        icon="fa-solid fa-rotate-right"
+        pTooltip="Refresh database"
+        tooltipPosition="top"
+        styleClass="p-button-warning mr-4"
+        label="Refresh"
+        (click)="on_refresh_db()"
+      ></p-button>
+
+      <p-overlayPanel #op>
+        <p-panel header="Shopping Cart">
+          <div *ngIf="selected_packages && selected_packages?.length; else noPackages" class="package-details-grid">
+            <p-scroller [items]="selected_packages" [itemSize]="50" scrollHeight="200px" styleClass="border-1 surface-border" [style]="{ width: '300px', height: '200px' }">
+              <ng-template pTemplate="item" let-package let-options="options">
+                <div class="flex align-items-center p-2" [ngClass]="{ 'surface-ground': options.odd }" style="height: 50px">
+                  {{ package.title }}
+                  <span>
+                    <i *ngIf="package.is_installed; else notInstalled" class="fa-solid fa-trash" [style.color]="'#e05252'"></i>
+                    <ng-template #notInstalled>
+                      <i class="fa-solid fa-download" [style.color]="'#009933'"></i>
+                    </ng-template>
+                  </span>
+                </div>
+              </ng-template>
+            </p-scroller>
+
+            <p-divider></p-divider>
+
+            <div class="confirm-shopping-cart-button">
+              <p-button label="Submit" [disabled]="!(selected_packages && selected_packages.length > 0)" (click)="on_confirm_shopping_cart()"></p-button>
+            </div>
+          </div>
+
+          <ng-template #noPackages>
+            <div>No packages selected.</div>
+          </ng-template>
+        </p-panel>
+      </p-overlayPanel>
+
+      <p-button label="Cart" icon="fa-solid fa-shopping-cart" pTooltip="Shopping cart" tooltipPosition="top" styleClass="p-button-help ml-2" (click)="op.toggle($event)"></p-button>
     </div>
   </p-toolbar>
 
@@ -134,7 +146,7 @@
   <p-dialog
     *ngIf="selected_package"
     [header]="'Package Details: ' + (selected_package.title || '')"
-    [(visible)]="display_dialog"
+    [(visible)]="display_details_dialog"
     [style]="{ width: '30vw', 'max-width': '1000px' }"
   >
     <div *ngIf="loading_package_data; else detailsBlock" class="spinner-container">
@@ -225,5 +237,63 @@
         </ng-template>
       </p-panel>
     </ng-template>
+  </p-dialog>
+
+  <p-dialog header="Add Custom Package" [(visible)]="display_custom_pkg_add_dialog">
+    <p-panel>
+      <div class="p-inputgroup" style="margin-bottom: 2em">
+        <span class="p-inputgroup-addon" style="width: 10em">Title</span>
+        <input pInputText [(ngModel)]="custom_package.title" required />
+      </div>
+      <div class="p-inputgroup" style="margin-bottom: 2em">
+        <span class="p-inputgroup-addon" style="width: 10em">Author</span>
+        <input pInputText [(ngModel)]="custom_package.author" required />
+      </div>
+      <div class="p-inputgroup" style="margin-bottom: 2em">
+        <span class="p-inputgroup-addon" style="width: 10em">Repository</span>
+        <input type="text" pInputText [(ngModel)]="custom_package.repository" required />
+      </div>
+      <div class="p-inputgroup" style="margin-bottom: 2em">
+        <span class="p-inputgroup-addon" style="width: 10em">Description</span>
+        <input type="text" pInputText [(ngModel)]="custom_package.description" required />
+      </div>
+
+      <div class="confirm-shopping-cart-button">
+        <p-button
+          label="Submit"
+          [disabled]="!(custom_package.title && custom_package.repository && custom_package.author && custom_package.description)"
+          (click)="on_add_mm_pkg()"
+          icon="fa-solid fa-plus"
+        ></p-button>
+      </div>
+    </p-panel>
+  </p-dialog>
+  <p-dialog [(visible)]="display_custom_pkg_remove_dialog" header="Remove Custom Packages">
+    <p-panel>
+      <div *ngIf="custom_packages && custom_packages?.length; else noCustomPackages">
+        <p-listbox
+          [options]="custom_packages"
+          [(ngModel)]="selected_custom_packages"
+          [selectAll]="false"
+          optionLabel="title"
+          [style]="{ width: '15rem' }"
+          [virtualScroll]="true"
+          [virtualScrollItemSize]="43"
+          [multiple]="true"
+          [checkbox]="true"
+          [showToggleAll]="false"
+          [metaKeySelection]="false"
+          [showToggleAll]="true"
+          [listStyle]="{ 'max-height': '220px' }"
+        ></p-listbox>
+
+        <div class="confirm-shopping-cart-button">
+          <p-button label="Submit" [disabled]="!selected_custom_packages" (click)="on_remove_mm_pkg()" icon="fa-solid fa-plus"></p-button>
+        </div>
+      </div>
+      <ng-template #noCustomPackages>
+        <div>No custom packages found in database.</div>
+      </ng-template>
+    </p-panel>
   </p-dialog>
 </div>

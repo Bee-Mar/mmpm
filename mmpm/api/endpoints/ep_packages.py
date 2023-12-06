@@ -50,14 +50,17 @@ class Packages(Endpoint):
 
         @self.blueprint.route("/mm-pkg/add", methods=[http.POST])
         def add_mm_pkg() -> Response:
-            packages = request.get_json()["packages"]
-            added = [package for package in packages if self.db.add_mm_pkg(**package)]
-            return self.success(added)
+            package = MagicMirrorPackage(**request.get_json()["package"])
+
+            if self.db.add_mm_pkg(package.title, package.author, package.repository, package.description):
+                return self.success(f"Added custom package named {package.title}")
+
+            return self.failure("Failed to add custom package")
 
         @self.blueprint.route("/mm-pkg/remove", methods=[http.POST])
         def remove_mm_pkg() -> Response:
-            packages = request.get_json()["packages"]
-            removed = [package for package in packages if self.db.remove_mm_pkg(**package)]
+            packages = [MagicMirrorPackage(**pkg) for pkg in request.get_json()["packages"]]
+            removed = [package.title for package in packages if self.db.remove_mm_pkg(package.title)]
             return self.success(removed)
 
         @self.blueprint.route("/details", methods=[http.POST])

@@ -22,23 +22,58 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   public categories: Array<string> = new Array<string>();
   public selected_packages: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
   public loading = true;
-  public total_records = 0;
   public readonly installed_options = [true, false];
   public selected_installed: boolean | null = null;
   public selected_package: MagicMirrorPackage | null = null;
-  public display_dialog = false;
+  public display_details_dialog = false;
+  public display_custom_pkg_add_dialog = false;
+  public display_custom_pkg_remove_dialog = false;
   public loading_package_data = false;
+  public custom_packages = new Array<MagicMirrorPackage>();
+  public selected_custom_packages = new Array<MagicMirrorPackage>();
+  public custom_package: MagicMirrorPackage = this.clear_custom_package();
+
+  public custom_package_options = [
+    {
+      label: "Add",
+      icon: "fa-solid fa-plus",
+      command: () => {
+        this.custom_package = this.clear_custom_package();
+
+        if (this.display_custom_pkg_remove_dialog) {
+          this.display_custom_pkg_remove_dialog = false;
+        }
+
+        this.display_custom_pkg_add_dialog = true;
+      },
+    },
+    {
+      label: "Remove",
+      icon: "fa-solid fa-eraser",
+      command: () => {
+        if (this.display_custom_pkg_add_dialog) {
+          this.display_custom_pkg_add_dialog = false;
+        }
+
+        this.display_custom_pkg_remove_dialog = true;
+      },
+    },
+  ];
 
   ngOnInit(): void {
     this.subscription = this.store.packages.subscribe((packages: Array<MagicMirrorPackage>) => {
       this.packages = packages;
       this.loading = false;
-      this.total_records = this.packages.length;
+      this.custom_packages = [];
 
       this.categories = this.packages.map((pkg) => pkg.category).filter((category, index, self) => self.indexOf(category) === index);
 
       // add a default icon for any category that isn't recognized above
       this.packages.forEach((pkg) => {
+        if (pkg.category === "External Packages") {
+          this.custom_packages.push(pkg);
+        }
+
         if (pkg.category && !this.icons[pkg.category]) {
           this.icons[pkg.category] = { ...this.default_icon };
         }
@@ -66,6 +101,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
     }
 
     this.selected_packages = [];
+    this.loading = true;
 
     if (packages_to_remove) {
       const response = await this.mm_pkg_api.post_remove_packages(packages_to_remove);
@@ -88,29 +124,9 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
     this.store.get_packages();
   }
 
-  public on_install(): void {
-    this.mm_pkg_api
-      .post_install_packages(this.selected_packages)
-      .then((response: APIResponse) => {
-        if (response.code === 200) {
-          this.store.get_packages();
-        }
-      })
-      .catch((error) => console.log(error));
-  }
-
-  public on_remove(): void {
-    this.mm_pkg_api
-      .post_remove_packages(this.selected_packages)
-      .then((response: APIResponse) => {
-        if (response.code === 200) {
-          this.store.get_packages();
-        }
-      })
-      .catch((error) => console.log(error));
-  }
-
   public on_upgrade(): void {
+    this.loading = true;
+
     this.mm_pkg_api
       .post_upgrade_packages(this.selected_packages)
       .then((response: APIResponse) => {
@@ -121,20 +137,24 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       .catch((error) => console.log(error));
   }
 
-  public on_add_mm_pkg(pkg: MagicMirrorPackage): void {
+  public on_add_mm_pkg(): void {
+    this.loading = true;
+
     this.mm_pkg_api
-      .post_add_mm_pkg(pkg)
+      .post_add_mm_pkg(this.custom_package)
       .then((response: APIResponse) => {
         if (response.code === 200) {
           this.store.get_packages();
+          console.log(response);
+          this.custom_package = this.clear_custom_package();
         }
       })
       .catch((error) => console.log(error));
   }
 
-  public on_remove_mm_pkg(pkg: MagicMirrorPackage): void {
+  public on_remove_mm_pkg(): void {
     this.mm_pkg_api
-      .post_add_mm_pkg(pkg)
+      .post_remove_mm_pkgs(this.selected_custom_packages)
       .then((response: APIResponse) => {
         if (response.code === 200) {
           this.store.get_packages();
@@ -144,6 +164,8 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   }
 
   public on_refresh_db(): void {
+    this.loading = true;
+
     this.base_api.get_("db/refresh").then((response: APIResponse) => {
       if (response.code === 200 && response.message === true) {
         this.store.get_packages();
@@ -155,7 +177,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
 
   public on_package_details(pkg: MagicMirrorPackage): void {
     this.selected_package = pkg;
-    this.display_dialog = true;
+    this.display_details_dialog = true;
 
     if (typeof pkg?.remote_details != "undefined") {
       console.log(`${pkg.title} already has remote_details stored`);
@@ -171,7 +193,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       .then((response: APIResponse) => {
         if (response.code === 200) {
           pkg.remote_details = response.message as RemotePackageDetails;
-          console.log(`Retrieved remote_details for ${pkg.title}`);
+          console.log(`Retrieved remote details for ${pkg.title}`);
           this.loading_package_data = false;
         }
       })
@@ -181,5 +203,25 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
         // so we need to still display the content
         this.loading_package_data = false;
       });
+  }
+
+  private clear_custom_package(): MagicMirrorPackage {
+    return {
+      title: "",
+      repository: "",
+      author: "",
+      description: "",
+      directory: "",
+      is_installed: false,
+      is_upgradable: false,
+      category: "External Packages",
+      remote_details: {
+        stars: 0,
+        forks: 0,
+        issues: 0,
+        created: "",
+        last_updated: "",
+      },
+    };
   }
 }

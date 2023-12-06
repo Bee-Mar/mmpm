@@ -19,6 +19,18 @@ export class MagicMirrorPackageAPI extends BaseAPI {
       ),
     );
   }
+
+  private post_package(url: string, pkg: MagicMirrorPackage): Promise<APIResponse> {
+    return firstValueFrom(
+      this.http.post(this.route(url), { package: pkg }, { headers: this.headers({ "Content-Type": "application/json" }) }).pipe(
+        map((response) => {
+          return typeof response === "string" ? JSON.parse(response) : response;
+        }),
+        retry(1),
+        catchError(this.handle_error),
+      ),
+    );
+  }
   public get_packages(): Promise<APIResponse> {
     console.log("Retrieving packages from API");
     return this.get_("packages");
@@ -41,12 +53,12 @@ export class MagicMirrorPackageAPI extends BaseAPI {
 
   public post_add_mm_pkg(pkg: MagicMirrorPackage): Promise<APIResponse> {
     console.log("Requesting to add a custom MagicMirrorPackage");
-    return this.post_packages("packages/mm-pkg/add", [pkg]);
+    return this.post_package("packages/mm-pkg/add", pkg);
   }
 
-  public post_remove_mm_pkg(pkg: MagicMirrorPackage): Promise<APIResponse> {
+  public post_remove_mm_pkgs(packages: MagicMirrorPackage[]): Promise<APIResponse> {
     console.log("Requesting to remove a custom MagicMirrorPackage");
-    return this.post_packages("packages/mm-pkg/remove", [pkg]);
+    return this.post_packages("packages/mm-pkg/remove", packages);
   }
   public post_details(pkg: MagicMirrorPackage): Promise<APIResponse> {
     console.log(`Requesting to get remote package details for ${pkg.title} (${pkg.repository})`);

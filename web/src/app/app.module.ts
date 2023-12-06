@@ -20,6 +20,9 @@ import { OverlayPanelModule } from "primeng/overlaypanel";
 import { DividerModule } from "primeng/divider";
 import { ScrollerModule } from "primeng/scroller";
 import { TooltipModule } from "primeng/tooltip";
+import { SplitButtonModule } from "primeng/splitbutton";
+import { InputTextModule } from "primeng/inputtext";
+import { ListboxModule } from "primeng/listbox";
 
 export function init_shared_store(store: SharedStoreService) {
   return () => store.get_packages();
@@ -46,6 +49,9 @@ export function init_shared_store(store: SharedStoreService) {
     DividerModule,
     ScrollerModule,
     TooltipModule,
+    SplitButtonModule,
+    InputTextModule,
+    ListboxModule,
   ],
   providers: [
     {

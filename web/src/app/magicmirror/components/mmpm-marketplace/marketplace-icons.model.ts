@@ -3,20 +3,20 @@ interface Icon {
   color: string;
 }
 
-export const MarketPlaceIcons: {[key: string]: Icon;} = {
-  "Finance": {
+export const MarketPlaceIcons: { [key: string]: Icon } = {
+  Finance: {
     logo: "fa-solid fa-sack-dollar",
     color: "#ffff4d",
   },
-  "Sports": {
+  Sports: {
     logo: "fa-solid fa-baseball-bat-ball",
     color: "#ffff99",
   },
   "Entertainment / Misc": {
-    logo: "fa-solid fa-shuffle",
+    logo: "fa-solid fa-puzzle-piece",
     color: "teal",
   },
-  "Education": {
+  Education: {
     logo: "fa-solid fa-graduation-cap",
     color: "gray",
   },
@@ -28,7 +28,7 @@ export const MarketPlaceIcons: {[key: string]: Icon;} = {
     logo: "fa-solid fa-microphone",
     color: "#ccff99",
   },
-  "Weather": {
+  Weather: {
     logo: "fa-solid fa-cloud",
     color: "white",
   },
@@ -36,11 +36,11 @@ export const MarketPlaceIcons: {[key: string]: Icon;} = {
     logo: "fa-solid fa-envelope-open-text",
     color: "#0099ff",
   },
-  "Religion": {
+  Religion: {
     logo: "fa-solid fa-cross",
     color: "#996633",
   },
-  "Health": {
+  Health: {
     logo: "fa-solid fa-heart",
     color: "red",
   },
@@ -49,7 +49,7 @@ export const MarketPlaceIcons: {[key: string]: Icon;} = {
     color: "#999966",
   },
   "Outdated modules": {
-    logo: "fa-solid fa-person-cane",
+    logo: "fa-solid fa-hourglass-end",
     color: "#ffff99",
   },
   "Development / Core MagicMirror²": {
@@ -60,5 +60,5 @@ export const MarketPlaceIcons: {[key: string]: Icon;} = {
 
 export const DefaultMarketPlaceIcon: Icon = {
   logo: "fa-solid fa-question",
-  color: "black"
+  color: "black",
 };

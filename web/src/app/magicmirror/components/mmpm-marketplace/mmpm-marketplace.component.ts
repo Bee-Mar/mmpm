@@ -25,6 +25,9 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   public total_records = 0;
   public readonly installed_options = [true, false];
   public selected_installed: boolean | null = null;
+  public selected_package: MagicMirrorPackage | null = null;
+  public display_dialog = false;
+  public loading_package_data = false;
 
   ngOnInit(): void {
     this.subscription = this.store.packages.subscribe((packages: Array<MagicMirrorPackage>) => {
@@ -120,18 +123,32 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   }
 
   public on_package_details(pkg: MagicMirrorPackage): void {
-    if (typeof pkg.remote_details === "undefined") {
-      console.log(`${pkg.title} does not have remote_details stored. Collecting...`);
+    this.selected_package = pkg;
+    this.display_dialog = true;
 
-      this.mm_pkg_api.post_details(pkg).then((response: APIResponse) => {
+    if (typeof pkg?.remote_details != "undefined") {
+      console.log(`${pkg.title} already has remote_details stored`);
+      this.loading_package_data = false;
+      return;
+    }
+
+    this.loading_package_data = true;
+    console.log(`${pkg.title} does not have remote_details stored. Collecting...`);
+
+    this.mm_pkg_api
+      .post_details(pkg)
+      .then((response: APIResponse) => {
         if (response.code === 200) {
           pkg.remote_details = response.message as RemotePackageDetails;
           console.log(`Retrieved remote_details for ${pkg.title}`);
+          this.loading_package_data = false;
         }
+      })
+      .catch((error) => {
+        console.log(error);
+        // failed getting remote details (probably because we exceeded the request count)
+        // so we need to still display the content
+        this.loading_package_data = false;
       });
-    } else {
-      console.log(`${pkg.title} already has remote_details stored`);
-      // TODO: open dialog with information
-    }
   }
 }

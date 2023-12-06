@@ -93,4 +93,96 @@
       </tr>
     </ng-template>
   </p-table>
+
+  <p-dialog
+    *ngIf="selected_package"
+    [header]="'Package Details: ' + (selected_package.title || '')"
+    [(visible)]="display_dialog"
+    [style]="{ width: '30vw', 'max-width': '1000px' }"
+  >
+    <div *ngIf="loading_package_data; else detailsBlock" class="spinner-container">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
+    <ng-template #detailsBlock>
+      <p-panel header="Local Details">
+        <div class="package-details-grid">
+          <div class="detail">
+            <strong>Title:</strong>
+            <span>{{ selected_package.title }}</span>
+          </div>
+          <div class="detail">
+            <strong>Author:</strong>
+            <span>{{ selected_package.author }}</span>
+          </div>
+          <div class="detail">
+            <strong>Repository:</strong>
+            <span>
+              <a [href]="selected_package.repository" target="_blank">{{ selected_package.repository }}</a>
+            </span>
+          </div>
+          <div class="detail">
+            <strong>Category:</strong>
+            <span
+              >{{ selected_package.category }}
+              <i [class]="icons[selected_package.category].logo || 'fa fa-question-circle'" [style.color]="icons[selected_package.category].color || 'black'"></i>
+            </span>
+          </div>
+          <div class="detail">
+            <strong>Installed:</strong>
+            <span>
+              <i class="pi pi-{{ selected_package.is_installed ? 'check' : 'times' }}-circle" [style.color]="selected_package.is_installed ? '#009933' : '#e05252'"></i>
+            </span>
+          </div>
+          <div class="detail">
+            <strong>Updates Available:</strong>
+            <span>
+              <i class="pi pi-{{ selected_package.is_upgradable ? 'check' : 'times' }}-circle" [style.color]="selected_package.is_upgradable ? '#009933' : '#e05252'"></i>
+            </span>
+          </div>
+        </div>
+      </p-panel>
+      <p-panel header="Remote Details" [style]="{ 'margin-top': '20px' }">
+        <div *ngIf="selected_package?.remote_details; else errorBlock" class="package-details-grid">
+          <div class="detail">
+            <strong>Stars:</strong>
+            <span
+              >{{ selected_package.remote_details.stars }}
+              <i class="fa-solid fa-star" [style.color]="'gold'"></i>
+            </span>
+          </div>
+          <div class="detail">
+            <strong>Open Issues:</strong>
+            <span
+              >{{ selected_package.remote_details.issues }}
+              <i class="fa-solid fa-flag" [style.color]="'#bf5345'"></i>
+            </span>
+          </div>
+          <div class="detail">
+            <strong>Created:</strong>
+            <span
+              >{{ selected_package.remote_details.created }}
+              <i class="fa-solid fa-calendar-days" [style.color]="'white'"></i>
+            </span>
+          </div>
+          <div class="detail">
+            <strong>Last Updated:</strong>
+            <span
+              >{{ selected_package.remote_details.last_updated }}
+              <i class="fa-solid fa-calendar-days" [style.color]="'white'"></i>
+            </span>
+          </div>
+          <div class="detail">
+            <strong>Forks:</strong>
+            <span
+              >{{ selected_package.remote_details.forks }}
+              <i class="fa-solid fa-code-branch" [style.color]="'#74389c'"></i>
+            </span>
+          </div>
+        </div>
+        <ng-template #errorBlock>
+          <div class="package-details-grid">Unable to retrieve details from remote.</div>
+        </ng-template>
+      </p-panel>
+    </ng-template>
+  </p-dialog>
 </div>

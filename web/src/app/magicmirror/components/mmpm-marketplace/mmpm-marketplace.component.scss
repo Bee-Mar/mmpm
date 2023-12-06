@@ -12,3 +12,32 @@
 .category-icon-text i.pi-question {
   color: gray; /* Define a default color for the question mark icon */
 }
+
+.package-details-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 10px;
+  align-items: center;
+}
+
+.detail {
+  padding: 5px 0;
+}
+
+.detail strong {
+  margin-right: 5px;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.panel-content {
+  display: flex;
+  flex-direction: column;
+  overflow: auto; /* Adds scrollbar if content is too long */
+  max-height: 600px; /* You can adjust this as needed */
+}

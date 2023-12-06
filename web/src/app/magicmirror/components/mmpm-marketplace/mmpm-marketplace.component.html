@@ -128,6 +128,10 @@
             </span>
           </div>
           <div class="detail">
+            <strong>Description:</strong>
+            <span>{{ selected_package.description }}</span>
+          </div>
+          <div class="detail">
             <strong>Installed:</strong>
             <span>
               <i class="pi pi-{{ selected_package.is_installed ? 'check' : 'times' }}-circle" [style.color]="selected_package.is_installed ? '#009933' : '#e05252'"></i>

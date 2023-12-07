@@ -8,12 +8,13 @@ from typing import Any, Dict, List
 
 import requests
 from bs4 import BeautifulSoup
+from ItsPrompt.prompt import Prompt
 from mmpm.constants import color, paths, urls
 from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.singleton import Singleton
-from mmpm.utils import run_cmd, validate_input
+from mmpm.utils import run_cmd
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -130,7 +131,7 @@ class MagicMirrorDatabase(Singleton):
     def update(self, can_upgrade_mmpm: bool = False, can_upgrade_magicmirror: bool = False) -> int:
         upgradable: List[MagicMirrorPackage] = []
 
-        for package in filter(lambda pkg : pkg.is_installed, self.packages):
+        for package in filter(lambda pkg: pkg.is_installed, self.packages):
             print(f"Retrieving: {package.repository} [{color.n_cyan(package.title)}]")
             package.update()
 
@@ -220,7 +221,7 @@ class MagicMirrorDatabase(Singleton):
         Returns:
             None
         """
-        self.packages = [] # this is really related to the API, needing to clear the list out
+        self.packages = []  # this is really related to the API, needing to clear the list out
 
         db_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
         db_exists = db_file.exists() and bool(db_file.stat().st_size)
@@ -265,15 +266,15 @@ class MagicMirrorDatabase(Singleton):
                     json.dump(data, ext_pkgs)
 
         for package in data["External Packages"]:
-            self.packages.append(MagicMirrorPackage(**package)) # type: ignore
+            self.packages.append(MagicMirrorPackage(**package))  # type: ignore
 
         self.categories = list({package.category for package in self.packages})
         discovered_packages: List[MagicMirrorPackage] = self.__discover_installed_packages__()
 
         if discovered_packages:
-            for package in self.packages: # type: ignore
-                if package in discovered_packages: # (mypy thinks 'package' is a Dict[str, str])
-                    package.is_installed = True # type: ignore
+            for package in self.packages:  # type: ignore
+                if package in discovered_packages:  # (mypy thinks 'package' is a Dict[str, str])
+                    package.is_installed = True  # type: ignore
 
         return bool(len(self.packages))
 
@@ -394,12 +395,10 @@ class MagicMirrorDatabase(Singleton):
 
             for field_name, field_value in fields:
                 if field_value is None:
-                    field_value = validate_input(f"{field_name}: ")
-                else:
-                    print(f"{field_name}: {field_value}")
+                    field_value = Prompt.input(f"{field_name}: ")
+
                 setattr(package, field_name.lower(), field_value)
 
-            print(title, author, repository, description)
         except KeyboardInterrupt:
             logger.info("User killed process with CTRL-C")
             sys.exit(127)
@@ -461,14 +460,14 @@ class MagicMirrorDatabase(Singleton):
                 return False
 
             packages = [MagicMirrorPackage(**package) for package in data["External Packages"]]
-            match: MagicMirrorPackage = next(filter(lambda pkg : pkg.title == title, packages))
 
-        if not match:
-            logger.error(f"Unable to locate External Package named '{color.n_green(title)}'")
-            return False
+            try:
+                match: MagicMirrorPackage = next(filter(lambda pkg: pkg.title == title, packages))
+            except StopIteration as error:
+                logger.error(f"Unable to locate External Package named '{color.n_green(title)}'")
+                return False
 
         packages.remove(match)
-        logger.info(f"Removed {color.n_green(match.title)} ({match.repository})")
 
         # if the error_msg was triggered, there's no need to even bother writing back to the file
         with open(file, "w", encoding="utf-8") as mm_ext_pkgs:

@@ -20,6 +20,7 @@ from mmpm.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 def repo_up_to_date(path: Path):
     try:
         # Initialize the repository object
@@ -35,7 +36,7 @@ def repo_up_to_date(path: Path):
 
         # Get local and remote HEAD commit
         local_commit = repo.head.commit
-        remote_commit = repo.refs['origin/HEAD'].commit # type: ignore
+        remote_commit = repo.refs["origin/HEAD"].commit  # type: ignore
 
         # Check if the commits are the same
         return local_commit.hexsha != remote_commit.hexsha
@@ -124,65 +125,6 @@ def kill_pids_of_process(process: str) -> None:
     """
     os.system(f"for process in $(pgrep {process}); do kill -9 $process; done")
     logger.info(f"Stopped all processes of type {process}")
-
-
-def prompt(user_prompt: str, valid_ack: List[str] = ["yes", "y"], valid_nack: List[str] = ["no", "n"]) -> bool:
-    """
-    Prompts user with the `user_prompt` until a response matches a value in the
-    `valid_ack` or `valid_nack` lists, or a KeyboardInterrupt is caught. If
-    `assume_yes` is true, the `user_prompt` is printed followed by a 'yes', and
-    function returns True
-
-    Parameters:
-        user_prompt (str): the text that will be presented to the user
-        valid_ack (List[str]): valid 'yes' responses
-        valid_nack (List[str]): valid 'no' responses
-        assume_yes (bool): if True, the `user_prompt` is printed followed by 'yes'
-
-    Returns:
-        response (bool): True if the response is in the `valid_ack` list, False if in `valid_nack` or KeyboardInterrupt
-    """
-    response = None
-
-    try:
-        while response not in (valid_ack, valid_nack):
-            response = input(f"{user_prompt} [{'/'.join(valid_ack)}] or [{'/'.join(valid_nack)}]: ")
-
-            if response in valid_ack:
-                return True
-            elif response in valid_nack:
-                return False
-            else:
-                logger.warning(f"Respond with [{'/'.join(valid_ack)}] or [{'/'.join(valid_nack)}]")
-
-    except KeyboardInterrupt:
-        print()
-
-    return False
-
-
-def validate_input(message: str, forbidden_responses: List[str] = [], reason: str = "") -> str:
-    """
-    Continues to prompt user with given input until the response provided is of
-    non-zero length and not found in the list forbidden responses
-
-    Parameters:
-        message (str): the message given to the user
-        forbidden_responses (List[str]): a list of responses the user may not supply
-        reason (str): a reason why the user may not supply one of the 'forbidden_responses'
-
-    Returns:
-        user_response (str): valid, user provided input
-    """
-    while True:
-        user_response = input(message)
-        if not user_response:  # pylint: disable=no-else-continue
-            logger.warning("A non-empty response must be given")
-            continue
-        elif user_response in forbidden_responses:
-            logger.warning(f"Invalid response, {user_response} {reason}")
-            continue
-        return user_response
 
 
 def safe_get_request(url: str) -> requests.Response:

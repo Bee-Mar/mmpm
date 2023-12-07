@@ -24,6 +24,7 @@ dependencies = [
     "yaspin>=2.3.0",
     "pip>=23.3.1",
     "gitpython>=3.1.40",
+    "ItsPrompt>=1.4",
 ]
 requires-python = ">=3.8"
 readme = "README.md"
@@ -56,7 +57,7 @@ dev = [
 
 # pdm is required to make use of these (pip install pdm)
 [tool.pdm.scripts]
-test = "coverage run -m pytest test"                                                 # loop in the web tests as well later on
+test = "coverage run -m pytest test"
 report = "coverage report"
 lint = "pylint mmpm"
 mypy = "mypy mmpm"

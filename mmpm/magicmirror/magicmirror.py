@@ -9,7 +9,7 @@ from mmpm.constants import color
 from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 from mmpm.singleton import Singleton
-from mmpm.utils import prompt, repo_up_to_date, run_cmd
+from mmpm.utils import repo_up_to_date, run_cmd
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -91,7 +91,7 @@ class MagicMirror(Singleton):
         print("Upgrade complete! Restart MagicMirror for the changes to take effect")
         return True
 
-    def install(self):
+    def install(self):  # TODO fix docs
         """
         Installs MagicMirror. First checks if a MagicMirror installation can be
         found, and if one is found, prompts user to update the MagicMirror.
@@ -122,9 +122,9 @@ class MagicMirror(Singleton):
         root_path.mkdir(exist_ok=True)
         os.chdir(root_path.parent)
 
-        error_code, _, stderr = run_cmd(["git", "clone", "https://github.com/MichMich/MagicMirror"],
-                progress=True,
-                message=f"Cloning MagicMirror into '{root_path}'")
+        error_code, _, stderr = run_cmd(
+            ["git", "clone", "https://github.com/MichMich/MagicMirror"], progress=True, message=f"Cloning MagicMirror into '{root_path}'"
+        )
 
         if error_code:
             logger.error(f"Failed to clone the MagicMirror repo: {stderr}")
@@ -154,10 +154,6 @@ class MagicMirror(Singleton):
             logger.fatal(message)
             return False
 
-        if prompt("Are you sure you want to remove MagicMirror?"):
-            shutil.rmtree(root_path, ignore_errors=True)
-            print("Removed MagicMirror")
-            logger.info("Removed MagicMirror")
-            return True
-
-        return False
+        shutil.rmtree(root_path, ignore_errors=True)
+        logger.info("MagicMirror has been removed.")
+        return True

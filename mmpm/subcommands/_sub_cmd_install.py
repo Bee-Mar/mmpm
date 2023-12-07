@@ -2,12 +2,12 @@
 """ Command line options for 'install' subcommand """
 from typing import List
 
+from ItsPrompt.prompt import Prompt
 from mmpm.constants import color
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.subcommands.sub_cmd import SubCmd
-from mmpm.utils import prompt
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -19,6 +19,7 @@ class Install(SubCmd):
     Custom Attributes:
         database (MagicMirrorDatabase): An instance of the MagicMirrorDatabase class for managing the database.
     """
+
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "install"
@@ -59,11 +60,11 @@ class Install(SubCmd):
                 logger.error(f"'{package.title}' is already installed")
                 continue
 
-            if not args.assume_yes and not prompt(f"Install {color.n_green(package.title)} ({package.repository})?"):
+            if not args.assume_yes and not Prompt.confirm(f"Install {package.title} ({package.repository})?"):
                 continue
 
             if package.install():
                 logger.info(f"Installed {color.n_green(package.title)} ({package.repository})")
-            elif prompt(f"Installation failed. Would you like to remove {package.title}?"):
+            elif Prompt.confirm(f"Installation failed. Would you like to remove {package.title}?"):
                 package.is_installed = True
                 package.remove(assume_yes=True)

@@ -11,9 +11,8 @@ from uuid import uuid4
 import requests
 from faker import Faker
 from mmpm.__version__ import major, version
-from mmpm.utils import (get_host_ip, get_pids, kill_pids_of_process, prompt,
-                        run_cmd, safe_get_request, systemctl, update_available,
-                        validate_input)
+from mmpm.utils import (get_host_ip, get_pids, kill_pids_of_process, run_cmd,
+                        safe_get_request, systemctl, update_available)
 
 fake = Faker()
 
@@ -75,40 +74,6 @@ class TestUtils(unittest.TestCase):
         process_name = fake.pystr()
         kill_pids_of_process(process_name)
         mock_system.assert_called_with(f"for process in $(pgrep {process_name}); do kill -9 $process; done")
-
-    @patch("builtins.input")
-    def test_prompt_valid_ack(self, mock_input):
-        mock_input.return_value = "yes"
-        response = prompt("Continue?", valid_ack=["yes", "y"], valid_nack=["no", "n"])
-        self.assertTrue(response)
-
-    @patch("builtins.input")
-    def test_prompt_valid_nack(self, mock_input):
-        mock_input.return_value = "no"
-        response = prompt("Continue?", valid_ack=["yes", "y"], valid_nack=["no", "n"])
-        self.assertFalse(response)
-
-    @patch("builtins.input", side_effect=["maybe", "yes"])
-    def test_prompt_invalid_response(self, mock_input):
-        response = prompt("Continue?", valid_ack=["yes", "y"], valid_nack=["no", "n"])
-        self.assertTrue(response)
-
-    @patch("builtins.input", side_effect=KeyboardInterrupt)
-    def test_prompt_keyboard_interrupt(self, mock_input):
-        response = prompt("Continue?", valid_ack=["yes", "y"], valid_nack=["no", "n"])
-        self.assertFalse(response)
-
-    @patch("builtins.input")
-    def test_validate_input_valid_response(self, mock_input):
-        user_input = fake.pystr()
-        mock_input.return_value = user_input
-        user_response = validate_input("Enter a response: ", forbidden_responses=["invalid"], reason="is not allowed")
-        self.assertEqual(user_response, user_input)
-
-    @patch("builtins.input", side_effect=["", "invalid", "response"])
-    def test_validate_input_invalid_response(self, mock_input):
-        user_response = validate_input("Enter a response: ", forbidden_responses=["invalid"], reason="is not allowed")
-        self.assertEqual(user_response, "response")
 
     @patch("mmpm.utils.requests.get")
     def test_safe_get_request_success(self, mock_get):

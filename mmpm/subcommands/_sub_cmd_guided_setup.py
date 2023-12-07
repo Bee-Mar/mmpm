@@ -4,11 +4,12 @@ import json
 from os.path import normpath
 from pathlib import Path
 
+from ItsPrompt.prompt import Prompt
 from mmpm.constants import color, paths
 from mmpm.env import MMPMEnv
 from mmpm.logger import MMPMLogger
 from mmpm.subcommands.sub_cmd import SubCmd
-from mmpm.utils import get_host_ip, prompt, validate_input
+from mmpm.utils import get_host_ip
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -22,6 +23,7 @@ class GuidedSetup(SubCmd):
     Custom Attributes:
         env (MMPMEnv): A singleton of MMPMEnv which contains environment variables
     """
+
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "guided-setup"
@@ -55,23 +57,23 @@ class GuidedSetup(SubCmd):
         install_autocomplete: bool = False
         install_as_module: bool = False
 
-        magicmirror_root = validate_input(f"What is the absolute path to your MagicMirror installation (ie. {Path.home()}/MagicMirror)?")
-        MMPM_IS_DOCKER_IMAGE = prompt("Is MMPM running as a Docker image?")
+        magicmirror_root = Prompt.input(f"What is the absolute path to your MagicMirror installation (ie. {Path.home()}/MagicMirror)?")
+        MMPM_IS_DOCKER_IMAGE = Prompt.confirm("Is MMPM running as a Docker image?")
 
-        if not MMPM_IS_DOCKER_IMAGE and prompt("Did you install MagicMirror using docker-compose?"):
-            magicmirror_docker_compose_file = validate_input(
+        if not MMPM_IS_DOCKER_IMAGE and Prompt.confirm("Did you install MagicMirror using docker-compose?"):
+            magicmirror_docker_compose_file = Prompt.input(
                 f"What is the absolute path to the MagicMirror docker-compose file (ie. {Path.home()}/docker-compose.yml)?"
             )
 
-        if not MMPM_IS_DOCKER_IMAGE and not magicmirror_docker_compose_file and prompt("Are you using PM2 to start/stop MagicMirror?"):
-            magicmirror_pm2_proc = validate_input("What is the name of the PM2 process for MagicMirror?")
+        if not MMPM_IS_DOCKER_IMAGE and not magicmirror_docker_compose_file and Prompt.confirm("Are you using PM2 to start/stop MagicMirror?"):
+            magicmirror_pm2_proc = Prompt.input("What is the name of the PM2 process for MagicMirror?")
 
-        if not prompt(f"Is {magicmirror_uri} the address used to open MagicMirror in your browser?"):
-            magicmirror_uri = validate_input("Enter the address and port used to access MagicMirror:")
+        if not Prompt.confirm(f"Is {magicmirror_uri} the address used to open MagicMirror in your browser?"):
+            magicmirror_uri = Prompt.input("Enter the address and port used to access MagicMirror:")
 
-        install_gui = not MMPM_IS_DOCKER_IMAGE and prompt("Would you like to install the MMPM GUI (web interface)?")
-        install_as_module = prompt("Would you like to hide/show MagicMirror modules through MMPM?")
-        install_autocomplete = prompt("Would you like to install tab-autocomplete for the MMPM CLI?")
+        install_gui = not MMPM_IS_DOCKER_IMAGE and Prompt.confirm("Would you like to install the MMPM GUI (web interface)?")
+        install_as_module = Prompt.confirm("Would you like to hide/show MagicMirror modules through MMPM?")
+        install_autocomplete = Prompt.confirm("Would you like to install tab-autocomplete for the MMPM CLI?")
 
         with open(paths.MMPM_ENV_FILE, "w", encoding="utf-8") as env:
             json.dump(

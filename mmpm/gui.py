@@ -7,10 +7,12 @@ import sys
 from re import findall
 from socket import gethostbyname, gethostname
 
+from ItsPrompt.prompt import Prompt
+
 from mmpm.constants import paths
 from mmpm.logger import MMPMLogger
 from mmpm.singleton import Singleton
-from mmpm.utils import prompt, systemctl
+from mmpm.utils import systemctl
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -29,7 +31,7 @@ class MMPMGui(Singleton):
             None
         """
 
-        if not assume_yes and not prompt("Are you sure you want to install the MMPM GUI? This requires sudo permission."):
+        if not assume_yes and not Prompt.confirm("Are you sure you want to install the MMPM GUI? (Requires sudo permission)"):
             return
 
         if not shutil.which("nginx"):
@@ -87,14 +89,14 @@ class MMPMGui(Singleton):
         enable_mmpm_service = systemctl("enable", ["mmpm.service"])
 
         if enable_mmpm_service.returncode != 0:
-            if prompt("Failed to enable MMPM SystemD service. Would you like to remove the MMPM-GUI? [y/n]: "):
+            if Prompt.confirm("Failed to enable MMPM SystemD service. Would you like to remove the MMPM-GUI?"):
                 self.remove()
             sys.exit(127)
 
         start_mmpm_service = systemctl("start", ["mmpm.service"])
 
         if start_mmpm_service.returncode != 0:
-            if prompt("Failed to start MMPM SystemD service. Would you like to remove the MMPM-GUI? [y/n]: "):
+            if Prompt.confirm("Failed to start MMPM SystemD service. Would you like to remove the MMPM-GUI?"):
                 self.remove()
             sys.exit(127)
 
@@ -105,7 +107,7 @@ class MMPMGui(Singleton):
         )
 
         if link_nginx_conf.returncode != 0:
-            if prompt("Failed to create sym link for NGINX config. Would you like to remove the MMPM-GUI? [y/n]: "):
+            if Prompt.confirm("Failed to create sym link for NGINX config. Would you like to remove the MMPM-GUI?"):
                 self.remove()
             sys.exit(127)
 
@@ -113,7 +115,7 @@ class MMPMGui(Singleton):
         restart_nginx = systemctl("restart", ["nginx"])
 
         if restart_nginx.returncode != 0:
-            if prompt("Failed to restart NGINX SystemD service. Would you like to remove the MMPM-GUI? [y/n]: "):
+            if Prompt.confirm("Failed to restart NGINX SystemD service. Would you like to remove the MMPM-GUI?"):
                 self.remove()
             sys.exit(127)
 
@@ -129,7 +131,7 @@ class MMPMGui(Singleton):
         Returns:
         None
         """
-        if not assume_yes and not prompt("Are you sure you want to remove the MMPM GUI? This requires sudo permission."):
+        if not assume_yes and not Prompt.confirm("Are you sure you want to remove the MMPM GUI? (Requires sudo permission)"):
             return
 
         INACTIVE: str = "inactive\n"

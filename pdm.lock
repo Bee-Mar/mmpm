@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:ee0af1c3b504661637f21ef3730f180de03cd933c3da152d45ed0d87d91f8550"
+content_hash = "sha256:f77163ff0d6aa369d00ec719858a623b91318db229a8016116fb5e0e1ecc7950"
 
 [[package]]
 name = "argcomplete"
@@ -619,6 +619,19 @@ files = [
 ]
 
 [[package]]
+name = "itsprompt"
+version = "1.4"
+requires_python = ">=3.8"
+summary = "Prompting - the fancy way"
+dependencies = [
+    "prompt-toolkit<4.0,>=3.0.37",
+]
+files = [
+    {file = "ItsPrompt-1.4-py3-none-any.whl", hash = "sha256:bc04f6a2a225f23afc958bc8dd451407349680741ec282c78d3b76d5047edd4b"},
+    {file = "ItsPrompt-1.4.tar.gz", hash = "sha256:29219156af21a29ecfad5fb0192632e7337acb87fae8e3ce872f868c9ab40936"},
+]
+
+[[package]]
 name = "jinja2"
 version = "3.1.2"
 requires_python = ">=3.7"
@@ -798,6 +811,19 @@ summary = "plugin and hook calling mechanisms for python"
 files = [
     {file = "pluggy-1.3.0-py3-none-any.whl", hash = "sha256:d89c696a773f8bd377d18e5ecda92b7a3793cbe66c87060a6fb58c7b6e1061f7"},
     {file = "pluggy-1.3.0.tar.gz", hash = "sha256:cf61ae8f126ac6f7c451172cf30e3e43d3ca77615509771b3a984a0730651e12"},
+]
+
+[[package]]
+name = "prompt-toolkit"
+version = "3.0.41"
+requires_python = ">=3.7.0"
+summary = "Library for building powerful interactive command lines in Python"
+dependencies = [
+    "wcwidth",
+]
+files = [
+    {file = "prompt_toolkit-3.0.41-py3-none-any.whl", hash = "sha256:f36fe301fafb7470e86aaf90f036eef600a3210be4decf461a5b1ca8403d3cb2"},
+    {file = "prompt_toolkit-3.0.41.tar.gz", hash = "sha256:941367d97fc815548822aa26c2a269fdc4eb21e9ec05fc5d447cf09bad5d75f0"},
 ]
 
 [[package]]
@@ -1057,6 +1083,15 @@ summary = "HTTP library with thread-safe connection pooling, file post, and more
 files = [
     {file = "urllib3-2.1.0-py3-none-any.whl", hash = "sha256:55901e917a5896a349ff771be919f8bd99aff50b79fe58fec595eb37bbc56bb3"},
     {file = "urllib3-2.1.0.tar.gz", hash = "sha256:df7aa8afb0148fa78488e7899b2c59b5f4ffcfa82e6c54ccb9dd37c1d7b52d54"},
+]
+
+[[package]]
+name = "wcwidth"
+version = "0.2.12"
+summary = "Measures the displayed width of unicode strings in a terminal"
+files = [
+    {file = "wcwidth-0.2.12-py2.py3-none-any.whl", hash = "sha256:f26ec43d96c8cbfed76a5075dac87680124fa84e0855195a6184da9c187f133c"},
+    {file = "wcwidth-0.2.12.tar.gz", hash = "sha256:f01c104efdf57971bcb756f054dd58ddec5204dd15fa31d6503ea57947d97c02"},
 ]
 
 [[package]]

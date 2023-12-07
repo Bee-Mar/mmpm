@@ -1,10 +1,10 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
-import { MagicMirrorPackage, RemotePackageDetails } from "@/magicmirror/models/magicmirror-package";
-import { SharedStoreService } from "@/services/shared-store.service";
-import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
-import { APIResponse, BaseAPI } from "@/services/api/base-api";
-import { Subscription } from "rxjs";
-import { MarketPlaceIcons, DefaultMarketPlaceIcon } from "./marketplace-icons.model";
+import {Component, OnInit, OnDestroy} from "@angular/core";
+import {MagicMirrorPackage, RemotePackageDetails} from "@/magicmirror/models/magicmirror-package";
+import {SharedStoreService} from "@/services/shared-store.service";
+import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
+import {APIResponse, BaseAPI} from "@/services/api/base-api";
+import {Subscription} from "rxjs";
+import {MarketPlaceIcons, DefaultMarketPlaceIcon} from "./marketplace-icons.model";
 
 @Component({
   selector: "app-mmpm-marketplace",
@@ -75,7 +75,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
         }
 
         if (pkg.category && !this.icons[pkg.category]) {
-          this.icons[pkg.category] = { ...this.default_icon };
+          this.icons[pkg.category] = {...this.default_icon};
         }
       });
     });
@@ -163,10 +163,12 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       .catch((error) => console.log(error));
   }
 
-  public on_refresh_db(): void {
+  public on_update_db(): void {
     this.loading = true;
 
-    this.base_api.get_("db/refresh").then((response: APIResponse) => {
+    // TODO: this isn't correct now. It needs to be a POST and also make a call
+    // to the endpoint that checks if magicmirror is upgradable
+    this.base_api.get_("db/update").then((response: APIResponse) => {
       if (response.code === 200 && response.message === true) {
         this.store.get_packages();
       } else {

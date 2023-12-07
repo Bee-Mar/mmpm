@@ -34,6 +34,7 @@ class MagicMirrorPackage:
 
     __slots__ = "title", "author", "repository", "description", "category", "directory", "is_installed", "env", "is_upgradable"
 
+    # pylint: disable=unused-argument
     def __init__(
         self,
         title: str = NA,
@@ -54,6 +55,10 @@ class MagicMirrorPackage:
         self.category = category.strip()
         self.is_installed = is_installed
         self.is_upgradable = False
+
+        # the **kwargs is primarily because of the API. The API sends fully serialized MagicMirrorPackage objects, and
+        # they contain fields not set in the constructor of a MagicMirrorPackage in the python source. This allows those
+        # fields to be passed in and effectively discarded
 
     def __str__(self) -> str:
         return str(self.serialize())
@@ -144,8 +149,8 @@ class MagicMirrorPackage:
         }
 
         if full:
-            serialized["is_installed"] = self.is_installed # type: ignore
-            serialized["is_upgradable"] = self.is_upgradable # type: ignore
+            serialized["is_installed"] = self.is_installed  # type: ignore
+            serialized["is_upgradable"] = self.is_upgradable  # type: ignore
 
         return serialized
 
@@ -178,7 +183,7 @@ class MagicMirrorPackage:
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
 
         if not modules_dir.exists():
-            logger.fatal(f"'{str(modules_dir)}' does not exist.")
+            logger.fatal(f"{self.env.MMPM_MAGICMIRROR_ROOT.name}='{str(modules_dir)}' does not exist.")
             self.is_upgradable = False
             return
 
@@ -290,7 +295,7 @@ class InstallationHandler:
         self.package.directory = modules_dir / self.package.directory
 
         if not modules_dir.exists():
-            logger.fatal(f"{modules_dir} does not exist. Is {root.name} set properly?")
+            logger.fatal(f"{root.name}='{modules_dir}' does not exist. Is {root.name} set properly?")
             return False
 
         os.chdir(modules_dir)

@@ -97,7 +97,7 @@ class MagicMirrorDatabase(Singleton):
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
 
         if not modules_dir.exists():
-            logger.warning(f"'{modules_dir}' does not exist")
+            logger.warning(f"{self.env.MMPM_MAGICMIRROR_ROOT.name}='{modules_dir}' does not exist")
             return []
 
         package_directories: List[PosixPath] = [
@@ -209,14 +209,14 @@ class MagicMirrorDatabase(Singleton):
 
         return [package for package in self.packages if match(query, package)]
 
-    def load(self, refresh: bool = False) -> bool:
+    def load(self, update: bool = False) -> bool:
         """
         Reads in modules from the hidden database file and checks if the file is
         out of date. If so, the modules are gathered again from the MagicMirror 3rd
         Party Modules wiki.
 
         Parameters:
-            refresh (bool): Boolean flag to force refresh of the database
+            update (bool): Boolean flag to force update the database
 
         Returns:
             None
@@ -228,7 +228,7 @@ class MagicMirrorDatabase(Singleton):
         db_ext_pkgs_file = paths.MMPM_EXTERNAL_PACKAGES_FILE
         db_last_update = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_LAST_UPDATE_FILE
 
-        should_update = refresh or not db_exists or not db_last_update.exists() or not db_last_update.stat().st_size
+        should_update = update or not db_exists or not db_last_update.exists() or not db_last_update.stat().st_size
 
         if should_update:
             print(f"Retrieving: {urls.MAGICMIRROR_MODULES_URL} [{color.n_cyan('3rd Party Modules')}]")

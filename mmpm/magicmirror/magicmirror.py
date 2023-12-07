@@ -62,7 +62,7 @@ class MagicMirror(Singleton):
         root_dir: PosixPath = root.get()
 
         if not root_dir.exists():
-            message = f"{root_dir} does not exist. Is the {root.name} set properly?"
+            message = f"{root.name}='{root_dir}' does not exist. Is the {root.name} set properly?"
             logger.error(message)
             return False
 
@@ -150,7 +150,7 @@ class MagicMirror(Singleton):
             return False
 
         if not root_path.exists():
-            message = f"The {root_path} does not exist. Is {root.name} set properly?"
+            message = f"'{root.name}'={root_path} does not exist. Is {root.name} set properly?"
             logger.fatal(message)
             return False
 

@@ -9,8 +9,8 @@ from mmpm.magicmirror.magicmirror import MagicMirror
 
 
 class MagicMirrorTestCase(unittest.TestCase):
-    @patch('mmpm.magicmirror.magicmirror.repo_up_to_date')
-    @patch('mmpm.magicmirror.magicmirror.chdir')
+    @patch("mmpm.magicmirror.magicmirror.repo_up_to_date")
+    @patch("mmpm.magicmirror.magicmirror.chdir")
     def test_update(self, mock_chdir, mock_repo_up_to_date):
         mock_repo_up_to_date.return_value = True
         mock_chdir.return_value = None
@@ -28,13 +28,9 @@ class MagicMirrorTestCase(unittest.TestCase):
         self.assertTrue(can_upgrade)
         shutil.rmtree(root)
 
-    @patch('mmpm.magicmirror.magicmirror.run_cmd')
+    @patch("mmpm.magicmirror.magicmirror.run_cmd")
     def test_upgrade(self, mock_run_cmd):
-        mock_run_cmd.side_effect = [
-            (0, '', ''),
-            (0, '', ''),
-            (0, '', '')
-        ]
+        mock_run_cmd.side_effect = [(0, "", ""), (0, "", ""), (0, "", "")]
 
         mm = MagicMirror()
         mm.env = MockedMMPMEnv()
@@ -44,14 +40,14 @@ class MagicMirrorTestCase(unittest.TestCase):
 
         success = mm.upgrade()
 
-        mock_run_cmd.assert_called_with(['npm', 'install'], progress=True)
+        mock_run_cmd.assert_called_with(["npm", "install"], progress=True)
         self.assertEqual(success, True)
         shutil.rmtree(root)
 
-    @patch('mmpm.magicmirror.magicmirror.run_cmd')
-    @patch('mmpm.magicmirror.magicmirror.chdir')
+    @patch("mmpm.magicmirror.magicmirror.run_cmd")
+    @patch("mmpm.magicmirror.magicmirror.chdir")
     def test_install(self, mock_chdir, mock_run_cmd):
-        mock_run_cmd.return_value = (0, '', '')
+        mock_run_cmd.return_value = (0, "", "")
         mock_chdir.return_value = None
 
         mm = MagicMirror()
@@ -60,13 +56,11 @@ class MagicMirrorTestCase(unittest.TestCase):
         success = mm.install()
         self.assertEqual(success, True)
 
-    @patch('mmpm.magicmirror.magicmirror.prompt')
-    @patch('mmpm.magicmirror.magicmirror.print')
-    @patch('mmpm.magicmirror.magicmirror.shutil')
-    @patch('mmpm.magicmirror.magicmirror.os.getcwd')
-    def test_remove(self, mock_cwd, mock_shutil, mock_print, mock_prompt):
-        mock_prompt.return_value = True
-        mock_cwd.return_value = '/tmp'
+    @patch("mmpm.magicmirror.magicmirror.print")
+    @patch("mmpm.magicmirror.magicmirror.shutil")
+    @patch("mmpm.magicmirror.magicmirror.os.getcwd")
+    def test_remove(self, mock_cwd, mock_shutil, mock_print):
+        mock_cwd.return_value = "/tmp"
 
         mm = MagicMirror()
         mm.env = MockedMMPMEnv()
@@ -76,9 +70,9 @@ class MagicMirrorTestCase(unittest.TestCase):
 
         success = mm.remove()
 
-        mock_prompt.assert_called_once_with('Are you sure you want to remove MagicMirror?')
         mock_shutil.rmtree.assert_called_once()
         self.assertEqual(success, True)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

@@ -59,7 +59,7 @@ class TestMagicMirrorDatabase(unittest.TestCase):
         mock_file.return_value.read.return_value = '{"External Packages": [{"title": "Test Package"}]}'
 
         # Test the remove_mm_pkg method
-        result = self.database.remove_mm_pkg(titles=["Test Package"], assume_yes=True)
+        result = self.database.remove_mm_pkg(title="Test Package")
         self.assertIsInstance(result, bool)
 
 

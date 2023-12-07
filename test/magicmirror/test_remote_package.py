@@ -56,7 +56,7 @@ class TestRemotePackage(unittest.TestCase):
         details = remote_package.serialize()
 
         self.assertEqual(
-            details, {"Stars": stars, "Issues": open_issues, "Created": "2020-01-01", "Last Updated": "2020-12-31", "Forks": forks_count}
+            details, {"stars": stars, "issues": open_issues, "created": "2020-01-01", "last_updated": "2020-12-31", "forks": forks_count}
         )
 
     def test_format_bitbucket_api_details(self):
@@ -69,4 +69,4 @@ class TestRemotePackage(unittest.TestCase):
             mock_request.return_value.text = json.dumps({"pagelen": 5})
             details = remote_package.__format_bitbucket_api_details__(data, url)
 
-        self.assertEqual(details, {"Stars": 5, "Issues": 5, "Created": "2020-01-01", "Last Updated": "2020-12-31", "Forks": 5})
+        self.assertEqual(details, {"stars": 5, "issues": 5, "created": "2020-01-01", "last_updated": "2020-12-31", "forks": 5})

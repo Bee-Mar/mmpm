@@ -2,28 +2,48 @@
 """
 An incredibly simplistic SocketIO server used for repeating logs from the MMPM CLI to the UI.
 """
-import eventlet
+
+from gevent import monkey
+
+monkey.patch_all()
+
 import socketio
+from gevent import pywsgi
+from geventwebsocket.handler import WebSocketHandler
 
-sio = socketio.Server(cors_allowed_origins="*")
+from mmpm.logger import MMPMLogger
 
-
-@sio.event
-def connect(sid, environ):
-    print("Client connected:", sid)
-
-
-@sio.event
-def logs(sid, data):
-    sio.emit("logs", data, skip_sid=sid)
+logger = MMPMLogger.get_logger(__name__)
 
 
-@sio.event
-def disconnect(sid):
-    print("Client disconnected:", sid)
+def setup_server():
+    server = socketio.Server(cors_allowed_origins="*", async_mode="gevent")
 
+    @server.event
+    def connect(sid, environ):
+        logger.debug("Client connected:", sid)
 
-app = socketio.WSGIApp(sio)
+    @server.event
+    def logs(sid, data):
+        server.emit("logs", data, skip_sid=sid)
+
+    @server.event
+    def disconnect(sid):
+        logger.debug("Client disconnected:", sid)
+
+    return server
+
 
 if __name__ == "__main__":
-    eventlet.wsgi.server(eventlet.listen(("", 6789)), app)
+    server = setup_server()
+    logger.debug("Setup SocketIO log server")
+
+    app = socketio.WSGIApp(server)
+    logger.debug("Setup log server WSGI Application")
+
+    logger.debug("Starting log server")
+
+    try:
+        pywsgi.WSGIServer(("", 6789), app, handler_class=WebSocketHandler).serve_forever()
+    except KeyboardInterrupt:
+        logger.debug("Log server stopped by CTRL-C")

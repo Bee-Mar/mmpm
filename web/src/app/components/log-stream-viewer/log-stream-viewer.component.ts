@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {io} from "socket.io-client";
 import {get_cookie, set_cookie} from '@/utils/utils';
 import {BaseAPI} from '@/services/api/base-api';
+import {RingBuffer} from './ring-buffer';
 
 @Component({
   selector: 'app-log-stream-viewer',
@@ -11,8 +12,11 @@ import {BaseAPI} from '@/services/api/base-api';
 export class LogStreamViewerComponent implements OnInit {
   constructor(private base_api: BaseAPI) {}
 
+  // using a RingBuffer because we don't need to display ALL of the logs. It's
+  // unlikely anyone will be scrolling back too far, and they can just
+  // download the logs anyway
   public socket: any;
-  public logs = new Array<string>();
+  public logs = new RingBuffer<string>(500); // limit the logs displayed the most recent 500 lines
   public font_size = 12;
 
   public ngOnInit(): void {

@@ -17,11 +17,17 @@ from mmpm.env import MMPMEnv
 
 class JsonFormatter(logging.Formatter):
     def format(self, record):
+        try:
+            message = record.getMessage()
+        except TypeError:
+            # Handling the case where formatting fails
+            message = {"raw_message": record.msg, "args": record.args}
+
         log_data = {
             "timestamp": self.formatTime(record),
             "level": record.levelname,
             "version": version,
-            "message": record.getMessage(),
+            "message": message,
             "logger_name": record.name,
             "module": record.module,
             "function": record.funcName,
@@ -41,9 +47,7 @@ class SocketIOHandler(logging.Handler):
 
         try:
             self.sio.connect(f"http://{host}:{port}", wait=False)
-            print("connected")
         except socketio.exceptions.ConnectionError:
-            print("not connected")
             pass
 
     def emit(self, record):

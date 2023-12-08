@@ -1,0 +1,27 @@
+<p-toolbar>
+  <ng-template pTemplate="start">
+    <p-button label="Download" icon="fa-solid fa-download" class="mr-2" (onClick)="on_download()"></p-button>
+  </ng-template>
+  <ng-template pTemplate="center">
+    <span class="text-primary font-semibold text-xl"></span>
+  </ng-template>
+  <ng-template pTemplate="end">
+    <div>
+      <input type="text" pInputText [(ngModel)]="font_size" class="w-full" />
+      <p-slider [(ngModel)]="font_size" class="w-full" (onChange)="set_font_size()" [max]="24" [min]="1"></p-slider>
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<p-scrollPanel [style]="{ width: '100%', height: '66vh', 'font-size':  font_size + 'px' }">
+  <div *ngIf="logs && logs.length; else noLogs">
+    <ng-container *ngFor="let log of logs">
+      <code>{{ log }}</code><br>
+    </ng-container>
+  </div>
+  <ng-template #noLogs>
+    <div style="margin: 0 auto">
+      <code>No logs have been generated yet.</code><br>
+    </div>
+  </ng-template>
+</p-scrollPanel>

@@ -41,7 +41,9 @@ class SocketIOHandler(logging.Handler):
 
         try:
             self.sio.connect(f"http://{host}:{port}", wait=False)
+            print("connected")
         except socketio.exceptions.ConnectionError:
+            print("not connected")
             pass
 
     def emit(self, record):
@@ -100,7 +102,7 @@ class MMPMLogger:
 
         MMPMLogger.__logger.addHandler(stdout_handler)
 
-        socketio_handler = SocketIOHandler("localhost", 6999)
+        socketio_handler = SocketIOHandler("localhost", 6789)
 
         if socketio_handler.sio.connected:
             MMPMLogger.__socketio_handler = socketio_handler

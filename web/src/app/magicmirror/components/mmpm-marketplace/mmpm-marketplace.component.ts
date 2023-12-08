@@ -18,9 +18,9 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   private default_icon = DefaultMarketPlaceIcon;
 
   public icons = MarketPlaceIcons;
-  public packages: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
-  public categories: Array<string> = new Array<string>();
-  public selected_packages: Array<MagicMirrorPackage> = new Array<MagicMirrorPackage>();
+  public packages = new Array<MagicMirrorPackage>();
+  public categories = new Array<string>();
+  public selected_packages = new Array<MagicMirrorPackage>();
   public loading = true;
   public readonly installed_options = [true, false];
   public selected_installed: boolean | null = null;
@@ -32,6 +32,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   public custom_packages = new Array<MagicMirrorPackage>();
   public selected_custom_packages = new Array<MagicMirrorPackage>();
   public custom_package: MagicMirrorPackage = this.clear_custom_package();
+  public selected_categories = new Array<string>();
 
   public custom_package_options = [
     {

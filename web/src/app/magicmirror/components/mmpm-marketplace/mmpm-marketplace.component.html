@@ -6,7 +6,10 @@
     </div>
     <div class="p-toolbar-group-end">
       <p-button icon="fa-solid fa-rotate-right" pTooltip="Update Database" tooltipPosition="top"
-        styleClass="p-button-warning mr-4" label="Update" (click)="on_update_db()"></p-button>
+        styleClass="p-button-success mr-4" label="Update" (click)="on_update_db()"></p-button>
+
+      <p-button label="Cart" icon="fa-solid fa-shopping-cart" pTooltip="Shopping cart" tooltipPosition="top"
+        styleClass="p-button-secondary ml-2" (click)="op.toggle($event)" [style]="{'margin-left': '1em'}"></p-button>
 
       <p-overlayPanel #op>
         <p-panel header="Shopping Cart">
@@ -54,8 +57,6 @@
         </p-panel>
       </p-overlayPanel>
 
-      <p-button label="Cart" icon="fa-solid fa-shopping-cart" pTooltip="Shopping cart" tooltipPosition="top"
-        styleClass="p-button-help ml-2" (click)="op.toggle($event)"></p-button>
     </div>
   </p-toolbar>
 
@@ -74,9 +75,9 @@
             Category
             <p-columnFilter field="category" matchMode="in" display="menu" [showMatchModes]="false"
               [showOperator]="false" [showAddButton]="false">
-              <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                <p-multiSelect [options]="categories" placeholder="Select Categories" (onChange)="filter($event.value)"
-                  optionLabel="name">
+              <ng-template pTemplate="filter" let-filter="filterCallback">
+                <p-multiSelect [options]="categories" [(ngModel)]="selected_categories" placeholder="Select Categories"
+                  (onChange)="filter($event.value)">
                   <ng-template let-category pTemplate="item">
                     <span class="category-icon-text">
                       {{ category }}

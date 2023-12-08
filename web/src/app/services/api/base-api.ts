@@ -36,6 +36,18 @@ export class BaseAPI {
     );
   }
 
+  public get_zip_archive(endpoint: string): Promise<ArrayBuffer> {
+    return firstValueFrom(this.http
+      .get(this.route(endpoint), {
+        headers: this.headers({
+          "Content-Type": "application/zip",
+        }),
+        reportProgress: true,
+        responseType: "arraybuffer",
+      })
+      .pipe(retry(1), catchError(this.handle_error)));
+  }
+
   public handle_error(error: any): Promise<any> {
     const error_message = error.error instanceof ErrorEvent ? error.error.message : `Error Code: ${error.status}\nMessage: ${error.message}`;
 

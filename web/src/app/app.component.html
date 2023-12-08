@@ -13,7 +13,9 @@
 
   <p-tabPanel header="Config Editor" rightIcon="fa-solid fa-pen-to-square"> </p-tabPanel>
 
-  <p-tabPanel header="Logs" rightIcon="fa fa-message"> </p-tabPanel>
+  <p-tabPanel header="Logs" rightIcon="fa fa-message">
+    <app-log-stream-viewer></app-log-stream-viewer>
+  </p-tabPanel>
 </p-tabView>
 
 <router-outlet></router-outlet>

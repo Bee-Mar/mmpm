@@ -25,6 +25,7 @@ dependencies = [
     "pip>=23.3.1",
     "gitpython>=3.1.40",
     "ItsPrompt>=1.4",
+    "gevent-websocket>=0.10.1",
 ]
 requires-python = ">=3.8"
 readme = "README.md"

@@ -24,7 +24,9 @@ export class LogStreamViewerComponent implements OnInit {
 
     this.socket = io(`ws://localhost:6789`, {reconnection: true});
 
-    this.socket.on("connect", () => console.log("Connected to Socket.IO log server"));
+    this.socket.on("connect", () => {
+      console.log("Connected to Socket.IO log server");
+    });
 
     this.socket.on("logs", (data: string) => {
       this.logs.push(data);

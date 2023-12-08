@@ -6,16 +6,15 @@
     </div>
     <div class="p-toolbar-group-end">
       <p-button icon="fa-solid fa-rotate-right" pTooltip="Update Database" tooltipPosition="top"
-        styleClass="p-button-warning mr-4" label="Update" (click)="on_refresh_db()"></p-button>
+        styleClass="p-button-warning mr-4" label="Update" (click)="on_update_db()"></p-button>
 
       <p-overlayPanel #op>
         <p-panel header="Shopping Cart">
           <div *ngIf="selected_packages && selected_packages?.length; else noPackages" class="package-details-grid">
             <p-scroller [items]="selected_packages" [itemSize]="50" scrollHeight="200px"
               styleClass="border-1 surface-border" [style]="{ width: '300px', height: '200px' }">
-              <ng-template pTemplate="item" let-package let-options="options">
-                <div class="flex align-items-center p-2" [ngClass]="{ 'surface-ground': options.odd }"
-                  style="height: 50px">
+              <ng-template pTemplate="item" let-package>
+                <div class="flex align-items-center p-2" style="height: 50px">
                   {{ package.title }}
                   <span>
                     <i *ngIf="package.is_installed; else notInstalled" class="fa-solid fa-trash"
@@ -31,9 +30,22 @@
             <p-divider></p-divider>
 
             <div class="confirm-shopping-cart-button">
-              <p-button label="Submit" [disabled]="!(selected_packages && selected_packages.length > 0)"
+              <p-button label="Checkout" [disabled]="!(selected_packages && selected_packages.length > 0)"
                 (click)="on_confirm_shopping_cart()"></p-button>
             </div>
+
+            <p-toolbar>
+              <ng-template pTemplate="start">
+                <i class="fa-solid fa-download" [style.color]="'#009933'"></i> = Install
+              </ng-template>
+              <ng-template pTemplate="center">
+                <span class="text-primary font-semibold text-xl"></span>
+              </ng-template>
+              <ng-template pTemplate="end">
+                <i class="fa-solid fa-trash" [style.color]="'#e05252'"></i> = Remove
+              </ng-template>
+            </p-toolbar>
+
           </div>
 
           <ng-template #noPackages>
@@ -47,16 +59,17 @@
     </div>
   </p-toolbar>
 
-  <p-table #dt [value]="packages" styleClass="p-datatable-striped" [rows]="10" [showCurrentPageReport]="true"
-    selectionMode="multiple" [(selection)]="selected_packages" [rowsPerPageOptions]="[10, 25, 50]" [loading]="loading"
-    [paginator]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+  <p-table #dt [value]="packages" styleClass="p-datatable-striped p-datatable-sm" [rows]="10"
+    [showCurrentPageReport]="true" selectionMode="multiple" [(selection)]="selected_packages"
+    [rowsPerPageOptions]="[5, 10, 25, 50]" [loading]="loading" [paginator]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
     [tableStyle]="{ 'min-width': '75rem' }" [filterDelay]="0">
     <ng-template pTemplate="header">
       <tr>
         <th style="width: 4rem">
           <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
         </th>
-        <th style="min-width: 10rem">
+        <th style="min-width: 10rem" pSortableColumn="category">
           <div class="flex align-items-center">
             Category
             <p-columnFilter field="category" matchMode="in" display="menu" [showMatchModes]="false"
@@ -74,23 +87,26 @@
                 </p-multiSelect>
               </ng-template>
             </p-columnFilter>
+            <p-sortIcon field="category"></p-sortIcon>
           </div>
         </th>
-        <th style="min-width: 10rem">
+        <th style="min-width: 10rem" pSortableColumn="title">
           <div class="flex align-items-center">
             Title
             <p-columnFilter type="text" field="title" display="menu" [showOperator]="false" [showAddButton]="false"
               filterDelay="0"> </p-columnFilter>
+            <p-sortIcon field="title"></p-sortIcon>
           </div>
         </th>
-        <th style="min-width: 10rem">
+        <th style="min-width: 10rem" pSortableColumn="author">
           <div class="flex align-items-center">
             Author
             <p-columnFilter type="text" field="author" display="menu" [showOperator]="false" [showAddButton]="false">
             </p-columnFilter>
+            <p-sortIcon field="author"></p-sortIcon>
           </div>
         </th>
-        <th style="min-width: 10rem">
+        <th style="min-width: 10rem" pSortableColumn="is_installed">
           <div class="flex align-items-center">
             Installed
             <p-columnFilter field="is_installed" matchMode="equals" display="menu" [showMatchModes]="false"
@@ -101,6 +117,7 @@
                 </p-dropdown>
               </ng-template>
             </p-columnFilter>
+            <p-sortIcon field="is_installed"></p-sortIcon>
           </div>
         </th>
         <th style="min-width: 10rem">Details</th>

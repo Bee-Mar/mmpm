@@ -35,7 +35,7 @@ class Update(SubCmd):
             logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")
             return
 
-        self.database.load(refresh=True)
+        self.database.load(update=True)
 
         can_upgrade_mmpm = mmpm.utils.update_available()
         can_upgrade_magicmirror = self.magicmirror.update()

@@ -13,13 +13,14 @@ import { PrimeNgModule } from "./modules/primeng.module";
 import { DatabaseInfoComponent } from "./components/database-info/database-info.component";
 import { CustomPackageManagerComponent } from "./components/custom-package-manager/custom-package-manager.component";
 import { PackageDetailsViewerComponent } from './components/package-details-viewer/package-details-viewer.component';
+import { ShoppingCartComponent } from './components/shopping-cart/shopping-cart.component';
 
 export function init_shared_store(store: SharedStoreService) {
   return () => store.getPackages();
 }
 
 @NgModule({
-  declarations: [AppComponent, MmpmMarketPlaceComponent, LogStreamViewerComponent, ConfigEditorComponent, DatabaseInfoComponent, CustomPackageManagerComponent, PackageDetailsViewerComponent],
+  declarations: [AppComponent, MmpmMarketPlaceComponent, LogStreamViewerComponent, ConfigEditorComponent, DatabaseInfoComponent, CustomPackageManagerComponent, PackageDetailsViewerComponent, ShoppingCartComponent],
   imports: [BrowserAnimationsModule, BrowserModule, AppRoutingModule, HttpClientModule, PrimeNgModule, MonacoEditorModule.forRoot()],
   providers: [
     {

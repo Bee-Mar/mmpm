@@ -263,29 +263,32 @@
 
   <p-dialog header="Add Custom Package" [(visible)]="display_custom_pkg_add_dialog">
     <p-panel>
-      <div class="p-inputgroup" style="margin-bottom: 2em">
-        <span class="p-inputgroup-addon" style="width: 10em">Title</span>
-        <input pInputText [(ngModel)]="custom_package.title" required />
-      </div>
-      <div class="p-inputgroup" style="margin-bottom: 2em">
-        <span class="p-inputgroup-addon" style="width: 10em">Author</span>
-        <input pInputText [(ngModel)]="custom_package.author" required />
-      </div>
-      <div class="p-inputgroup" style="margin-bottom: 2em">
-        <span class="p-inputgroup-addon" style="width: 10em">Repository</span>
-        <input type="text" pInputText [(ngModel)]="custom_package.repository" required />
-      </div>
-      <div class="p-inputgroup" style="margin-bottom: 2em">
-        <span class="p-inputgroup-addon" style="width: 10em">Description</span>
-        <input type="text" pInputText [(ngModel)]="custom_package.description" required />
-      </div>
+      <form #customPackageForm="ngForm">
+        <div class="p-inputgroup" style="margin-bottom: 2em">
+          <span class="p-inputgroup-addon" style="width: 10em">Title</span>
+          <input name="title" pInputText [(ngModel)]="custom_package.title" required />
+        </div>
+        <div class="p-inputgroup" style="margin-bottom: 2em">
+          <span class="p-inputgroup-addon" style="width: 10em">Author</span>
+          <input name="author" pInputText [(ngModel)]="custom_package.author" required />
+        </div>
+        <div class="p-inputgroup" style="margin-bottom: 2em">
+          <span class="p-inputgroup-addon" style="width: 10em">Repository</span>
+          <input name="repository" type="text" pInputText [(ngModel)]="custom_package.repository" required />
+        </div>
+        <div class="p-inputgroup" style="margin-bottom: 2em">
+          <span class="p-inputgroup-addon" style="width: 10em">Description</span>
+          <input name="description" type="text" pInputText [(ngModel)]="custom_package.description" required />
+        </div>
+      </form>
 
       <div class="confirm-shopping-cart-button">
         <p-button
-          label="Submit"
+          label="Register"
           [disabled]="!(custom_package.title && custom_package.repository && custom_package.author && custom_package.description)"
           (click)="on_add_mm_pkg()"
-          icon="fa-solid fa-plus"
+          icon="fa-solid fa-check"
+          severity="success"
         ></p-button>
       </div>
     </p-panel>

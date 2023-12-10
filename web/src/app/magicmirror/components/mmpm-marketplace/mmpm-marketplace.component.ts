@@ -1,12 +1,13 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
+import { Component, OnInit, OnDestroy, ViewChild } from "@angular/core";
 import { MagicMirrorPackage, RemotePackageDetails } from "@/magicmirror/models/magicmirror-package";
 import { SharedStoreService } from "@/services/shared-store.service";
 import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
-import { APIResponse, BaseAPI } from "@/services/api/base-api";
+import { APIResponse } from "@/services/api/base-api";
 import { Subscription } from "rxjs";
 import { MarketPlaceIcons, DefaultMarketPlaceIcon } from "./marketplace-icons.model";
 import { DatabaseInfo } from "@/magicmirror/models/database-details";
 import { MessageService } from "primeng/api";
+import { NgForm } from "@angular/forms";
 
 @Component({
   selector: "app-mmpm-marketplace",
@@ -15,7 +16,9 @@ import { MessageService } from "primeng/api";
   providers: [MessageService],
 })
 export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
-  constructor(private store: SharedStoreService, private mm_pkg_api: MagicMirrorPackageAPI, private base_api: BaseAPI) {}
+  constructor(private store: SharedStoreService, private mm_pkg_api: MagicMirrorPackageAPI) {}
+
+  @ViewChild("customPackageForm") custom_package_form: NgForm;
 
   private packages_subscription: Subscription = new Subscription();
   private db_info_subscription: Subscription = new Subscription();
@@ -162,6 +165,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
           this.store.get_packages();
           console.log(response);
           this.custom_package = this.clear_custom_package();
+          this.custom_package_form.reset();
         }
       })
       .catch((error) => console.log(error));
@@ -183,7 +187,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
 
     // TODO: this isn't correct now. It needs to be a POST and also make a call
     // to the endpoint that checks if magicmirror is upgradable
-    this.base_api.get_("db/update").then((response: APIResponse) => {
+    this.mm_pkg_api.get_("db/update").then((response: APIResponse) => {
       if (response.code === 200 && response.message === true) {
         this.store.get_packages();
       } else {

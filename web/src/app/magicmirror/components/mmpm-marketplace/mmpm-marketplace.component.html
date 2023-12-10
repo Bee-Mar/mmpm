@@ -1,27 +1,39 @@
 <div class="card">
   <p-toolbar>
     <ng-template pTemplate="start">
-      <p-splitButton label="Custom Package" icon="fa-solid fa-cube" [model]="custom_package_options"
-        styleClass="p-button-primary"></p-splitButton>
+      <p-toast></p-toast>
+      <p-menu #menu [model]="custom_package_options" [popup]="true"></p-menu>
+      <p-button (click)="menu.toggle($event)" icon="fa-solid fa-cube" label="Custom Packages" severity="primary"></p-button>
     </ng-template>
     <ng-template pTemplate="end">
-      <p-button icon="fa-solid fa-rotate-right" pTooltip="Update Database" tooltipPosition="top"
-        styleClass="p-button-success mr-4" label="Update" (click)="on_update_db()"></p-button>
+      <p-button
+        icon="fa-solid fa-rotate-right"
+        pTooltip="Update Database"
+        tooltipPosition="top"
+        styleClass="p-button-success mr-4"
+        label="Update"
+        (click)="on_update_db()"
+      ></p-button>
 
-      <p-button label="Cart" icon="fa-solid fa-shopping-cart" pTooltip="Shopping cart" tooltipPosition="top"
-        styleClass="p-button-secondary ml-2" (click)="op.toggle($event)" [style]="{'margin-left': '1em'}"></p-button>
+      <p-button
+        label="Cart"
+        icon="fa-solid fa-shopping-cart"
+        pTooltip="Shopping cart"
+        tooltipPosition="top"
+        styleClass="p-button-secondary ml-2"
+        (click)="op.toggle($event)"
+        [style]="{ 'margin-left': '1em' }"
+      ></p-button>
 
       <p-overlayPanel #op>
         <p-panel header="Shopping Cart">
           <div *ngIf="selected_packages && selected_packages?.length; else noPackages" class="package-details-grid">
-            <p-scroller [items]="selected_packages" [itemSize]="50" scrollHeight="200px"
-              styleClass="border-1 surface-border" [style]="{ width: '300px', height: '200px' }">
+            <p-scroller [items]="selected_packages" [itemSize]="50" scrollHeight="200px" styleClass="border-1 surface-border" [style]="{ width: '300px', height: '200px' }">
               <ng-template pTemplate="item" let-package>
                 <div class="flex align-items-center p-2" style="height: 50px">
                   {{ package.title }}
                   <span>
-                    <i *ngIf="package.is_installed; else notInstalled" class="fa-solid fa-trash"
-                      [style.color]="'#e05252'"></i>
+                    <i *ngIf="package.is_installed; else notInstalled" class="fa-solid fa-trash" [style.color]="'#e05252'"></i>
                     <ng-template #notInstalled>
                       <i class="fa-solid fa-download" [style.color]="'#009933'"></i>
                     </ng-template>
@@ -33,22 +45,16 @@
             <p-divider></p-divider>
 
             <div class="confirm-shopping-cart-button">
-              <p-button label="Checkout" [disabled]="!(selected_packages && selected_packages.length > 0)"
-                (click)="on_confirm_shopping_cart()"></p-button>
+              <p-button label="Checkout" [disabled]="!(selected_packages && selected_packages.length > 0)" (click)="on_confirm_shopping_cart()"></p-button>
             </div>
 
             <p-toolbar>
-              <ng-template pTemplate="start">
-                <i class="fa-solid fa-download" [style.color]="'#009933'"></i> = Install
-              </ng-template>
+              <ng-template pTemplate="start"> <i class="fa-solid fa-download" [style.color]="'#009933'"></i> = Install </ng-template>
               <ng-template pTemplate="center">
                 <span class="text-primary font-semibold text-xl"></span>
               </ng-template>
-              <ng-template pTemplate="end">
-                <i class="fa-solid fa-trash" [style.color]="'#e05252'"></i> = Remove
-              </ng-template>
+              <ng-template pTemplate="end"> <i class="fa-solid fa-trash" [style.color]="'#e05252'"></i> = Remove </ng-template>
             </p-toolbar>
-
           </div>
 
           <ng-template #noPackages>
@@ -56,15 +62,24 @@
           </ng-template>
         </p-panel>
       </p-overlayPanel>
-
     </ng-template>
   </p-toolbar>
 
-  <p-table #dt [value]="packages" styleClass="p-datatable-striped p-datatable-sm" [rows]="10"
-    [showCurrentPageReport]="true" selectionMode="multiple" [(selection)]="selected_packages"
-    [rowsPerPageOptions]="[5, 10, 25, 50]" [loading]="loading" [paginator]="true"
+  <p-table
+    #dt
+    [value]="packages"
+    styleClass="p-datatable-striped p-datatable-sm"
+    [rows]="10"
+    [showCurrentPageReport]="true"
+    selectionMode="multiple"
+    [(selection)]="selected_packages"
+    [rowsPerPageOptions]="[5, 10, 25, 50]"
+    [loading]="loading"
+    [paginator]="true"
     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-    [tableStyle]="{ 'min-width': '75rem' }" [filterDelay]="0">
+    [tableStyle]="{ 'min-width': '75rem' }"
+    [filterDelay]="0"
+  >
     <ng-template pTemplate="header">
       <tr>
         <th style="width: 4rem">
@@ -73,16 +88,13 @@
         <th style="min-width: 10rem" pSortableColumn="category">
           <div class="flex align-items-center">
             Category
-            <p-columnFilter field="category" matchMode="in" display="menu" [showMatchModes]="false"
-              [showOperator]="false" [showAddButton]="false">
+            <p-columnFilter field="category" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
               <ng-template pTemplate="filter" let-filter="filterCallback">
-                <p-multiSelect [options]="categories" [(ngModel)]="selected_categories" placeholder="Select Categories"
-                  (onChange)="filter($event.value)">
+                <p-multiSelect [options]="categories" [(ngModel)]="selected_categories" placeholder="Select Categories" (onChange)="filter($event.value)">
                   <ng-template let-category pTemplate="item">
                     <span class="category-icon-text">
                       {{ category }}
-                      <i [class]="icons[category].logo || 'fa fa-question-circle'"
-                        [style.color]="icons[category].color || 'black'"></i>
+                      <i [class]="icons[category].logo || 'fa fa-question-circle'" [style.color]="icons[category].color || 'black'"></i>
                     </span>
                   </ng-template>
                 </p-multiSelect>
@@ -94,27 +106,23 @@
         <th style="min-width: 10rem" pSortableColumn="title">
           <div class="flex align-items-center">
             Title
-            <p-columnFilter type="text" field="title" display="menu" [showOperator]="false" [showAddButton]="false"
-              filterDelay="0"> </p-columnFilter>
+            <p-columnFilter type="text" field="title" display="menu" [showOperator]="false" [showAddButton]="false" filterDelay="0"> </p-columnFilter>
             <p-sortIcon field="title"></p-sortIcon>
           </div>
         </th>
         <th style="min-width: 10rem" pSortableColumn="author">
           <div class="flex align-items-center">
             Author
-            <p-columnFilter type="text" field="author" display="menu" [showOperator]="false" [showAddButton]="false">
-            </p-columnFilter>
+            <p-columnFilter type="text" field="author" display="menu" [showOperator]="false" [showAddButton]="false"> </p-columnFilter>
             <p-sortIcon field="author"></p-sortIcon>
           </div>
         </th>
         <th style="min-width: 10rem" pSortableColumn="is_installed">
           <div class="flex align-items-center">
             Installed
-            <p-columnFilter field="is_installed" matchMode="equals" display="menu" [showMatchModes]="false"
-              [showOperator]="false" [showAddButton]="false">
+            <p-columnFilter field="is_installed" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
               <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                <p-dropdown [options]="installed_options" [(ngModel)]="selected_installed" placeholder="Is Installed?"
-                  (onChange)="filter($event.value, 'is_installed')">
+                <p-dropdown [options]="installed_options" [(ngModel)]="selected_installed" placeholder="Is Installed?" (onChange)="filter($event.value, 'is_installed')">
                 </p-dropdown>
               </ng-template>
             </p-columnFilter>
@@ -132,8 +140,7 @@
         <td>
           <span class="category-icon-text">
             {{ package?.category }}
-            <i [class]="icons[package.category].logo || 'fa fa-question-circle'"
-              [style.color]="icons[package.category].color || 'black'"></i>
+            <i [class]="icons[package.category].logo || 'fa fa-question-circle'" [style.color]="icons[package.category].color || 'black'"></i>
           </span>
         </td>
         <td>
@@ -143,12 +150,10 @@
           {{ package?.author }}
         </td>
         <td>
-          <i class="pi pi-{{ package?.is_installed ? 'check' : 'times' }}-circle"
-            [style.color]="package?.is_installed ? '#009933' : '#e05252'"></i>
+          <i class="pi pi-{{ package?.is_installed ? 'check' : 'times' }}-circle" [style.color]="package?.is_installed ? '#009933' : '#e05252'"></i>
         </td>
         <td>
-          <p-button [raised]="true" severity="info" icon="fa-solid fa-circle-info" (click)="on_package_details(package)"
-            pTooltip="Package details" tooltipPosition="top">
+          <p-button [raised]="true" severity="info" icon="fa-solid fa-circle-info" (click)="on_package_details(package)" pTooltip="Package details" tooltipPosition="top">
           </p-button>
         </td>
       </tr>
@@ -160,8 +165,12 @@
     </ng-template>
   </p-table>
 
-  <p-dialog *ngIf="selected_package" [header]="'Package Details: ' + (selected_package.title || '')"
-    [(visible)]="display_details_dialog" [style]="{ width: '30vw', 'max-width': '1000px' }">
+  <p-dialog
+    *ngIf="selected_package"
+    [header]="'Package Details: ' + (selected_package.title || '')"
+    [(visible)]="display_details_dialog"
+    [style]="{ width: '30vw', 'max-width': '1000px' }"
+  >
     <div *ngIf="loading_package_data; else detailsBlock" class="spinner-container">
       <p-progressSpinner></p-progressSpinner>
     </div>
@@ -184,9 +193,9 @@
           </div>
           <div class="detail">
             <strong>Category:</strong>
-            <span>{{ selected_package.category }}
-              <i [class]="icons[selected_package.category].logo || 'fa fa-question-circle'"
-                [style.color]="icons[selected_package.category].color || 'black'"></i>
+            <span
+              >{{ selected_package.category }}
+              <i [class]="icons[selected_package.category].logo || 'fa fa-question-circle'" [style.color]="icons[selected_package.category].color || 'black'"></i>
             </span>
           </div>
           <div class="detail">
@@ -196,15 +205,13 @@
           <div class="detail">
             <strong>Installed:</strong>
             <span>
-              <i class="pi pi-{{ selected_package.is_installed ? 'check' : 'times' }}-circle"
-                [style.color]="selected_package.is_installed ? '#009933' : '#e05252'"></i>
+              <i class="pi pi-{{ selected_package.is_installed ? 'check' : 'times' }}-circle" [style.color]="selected_package.is_installed ? '#009933' : '#e05252'"></i>
             </span>
           </div>
           <div class="detail">
             <strong>Updates Available:</strong>
             <span>
-              <i class="pi pi-{{ selected_package.is_upgradable ? 'check' : 'times' }}-circle"
-                [style.color]="selected_package.is_upgradable ? '#009933' : '#e05252'"></i>
+              <i class="pi pi-{{ selected_package.is_upgradable ? 'check' : 'times' }}-circle" [style.color]="selected_package.is_upgradable ? '#009933' : '#e05252'"></i>
             </span>
           </div>
         </div>
@@ -213,31 +220,36 @@
         <div *ngIf="selected_package?.remote_details; else errorBlock" class="package-details-grid">
           <div class="detail">
             <strong>Stars:</strong>
-            <span>{{ selected_package.remote_details.stars }}
+            <span
+              >{{ selected_package.remote_details.stars }}
               <i class="fa-solid fa-star" [style.color]="'gold'"></i>
             </span>
           </div>
           <div class="detail">
             <strong>Open Issues:</strong>
-            <span>{{ selected_package.remote_details.issues }}
+            <span
+              >{{ selected_package.remote_details.issues }}
               <i class="fa-solid fa-flag" [style.color]="'#bf5345'"></i>
             </span>
           </div>
           <div class="detail">
             <strong>Created:</strong>
-            <span>{{ selected_package.remote_details.created }}
+            <span
+              >{{ selected_package.remote_details.created }}
               <i class="fa-solid fa-calendar-days" [style.color]="'white'"></i>
             </span>
           </div>
           <div class="detail">
             <strong>Last Updated:</strong>
-            <span>{{ selected_package.remote_details.last_updated }}
+            <span
+              >{{ selected_package.remote_details.last_updated }}
               <i class="fa-solid fa-calendar-days" [style.color]="'white'"></i>
             </span>
           </div>
           <div class="detail">
             <strong>Forks:</strong>
-            <span>{{ selected_package.remote_details.forks }}
+            <span
+              >{{ selected_package.remote_details.forks }}
               <i class="fa-solid fa-code-branch" [style.color]="'#74389c'"></i>
             </span>
           </div>
@@ -269,23 +281,36 @@
       </div>
 
       <div class="confirm-shopping-cart-button">
-        <p-button label="Submit"
+        <p-button
+          label="Submit"
           [disabled]="!(custom_package.title && custom_package.repository && custom_package.author && custom_package.description)"
-          (click)="on_add_mm_pkg()" icon="fa-solid fa-plus"></p-button>
+          (click)="on_add_mm_pkg()"
+          icon="fa-solid fa-plus"
+        ></p-button>
       </div>
     </p-panel>
   </p-dialog>
   <p-dialog [(visible)]="display_custom_pkg_remove_dialog" header="Remove Custom Packages">
     <p-panel>
       <div *ngIf="custom_packages && custom_packages?.length; else noCustomPackages">
-        <p-listbox [options]="custom_packages" [(ngModel)]="selected_custom_packages" [selectAll]="false"
-          optionLabel="title" [style]="{ width: '15rem' }" [virtualScroll]="true" [virtualScrollItemSize]="43"
-          [multiple]="true" [checkbox]="true" [showToggleAll]="false" [metaKeySelection]="false" [showToggleAll]="true"
-          [listStyle]="{ 'max-height': '220px' }"></p-listbox>
+        <p-listbox
+          [options]="custom_packages"
+          [(ngModel)]="selected_custom_packages"
+          [selectAll]="false"
+          optionLabel="title"
+          [style]="{ width: '15rem' }"
+          [virtualScroll]="true"
+          [virtualScrollItemSize]="43"
+          [multiple]="true"
+          [checkbox]="true"
+          [showToggleAll]="false"
+          [metaKeySelection]="false"
+          [showToggleAll]="true"
+          [listStyle]="{ 'max-height': '220px' }"
+        ></p-listbox>
 
         <div class="confirm-shopping-cart-button">
-          <p-button label="Submit" [disabled]="!selected_custom_packages" (click)="on_remove_mm_pkg()"
-            icon="fa-solid fa-plus"></p-button>
+          <p-button label="Submit" [disabled]="!selected_custom_packages" (click)="on_remove_mm_pkg()" icon="fa-solid fa-plus"></p-button>
         </div>
       </div>
       <ng-template #noCustomPackages>

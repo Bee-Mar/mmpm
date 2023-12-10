@@ -13,7 +13,6 @@ import { OverlayPanelModule } from "primeng/overlaypanel";
 import { DividerModule } from "primeng/divider";
 import { ScrollerModule } from "primeng/scroller";
 import { TooltipModule } from "primeng/tooltip";
-import { SplitButtonModule } from "primeng/splitbutton";
 import { InputTextModule } from "primeng/inputtext";
 import { ListboxModule } from "primeng/listbox";
 import { ScrollPanelModule } from "primeng/scrollpanel";
@@ -39,7 +38,6 @@ const PrimeNg = [
   DividerModule,
   ScrollerModule,
   TooltipModule,
-  SplitButtonModule,
   InputTextModule,
   ListboxModule,
   ScrollPanelModule,

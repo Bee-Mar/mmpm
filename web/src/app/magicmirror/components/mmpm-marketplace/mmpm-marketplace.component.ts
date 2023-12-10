@@ -1,16 +1,18 @@
-import {Component, OnInit, OnDestroy} from "@angular/core";
-import {MagicMirrorPackage, RemotePackageDetails} from "@/magicmirror/models/magicmirror-package";
-import {SharedStoreService} from "@/services/shared-store.service";
-import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
-import {APIResponse, BaseAPI} from "@/services/api/base-api";
-import {Subscription} from "rxjs";
-import {MarketPlaceIcons, DefaultMarketPlaceIcon} from "./marketplace-icons.model";
-import {DatabaseInfo} from '@/magicmirror/models/database-details';
+import { Component, OnInit, OnDestroy } from "@angular/core";
+import { MagicMirrorPackage, RemotePackageDetails } from "@/magicmirror/models/magicmirror-package";
+import { SharedStoreService } from "@/services/shared-store.service";
+import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
+import { APIResponse, BaseAPI } from "@/services/api/base-api";
+import { Subscription } from "rxjs";
+import { MarketPlaceIcons, DefaultMarketPlaceIcon } from "./marketplace-icons.model";
+import { DatabaseInfo } from "@/magicmirror/models/database-details";
+import { MessageService } from "primeng/api";
 
 @Component({
   selector: "app-mmpm-marketplace",
   templateUrl: "./mmpm-marketplace.component.html",
   styleUrls: ["./mmpm-marketplace.component.scss"],
+  providers: [MessageService],
 })
 export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   constructor(private store: SharedStoreService, private mm_pkg_api: MagicMirrorPackageAPI, private base_api: BaseAPI) {}
@@ -84,7 +86,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
         }
 
         if (pkg.category && !this.icons[pkg.category]) {
-          this.icons[pkg.category] = {...this.default_icon};
+          this.icons[pkg.category] = { ...this.default_icon };
         }
 
         this.loading = false;

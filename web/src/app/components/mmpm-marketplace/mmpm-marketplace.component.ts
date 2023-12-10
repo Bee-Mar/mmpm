@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy } from "@angular/core";
 import { MagicMirrorPackage, RemotePackageDetails } from "@/models/magicmirror-package";
 import { SharedStoreService } from "@/services/shared-store.service";
 import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
-import { APIResponse } from "@/services/api/base-api";
 import { Subscription } from "rxjs";
 import { MarketPlaceIcons, DefaultMarketPlaceIcon } from "./marketplace-icons.model";
 import { MessageService } from "primeng/api";
@@ -17,7 +16,6 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   constructor(private store: SharedStoreService, private mmPkgApi: MagicMirrorPackageAPI) {}
 
   private packagesSubscription: Subscription = new Subscription();
-
   private defaultIcon = DefaultMarketPlaceIcon;
 
   public icons = MarketPlaceIcons;
@@ -29,7 +27,6 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   public selectedInstalled: boolean | null = null;
   public selectedPackage: MagicMirrorPackage | null = null;
   public displayDetailsDialog = false;
-  public loadingPackageDetails = false;
   public selectedCategories = new Array<string>();
 
   public ngOnInit(): void {
@@ -39,7 +36,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
       this.categories = this.packages.map((pkg) => pkg.category).filter((category, index, self) => self.indexOf(category) === index);
 
       // add a default icon for any category that isn't recognized above
-      this.packages.forEach((pkg) => {
+      this.packages.forEach((pkg: MagicMirrorPackage) => {
         if (pkg.category && !this.icons[pkg.category]) {
           this.icons[pkg.category] = { ...this.defaultIcon };
         }
@@ -83,35 +80,5 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
     }
 
     this.store.getPackages();
-  }
-
-  public on_package_details(pkg: MagicMirrorPackage): void {
-    this.selectedPackage = pkg;
-    this.displayDetailsDialog = true;
-
-    if (typeof pkg?.remote_details != "undefined") {
-      console.log(`${pkg.title} already has remote_details stored`);
-      this.loadingPackageDetails = false;
-      return;
-    }
-
-    this.loadingPackageDetails = true;
-    console.log(`${pkg.title} does not have remote_details stored. Collecting...`);
-
-    this.mmPkgApi
-      .postDetails(pkg)
-      .then((response: APIResponse) => {
-        if (response.code === 200) {
-          pkg.remote_details = response.message as RemotePackageDetails;
-          console.log(`Retrieved remote details for ${pkg.title}`);
-          this.loadingPackageDetails = false;
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-        // failed getting remote details (probably because we exceeded the request count)
-        // so we need to still display the content
-        this.loadingPackageDetails = false;
-      });
   }
 }

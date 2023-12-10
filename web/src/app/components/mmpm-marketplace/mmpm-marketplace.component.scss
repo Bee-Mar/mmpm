@@ -28,20 +28,6 @@
   margin-right: 5px;
 }
 
-.spinner-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-}
-
-.panel-content {
-  display: flex;
-  flex-direction: column;
-  overflow: auto; /* Adds scrollbar if content is too long */
-  max-height: 600px; /* You can adjust this as needed */
-}
-
 .confirm-button {
   display: flex;
   justify-content: center; /* Center horizontally */

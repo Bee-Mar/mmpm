@@ -24,6 +24,7 @@ export class ConfigEditorComponent implements OnInit {
   public editor: EditorComponent;
 
   public file = "config.js";
+  public font_size = Number(get_cookie("mmpm-config-editor-font-size", "12"));
 
   public state: {[key: string]: FileContentsState;} = {
     "config.js": {
@@ -71,6 +72,7 @@ export class ConfigEditorComponent implements OnInit {
     language: "javascript",
     theme: "vs-dark",
     scrollBeyondLastLine: false,
+    fontSize: this.font_size ?? 12,
     minimap: {
       enabled: false,
     },
@@ -89,7 +91,6 @@ export class ConfigEditorComponent implements OnInit {
   public ngOnInit(): void {
     this.on_select_file(this.file);
   }
-
 
   public on_editor_init(editor: any): void {
     this.editor = editor;
@@ -123,12 +124,12 @@ export class ConfigEditorComponent implements OnInit {
       } else {
         console.log(response.message);
       }
-
     });
   }
 
-  //public on_font_size_change(event: any): void {
-
-  //}
+  public on_font_size_change(): void {
+    set_cookie("mmpm-config-editor-font-size", String(this.font_size));
+    this.options = Object.assign({}, this.options, {fontSize: this.font_size});
+  }
 
 }

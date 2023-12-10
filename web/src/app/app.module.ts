@@ -30,7 +30,7 @@ import {MonacoEditorModule} from 'ngx-monaco-editor-v2';
 import {MenuModule} from "primeng/menu";
 import {ToastModule} from "primeng/toast";
 import {ConfigEditorComponent} from './components/config-editor/config-editor.component';
-
+import {InputNumberModule} from "primeng/inputnumber";
 
 export function init_shared_store(store: SharedStoreService) {
   return () => store.get_packages();
@@ -62,6 +62,7 @@ export function init_shared_store(store: SharedStoreService) {
     ListboxModule,
     ScrollPanelModule,
     SliderModule,
+    InputNumberModule,
     MenuModule,
     ToastModule,
     MonacoEditorModule.forRoot()

@@ -20,16 +20,20 @@ export class LogStreamViewerComponent implements OnInit {
   public font_size = 12;
 
   public ngOnInit(): void {
-    if (!get_cookie("mmpm-log-stream-font-size")) {
-      set_cookie("mmpm-log-stream-font-size", "12");
-    }
-
-    this.font_size = Number(get_cookie("mmpm-log-stream-font-size"));
+    this.font_size = Number(get_cookie("mmpm-log-stream-font-size", "12"));
 
     this.socket = io(`ws://localhost:6789`, {reconnection: true});
 
     this.socket.on("connect", () => {
       console.log("Connected to Socket.IO log server");
+    });
+
+    this.socket.on("connect_error", () => {
+      console.log("Failed to connect to MMPM Log Server ");
+    });
+
+    this.socket.on("reconnect_error", () => {
+      console.log("Failed to reconnect to MMPM Log Server ");
     });
 
     this.socket.on("logs", (data: string) => {

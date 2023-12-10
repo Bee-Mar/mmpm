@@ -11,11 +11,19 @@
 
     </ng-template>
     <ng-template pTemplate="center">
-      <span class="text-primary font-semibold text-xl"></span>
+      <span class="text-primary font-semibold text-xl">
+        <i class="fa-solid fa-code" [style]="{'color': 'white', 'margin-right': '1em'}"></i>
+        <code>{{ file }}</code>
+      </span>
     </ng-template>
     <ng-template pTemplate="end">
-      <i class="fa-solid fa-code" [style]="{'color': 'white', 'margin-right': '1em'}"></i>
-      <code>{{ file }}</code>
+      <span style="margin-right: 1em;">
+        <p-inputNumber [(ngModel)]="font_size" (ngModelChange)="on_font_size_change()" [showButtons]="true" suffix=" px"
+          spinnerMode="vertical" inputId="vertical" decrementButtonClass="p-button-secondary"
+          incrementButtonClass="p-button-secondary" [min]="8" [max]="36">
+        </p-inputNumber>
+      </span>
+
     </ng-template>
   </p-toolbar>
   <ngx-monaco-editor [style]="{'min-height': '66vh'}" [options]="options" (onInit)="on_editor_init($event)"

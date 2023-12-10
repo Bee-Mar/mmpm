@@ -1,5 +1,5 @@
-import { Component, OnInit } from "@angular/core";
-import { get_cookie, set_cookie } from "./utils/utils";
+import {Component, OnInit} from "@angular/core";
+import {get_cookie, set_cookie} from "./utils/utils";
 
 @Component({
   selector: "app-root",
@@ -11,7 +11,7 @@ export class AppComponent implements OnInit {
   public active_index = 0;
 
   public ngOnInit(): void {
-    this.active_index = Number(get_cookie("mmpm-active-tab-index"));
+    this.active_index = Number(get_cookie("mmpm-active-tab-index", "0"));
   }
 
   public on_tab_change(index: number) {

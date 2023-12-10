@@ -6,12 +6,12 @@ import { MarketPlaceIcons, DefaultMarketPlaceIcon } from "./marketplace-icons.mo
 import { MessageService } from "primeng/api";
 
 @Component({
-  selector: "app-mmpm-marketplace",
-  templateUrl: "./mmpm-marketplace.component.html",
-  styleUrls: ["./mmpm-marketplace.component.scss"],
+  selector: "app-marketplace",
+  templateUrl: "./marketplace.component.html",
+  styleUrls: ["./marketplace.component.scss"],
   providers: [MessageService],
 })
-export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
+export class MarketPlaceComponent implements OnInit, OnDestroy {
   constructor(private store: SharedStoreService) {}
 
   private packagesSubscription: Subscription = new Subscription();

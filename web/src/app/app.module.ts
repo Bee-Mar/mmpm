@@ -3,7 +3,7 @@ import { BrowserModule } from "@angular/platform-browser";
 import { HttpClientModule } from "@angular/common/http";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
-import { MmpmMarketPlaceComponent } from "@/components/mmpm-marketplace/mmpm-marketplace.component";
+import { MarketPlaceComponent } from "@/components/marketplace/marketplace.component";
 import { SharedStoreService } from "@/services/shared-store.service";
 import { LogStreamViewerComponent } from "./components/log-stream-viewer/log-stream-viewer.component";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
@@ -22,7 +22,7 @@ export function init_shared_store(store: SharedStoreService) {
 @NgModule({
   declarations: [
     AppComponent,
-    MmpmMarketPlaceComponent,
+    MarketPlaceComponent,
     LogStreamViewerComponent,
     ConfigEditorComponent,
     DatabaseInfoComponent,

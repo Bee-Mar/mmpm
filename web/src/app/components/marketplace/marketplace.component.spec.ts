@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { MmpmMarketPlaceComponent } from "./mmpm-marketplace.component";
+import { MarketPlaceComponent } from "./marketplace.component";
 
-describe("MmpmMarketPlaceComponent", () => {
-  let component: MmpmMarketPlaceComponent;
-  let fixture: ComponentFixture<MmpmMarketPlaceComponent>;
+describe("MarketPlaceComponent", () => {
+  let component: MarketPlaceComponent;
+  let fixture: ComponentFixture<MarketPlaceComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [MmpmMarketPlaceComponent],
+      declarations: [MarketPlaceComponent],
     }).compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(MmpmMarketPlaceComponent);
+    fixture = TestBed.createComponent(MarketPlaceComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { MagicMirrorPackage } from "@/magicmirror/models/magicmirror-package";
+import { MagicMirrorPackage } from "@/models/magicmirror-package";
 import { APIResponse, BaseAPI } from "@/services/api/base-api";
 import { retry, catchError, map } from "rxjs/operators";
 import { firstValueFrom } from "rxjs";

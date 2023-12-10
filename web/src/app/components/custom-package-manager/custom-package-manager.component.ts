@@ -1,4 +1,4 @@
-import { MagicMirrorPackage } from "@/magicmirror/models/magicmirror-package";
+import { MagicMirrorPackage } from "@/models/magicmirror-package";
 import { APIResponse } from "@/services/api/base-api";
 import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
 import { SharedStoreService } from "@/services/shared-store.service";

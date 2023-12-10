@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, ViewChild } from "@angular/core";
-import { MagicMirrorPackage, RemotePackageDetails } from "@/magicmirror/models/magicmirror-package";
+import { Component, OnInit, OnDestroy } from "@angular/core";
+import { MagicMirrorPackage, RemotePackageDetails } from "@/models/magicmirror-package";
 import { SharedStoreService } from "@/services/shared-store.service";
 import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
 import { APIResponse } from "@/services/api/base-api";

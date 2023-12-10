@@ -1,9 +1,9 @@
 import { Component, Input, OnDestroy, OnInit, Output, EventEmitter } from "@angular/core";
-import { DatabaseInfo } from "@/magicmirror/models/database-details";
+import { DatabaseInfo } from "@/models/database-details";
 import { Subscription } from "rxjs";
 import { APIResponse, BaseAPI } from "@/services/api/base-api";
 import { SharedStoreService } from "@/services/shared-store.service";
-import { MagicMirrorPackage } from "@/magicmirror/models/magicmirror-package";
+import { MagicMirrorPackage } from "@/models/magicmirror-package";
 
 @Component({
   selector: "app-database-info",

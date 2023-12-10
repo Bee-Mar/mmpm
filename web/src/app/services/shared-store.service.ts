@@ -1,9 +1,9 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
-import { MagicMirrorPackage } from "@/magicmirror/models/magicmirror-package";
+import { MagicMirrorPackage } from "@/models/magicmirror-package";
 import { MagicMirrorPackageAPI } from "./api/magicmirror-package-api.service";
 import { APIResponse } from "@/services/api/base-api";
-import { DatabaseInfo } from "@/magicmirror/models/database-details";
+import { DatabaseInfo } from "@/models/database-details";
 
 @Injectable({
   providedIn: "root",

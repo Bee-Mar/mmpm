@@ -1,8 +1,8 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {io} from "socket.io-client";
 import {get_cookie, set_cookie} from '@/utils/utils';
 import {BaseAPI} from '@/services/api/base-api';
-import {RingBuffer} from './ring-buffer';
+import {EditorComponent} from 'ngx-monaco-editor-v2';
 
 @Component({
   selector: 'app-log-stream-viewer',
@@ -12,12 +12,33 @@ import {RingBuffer} from './ring-buffer';
 export class LogStreamViewerComponent implements OnInit {
   constructor(private base_api: BaseAPI) {}
 
-  // using a RingBuffer because we don't need to display ALL of the logs. It's
-  // unlikely anyone will be scrolling back too far, and they can just
-  // download the logs anyway
+  @ViewChild(EditorComponent, {static: false})
+  public editor: EditorComponent;
+
   public socket: any;
-  public logs = new RingBuffer<string>(500); // limit the logs displayed the most recent 500 lines
-  public font_size = 12;
+  public logs = "";
+  public font_size = Number(get_cookie("mmpm-log-stream-font-size", "12"));
+
+  public options = {
+    language: "text",
+    readOnly: true,
+    theme: "vs-dark",
+    scrollBeyondLastLine: false,
+    fontSize: this.font_size,
+    minimap: {
+      enabled: false,
+    },
+    scrollbar: {
+      useShadows: true,
+      verticalHasArrows: false,
+      horizontalHasArrows: false,
+      vertical: "visible",
+      verticalScrollbarSize: 12,
+      horizontalScrollbarSize: 12,
+      arrowSize: 30,
+    },
+    automaticLayout: true,
+  };
 
   public ngOnInit(): void {
     this.font_size = Number(get_cookie("mmpm-log-stream-font-size", "12"));
@@ -37,12 +58,17 @@ export class LogStreamViewerComponent implements OnInit {
     });
 
     this.socket.on("logs", (data: string) => {
-      this.logs.push(data);
+      this.logs += (data + "\n\n");
     });
   }
 
-  public set_font_size() {
+  public on_editor_init(editor: any): void {
+    this.editor = editor;
+  }
+
+  public on_font_size_change(): void {
     set_cookie("mmpm-log-stream-font-size", String(this.font_size));
+    this.options = Object.assign({}, this.options, {fontSize: this.font_size});
   }
 
   public on_download() {

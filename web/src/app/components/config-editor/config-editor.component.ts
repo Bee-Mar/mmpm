@@ -72,7 +72,7 @@ export class ConfigEditorComponent implements OnInit {
     language: "javascript",
     theme: "vs-dark",
     scrollBeyondLastLine: false,
-    fontSize: this.font_size ?? 12,
+    fontSize: this.font_size,
     minimap: {
       enabled: false,
     },

@@ -1,24 +1,33 @@
 <p-toolbar>
   <ng-template pTemplate="start">
-    <p-button label="Download" icon="fa-solid fa-download" class="mr-2" (onClick)="on_download()"></p-button>
-  </ng-template>
-  <ng-template pTemplate="center">
+    <p-button label="Download" icon="fa-solid fa-download" [style.marginRight]="'1em'" (onClick)="on_download()"></p-button>
     <span class="text-primary font-semibold text-xl">
-      <code>{{ socket?.connected ? "Connected" : "Disconnected" }}
-      <i class="fa-solid fa-video" [style.color]=" socket?.connected ? '#009933' : '#e05252'" [style.marginLeft]="'1em'"></i>
-      </code>
+      <p-avatar
+        [icon]="socket?.connected ? 'fa-solid fa-signal' : 'fa-solid fa-triangle-exclamation'"
+        styleClass="mr-2"
+        [pTooltip]="socket?.connected ? 'LogServer: connected' : 'LogServer: disconnected'"
+        [style]="{ 'background-color': socket?.connected ? '#009933' : '#e05252' }"
+      ></p-avatar>
     </span>
   </ng-template>
+  <ng-template pTemplate="center"> </ng-template>
   <ng-template pTemplate="end">
-    <span style="margin-right: 1em;">
-      <p-inputNumber [(ngModel)]="font_size" (ngModelChange)="on_font_size_change()" [showButtons]="true" suffix=" px"
-        spinnerMode="vertical" inputId="vertical" decrementButtonClass="p-button-secondary"
-        incrementButtonClass="p-button-secondary" [min]="8" [max]="36">
+    <span style="margin-right: 1em">
+      <p-inputNumber
+        [(ngModel)]="font_size"
+        (ngModelChange)="on_font_size_change()"
+        [showButtons]="true"
+        suffix=" px"
+        spinnerMode="vertical"
+        inputId="vertical"
+        decrementButtonClass="p-button-secondary"
+        incrementButtonClass="p-button-secondary"
+        [min]="8"
+        [max]="36"
+      >
       </p-inputNumber>
     </span>
   </ng-template>
 </p-toolbar>
 
-<ngx-monaco-editor [style]="{'min-height': '66vh'}" [options]="options" (onInit)="on_editor_init($event)"
-  [(ngModel)]="logs">
-</ngx-monaco-editor>
+<ngx-monaco-editor [style]="{ 'min-height': '66vh' }" [options]="options" (onInit)="on_editor_init($event)" [(ngModel)]="logs"> </ngx-monaco-editor>

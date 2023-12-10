@@ -1,6 +1,6 @@
 <p-toolbar>
   <ng-template pTemplate="start">
-    <p-button label="Download" icon="fa-solid fa-download" [style.marginRight]="'1em'" (onClick)="on_download()"></p-button>
+    <p-button label="Download" icon="fa-solid fa-download" [style.marginRight]="'1em'" (onClick)="onDownload()"></p-button>
     <span class="text-primary font-semibold text-xl">
       <p-avatar
         [icon]="socket?.connected ? 'fa-solid fa-signal' : 'fa-solid fa-triangle-exclamation'"
@@ -14,8 +14,8 @@
   <ng-template pTemplate="end">
     <span style="margin-right: 1em">
       <p-inputNumber
-        [(ngModel)]="font_size"
-        (ngModelChange)="on_font_size_change()"
+        [(ngModel)]="fontSize"
+        (ngModelChange)="onFontSizeChange()"
         [showButtons]="true"
         suffix=" px"
         spinnerMode="vertical"
@@ -30,4 +30,4 @@
   </ng-template>
 </p-toolbar>
 
-<ngx-monaco-editor [style]="{ 'min-height': '66vh' }" [options]="options" (onInit)="on_editor_init($event)" [(ngModel)]="logs"> </ngx-monaco-editor>
+<ngx-monaco-editor [style]="{ 'min-height': '66vh' }" [options]="options" (onInit)="onEditorInit($event)" [(ngModel)]="logs"> </ngx-monaco-editor>

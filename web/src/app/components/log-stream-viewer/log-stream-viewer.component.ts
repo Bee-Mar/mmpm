@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from "@angular/core";
 import { io } from "socket.io-client";
-import { get_cookie, set_cookie } from "@/utils/utils";
+import { getCookie, setCookie } from "@/utils/utils";
 import { BaseAPI } from "@/services/api/base-api";
 import { EditorComponent } from "ngx-monaco-editor-v2";
 
@@ -17,14 +17,14 @@ export class LogStreamViewerComponent implements OnInit {
 
   public socket: any;
   public logs = "";
-  public font_size = Number(get_cookie("mmpm-log-stream-font-size", "12"));
+  public fontSize = Number(getCookie("mmpm-log-stream-font-size", "12"));
 
   public options = {
     language: "text",
     readOnly: true,
     theme: "vs-dark",
     scrollBeyondLastLine: false,
-    fontSize: this.font_size,
+    fontSize: this.fontSize,
     minimap: {
       enabled: false,
     },
@@ -41,7 +41,7 @@ export class LogStreamViewerComponent implements OnInit {
   };
 
   public ngOnInit(): void {
-    this.font_size = Number(get_cookie("mmpm-log-stream-font-size", "12"));
+    this.fontSize = Number(getCookie("mmpm-log-stream-font-size", "12"));
 
     this.socket = io(`ws://localhost:6789`, { reconnection: true });
 
@@ -58,16 +58,16 @@ export class LogStreamViewerComponent implements OnInit {
     });
   }
 
-  public on_editor_init(editor: any): void {
+  public onEditorInit(editor: any): void {
     this.editor = editor;
   }
 
-  public on_font_size_change(): void {
-    set_cookie("mmpm-log-stream-font-size", String(this.font_size));
-    this.options = Object.assign({}, this.options, { fontSize: this.font_size });
+  public onFontSizeChange(): void {
+    setCookie("mmpm-log-stream-font-size", String(this.fontSize));
+    this.options = Object.assign({}, this.options, { fontSize: this.fontSize });
   }
 
-  public on_download() {
+  public onDownload() {
     this.base_api.get_zip_archive("logs/archive").then((archive: ArrayBuffer) => {
       const blob = new Blob([archive], { type: "application/zip" });
       const date = new Date();

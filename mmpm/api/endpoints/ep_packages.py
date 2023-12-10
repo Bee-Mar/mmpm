@@ -27,8 +27,19 @@ class Packages(Endpoint):
                 logger.error(message)
                 return self.failure(message)
 
-            logger.info("Sending back retrieved packages")
-            return self.success([package.serialize(full=True) for package in self.db.packages])
+            logger.info("Sending back current packages")
+
+            # this section here is very inefficient, but honestly, there's not much of a way around
+            # it if we want the user to have information about the status of the packages on the web app
+            # also, the data isn't THAT large, so it's fine, but it's definitely kinda gross
+            upgradable = [MagicMirrorPackage(**pkg) for pkg in self.db.upgradable()["packages"]]
+            pkgs = self.db.packages
+
+            for pkg in pkgs:
+                if pkg in upgradable:
+                    pkg.is_upgradable = True
+
+            return self.success([package.serialize(full=True) for package in pkgs])
 
         @self.blueprint.route("/install", methods=[http.POST])
         def install() -> Response:

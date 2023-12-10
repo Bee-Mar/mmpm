@@ -8,7 +8,7 @@ import { firstValueFrom } from "rxjs";
   providedIn: "root",
 })
 export class MagicMirrorPackageAPI extends BaseAPI {
-  private post_packages(url: string, packages: MagicMirrorPackage[]): Promise<APIResponse> {
+  private postPackages(url: string, packages: MagicMirrorPackage[]): Promise<APIResponse> {
     return firstValueFrom(
       this.http.post(this.route(url), { packages }, { headers: this.headers({ "Content-Type": "application/json" }) }).pipe(
         map((response) => {
@@ -20,7 +20,7 @@ export class MagicMirrorPackageAPI extends BaseAPI {
     );
   }
 
-  private post_package(url: string, pkg: MagicMirrorPackage): Promise<APIResponse> {
+  private postPackage(url: string, pkg: MagicMirrorPackage): Promise<APIResponse> {
     return firstValueFrom(
       this.http.post(this.route(url), { package: pkg }, { headers: this.headers({ "Content-Type": "application/json" }) }).pipe(
         map((response) => {
@@ -31,37 +31,37 @@ export class MagicMirrorPackageAPI extends BaseAPI {
       ),
     );
   }
-  public get_packages(): Promise<APIResponse> {
+  public getPackages(): Promise<APIResponse> {
     console.log("Retrieving packages from API");
     return this.get_("packages");
   }
 
-  public post_install_packages(packages: MagicMirrorPackage[]): Promise<APIResponse> {
+  public postInstallPackages(packages: MagicMirrorPackage[]): Promise<APIResponse> {
     console.log(`Requesting to have ${packages.length} packages installed`);
-    return this.post_packages("packages/install", packages);
+    return this.postPackages("packages/install", packages);
   }
 
-  public post_remove_packages(packages: MagicMirrorPackage[]): Promise<APIResponse> {
+  public postRemovePackages(packages: MagicMirrorPackage[]): Promise<APIResponse> {
     console.log(`Requesting to have ${packages.length} packages removed`);
-    return this.post_packages("packages/remove", packages);
+    return this.postPackages("packages/remove", packages);
   }
 
-  public post_upgrade_packages(packages: MagicMirrorPackage[]): Promise<APIResponse> {
+  public postUpgradePackages(packages: MagicMirrorPackage[]): Promise<APIResponse> {
     console.log("Requesting to have packages upgraded");
-    return this.post_packages("packages/upgrade", packages);
+    return this.postPackages("packages/upgrade", packages);
   }
 
-  public post_add_mm_pkg(pkg: MagicMirrorPackage): Promise<APIResponse> {
+  public postAddMmPkg(pkg: MagicMirrorPackage): Promise<APIResponse> {
     console.log("Requesting to add a custom MagicMirrorPackage");
-    return this.post_package("packages/mm-pkg/add", pkg);
+    return this.postPackage("packages/mm-pkg/add", pkg);
   }
 
-  public post_remove_mm_pkgs(packages: MagicMirrorPackage[]): Promise<APIResponse> {
+  public postRemoveMmPkgs(packages: MagicMirrorPackage[]): Promise<APIResponse> {
     console.log("Requesting to remove a custom MagicMirrorPackage");
-    return this.post_packages("packages/mm-pkg/remove", packages);
+    return this.postPackages("packages/mm-pkg/remove", packages);
   }
-  public post_details(pkg: MagicMirrorPackage): Promise<APIResponse> {
+  public postDetails(pkg: MagicMirrorPackage): Promise<APIResponse> {
     console.log(`Requesting to get remote package details for ${pkg.title} (${pkg.repository})`);
-    return this.post_packages("packages/details", [pkg]);
+    return this.postPackages("packages/details", [pkg]);
   }
 }

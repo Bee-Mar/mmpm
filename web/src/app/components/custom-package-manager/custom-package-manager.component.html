@@ -1,0 +1,70 @@
+<p-toast></p-toast>
+<p-menu #menu [model]="customPackageOptions" [popup]="true"></p-menu>
+<p-button (click)="menu.toggle($event)" icon="fa-solid fa-cube" label="Custom Packages" severity="primary"></p-button>
+
+<p-dialog header="Add Custom Package" [(visible)]="displayCustomPkgAddDialog">
+  <p-card>
+    <form #customPackageForm="ngForm">
+      <div class="p-inputgroup" style="margin-bottom: 2em">
+        <span class="p-inputgroup-addon" style="width: 10em">Title</span>
+        <input name="title" pInputText [(ngModel)]="customPackage.title" required />
+      </div>
+      <div class="p-inputgroup" style="margin-bottom: 2em">
+        <span class="p-inputgroup-addon" style="width: 10em">Author</span>
+        <input name="author" pInputText [(ngModel)]="customPackage.author" required />
+      </div>
+      <div class="p-inputgroup" style="margin-bottom: 2em">
+        <span class="p-inputgroup-addon" style="width: 10em">Repository</span>
+        <input name="repository" type="text" pInputText [(ngModel)]="customPackage.repository" required />
+      </div>
+      <div class="p-inputgroup" style="margin-bottom: 2em">
+        <span class="p-inputgroup-addon" style="width: 10em">Description</span>
+        <input name="description" type="text" pInputText [(ngModel)]="customPackage.description" required />
+      </div>
+    </form>
+
+    <div class="confirm-button">
+      <p-button
+        label="Register"
+        [disabled]="!(customPackage.title && customPackage.repository && customPackage.author && customPackage.description)"
+        (click)="on_add_mm_pkg()"
+        icon="fa-solid fa-check"
+        severity="success"
+        [style.marginTop]="'2em'"
+      ></p-button>
+    </div>
+  </p-card>
+</p-dialog>
+
+<p-dialog [(visible)]="displayCustomPkgRemoveDialog" header="Remove Custom Packages">
+  <p-card>
+    <div *ngIf="customPackages && customPackages?.length; else noCustomPackages">
+      <p-listbox
+        [options]="customPackages"
+        [(ngModel)]="selectedCustomPackages"
+        [selectAll]="false"
+        optionLabel="title"
+        [style]="{ width: '15rem' }"
+        [multiple]="true"
+        [checkbox]="true"
+        [showToggleAll]="false"
+        [metaKeySelection]="false"
+        [listStyle]="{ 'max-height': '220px' }"
+      ></p-listbox>
+
+      <div class="confirm-button">
+        <p-button
+          [style.marginTop]="'4em'"
+          label="Remove"
+          [disabled]="!selectedCustomPackages.length"
+          (click)="on_remove_mm_pkg()"
+          icon="fa-solid fa-trash"
+          severity="danger"
+        ></p-button>
+      </div>
+    </div>
+    <ng-template #noCustomPackages>
+      <div>No custom packages found in database.</div>
+    </ng-template>
+  </p-card>
+</p-dialog>

@@ -1,0 +1,89 @@
+<p-toast></p-toast>
+<p-menu #menu [model]="database_options" [popup]="true"></p-menu>
+<p-button (click)="menu.toggle($event)" icon="fa-solid fa-database" label="Database" severity="success"></p-button>
+
+<p-dialog [header]="'Database Info'" [(visible)]="displayDbInfoDialog" [style]="{ width: '20vw', 'max-width': '500px', 'min-width': '400px' }">
+  <p-card>
+    <div class="package-details-grid">
+      <div class="detail">
+        <strong>Last Updated:</strong>
+        <span
+          >{{ dbInfo.last_update }}
+          <i class="fa-solid fa-calendar-days" [style.color]="'white'"></i>
+        </span>
+      </div>
+      <div class="detail">
+        <strong>Total Packages:</strong>
+        <span>
+          {{ dbInfo.packages }}
+          <i class="fa-solid fa-cube" [style.color]="'#ffd54f'"></i>
+        </span>
+      </div>
+      <div class="detail">
+        <strong>Total Categories:</strong>
+        <span>
+          {{ dbInfo.categories }}
+          <i class="fa-solid fa-layer-group" [style.color]="'#23b088'"></i>
+        </span>
+      </div>
+      <div class="detail">
+        <strong>Version:</strong>
+        <span>
+          {{ version }}
+          <i class="fa-solid fa-code-compare" [style.color]="'gray'"></i>
+        </span>
+      </div>
+      <!--
+          <div class="detail">
+            <strong>Updates Available:</strong>
+            <span>
+              <i class="pi pi-{{ selected_package.is_upgradable ? 'check' : 'times' }}-circle" [style.color]="selected_package.is_upgradable ? '#009933' : '#e05252'"></i>
+            </span>
+          </div>
+          -->
+    </div>
+  </p-card>
+</p-dialog>
+
+<p-dialog [header]="'Upgrades'" [(visible)]="displayDbUpgradeDialog" [style]="{ width: '20vw', 'max-width': '500px', 'min-width': '400px' }">
+  <p-card>
+    <div class="package-details-grid">
+      <div class="detail">
+        <strong>Last Updated:</strong>
+        <span
+          >{{ dbInfo.last_update }}
+          <i class="fa-solid fa-calendar-days" [style.color]="'white'"></i>
+        </span>
+      </div>
+      <div class="detail">
+        <strong>Total Packages:</strong>
+        <span>
+          {{ dbInfo.packages }}
+          <i class="fa-solid fa-cube" [style.color]="'#ffd54f'"></i>
+        </span>
+      </div>
+      <div class="detail">
+        <strong>Total Categories:</strong>
+        <span>
+          {{ dbInfo.categories }}
+          <i class="fa-solid fa-layer-group" [style.color]="'#23b088'"></i>
+        </span>
+      </div>
+      <div class="detail">
+        <strong>Version:</strong>
+        <span>
+          {{ version }}
+          <i class="fa-solid fa-code-compare" [style.color]="'gray'"></i>
+        </span>
+      </div>
+      <!--
+          <div class="detail">
+            <strong>Updates Available:</strong>
+            <span>
+              <i class="pi pi-{{ selected_package.is_upgradable ? 'check' : 'times' }}-circle" [style.color]="selected_package.is_upgradable ? '#009933' : '#e05252'"></i>
+            </span>
+          </div>
+          -->
+    </div>
+  </p-card>
+</p-dialog>

@@ -255,18 +255,8 @@ class MagicMirrorDatabase(Singleton):
                 packages = json.load(db)
                 self.packages = [MagicMirrorPackage(**package) for package in packages]
 
-        data: Dict[str, List[Dict[str, str]]] = {"External Packages": []}
-
-        if not db_ext_pkgs_file.stat().st_size == 0:
-            with open(db_ext_pkgs_file, mode="r+", encoding="utf-8") as ext_pkgs:
-                try:
-                    data = json.load(ext_pkgs)
-                except json.decoder.JSONDecodeError:
-                    logger.error(f"{db_ext_pkgs_file} has an invalid layout. Recreating file.")
-                    json.dump(data, ext_pkgs)
-
-        for package in data["External Packages"]:
-            self.packages.append(MagicMirrorPackage(**package))  # type: ignore
+        custom_packages = self.external_packages()
+        self.packages.extend(custom_packages)
 
         self.categories = list({package.category for package in self.packages})
         discovered_packages: List[MagicMirrorPackage] = self.__discover_installed_packages__()
@@ -277,6 +267,26 @@ class MagicMirrorDatabase(Singleton):
                     package.is_installed = True  # type: ignore
 
         return bool(len(self.packages))
+
+
+    def external_packages(self) -> List[MagicMirrorPackage]:
+        data: Dict[str, List[Dict[str, str]]] = {"External Packages": []}
+        packages: List[MagicMirrorPackage] = []
+        db_ext_pkgs_file = paths.MMPM_EXTERNAL_PACKAGES_FILE
+
+        if not db_ext_pkgs_file.stat().st_size == 0:
+            with open(db_ext_pkgs_file, mode="r+", encoding="utf-8") as ext_pkgs:
+                try:
+                    data = json.load(ext_pkgs)
+                except json.decoder.JSONDecodeError:
+                    logger.error(f"{db_ext_pkgs_file} has an invalid layout. Recreating file.")
+                    json.dump(data, ext_pkgs)
+
+        for package in data["External Packages"]:
+            packages.append(MagicMirrorPackage(**package))  # type: ignore
+
+        return packages
+
 
     def display_categories(self, title_only: bool = False) -> None:
         """

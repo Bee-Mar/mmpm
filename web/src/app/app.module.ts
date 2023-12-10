@@ -10,13 +10,15 @@ import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { MonacoEditorModule } from "ngx-monaco-editor-v2";
 import { ConfigEditorComponent } from "./components/config-editor/config-editor.component";
 import { PrimeNgModule } from "./modules/primeng.module";
+import { DatabaseInfoComponent } from "./components/database-info/database-info.component";
+import { CustomPackageManagerComponent } from "./components/custom-package-manager/custom-package-manager.component";
 
 export function init_shared_store(store: SharedStoreService) {
-  return () => store.get_packages();
+  return () => store.getPackages();
 }
 
 @NgModule({
-  declarations: [AppComponent, MmpmMarketPlaceComponent, LogStreamViewerComponent, ConfigEditorComponent],
+  declarations: [AppComponent, MmpmMarketPlaceComponent, LogStreamViewerComponent, ConfigEditorComponent, DatabaseInfoComponent, CustomPackageManagerComponent],
   imports: [BrowserAnimationsModule, BrowserModule, AppRoutingModule, HttpClientModule, PrimeNgModule, MonacoEditorModule.forRoot()],
   providers: [
     {

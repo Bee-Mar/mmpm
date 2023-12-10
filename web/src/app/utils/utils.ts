@@ -1,17 +1,17 @@
-import {getCookie, setCookie} from "typescript-cookie";
+import { getCookie as _getCookie, setCookie as _setCookie } from "typescript-cookie";
 
-export function get_cookie(name: string, default_value: string): string {
-  if (default_value && !getCookie(name)) {
-    set_cookie(name, default_value);
+export function getCookie(name: string, default_value: string): string {
+  if (default_value && !_getCookie(name)) {
+    setCookie(name, default_value);
   }
 
-  return String(getCookie(name));
+  return String(_getCookie(name));
 }
 
-export function set_cookie(name: string, value: string) {
-  setCookie(name, String(value), {expires: 1825, path: ""});
+export function setCookie(name: string, value: string) {
+  _setCookie(name, String(value), { expires: 1825, path: "" });
 }
 
-export function open_url(address: string) {
+export function openUrl(address: string) {
   window.open(address, "_blank");
 }

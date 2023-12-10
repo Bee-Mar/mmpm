@@ -6,7 +6,7 @@ import { catchError, firstValueFrom, retry } from "rxjs";
   providedIn: "root",
 })
 export class ConfigFileAPI extends BaseAPI {
-  public get_config_file(filename: string): Promise<string> {
+  public getConfigFile(filename: string): Promise<string> {
     console.log(`Retrieving ${filename}`);
 
     return firstValueFrom(
@@ -19,7 +19,7 @@ export class ConfigFileAPI extends BaseAPI {
     );
   }
 
-  public post_config_file(filename: string, contents: string): Promise<APIResponse> {
+  public postConfigFile(filename: string, contents: string): Promise<APIResponse> {
     console.log(`Updating ${filename}`);
 
     return firstValueFrom(

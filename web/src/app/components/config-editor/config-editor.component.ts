@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit, ViewChild } from "@angular/core";
 import { EditorComponent } from "ngx-monaco-editor-v2";
-import { get_cookie, set_cookie } from "@/utils/utils";
+import { getCookie, setCookie } from "@/utils/utils";
 import { ConfigFileAPI } from "@/services/api/config-file-api.service";
 import { MessageService } from "primeng/api";
 import { APIResponse } from "@/services/api/base-api";
@@ -18,13 +18,13 @@ interface FileContentsState {
   providers: [MessageService],
 })
 export class ConfigEditorComponent implements OnInit {
-  constructor(private config_file_api: ConfigFileAPI) {}
+  constructor(private configFileApi: ConfigFileAPI) {}
 
   @ViewChild(EditorComponent, { static: false })
   public editor: EditorComponent;
 
-  public file = get_cookie("mmpm-config-editor-selected-file", "config.js");
-  public font_size = Number(get_cookie("mmpm-config-editor-font-size", "12"));
+  public file = getCookie("mmpm-config-editor-selected-file", "config.js");
+  public fontSize = Number(getCookie("mmpm-config-editor-font-size", "12"));
 
   public state: { [key: string]: FileContentsState } = {
     "config.js": {
@@ -49,21 +49,21 @@ export class ConfigEditorComponent implements OnInit {
       label: "config.js",
       icon: "fa-solid fa-code",
       command: () => {
-        this.on_select_file("config.js");
+        this.onSelectFile("config.js");
       },
     },
     {
       label: "mmpm-env.json",
       icon: "fa-solid fa-code",
       command: () => {
-        this.on_select_file("mmpm-env.json");
+        this.onSelectFile("mmpm-env.json");
       },
     },
     {
       label: "custom.css",
       icon: "fa-solid fa-code",
       command: () => {
-        this.on_select_file("custom.css");
+        this.onSelectFile("custom.css");
       },
     },
   ];
@@ -72,7 +72,7 @@ export class ConfigEditorComponent implements OnInit {
     language: "javascript",
     theme: "vs-dark",
     scrollBeyondLastLine: false,
-    fontSize: this.font_size,
+    fontSize: this.fontSize,
     minimap: {
       enabled: false,
     },
@@ -96,34 +96,34 @@ export class ConfigEditorComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.on_select_file(this.file);
+    this.onSelectFile(this.file);
   }
 
-  public on_editor_init(editor: EditorComponent): void {
+  public onEditorInit(editor: EditorComponent): void {
     this.editor = editor;
   }
 
-  public on_select_file(file: string): void {
+  public onSelectFile(file: string): void {
     this.file = file;
 
-    set_cookie("mmpm-config-editor-selected-file", this.file);
+    setCookie("mmpm-config-editor-selected-file", this.file);
 
     if (!this.state[file].current) {
-      this.config_file_api.get_config_file(this.file).then((contents: string) => {
+      this.configFileApi.getConfigFile(this.file).then((contents: string) => {
         this.state[file].current = this.state[file].saved = contents;
-        this.set_language();
+        this.setLanguage();
       });
     } else {
-      this.set_language();
+      this.setLanguage();
     }
   }
 
-  private set_language() {
+  private setLanguage() {
     this.options = Object.assign({}, this.options, { language: this.state[this.file].language });
   }
 
-  public on_save_file(): void {
-    this.config_file_api.post_config_file(this.file, this.state[this.file].current).then((response: APIResponse) => {
+  public onSaveFile(): void {
+    this.configFileApi.postConfigFile(this.file, this.state[this.file].current).then((response: APIResponse) => {
       if (response.code === 200) {
         this.state[this.file].saved = this.state[this.file].current;
       } else {
@@ -132,8 +132,8 @@ export class ConfigEditorComponent implements OnInit {
     });
   }
 
-  public on_font_size_change(): void {
-    set_cookie("mmpm-config-editor-font-size", String(this.font_size));
-    this.options = Object.assign({}, this.options, { fontSize: this.font_size });
+  public onFontSizeChange(): void {
+    setCookie("mmpm-config-editor-font-size", String(this.fontSize));
+    this.options = Object.assign({}, this.options, { fontSize: this.fontSize });
   }
 }

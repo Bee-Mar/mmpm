@@ -4,7 +4,7 @@
   </a>
 </div>
 
-<p-tabView [scrollable]="true" [(activeIndex)]="active_index" (onChange)="on_tab_change($event.index)">
+<p-tabView [scrollable]="true" [(activeIndex)]="index" (onChange)="onTabChange($event.index)">
   <p-tabPanel header="MagicMirror Controller" rightIcon="fa-solid fa-gamepad"> </p-tabPanel>
 
   <p-tabPanel header="Marketplace" rightIcon="fa-solid fa-shop">

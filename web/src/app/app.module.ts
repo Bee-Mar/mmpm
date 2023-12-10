@@ -25,14 +25,19 @@ import {InputTextModule} from "primeng/inputtext";
 import {ListboxModule} from "primeng/listbox";
 import {LogStreamViewerComponent} from './components/log-stream-viewer/log-stream-viewer.component';
 import {ScrollPanelModule} from 'primeng/scrollpanel';
-import {Slider, SliderModule} from "primeng/slider";
+import {SliderModule} from "primeng/slider";
+import {MonacoEditorModule} from 'ngx-monaco-editor-v2';
+import {MenuModule} from "primeng/menu";
+import {ToastModule} from "primeng/toast";
+import {ConfigEditorComponent} from './components/config-editor/config-editor.component';
+
 
 export function init_shared_store(store: SharedStoreService) {
   return () => store.get_packages();
 }
 
 @NgModule({
-  declarations: [AppComponent, MmpmMarketPlaceComponent, LogStreamViewerComponent],
+  declarations: [AppComponent, MmpmMarketPlaceComponent, LogStreamViewerComponent, ConfigEditorComponent],
   imports: [
     BrowserAnimationsModule,
     BrowserModule,
@@ -56,7 +61,10 @@ export function init_shared_store(store: SharedStoreService) {
     InputTextModule,
     ListboxModule,
     ScrollPanelModule,
-    SliderModule
+    SliderModule,
+    MenuModule,
+    ToastModule,
+    MonacoEditorModule.forRoot()
   ],
   providers: [
     {

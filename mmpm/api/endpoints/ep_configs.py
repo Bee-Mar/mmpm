@@ -60,7 +60,10 @@ class Configs(Endpoint):
 
             contents = request.get_json().get("contents")
 
-            with open(file, mode="w", encoding="utf-8") as file_to_edit:
-                file_to_edit.write(contents)
+            try:
+                with open(file, mode="w", encoding="utf-8") as file_to_edit:
+                    file_to_edit.write(contents)
+            except Exception as error:
+                self.failure(False)
 
-            return send_file(self.files.get(filename), filename, as_attachment=True)
+            return self.success(True)

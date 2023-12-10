@@ -1,0 +1,16 @@
+[Unit]
+Description=MMPM Gunicorn daemon
+After=network.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+User=SUBSTITUTE_user
+Type=notify
+ExecStart=SUBSTITUTE_gunicorn --worker-class gevent --bind localhost:7891 mmpm.wsgi:app --user=SUBSTITUTE_user
+ExecReload=/bin/kill -s HUP $MAINPID
+PIDFile=/run/mmpm.pid
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true

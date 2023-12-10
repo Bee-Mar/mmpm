@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {BaseAPI} from './base-api';
+import {APIResponse, BaseAPI} from './base-api';
 import {catchError, firstValueFrom, retry} from 'rxjs';
 
 @Injectable({
@@ -20,7 +20,7 @@ export class ConfigFileAPI extends BaseAPI {
     );
   }
 
-  public post_config_file(filename: string, contents: string): Promise<string> {
+  public post_config_file(filename: string, contents: string): Promise<APIResponse> {
     console.log(`Updating ${filename}`);
 
     return firstValueFrom(
@@ -32,7 +32,7 @@ export class ConfigFileAPI extends BaseAPI {
           },
           {
             headers: this.headers({
-              "Content-Type": "application/x-www-form-urlencoded",
+              "Content-Type": "application/json",
             }),
           },
         )

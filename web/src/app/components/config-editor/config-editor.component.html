@@ -1,0 +1,24 @@
+<div class="card">
+  <p-toolbar>
+    <ng-template pTemplate="start">
+      <p-button label="Save" icon="fa-solid fa-floppy-disk" [style]="{'margin-right': '1em'}" (click)="on_save_file()"
+        [disabled]="state[file].current === state[file].saved" severity="success">
+      </p-button>
+
+      <p-toast></p-toast>
+      <p-menu #menu [model]="file_options" [popup]="true"></p-menu>
+      <p-button (click)="menu.toggle($event)" icon="fa-solid fa-file" label="Files" severity="primary"></p-button>
+
+    </ng-template>
+    <ng-template pTemplate="center">
+      <span class="text-primary font-semibold text-xl"></span>
+    </ng-template>
+    <ng-template pTemplate="end">
+      <i class="fa-solid fa-code" [style]="{'color': 'white', 'margin-right': '1em'}"></i>
+      <code>{{ file }}</code>
+    </ng-template>
+  </p-toolbar>
+  <ngx-monaco-editor [style]="{'min-height': '66vh'}" [options]="options" (onInit)="on_editor_init($event)"
+    [(ngModel)]="state[file].current">
+  </ngx-monaco-editor>
+</div>

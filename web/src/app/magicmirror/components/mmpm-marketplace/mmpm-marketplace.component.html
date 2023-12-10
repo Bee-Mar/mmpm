@@ -44,7 +44,7 @@
 
             <p-divider></p-divider>
 
-            <div class="confirm-shopping-cart-button">
+            <div class="confirm-button">
               <p-button label="Checkout" [disabled]="!(selected_packages && selected_packages.length > 0)" (click)="on_confirm_shopping_cart()"></p-button>
             </div>
 
@@ -262,7 +262,7 @@
   </p-dialog>
 
   <p-dialog header="Add Custom Package" [(visible)]="display_custom_pkg_add_dialog">
-    <p-panel>
+    <p-card>
       <form #customPackageForm="ngForm">
         <div class="p-inputgroup" style="margin-bottom: 2em">
           <span class="p-inputgroup-addon" style="width: 10em">Title</span>
@@ -282,19 +282,20 @@
         </div>
       </form>
 
-      <div class="confirm-shopping-cart-button">
+      <div class="confirm-button">
         <p-button
           label="Register"
           [disabled]="!(custom_package.title && custom_package.repository && custom_package.author && custom_package.description)"
           (click)="on_add_mm_pkg()"
           icon="fa-solid fa-check"
           severity="success"
+          [style.marginTop]="'2em'"
         ></p-button>
       </div>
-    </p-panel>
+    </p-card>
   </p-dialog>
   <p-dialog [(visible)]="display_custom_pkg_remove_dialog" header="Remove Custom Packages">
-    <p-panel>
+    <p-card>
       <div *ngIf="custom_packages && custom_packages?.length; else noCustomPackages">
         <p-listbox
           [options]="custom_packages"
@@ -302,23 +303,27 @@
           [selectAll]="false"
           optionLabel="title"
           [style]="{ width: '15rem' }"
-          [virtualScroll]="true"
-          [virtualScrollItemSize]="43"
           [multiple]="true"
           [checkbox]="true"
           [showToggleAll]="false"
           [metaKeySelection]="false"
-          [showToggleAll]="true"
           [listStyle]="{ 'max-height': '220px' }"
         ></p-listbox>
 
-        <div class="confirm-shopping-cart-button">
-          <p-button label="Submit" [disabled]="!selected_custom_packages" (click)="on_remove_mm_pkg()" icon="fa-solid fa-plus"></p-button>
+        <div class="confirm-button">
+          <p-button
+            [style.marginTop]="'4em'"
+            label="Remove"
+            [disabled]="!selected_custom_packages.length"
+            (click)="on_remove_mm_pkg()"
+            icon="fa-solid fa-trash"
+            severity="danger"
+          ></p-button>
         </div>
       </div>
       <ng-template #noCustomPackages>
         <div>No custom packages found in database.</div>
       </ng-template>
-    </p-panel>
+    </p-card>
   </p-dialog>
 </div>

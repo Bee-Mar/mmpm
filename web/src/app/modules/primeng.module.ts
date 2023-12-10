@@ -21,6 +21,7 @@ import { MenuModule } from "primeng/menu";
 import { ToastModule } from "primeng/toast";
 import { InputNumberModule } from "primeng/inputnumber";
 import { AvatarModule } from "primeng/avatar";
+import { CardModule } from "primeng/card";
 
 // all the modules from primeng are grouped in here for cleanliness
 const PrimeNg = [
@@ -46,6 +47,7 @@ const PrimeNg = [
   MenuModule,
   ToastModule,
   AvatarModule,
+  CardModule,
 ];
 
 @NgModule({

@@ -1,10 +1,10 @@
 <div class="card">
   <p-toolbar>
-    <div class="p-toolbar-group-start">
+    <ng-template pTemplate="start">
       <p-splitButton label="Custom Package" icon="fa-solid fa-cube" [model]="custom_package_options"
         styleClass="p-button-primary"></p-splitButton>
-    </div>
-    <div class="p-toolbar-group-end">
+    </ng-template>
+    <ng-template pTemplate="end">
       <p-button icon="fa-solid fa-rotate-right" pTooltip="Update Database" tooltipPosition="top"
         styleClass="p-button-success mr-4" label="Update" (click)="on_update_db()"></p-button>
 
@@ -57,7 +57,7 @@
         </p-panel>
       </p-overlayPanel>
 
-    </div>
+    </ng-template>
   </p-toolbar>
 
   <p-table #dt [value]="packages" styleClass="p-datatable-striped p-datatable-sm" [rows]="10"

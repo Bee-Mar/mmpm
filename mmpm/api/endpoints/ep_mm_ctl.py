@@ -33,11 +33,6 @@ class MmCtl(Endpoint):
 
             return self.failure("Failed to remove MagicMirror")
 
-        @self.blueprint.route("/update", methods=[http.POST])
-        def update() -> Response:
-            can_upgrade_magicmirror = self.magicmirror.update()
-            return self.success({"can-upgrade-magicmirror": can_upgrade_magicmirror})
-
         @self.blueprint.route("/upgrade", methods=[http.POST])
         def upgrade() -> Response:
             if self.magicmirror.upgrade():

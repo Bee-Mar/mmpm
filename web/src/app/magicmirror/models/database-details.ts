@@ -1,5 +1,6 @@
 export interface DatabaseInfo {
-  last_updated: Date;
-  categories: number;
-  packages: number;
+  last_update?: string;
+  categories?: number;
+  packages?: number;
 }
+

@@ -164,7 +164,7 @@ class MagicMirrorDatabase(Singleton):
         """
 
         return {
-            "last-update": str(self.last_update),
+            "last_update": str(self.last_update),
             "categories": len(self.categories),
             "packages": len(self.packages),
         }
@@ -240,13 +240,13 @@ class MagicMirrorDatabase(Singleton):
 
                 with open(db_last_update, "w", encoding="utf-8") as last_update_file:
                     self.last_update = datetime.datetime.now()
-                    json.dump({"last-update": str(self.last_update.replace(microsecond=0))}, last_update_file)
+                    json.dump({"last_update": str(self.last_update.replace(microsecond=0))}, last_update_file)
             else:
                 logger.error(f"Failed to retrieve packages from {urls.MAGICMIRROR_MODULES_URL}. Please check your internet connection.")
 
         else:
             with open(db_last_update, mode="r", encoding="utf-8") as db_last_update_file:
-                self.last_update = json.load(db_last_update_file)["last-update"]
+                self.last_update = json.load(db_last_update_file)["last_update"]
 
         if not self.packages and db_exists:
             self.packages = []

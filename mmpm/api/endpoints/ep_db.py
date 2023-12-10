@@ -6,6 +6,7 @@ from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
+from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.utils import update_available
 
 logger = MMPMLogger.get_logger(__name__)
@@ -16,6 +17,7 @@ class Db(Endpoint):
         self.name = "db"
         self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
         self.db = MagicMirrorDatabase()
+        self.magicmirror = MagicMirror()
 
         @self.blueprint.route("/update", methods=[http.POST])
         def update() -> Response:
@@ -23,7 +25,7 @@ class Db(Endpoint):
                 return self.failure("Failed to update database")
 
             can_upgrade_mmpm = update_available()
-            can_upgrade_magicmirror = request.get_json()["can-upgrade-magicmirror"]
+            can_upgrade_magicmirror = self.magicmirror.update()
             upgradable_count = self.db.update(can_upgrade_mmpm=can_upgrade_mmpm, can_upgrade_magicmirror=can_upgrade_magicmirror)
 
             return self.success(json.dumps({"upgradable-count": upgradable_count}))

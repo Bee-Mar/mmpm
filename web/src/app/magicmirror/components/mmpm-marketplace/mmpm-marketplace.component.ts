@@ -5,6 +5,7 @@ import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.serv
 import {APIResponse, BaseAPI} from "@/services/api/base-api";
 import {Subscription} from "rxjs";
 import {MarketPlaceIcons, DefaultMarketPlaceIcon} from "./marketplace-icons.model";
+import {DatabaseInfo} from '@/magicmirror/models/database-details';
 
 @Component({
   selector: "app-mmpm-marketplace",
@@ -14,7 +15,9 @@ import {MarketPlaceIcons, DefaultMarketPlaceIcon} from "./marketplace-icons.mode
 export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   constructor(private store: SharedStoreService, private mm_pkg_api: MagicMirrorPackageAPI, private base_api: BaseAPI) {}
 
-  private subscription: Subscription = new Subscription();
+  private packages_subscription: Subscription = new Subscription();
+  private db_info_subscription: Subscription = new Subscription();
+
   private default_icon = DefaultMarketPlaceIcon;
 
   public icons = MarketPlaceIcons;
@@ -33,6 +36,7 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   public selected_custom_packages = new Array<MagicMirrorPackage>();
   public custom_package: MagicMirrorPackage = this.clear_custom_package();
   public selected_categories = new Array<string>();
+  public db_info: DatabaseInfo;
 
   public custom_package_options = [
     {
@@ -62,9 +66,13 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit(): void {
-    this.subscription = this.store.packages.subscribe((packages: Array<MagicMirrorPackage>) => {
+    this.db_info_subscription = this.store.db_info.subscribe((info: DatabaseInfo) => {
+      this.db_info = info;
+      console.log(info);
+    });
+
+    this.packages_subscription = this.store.packages.subscribe((packages: Array<MagicMirrorPackage>) => {
       this.packages = packages;
-      this.loading = false;
       this.custom_packages = [];
 
       this.categories = this.packages.map((pkg) => pkg.category).filter((category, index, self) => self.indexOf(category) === index);
@@ -78,13 +86,17 @@ export class MmpmMarketPlaceComponent implements OnInit, OnDestroy {
         if (pkg.category && !this.icons[pkg.category]) {
           this.icons[pkg.category] = {...this.default_icon};
         }
+
+        this.loading = false;
       });
     });
   }
 
   ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
+    for (const subscription of [this.packages_subscription, this.db_info_subscription]) {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     }
   }
 

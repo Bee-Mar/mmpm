@@ -24,7 +24,7 @@ class Configs(Endpoint):
             "mmpm-env.json": paths.MMPM_ENV_FILE,
             "config.js": self.env.MMPM_MAGICMIRROR_ROOT.get() / "config" / "config.js",
             "custom.css": self.env.MMPM_MAGICMIRROR_ROOT.get() / "css" / "custom.css",
-            "config.js.sample": self.env.MMPM_MAGICMIRROR_ROOT.get() / "config" / "config.js",
+            "config.js.sample": self.env.MMPM_MAGICMIRROR_ROOT.get() / "config" / "config.js.sample",
         }
 
         @self.blueprint.route("/retrieve/<filename>", methods=[http.GET])

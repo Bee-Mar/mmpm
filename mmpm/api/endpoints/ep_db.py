@@ -19,7 +19,7 @@ class Db(Endpoint):
         self.db = MagicMirrorDatabase()
         self.magicmirror = MagicMirror()
 
-        @self.blueprint.route("/update", methods=[http.POST])
+        @self.blueprint.route("/update", methods=[http.GET])
         def update() -> Response:
             if not self.db.load(update=True):
                 return self.failure("Failed to update database")
@@ -28,7 +28,7 @@ class Db(Endpoint):
             can_upgrade_magicmirror = self.magicmirror.update()
             upgradable_count = self.db.update(can_upgrade_mmpm=can_upgrade_mmpm, can_upgrade_magicmirror=can_upgrade_magicmirror)
 
-            return self.success(json.dumps({"upgradable-count": upgradable_count}))
+            return self.success(self.db.upgradable())
 
         @self.blueprint.route("/upgradable", methods=[http.GET])
         def upgradable() -> Response:

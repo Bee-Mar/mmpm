@@ -59,6 +59,6 @@ export const MarketPlaceIcons: { [key: string]: Icon } = {
 };
 
 export const DefaultMarketPlaceIcon: Icon = {
-  logo: "fa-solid fa-question",
-  color: "black",
+  logo: "fa-solid fa-circle-question",
+  color: "#8447ed",
 };

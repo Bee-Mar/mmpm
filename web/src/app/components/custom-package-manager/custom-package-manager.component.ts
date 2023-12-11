@@ -88,7 +88,7 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
     };
   }
 
-  public on_add_mm_pkg(): void {
+  public onAddMmPkg(): void {
     this.loading = true;
     this.loadingChange.emit(this.loading);
 
@@ -96,7 +96,7 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
       .postAddMmPkg(this.customPackage)
       .then((response: APIResponse) => {
         if (response.code === 200) {
-          this.store.getPackages();
+          this.store.load();
           console.log(response);
           this.customPackage = this.clearCustomPackage();
           this.customPackageForm.reset();
@@ -108,7 +108,7 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
       .catch((error) => console.log(error));
   }
 
-  public on_remove_mm_pkg(): void {
+  public onRemoveMmPkg(): void {
     this.loading = true;
     this.loadingChange.emit(this.loading);
 
@@ -116,7 +116,7 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
       .postRemoveMmPkgs(this.selectedCustomPackages)
       .then((response: APIResponse) => {
         if (response.code === 200) {
-          this.store.getPackages();
+          this.store.load();
         }
 
         this.loading = false;

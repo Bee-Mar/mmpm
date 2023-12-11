@@ -1,6 +1,6 @@
 <p-toast></p-toast>
-<p-menu #menu [model]="database_options" [popup]="true"></p-menu>
-<p-button (click)="menu.toggle($event)" icon="fa-solid fa-database" label="Database" severity="success"></p-button>
+<p-menu #menu [model]="databaseOptions" [popup]="true"></p-menu>
+<p-button (click)="menu.toggle($event)" icon="fa-solid fa-database" label="Database" severity="help" badge="{{ upgradableItems.length }}" badgeClass="p-badge-info"></p-button>
 
 <p-dialog [header]="'Database Info'" [(visible)]="displayDbInfoDialog" [style]="{ width: '20vw', 'max-width': '500px', 'min-width': '400px' }">
   <p-card>
@@ -33,57 +33,38 @@
           <i class="fa-solid fa-code-compare" [style.color]="'gray'"></i>
         </span>
       </div>
-      <!--
-          <div class="detail">
-            <strong>Updates Available:</strong>
-            <span>
-              <i class="pi pi-{{ selected_package.is_upgradable ? 'check' : 'times' }}-circle" [style.color]="selected_package.is_upgradable ? '#009933' : '#e05252'"></i>
-            </span>
-          </div>
-          -->
+      <div class="detail">
+        <strong>Updates Available:</strong>
+        <span>
+          <i class="pi pi-{{ upgradesAvailable ? 'check' : 'times' }}-circle" [style.color]="upgradesAvailable ? '#009933' : '#e05252'"></i>
+        </span>
+      </div>
     </div>
   </p-card>
 </p-dialog>
 
-<p-dialog [header]="'Upgrades'" [(visible)]="displayDbUpgradeDialog" [style]="{ width: '20vw', 'max-width': '500px', 'min-width': '400px' }">
+<p-dialog [header]="'Available Upgrades'" [(visible)]="displayDbUpgradeDialog" [style]="{ width: '30rem', 'max-width': '700px' }">
   <p-card>
-    <div class="package-details-grid">
-      <div class="detail">
-        <strong>Last Updated:</strong>
-        <span
-          >{{ dbInfo.last_update }}
-          <i class="fa-solid fa-calendar-days" [style.color]="'white'"></i>
-        </span>
+    <div *ngIf="upgradesAvailable; else noUpgrades" class="package-details-grid">
+      <p-listbox
+        [options]="upgradableItems"
+        [(ngModel)]="selectedUpgrades"
+        [selectAll]="true"
+        optionLabel="title"
+        [style]="{ width: '25rem', margin: '0 auto' }"
+        [multiple]="true"
+        [checkbox]="true"
+        [showToggleAll]="false"
+        [metaKeySelection]="false"
+        [listStyle]="{ 'max-height': '220px' }"
+      ></p-listbox>
+
+      <div class="confirm-button">
+        <p-button [style.marginTop]="'4em'" label="Confirm" [disabled]="!selectedUpgrades.length" (click)="onUpgrade()" icon="fa-solid fa-check" severity="success"></p-button>
       </div>
-      <div class="detail">
-        <strong>Total Packages:</strong>
-        <span>
-          {{ dbInfo.packages }}
-          <i class="fa-solid fa-cube" [style.color]="'#ffd54f'"></i>
-        </span>
-      </div>
-      <div class="detail">
-        <strong>Total Categories:</strong>
-        <span>
-          {{ dbInfo.categories }}
-          <i class="fa-solid fa-layer-group" [style.color]="'#23b088'"></i>
-        </span>
-      </div>
-      <div class="detail">
-        <strong>Version:</strong>
-        <span>
-          {{ version }}
-          <i class="fa-solid fa-code-compare" [style.color]="'gray'"></i>
-        </span>
-      </div>
-      <!--
-          <div class="detail">
-            <strong>Updates Available:</strong>
-            <span>
-              <i class="pi pi-{{ selected_package.is_upgradable ? 'check' : 'times' }}-circle" [style.color]="selected_package.is_upgradable ? '#009933' : '#e05252'"></i>
-            </span>
-          </div>
-          -->
     </div>
+    <ng-template #noUpgrades>
+      <div>Everything is up to date.</div>
+    </ng-template>
   </p-card>
 </p-dialog>

@@ -3,6 +3,7 @@
 from flask import Blueprint, Response, request
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
+from mmpm.constants import paths
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.controller import MagicMirrorController
 from mmpm.magicmirror.magicmirror import MagicMirror
@@ -33,7 +34,7 @@ class MmCtl(Endpoint):
 
             return self.failure("Failed to remove MagicMirror")
 
-        @self.blueprint.route("/upgrade", methods=[http.POST])
+        @self.blueprint.route("/upgrade", methods=[http.GET])
         def upgrade() -> Response:
             if self.magicmirror.upgrade():
                 return self.success("MagicMirror updated")

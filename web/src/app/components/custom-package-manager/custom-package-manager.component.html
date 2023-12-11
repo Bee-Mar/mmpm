@@ -27,7 +27,7 @@
       <p-button
         label="Register"
         [disabled]="!(customPackage.title && customPackage.repository && customPackage.author && customPackage.description)"
-        (click)="on_add_mm_pkg()"
+        (click)="onAddMmPkg()"
         icon="fa-solid fa-check"
         severity="success"
         [style.marginTop]="'2em'"
@@ -36,7 +36,7 @@
   </p-card>
 </p-dialog>
 
-<p-dialog [(visible)]="displayCustomPkgRemoveDialog" header="Remove Custom Packages">
+<p-dialog [(visible)]="displayCustomPkgRemoveDialog" header="Remove Custom Packages" [style]="{ width: '30rem', 'max-width': '700px' }">
   <p-card>
     <div *ngIf="customPackages && customPackages?.length; else noCustomPackages">
       <p-listbox
@@ -44,7 +44,7 @@
         [(ngModel)]="selectedCustomPackages"
         [selectAll]="false"
         optionLabel="title"
-        [style]="{ width: '15rem' }"
+        [style]="{ width: '25rem', margin: '0 auto' }"
         [multiple]="true"
         [checkbox]="true"
         [showToggleAll]="false"
@@ -57,7 +57,7 @@
           [style.marginTop]="'4em'"
           label="Remove"
           [disabled]="!selectedCustomPackages.length"
-          (click)="on_remove_mm_pkg()"
+          (click)="onRemoveMmPkg()"
           icon="fa-solid fa-trash"
           severity="danger"
         ></p-button>

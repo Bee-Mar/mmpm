@@ -7,10 +7,11 @@ from gevent import monkey
 
 monkey.patch_all()
 
+import sys
+
 import socketio
 from gevent import pywsgi
 from geventwebsocket.handler import WebSocketHandler
-
 from mmpm.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
@@ -46,4 +47,6 @@ if __name__ == "__main__":
     try:
         pywsgi.WSGIServer(("", 6789), app, handler_class=WebSocketHandler).serve_forever()
     except KeyboardInterrupt:
+        gevent.signal(signal.SIGTERM, server.stop)
         logger.debug("Log server stopped by CTRL-C")
+        sys.exit(0)

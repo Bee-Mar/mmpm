@@ -56,6 +56,6 @@ export class ShoppingCartComponent {
       }
     }
 
-    this.store.getPackages();
+    this.store.load();
   }
 }

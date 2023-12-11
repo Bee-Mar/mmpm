@@ -16,7 +16,7 @@ import { PackageDetailsViewerComponent } from "./components/package-details-view
 import { ShoppingCartComponent } from "./components/shopping-cart/shopping-cart.component";
 
 export function init_shared_store(store: SharedStoreService) {
-  return () => store.getPackages();
+  return () => store.load();
 }
 
 @NgModule({

@@ -128,6 +128,7 @@ class MagicMirrorDatabase(Singleton):
 
         return packages_found
 
+
     def update(self, can_upgrade_mmpm: bool = False, can_upgrade_magicmirror: bool = False) -> int:
         upgradable: List[MagicMirrorPackage] = []
 

@@ -5,12 +5,7 @@ import { Subscription } from "rxjs";
 import { MarketPlaceIcons, DefaultMarketPlaceIcon } from "./marketplace-icons.model";
 import { MessageService } from "primeng/api";
 
-@Component({
-  selector: "app-marketplace",
-  templateUrl: "./marketplace.component.html",
-  styleUrls: ["./marketplace.component.scss"],
-  providers: [MessageService],
-})
+@Component({ selector: "app-marketplace", templateUrl: "./marketplace.component.html", styleUrls: ["./marketplace.component.scss"], providers: [MessageService] })
 export class MarketPlaceComponent implements OnInit, OnDestroy {
   constructor(private store: SharedStoreService) {}
 

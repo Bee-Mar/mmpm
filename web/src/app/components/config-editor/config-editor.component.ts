@@ -4,6 +4,7 @@ import { getCookie, setCookie } from "@/utils/utils";
 import { ConfigFileAPI } from "@/services/api/config-file-api.service";
 import { MessageService } from "primeng/api";
 import { APIResponse } from "@/services/api/base-api";
+import { SharedStoreService } from "@/services/shared-store.service";
 
 interface FileContentsState {
   current: string;
@@ -18,7 +19,7 @@ interface FileContentsState {
   providers: [MessageService],
 })
 export class ConfigEditorComponent implements OnInit {
-  constructor(private configFileApi: ConfigFileAPI) {}
+  constructor(private configFileApi: ConfigFileAPI, private store: SharedStoreService, private msg: MessageService) {}
 
   @ViewChild(EditorComponent, { static: false })
   public editor: EditorComponent;
@@ -44,7 +45,7 @@ export class ConfigEditorComponent implements OnInit {
     },
   };
 
-  public file_options = [
+  public fileOptions = [
     {
       label: "config.js",
       icon: "fa-solid fa-code",
@@ -95,6 +96,16 @@ export class ConfigEditorComponent implements OnInit {
     }
   }
 
+  public handleKeyDown(event: KeyboardEvent): void {
+    if (event.ctrlKey && event.key === "s") {
+      event.preventDefault();
+
+      if (this.state[this.file].current !== this.state[this.file].saved) {
+        this.onSaveFile();
+      }
+    }
+  }
+
   public ngOnInit(): void {
     this.onSelectFile(this.file);
   }
@@ -126,8 +137,11 @@ export class ConfigEditorComponent implements OnInit {
     this.configFileApi.postConfigFile(this.file, this.state[this.file].current).then((response: APIResponse) => {
       if (response.code === 200) {
         this.state[this.file].saved = this.state[this.file].current;
+        this.store.load();
+        this.msg.add({ severity: "success", summary: "Save File", detail: `Saved ${this.file}` });
       } else {
         console.log(response.message);
+        this.msg.add({ severity: "error", summary: "Save File", detail: response.message });
       }
     });
   }

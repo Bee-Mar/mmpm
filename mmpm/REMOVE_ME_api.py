@@ -370,16 +370,16 @@ def external_packages_remove() -> Response:
         logger.info(f"Removed {package.title}")
 
     try:
-        with open(mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE, mode="w", encoding="utf-8") as mmpm_ext_srcs:
+        with open(mmpm.consts.MMPM_CUSTOM_PACKAGES_FILE, mode="w", encoding="utf-8") as mmpm_ext_srcs:
             json.dump(ext_packages, mmpm_ext_srcs)
 
-        logger.info(f"Wrote updated external modules to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}")
+        logger.info(f"Wrote updated external modules to {mmpm.consts.MMPM_CUSTOM_PACKAGES_FILE}")
 
     except IOError as error:
         logger.error(error)
         return Response(json.dumps({"error": str(error)}))
 
-    logger.info(f"Wrote external modules to {mmpm.consts.MMPM_EXTERNAL_PACKAGES_FILE}")
+    logger.info(f"Wrote external modules to {mmpm.consts.MMPM_CUSTOM_PACKAGES_FILE}")
     return Response(json.dumps({"error": "no_error"}))
 
 

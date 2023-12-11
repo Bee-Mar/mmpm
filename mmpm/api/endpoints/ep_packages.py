@@ -66,7 +66,7 @@ class Packages(Endpoint):
             if self.db.add_mm_pkg(package.title, package.author, package.repository, package.description):
                 return self.success(f"Added custom package named {package.title}")
 
-            return self.failure("Failed to add custom package")
+            return self.failure("Failed to add custom package. See logs for details.")
 
         @self.blueprint.route("/mm-pkg/remove", methods=[http.POST])
         def remove_mm_pkg() -> Response:

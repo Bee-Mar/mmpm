@@ -1,8 +1,8 @@
-import {Component, OnDestroy, OnInit, ViewChild} from "@angular/core";
-import {io} from "socket.io-client";
-import {getCookie, setCookie} from "@/utils/utils";
-import {BaseAPI} from "@/services/api/base-api";
-import {EditorComponent} from "ngx-monaco-editor-v2";
+import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { io } from "socket.io-client";
+import { getCookie, setCookie } from "@/utils/utils";
+import { BaseAPI } from "@/services/api/base-api";
+import { EditorComponent } from "ngx-monaco-editor-v2";
 
 @Component({
   selector: "app-log-stream-viewer",
@@ -12,7 +12,7 @@ import {EditorComponent} from "ngx-monaco-editor-v2";
 export class LogStreamViewerComponent implements OnInit, OnDestroy {
   constructor(private base_api: BaseAPI) {}
 
-  @ViewChild(EditorComponent, {static: false})
+  @ViewChild(EditorComponent, { static: false })
   public editor: EditorComponent;
 
   public socket: any;
@@ -43,7 +43,7 @@ export class LogStreamViewerComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     this.fontSize = Number(getCookie("mmpm-log-stream-font-size", "12"));
 
-    this.socket = io(`ws://localhost:6789`, {reconnection: true});
+    this.socket = io(`ws://localhost:6789`, { reconnection: true });
 
     this.socket.on("connect", () => {
       console.log("Connected to Socket.IO log server");
@@ -70,12 +70,12 @@ export class LogStreamViewerComponent implements OnInit, OnDestroy {
 
   public onFontSizeChange(): void {
     setCookie("mmpm-log-stream-font-size", String(this.fontSize));
-    this.options = Object.assign({}, this.options, {fontSize: this.fontSize});
+    this.options = Object.assign({}, this.options, { fontSize: this.fontSize });
   }
 
   public onDownload() {
     this.base_api.get_zip_archive("logs/archive").then((archive: ArrayBuffer) => {
-      const blob = new Blob([archive], {type: "application/zip"});
+      const blob = new Blob([archive], { type: "application/zip" });
       const date = new Date();
 
       const file_name = `mmpm-logs-${date.getFullYear()}-${date.getMonth()}-${date.getDay()}.zip`;

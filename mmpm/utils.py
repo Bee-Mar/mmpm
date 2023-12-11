@@ -30,7 +30,7 @@ def repo_up_to_date(path: Path):
             logger.error(f"Repository in {path} is bare. Cannot determine if out-of-date.")
             return False
 
-        logger.debug(f"Fetching repo information found for repo in '{path}'")
+        logger.debug(f"Fetching information for repo found in '{path}'")
         remote = repo.remotes.origin
         remote.fetch()
 

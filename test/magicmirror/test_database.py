@@ -41,7 +41,7 @@ class TestMagicMirrorDatabase(unittest.TestCase):
     def test_add_mm_pkg(self, mock_file):
 
         # Mock the open function
-        mock_file.return_value.read.return_value = '{"External Packages": []}'
+        mock_file.return_value.read.return_value = '{"Custom Packages": []}'
 
         # Test the add_mm_pkg method
         result = self.database.add_mm_pkg(
@@ -56,7 +56,7 @@ class TestMagicMirrorDatabase(unittest.TestCase):
     @patch("mmpm.magicmirror.database.open", new_callable=mock_open)
     def test_remove_mm_pkg(self, mock_file):
         # Mock the open function
-        mock_file.return_value.read.return_value = '{"External Packages": [{"title": "Test Package"}]}'
+        mock_file.return_value.read.return_value = '{"Custom Packages": [{"title": "Test Package"}]}'
 
         # Test the remove_mm_pkg method
         result = self.database.remove_mm_pkg(title="Test Package")

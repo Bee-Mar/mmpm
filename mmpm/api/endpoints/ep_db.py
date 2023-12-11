@@ -22,7 +22,7 @@ class Db(Endpoint):
         @self.blueprint.route("/update", methods=[http.GET])
         def update() -> Response:
             if not self.db.load(update=True):
-                return self.failure("Failed to update database")
+                return self.failure("Failed to update database. See logs for details.")
 
             can_upgrade_mmpm = update_available()
             can_upgrade_magicmirror = self.magicmirror.update()
@@ -32,8 +32,18 @@ class Db(Endpoint):
 
         @self.blueprint.route("/upgradable", methods=[http.GET])
         def upgradable() -> Response:
-            return self.success(self.db.upgradable())
+            upgradable = self.db.upgradable()
+
+            if upgradable:
+                return self.success(upgradable)
+
+            return self.failure("Failed to get list of upgradable packages. See logs for details")
 
         @self.blueprint.route("/info", methods=[http.GET])
         def info() -> Response:
-            return self.success(self.db.info())
+            info = self.db.info()
+
+            if info:
+                return self.success(info)
+
+            return self.failure("Failed to retrieve database info. See logs for details")

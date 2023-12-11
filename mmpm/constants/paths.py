@@ -6,7 +6,7 @@ MMPM_CONFIG_DIR = HOME_DIR / ".config" / "mmpm"
 MMPM_LOG_DIR = MMPM_CONFIG_DIR / "log"
 MMPM_CLI_LOG_FILE = MMPM_LOG_DIR / "mmpm-cli-interface.log"
 MMPM_ENV_FILE = MMPM_CONFIG_DIR / "mmpm-env.json"
-MMPM_EXTERNAL_PACKAGES_FILE = MMPM_CONFIG_DIR / "mmpm-external-packages.json"
+MMPM_CUSTOM_PACKAGES_FILE = MMPM_CONFIG_DIR / "mmpm-custom-packages.json"
 MMPM_AVAILABLE_UPGRADES_FILE = MMPM_CONFIG_DIR / "mmpm-available-upgrades.json"
 MMPM_NGINX_CONF_FILE = Path("/etc/nginx/sites-enabled/mmpm.conf")
 MMPM_NGINX_LOG_DIR = Path("/var/log/nginx")
@@ -26,7 +26,7 @@ MMPM_CONFIG_DIR.mkdir(exist_ok=True, parents=True)
 MMPM_LOG_DIR.mkdir(exist_ok=True)
 MMPM_CLI_LOG_FILE.touch(exist_ok=True)
 MMPM_ENV_FILE.touch(exist_ok=True)
-MMPM_EXTERNAL_PACKAGES_FILE.touch(exist_ok=True)
+MMPM_CUSTOM_PACKAGES_FILE.touch(exist_ok=True)
 MMPM_AVAILABLE_UPGRADES_FILE.touch(exist_ok=True)
 MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE.touch(exist_ok=True)
 MAGICMIRROR_3RD_PARTY_PACKAGES_DB_LAST_UPDATE_FILE.touch(exist_ok=True)

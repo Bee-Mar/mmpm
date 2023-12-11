@@ -103,7 +103,7 @@ class MmPkg(SubCmd):
                 if not args.assume_yes and not Prompt.confirm(f"Remove {name} from the local database?"):
                     continue
                 if not self.database.remove_mm_pkg(name):
-                    logger.error(f"Unable to locate External Package named '{color.n_green(name)}'")
+                    logger.error(f"Unable to locate Custom Package named '{color.n_green(name)}'")
                 else:
                     logger.info(f"Removed {color.n_green(name)}")
         else:

@@ -36,7 +36,7 @@
   </p-card>
 </p-dialog>
 
-<p-dialog [(visible)]="displayCustomPkgRemoveDialog" header="Remove Custom Packages" [style]="{ width: '30rem', 'max-width': '700px' }">
+<p-dialog [(visible)]="displayCustomPkgRemoveDialog" (onHide)="reset()" header="Remove Custom Packages" [style]="{ width: '30rem', 'max-width': '700px' }">
   <p-card>
     <div *ngIf="customPackages && customPackages?.length; else noCustomPackages">
       <p-listbox

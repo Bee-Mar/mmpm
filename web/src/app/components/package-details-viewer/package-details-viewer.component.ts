@@ -3,14 +3,16 @@ import { Component, Input, Output, EventEmitter } from "@angular/core";
 import { MarketPlaceIcons } from "@/components/marketplace/marketplace-icons.model";
 import { APIResponse } from "@/services/api/base-api";
 import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
+import { MessageService } from "primeng/api";
 
 @Component({
   selector: "app-package-details-viewer",
   templateUrl: "./package-details-viewer.component.html",
   styleUrls: ["./package-details-viewer.component.scss"],
+  providers: [MessageService],
 })
 export class PackageDetailsViewerComponent {
-  constructor(private mmPkgApi: MagicMirrorPackageAPI) {}
+  constructor(private mmPkgApi: MagicMirrorPackageAPI, private msg: MessageService) {}
 
   @Input()
   public display: boolean;
@@ -55,6 +57,8 @@ export class PackageDetailsViewerComponent {
 
           console.log(`Retrieved remote details for ${this.selectedPackage?.title}`);
           this.loading = false;
+        } else {
+          this.msg.add({ severity: "error", summary: "Package Details", detail: response.message });
         }
       })
       .catch((error) => {

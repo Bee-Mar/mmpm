@@ -226,7 +226,7 @@ class MagicMirrorDatabase(Singleton):
 
         db_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
         db_exists = db_file.exists() and bool(db_file.stat().st_size)
-        db_ext_pkgs_file = paths.MMPM_EXTERNAL_PACKAGES_FILE
+        db_ext_pkgs_file = paths.MMPM_CUSTOM_PACKAGES_FILE
         db_last_update = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_LAST_UPDATE_FILE
 
         should_update = update or not db_exists or not db_last_update.exists() or not db_last_update.stat().st_size
@@ -256,7 +256,7 @@ class MagicMirrorDatabase(Singleton):
                 packages = json.load(db)
                 self.packages = [MagicMirrorPackage(**package) for package in packages]
 
-        custom_packages = self.external_packages()
+        custom_packages = self.custom_packages()
         self.packages.extend(custom_packages)
 
         self.categories = list({package.category for package in self.packages})
@@ -270,10 +270,10 @@ class MagicMirrorDatabase(Singleton):
         return bool(len(self.packages))
 
 
-    def external_packages(self) -> List[MagicMirrorPackage]:
-        data: Dict[str, List[Dict[str, str]]] = {"External Packages": []}
+    def custom_packages(self) -> List[MagicMirrorPackage]:
+        data: Dict[str, List[Dict[str, str]]] = {"Custom Packages": []}
         packages: List[MagicMirrorPackage] = []
-        db_ext_pkgs_file = paths.MMPM_EXTERNAL_PACKAGES_FILE
+        db_ext_pkgs_file = paths.MMPM_CUSTOM_PACKAGES_FILE
 
         if not db_ext_pkgs_file.stat().st_size == 0:
             with open(db_ext_pkgs_file, mode="r+", encoding="utf-8") as ext_pkgs:
@@ -283,7 +283,7 @@ class MagicMirrorDatabase(Singleton):
                     logger.error(f"{db_ext_pkgs_file} has an invalid layout. Recreating file.")
                     json.dump(data, ext_pkgs)
 
-        for package in data["External Packages"]:
+        for package in data["Custom Packages"]:
             packages.append(MagicMirrorPackage(**package))  # type: ignore
 
         return packages
@@ -384,10 +384,10 @@ class MagicMirrorDatabase(Singleton):
 
     def add_mm_pkg(self, title: str = None, author: str = None, repository: str = None, description: str = None) -> bool:
         """
-        Adds an external source for user to install a module from. This may be a
+        Adds an custom source for user to install a module from. This may be a
         private git repo, or a specific branch of a public repo. All modules added
-        in this manner will be added to the 'External Packages' category.
-        These sources are stored in ~/.config/mmpm/mmpm-external-packages.json
+        in this manner will be added to the 'Custom Packages' category.
+        These sources are stored in ~/.config/mmpm/mmpm-custom-packages.json
 
         Parameters:
             title (str): module title
@@ -399,7 +399,7 @@ class MagicMirrorDatabase(Singleton):
             (bool): Upon success, a True result is returned
         """
 
-        package = MagicMirrorPackage(category="External Packages")
+        package = MagicMirrorPackage(category="Custom Packages")
 
         try:
             fields = [("Title", title), ("Author", author), ("Repository", repository), ("Description", description)]
@@ -417,72 +417,72 @@ class MagicMirrorDatabase(Singleton):
         package.directory = Path(f'{package.repository.split("/")[-1].replace(".git", "")}-ext-mm-pkg')
 
         try:
-            ext_pkgs_file = paths.MMPM_EXTERNAL_PACKAGES_FILE
+            ext_pkgs_file = paths.MMPM_CUSTOM_PACKAGES_FILE
 
             if ext_pkgs_file.exists() and ext_pkgs_file.stat().st_size:
-                external_packages = {}
+                custom_packages = {}
 
                 with open(ext_pkgs_file, "r", encoding="utf-8") as mm_ext_pkgs:
-                    external_packages = json.load(mm_ext_pkgs)
+                    custom_packages = json.load(mm_ext_pkgs)
 
-                existing_packages = [pkg.get("title").lower() for pkg in external_packages["External Packages"]]
+                existing_packages = [pkg.get("title").lower() for pkg in custom_packages["Custom Packages"]]
 
                 if package.title.lower() in existing_packages:
-                    logger.error(f"A package with named {package.title} is already registered as an External Package")
+                    logger.error(f"A package with named {package.title} is already registered as an Custom Package")
                     return False
 
                 with open(ext_pkgs_file, "w", encoding="utf-8") as mm_ext_pkgs:
-                    external_packages[package.category].append(package.serialize())
-                    json.dump(external_packages, mm_ext_pkgs)
+                    custom_packages[package.category].append(package.serialize())
+                    json.dump(custom_packages, mm_ext_pkgs)
             else:
-                # if file didn't exist previously, or it was empty, this is the first external package that's been added
+                # if file didn't exist previously, or it was empty, this is the first custom package that's been added
                 with open(ext_pkgs_file, "w", encoding="utf-8") as mm_ext_pkgs:
-                    json.dump({"External Packages": [package.serialize()]}, mm_ext_pkgs)
+                    json.dump({"Custom Packages": [package.serialize()]}, mm_ext_pkgs)
 
-            print(color.n_green(f"\nSuccessfully added {package.title} to 'External Packages'\n"))
+            print(color.n_green(f"\nSuccessfully added {package.title} to 'Custom Packages'\n"))
 
         except IOError as error:
-            logger.error(f"Failed to save external module: {error}")
+            logger.error(f"Failed to save custom module: {error}")
             return False
 
         return True
 
     def remove_mm_pkg(self, title: str = None) -> bool:
         """
-        Allows user to remove an External Package from the data saved in
-        ~/.config/mmpm/mmpm-external-packages.json
+        Allows user to remove an Custom Package from the data saved in
+        ~/.config/mmpm/mmpm-custom-packages.json
 
         Parameters:
-            title (str): External package title
+            title (str): Custom package title
 
         Returns:
             success (bool): True on success, False on error
         """
 
-        file = paths.MMPM_EXTERNAL_PACKAGES_FILE
+        file = paths.MMPM_CUSTOM_PACKAGES_FILE
 
         packages: List[MagicMirrorPackage] = []
 
         with open(file, "r", encoding="utf-8") as mm_ext_pkgs:
             data = json.load(mm_ext_pkgs)
 
-            if not "External Packages" in data:
-                logger.fatal("No external packages found in database")
+            if not "Custom Packages" in data:
+                logger.fatal("No custom packages found in database")
                 return False
 
-            packages = [MagicMirrorPackage(**package) for package in data["External Packages"]]
+            packages = [MagicMirrorPackage(**package) for package in data["Custom Packages"]]
 
             try:
                 match: MagicMirrorPackage = next(filter(lambda pkg: pkg.title == title, packages))
             except StopIteration as error:
-                logger.error(f"Unable to locate External Package named '{color.n_green(title)}'")
+                logger.error(f"Unable to locate Custom Package named '{color.n_green(title)}'")
                 return False
 
         packages.remove(match)
 
         # if the error_msg was triggered, there's no need to even bother writing back to the file
         with open(file, "w", encoding="utf-8") as mm_ext_pkgs:
-            data = {"External Packages": [package.serialize() for package in packages]}
+            data = {"Custom Packages": [package.serialize() for package in packages]}
             json.dump(data, mm_ext_pkgs)
 
         return True

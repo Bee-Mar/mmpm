@@ -4,15 +4,17 @@ import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.se
 import { SharedStoreService } from "@/services/shared-store.service";
 import { Component, OnInit, ViewChild, Input, Output, EventEmitter, OnDestroy } from "@angular/core";
 import { NgForm } from "@angular/forms";
+import { MessageService } from "primeng/api";
 import { Subscription } from "rxjs";
 
 @Component({
   selector: "app-custom-package-manager",
   templateUrl: "./custom-package-manager.component.html",
   styleUrls: ["./custom-package-manager.component.scss"],
+  providers: [MessageService],
 })
 export class CustomPackageManagerComponent implements OnInit, OnDestroy {
-  constructor(private store: SharedStoreService, private mmPkgApi: MagicMirrorPackageAPI) {}
+  constructor(private store: SharedStoreService, private mmPkgApi: MagicMirrorPackageAPI, private msg: MessageService) {}
 
   private packagesSubscription: Subscription = new Subscription();
 
@@ -60,7 +62,7 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this.packagesSubscription = this.store.packages.subscribe((packages: Array<MagicMirrorPackage>) => {
-      this.customPackages = packages.filter((pkg: MagicMirrorPackage) => pkg.category === "External Packages");
+      this.customPackages = packages.filter((pkg: MagicMirrorPackage) => pkg.category === "Custom Packages");
     });
   }
 
@@ -77,7 +79,7 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
       directory: "",
       is_installed: false,
       is_upgradable: false,
-      category: "External Packages",
+      category: "Custom Packages",
       remote_details: {
         stars: 0,
         forks: 0,
@@ -97,9 +99,11 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
       .then((response: APIResponse) => {
         if (response.code === 200) {
           this.store.load();
-          console.log(response);
-          this.customPackage = this.clearCustomPackage();
-          this.customPackageForm.reset();
+
+          this.msg.add({ severity: "success", summary: "Add Custom Package", detail: `Successfully added ${this.customPackage.title} to database` });
+          this.reset();
+        } else {
+          this.msg.add({ severity: "error", summary: "Add Custom Package", detail: response.message });
         }
 
         this.loading = false;
@@ -116,12 +120,20 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
       .postRemoveMmPkgs(this.selectedCustomPackages)
       .then((response: APIResponse) => {
         if (response.code === 200) {
+          this.msg.add({ severity: "success", summary: "Remove Custom Package", detail: `Successfully removed ${this.selectedCustomPackages.length} custom package(s)` });
           this.store.load();
+        } else {
+          this.msg.add({ severity: "success", summary: "Remove Custom Package", detail: response.message });
         }
 
         this.loading = false;
         this.loadingChange.emit(this.loading);
       })
       .catch((error) => console.log(error));
+  }
+
+  public reset(): void {
+    this.customPackage = this.clearCustomPackage();
+    this.customPackageForm.reset();
   }
 }

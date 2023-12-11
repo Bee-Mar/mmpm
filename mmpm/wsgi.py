@@ -38,7 +38,7 @@ if __name__ == "__main__":
         log=logger,
         extra_files=[
             paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE,
-            paths.MMPM_EXTERNAL_PACKAGES_FILE,
+            paths.MMPM_CUSTOM_PACKAGES_FILE,
             paths.MMPM_AVAILABLE_UPGRADES_FILE,
             paths.MMPM_ENV_FILE,
         ],

@@ -1,12 +1,12 @@
-import { Component, Input, OnDestroy, OnInit, Output, EventEmitter } from "@angular/core";
-import { DatabaseInfo } from "@/models/database-details";
-import { Subscription } from "rxjs";
-import { APIResponse, BaseAPI } from "@/services/api/base-api";
-import { SharedStoreService } from "@/services/shared-store.service";
-import { MagicMirrorPackage } from "@/models/magicmirror-package";
-import { UpgradableDetails } from "@/models/upgradable-details";
-import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
-import { MagicMirrorAPI } from "@/services/api/magicmirror-api.service";
+import {Component, Input, OnDestroy, OnInit, Output, EventEmitter} from "@angular/core";
+import {DatabaseInfo} from "@/models/database-details";
+import {Subscription} from "rxjs";
+import {APIResponse, BaseAPI} from "@/services/api/base-api";
+import {SharedStoreService} from "@/services/shared-store.service";
+import {MagicMirrorPackage} from "@/models/magicmirror-package";
+import {UpgradableDetails} from "@/models/upgradable-details";
+import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
+import {MagicMirrorAPI} from "@/services/api/magicmirror-api.service";
 
 @Component({
   selector: "app-database-info",
@@ -132,6 +132,8 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
       }
     }
 
+    // the update endpoint will write out which packages have updates, and this needs
+    // to get updated again following the actual upgrades
     const response = await this.baseApi.get_("db/update");
 
     if (response.code !== 200) {
@@ -161,19 +163,4 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
       },
     };
   }
-
-  /*
-  private upgrade_db(): void {
-    this.loading = true;
-
-    this.mmPkgApi
-      .post_upgrade_packages(this.selected)
-      .then((response: APIResponse) => {
-        if (response.code === 200) {
-          this.store.load();
-        }
-      })
-      .catch((error) => console.log(error));
-  }
-  */
 }

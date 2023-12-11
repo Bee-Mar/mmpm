@@ -23,14 +23,14 @@ logger = MMPMLogger.get_logger(__name__)
 
 def repo_up_to_date(path: Path):
     try:
-        # Initialize the repository object
         repo = git.Repo(path)
 
-        # Ensure the repository is not bare
+        # Ensure the repository is not bare (unlikely, but still should check)
         if repo.bare:
-            raise Exception("Repository is bare")
+            logger.error(f"Repository in {path} is bare. Cannot determine if out-of-date.")
+            return False
 
-        # Fetch data from the default remote (origin)
+        logger.debug(f"Fetching repo information found for repo in '{path}'")
         remote = repo.remotes.origin
         remote.fetch()
 
@@ -38,7 +38,9 @@ def repo_up_to_date(path: Path):
         local_commit = repo.head.commit
         remote_commit = repo.refs["origin/HEAD"].commit  # type: ignore
 
-        # Check if the commits are the same
+        logger.debug(f"SHAs found in '{path}' -- local={local_commit.hexsha} & remote={remote_commit.hexsha}")
+
+        remote = repo.remotes.origin
         return local_commit.hexsha != remote_commit.hexsha
     except Exception as error:
         logger.error(f"Failed to get status of repo located at {path}: {error}")
@@ -46,17 +48,19 @@ def repo_up_to_date(path: Path):
 
 
 def get_host_ip() -> str:
-    address: str = "localhost"
+    logger.debug("Getting host IP")
 
-    _socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    address: str = "localhost"
+    skt = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     try:
-        _socket.connect(("8.8.8.8", 80))
+        skt.connect(("8.8.8.8", 80))
         address = _socket.getsockname()[0]
+        logger.debug(f"Determined Host IP={address}")
     except socket.gaierror as error:
         logger.error(f"Failed to determine host IP address: {error}")
     finally:
-        _socket.close()
+        skt.close()
 
     return address
 
@@ -72,11 +76,11 @@ def run_cmd(command: List[str], progress=True, background=False, message: str = 
         Tuple[returncode (int), stdout (str), stderr (str)]
     """
     if background:
-        logger.debug(f"Executing process `{' '.join(command)}` in background")
+        logger.debug(f"Executing command `{' '.join(command)}` in background")
         subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return 0, "", ""
 
-    logger.debug(f'Executing process `{" ".join(command)}`')
+    logger.debug(f'Executing command `{" ".join(command)}`')
 
     with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as process:
         if progress:
@@ -102,13 +106,13 @@ def get_pids(process_name: str) -> List[str]:
         processes (List[str]): list of the processes IDs found
     """
 
-    logger.info(f"Getting process IDs for {process_name} proceses")
+    logger.info(f"Getting process IDs related to '{process_name}'")
 
     with subprocess.Popen(["pgrep", process_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE) as pids:
         stdout, _ = pids.communicate()
         processes = stdout.decode("utf-8")
 
-        logger.info(f"Found processes: {processes}")
+        logger.debug(f"Found process IDs: {processes}")
 
         return [proc_id for proc_id in processes.split("\n") if proc_id]
 
@@ -138,6 +142,7 @@ def safe_get_request(url: str) -> requests.Response:
         response (requests.Response): the Reponse object, which may be empty if the request failed
     """
     try:
+        logger.debug(f"Creating request for {url}")
         data = requests.get(url, timeout=10)
     except requests.exceptions.RequestException as error:
         logger.error(str(error))
@@ -148,12 +153,13 @@ def safe_get_request(url: str) -> requests.Response:
 def update_available() -> bool:
     url = "https://pypi.org/pypi/mmpm/json"
 
-    logger.debug("getting remote version of mmpm")
+    logger.debug("Getting remote version of MMPM from PyPi")
     print(f"Retrieving: {url} [{color.n_cyan('mmpm')}]")
 
     try:
         contents = urllib.request.urlopen(url).read()
         remote_version = json.loads(contents)["info"]["version"]
+        logger.debug(f"Found remote={remote_version} & installed={current_version}")
     except (json.JSONDecodeError, urllib.error.URLError, Exception) as error:
         logger.error(f"Failed to get remote version of MMPM: {error}")
 

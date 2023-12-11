@@ -1,10 +1,11 @@
-import { Injectable } from "@angular/core";
-import { BehaviorSubject, Observable } from "rxjs";
-import { MagicMirrorPackage } from "@/models/magicmirror-package";
-import { MagicMirrorPackageAPI } from "./api/magicmirror-package-api.service";
-import { APIResponse } from "@/services/api/base-api";
-import { DatabaseInfo } from "@/models/database-details";
-import { UpgradableDetails } from "@/models/upgradable-details";
+import {Injectable} from "@angular/core";
+import {BehaviorSubject, Observable} from "rxjs";
+import {MagicMirrorPackage} from "@/models/magicmirror-package";
+import {MagicMirrorPackageAPI} from "./api/magicmirror-package-api.service";
+import {APIResponse} from "@/services/api/base-api";
+import {DatabaseInfo} from "@/models/database-details";
+import {UpgradableDetails} from "@/models/upgradable-details";
+import {MMPMEnv} from '@/models/mmpm-env';
 
 @Injectable({
   providedIn: "root",
@@ -18,11 +19,30 @@ export class SharedStoreService {
   private dbInfoSubj: BehaviorSubject<DatabaseInfo> = new BehaviorSubject<DatabaseInfo>({});
   public readonly dbInfo: Observable<DatabaseInfo> = this.dbInfoSubj.asObservable();
 
-  private upgradeableSubj: BehaviorSubject<UpgradableDetails> = new BehaviorSubject<UpgradableDetails>({ mmpm: false, MagicMirror: false, packages: [] });
+  private upgradeableSubj: BehaviorSubject<UpgradableDetails> = new BehaviorSubject<UpgradableDetails>({mmpm: false, MagicMirror: false, packages: []});
   public readonly upgradable: Observable<UpgradableDetails> = this.upgradeableSubj.asObservable();
+
+  private envSubj: BehaviorSubject<MMPMEnv> = new BehaviorSubject<MMPMEnv>({
+    MMPM_IS_DOCKER_IMAGE: false,
+    MMPM_LOG_LEVEL: "",
+    MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: "",
+    MMPM_MAGICMIRROR_PM2_PROCESS_NAME: "",
+    MMPM_MAGICMIRROR_ROOT: "",
+    MMPM_MAGICMIRROR_URI: "",
+  });
+
+  public readonly env: Observable<MMPMEnv> = this.envSubj.asObservable();
 
   public load(): void {
     console.log("Getting packages for data store");
+
+    this.mmPkgApi.get_("env").then((response: APIResponse) => {
+      if (response.code === 200) {
+        this.envSubj.next(response.message as MMPMEnv);
+      } else {
+        console.log(response.message);
+      }
+    });
 
     this.mmPkgApi.getPackages().then((response: APIResponse) => {
       if (response.code === 200) {

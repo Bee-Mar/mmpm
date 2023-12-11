@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from "@angular/core";
+import {Component, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {io} from "socket.io-client";
 import {getCookie, setCookie} from "@/utils/utils";
 import {BaseAPI} from "@/services/api/base-api";
@@ -9,7 +9,7 @@ import {EditorComponent} from "ngx-monaco-editor-v2";
   templateUrl: "./log-stream-viewer.component.html",
   styleUrls: ["./log-stream-viewer.component.scss"],
 })
-export class LogStreamViewerComponent implements OnInit {
+export class LogStreamViewerComponent implements OnInit, OnDestroy {
   constructor(private base_api: BaseAPI) {}
 
   @ViewChild(EditorComponent, {static: false})
@@ -56,6 +56,12 @@ export class LogStreamViewerComponent implements OnInit {
     this.socket.on("logs", (data: string) => {
       this.logs += data + "\n\n";
     });
+  }
+
+  public ngOnDestroy(): void {
+    if (this.socket.connected) {
+      this.socket.disconnect();
+    }
   }
 
   public onEditorInit(editor: any): void {

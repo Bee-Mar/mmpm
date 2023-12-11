@@ -8,30 +8,30 @@
   <p-card>
     <div class="package-details-grid">
       <div class="detail">
+        <strong>Version:</strong>
+        <span>
+          {{ version }}
+          <i class="fa-solid fa-code-compare" [style.color]="'gray'"></i>
+        </span>
+      </div>
+      <div class="detail">
         <strong>Last Updated:</strong>
         <span>{{ dbInfo.last_update }}
           <i class="fa-solid fa-calendar-days" [style.color]="'white'"></i>
         </span>
       </div>
       <div class="detail">
-        <strong>Total Packages:</strong>
+        <strong>Packages:</strong>
         <span>
           {{ dbInfo.packages }}
           <i class="fa-solid fa-cube" [style.color]="'#ffd54f'"></i>
         </span>
       </div>
       <div class="detail">
-        <strong>Total Categories:</strong>
+        <strong>Categories:</strong>
         <span>
           {{ dbInfo.categories }}
           <i class="fa-solid fa-layer-group" [style.color]="'#23b088'"></i>
-        </span>
-      </div>
-      <div class="detail">
-        <strong>Version:</strong>
-        <span>
-          {{ version }}
-          <i class="fa-solid fa-code-compare" [style.color]="'gray'"></i>
         </span>
       </div>
       <div class="detail">

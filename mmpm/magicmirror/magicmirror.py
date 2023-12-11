@@ -34,6 +34,8 @@ class MagicMirror(Singleton):
             logger.warning("MagicMirror application directory not found or not a git repo.")
             return False
 
+        logger.debug("Checking to see if MagicMirror is up to date")
+
         chdir(magicmirror_root)
         print(f"Retrieving: https://github.com/MichMich/MagicMirror [{color.n_cyan('MagicMirror')}]")
 

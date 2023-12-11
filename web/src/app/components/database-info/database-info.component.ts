@@ -25,13 +25,13 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
   @Output()
   public loadingChange = new EventEmitter<boolean>(false);
 
+  public version = "";
   public dbInfo: DatabaseInfo;
+  public upgradesAvailable = false;
   public displayDbInfoDialog = false;
   public displayDbUpgradeDialog = false;
-  public selectedPackages = new Array<MagicMirrorPackage>();
-  public version = "";
-  public upgradesAvailable = false;
   public upgradableItems = new Array<MagicMirrorPackage>();
+  public selectedPackages = new Array<MagicMirrorPackage>();
   public selectedUpgrades = new Array<MagicMirrorPackage>();
 
   public databaseOptions = [

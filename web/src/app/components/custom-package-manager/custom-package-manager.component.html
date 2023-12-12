@@ -4,10 +4,9 @@
 
 <p-dialog header="Add Custom Package" [(visible)]="displayCustomPkgAddDialog">
   <p-overlayPanel #op [style]="{ 'max-width': '300px', 'word-wrap': 'break-word', 'overflow-wrap': 'break-word' }">
-    <span
-      >Adds a custom package source to your local database, which can then be installed/removed using MMPM. This is useful in testing/development of MagicMirror modules not listed
-      in the 3rd Party Modules.</span
-    >
+    <span>Adds a custom package source to your local database, which can then be installed/removed using MMPM. This is
+      useful in testing/development of MagicMirror modules not listed
+      in the 3rd Party Modules.</span>
   </p-overlayPanel>
 
   <p-button (click)="op.toggle($event)" icon="fa-solid fa-circle-info" severity="info"></p-button>
@@ -33,43 +32,24 @@
     </form>
 
     <div class="confirm-button">
-      <p-button
-        label="Register"
+      <p-button label="Add"
         [disabled]="!(customPackage.title && customPackage.repository && customPackage.author && customPackage.description)"
-        (click)="onAddMmPkg()"
-        icon="fa-solid fa-check"
-        severity="success"
-        [style.marginTop]="'2em'"
-      ></p-button>
+        (click)="onAddMmPkg()" icon="fa-solid fa-check" severity="success" [style.marginTop]="'2em'"></p-button>
     </div>
   </p-card>
 </p-dialog>
 
-<p-dialog [(visible)]="displayCustomPkgRemoveDialog" (onHide)="reset()" header="Remove Custom Packages" [style]="{ width: '30rem', 'max-width': '700px' }">
+<p-dialog [(visible)]="displayCustomPkgRemoveDialog" (onHide)="reset()" header="Remove Custom Packages"
+  [style]="{ width: '30rem', 'max-width': '700px' }">
   <p-card>
     <div *ngIf="customPackages && customPackages?.length; else noCustomPackages">
-      <p-listbox
-        [options]="customPackages"
-        [(ngModel)]="selectedCustomPackages"
-        [selectAll]="false"
-        optionLabel="title"
-        [style]="{ width: '25rem', margin: '0 auto' }"
-        [multiple]="true"
-        [checkbox]="true"
-        [showToggleAll]="false"
-        [metaKeySelection]="false"
-        [listStyle]="{ 'max-height': '220px' }"
-      ></p-listbox>
+      <p-listbox [options]="customPackages" [(ngModel)]="selectedCustomPackages" [selectAll]="false" optionLabel="title"
+        [style]="{ width: '25rem', margin: '0 auto' }" [multiple]="true" [checkbox]="true" [showToggleAll]="false"
+        [metaKeySelection]="false" [listStyle]="{ 'max-height': '220px' }"></p-listbox>
 
       <div class="confirm-button">
-        <p-button
-          [style.marginTop]="'4em'"
-          label="Remove"
-          [disabled]="!selectedCustomPackages.length"
-          (click)="onRemoveMmPkg()"
-          icon="fa-solid fa-trash"
-          severity="danger"
-        ></p-button>
+        <p-button [style.marginTop]="'4em'" label="Remove" [disabled]="!selectedCustomPackages.length"
+          (click)="onRemoveMmPkg()" icon="fa-solid fa-trash" severity="danger"></p-button>
       </div>
     </div>
     <ng-template #noCustomPackages>

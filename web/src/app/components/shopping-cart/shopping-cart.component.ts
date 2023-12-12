@@ -1,17 +1,17 @@
-import { MagicMirrorPackage } from "@/models/magicmirror-package";
-import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
-import { SharedStoreService } from "@/services/shared-store.service";
-import { Component, Input, Output, EventEmitter } from "@angular/core";
-import { MessageService } from "primeng/api";
+import {MagicMirrorPackage} from "@/models/magicmirror-package";
+import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
+import {SharedStoreService} from "@/services/shared-store.service";
+import {Component, Input, Output, EventEmitter} from "@angular/core";
+import {ConfirmationService, MessageService} from "primeng/api";
 
 @Component({
   selector: "app-shopping-cart",
   templateUrl: "./shopping-cart.component.html",
   styleUrls: ["./shopping-cart.component.scss"],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
 })
 export class ShoppingCartComponent {
-  constructor(private store: SharedStoreService, private mmPkgApi: MagicMirrorPackageAPI, private msg: MessageService) {}
+  constructor(private store: SharedStoreService, private mmPkgApi: MagicMirrorPackageAPI, private msg: MessageService, private confirmation: ConfirmationService) {}
 
   @Input()
   public selectedPackages: Array<MagicMirrorPackage>;
@@ -25,7 +25,21 @@ export class ShoppingCartComponent {
   @Output()
   public loadingChange = new EventEmitter<boolean>(false);
 
-  async onCheckout() {
+  public onCheckout(): void {
+    this.confirmation.confirm({
+      message: 'Are you sure you want to install/remove the selected packages?',
+      header: 'Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.checkout();
+      },
+      reject: () => {
+        return;
+      }
+    });
+  }
+
+  async checkout() {
     if (this.selectedPackages === null) {
       return;
     }
@@ -45,9 +59,9 @@ export class ShoppingCartComponent {
 
       if (response.code === 200) {
         const removed = response.message as Array<MagicMirrorPackage>;
-        this.msg.add({ severity: "success", summary: "Remove Packages", detail: `Successfully removed ${removed.length}/${remove.length} selected packages` });
+        this.msg.add({severity: "success", summary: "Remove Packages", detail: `Successfully removed ${removed.length}/${remove.length} selected packages`});
       } else {
-        this.msg.add({ severity: "error", summary: "Remove Packages", detail: response.message });
+        this.msg.add({severity: "error", summary: "Remove Packages", detail: response.message});
       }
     }
 
@@ -56,9 +70,9 @@ export class ShoppingCartComponent {
 
       if (response.code === 200) {
         const installed = response.message as Array<MagicMirrorPackage>;
-        this.msg.add({ severity: "success", summary: "Remove Packages", detail: `Successfully removed ${installed.length}/${install.length} selected packages` });
+        this.msg.add({severity: "success", summary: "Install Packages", detail: `Successfully installed ${installed.length}/${install.length} selected packages`});
       } else {
-        this.msg.add({ severity: "error", summary: "Install Packages", detail: response.message });
+        this.msg.add({severity: "error", summary: "Install Packages", detail: response.message});
       }
     }
 

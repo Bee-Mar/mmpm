@@ -147,14 +147,13 @@ class MagicMirror(Singleton):
         root = self.env.MMPM_MAGICMIRROR_ROOT
         root_path: PosixPath = root.get()
 
-        if os.getcwd() == f"{root_path}":
-            logger.error(f"MagicMirror cannot be removed while your current directory is {root_path}. Please cd into another directory.")
-            return False
-
         if not root_path.exists():
             message = f"'{root.name}'={root_path} does not exist. Is {root.name} set properly?"
             logger.fatal(message)
             return False
+
+        if os.getcwd() == f"{root_path}":
+            os.chdir("/tmp")
 
         shutil.rmtree(root_path, ignore_errors=True)
         logger.info("MagicMirror has been removed.")

@@ -224,9 +224,15 @@ class MagicMirrorController(Singleton):
         Returns:
             None
         """
-        self.stop()
+        if not self.stop():
+            return False
+
         sleep(2)
-        self.start()
+
+        if not self.start():
+            return False
+
+        return True
 
     def is_running(self):
         """

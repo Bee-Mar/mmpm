@@ -4,14 +4,17 @@ import {MMPMEnv} from '@/models/mmpm-env';
 import {MagicMirrorModule} from '@/models/magicmirror-module';
 import {SharedStoreService} from '@/services/shared-store.service';
 import {Subscription} from 'rxjs';
+import {MessageService, ConfirmationService} from 'primeng/api';
+import {APIResponse, BaseAPI} from '@/services/api/base-api';
 
 @Component({
   selector: 'app-magicmirror-controller',
   templateUrl: './magicmirror-controller.component.html',
-  styleUrls: ['./magicmirror-controller.component.scss']
+  styleUrls: ['./magicmirror-controller.component.scss'],
+  providers: [MessageService, ConfirmationService],
 })
 export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
-  constructor(private store: SharedStoreService) {}
+  constructor(private store: SharedStoreService, private msg: MessageService, private base_api: BaseAPI, private confirmation: ConfirmationService) {}
 
   private envSubscription: Subscription = new Subscription();
 
@@ -19,6 +22,68 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   public env: MMPMEnv;
   public modules = new Array<MagicMirrorModule>();
   public selectedModules = new Array<MagicMirrorModule>();
+
+  public items = [
+    {
+      icon: 'fa-solid fa-eye',
+      command: () => {
+        this.msg.add({severity: 'info', summary: 'Add', detail: 'Data Added'});
+      }
+    },
+    {
+      icon: 'fa-solid fa-play',
+      command: () => {
+        this.onStart();
+      }
+    },
+    {
+      icon: 'fa-solid fa-arrows-rotate',
+      command: () => {
+        this.onRestart();
+      }
+    },
+    {
+      icon: 'fa-solid fa-stop',
+      command: () => {
+        this.onStop();
+      }
+    },
+    {
+      icon: 'fa-solid fa-download',
+      command: () => {
+        this.confirmation.confirm({
+          message: 'Are you sure you want to install MagicMirror?',
+          header: 'Confirmation',
+          icon: 'pi pi-exclamation-triangle',
+          accept: () => {
+            this.onInstall();
+          },
+          reject: () => {
+            return;
+          }
+        });
+      }
+    },
+    {
+      icon: 'fa-solid fa-trash',
+      command: () => {
+
+        this.confirmation.confirm({
+          message: 'Are you sure you want to remove MagicMirror? This cannot be undone.',
+          header: 'Confirmation',
+          icon: 'pi pi-exclamation-triangle',
+          accept: () => {
+            this.onRemove();
+          },
+          reject: () => {
+            return;
+          }
+        });
+
+      }
+    }
+  ];
+
 
   public ngOnInit(): void {
     this.envSubscription = this.store.env.subscribe((env: MMPMEnv) => {
@@ -49,22 +114,58 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
 
   public onStart(): void {
     console.log("start");
+
+    this.base_api.get_("mm-ctl/start").then((response: APIResponse) => {
+      if (response.code === 200) {
+        this.msg.add({severity: 'success', summary: 'Start MagicMirror', detail: 'Successfully started MagicMirror'});
+      } else {
+        this.msg.add({severity: 'error', summary: 'Start MagicMirror', detail: response.message});
+      }
+    });
   }
 
   public onStop(): void {
     console.log("stop");
+
+    this.base_api.get_("mm-ctl/stop").then((response: APIResponse) => {
+      if (response.code === 200) {
+        this.msg.add({severity: 'success', summary: 'Stop MagicMirror', detail: 'Successfully stopped MagicMirror'});
+      } else {
+        this.msg.add({severity: 'error', summary: 'Stop MagicMirror', detail: response.message});
+      }
+    });
   }
 
   public onRestart(): void {
     console.log("restart");
+
+    this.base_api.get_("mm-ctl/restart").then((response: APIResponse) => {
+      if (response.code === 200) {
+        this.msg.add({severity: 'success', summary: 'Restart MagicMirror', detail: 'Successfully restarted MagicMirror'});
+      } else {
+        this.msg.add({severity: 'error', summary: 'Restart MagicMirror', detail: response.message});
+      }
+    });
   }
 
   public onInstall(): void {
-    console.log("install");
+    this.base_api.get_("mm-ctl/install").then((response: APIResponse) => {
+      if (response.code === 200) {
+        this.msg.add({severity: 'success', summary: 'Install MagicMirror', detail: 'Successfully installed MagicMirror'});
+      } else {
+        this.msg.add({severity: 'error', summary: 'Install MagicMirror', detail: response.message});
+      }
+    });
   }
 
   public onRemove(): void {
-    console.log("remove");
+    this.base_api.get_("mm-ctl/remove").then((response: APIResponse) => {
+      if (response.code === 200) {
+        this.msg.add({severity: 'success', summary: 'Remove MagicMirror', detail: 'Successfully removed MagicMirror'});
+      } else {
+        this.msg.add({severity: 'error', summary: 'Remove MagicMirror', detail: response.message});
+      }
+    });
   }
 
   public initSocket(): void {
@@ -86,7 +187,6 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
     // these keywords are used in node_helper.js and mmpm.js within the mmpm magicmirror module
     this.socket.on("MODULES_TOGGLED", (result: any) => {
       if (result.fails?.length) {
-
         console.log(`Failed to hide ${result.fails}. See MMPM logs for details`);
       }
     });

@@ -1,11 +1,11 @@
-import { MagicMirrorPackage } from "@/models/magicmirror-package";
-import { APIResponse } from "@/services/api/base-api";
-import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
-import { SharedStoreService } from "@/services/shared-store.service";
-import { Component, OnInit, ViewChild, Input, Output, EventEmitter, OnDestroy } from "@angular/core";
-import { NgForm } from "@angular/forms";
-import { MessageService } from "primeng/api";
-import { Subscription } from "rxjs";
+import {MagicMirrorPackage} from "@/models/magicmirror-package";
+import {APIResponse} from "@/services/api/base-api";
+import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
+import {SharedStoreService} from "@/services/shared-store.service";
+import {Component, OnInit, ViewChild, Input, Output, EventEmitter, OnDestroy} from "@angular/core";
+import {NgForm} from "@angular/forms";
+import {MessageService} from "primeng/api";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: "app-custom-package-manager",
@@ -91,8 +91,7 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
   }
 
   public onAddMmPkg(): void {
-    this.loading = true;
-    this.loadingChange.emit(this.loading);
+    this.loadingChange.emit(true);
 
     this.mmPkgApi
       .postAddMmPkg(this.customPackage)
@@ -100,34 +99,31 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
         if (response.code === 200) {
           this.store.load();
 
-          this.msg.add({ severity: "success", summary: "Add Custom Package", detail: `Successfully added ${this.customPackage.title} to database` });
+          this.msg.add({severity: "success", summary: "Add Custom Package", detail: `Successfully added ${this.customPackage.title} to database`});
           this.reset();
         } else {
-          this.msg.add({ severity: "error", summary: "Add Custom Package", detail: response.message });
+          this.msg.add({severity: "error", summary: "Add Custom Package", detail: response.message});
         }
 
-        this.loading = false;
-        this.loadingChange.emit(this.loading);
+        this.loadingChange.emit(false);
       })
       .catch((error) => console.log(error));
   }
 
   public onRemoveMmPkg(): void {
-    this.loading = true;
-    this.loadingChange.emit(this.loading);
+    this.loadingChange.emit(true);
 
     this.mmPkgApi
       .postRemoveMmPkgs(this.selectedCustomPackages)
       .then((response: APIResponse) => {
         if (response.code === 200) {
-          this.msg.add({ severity: "success", summary: "Remove Custom Package", detail: `Successfully removed ${this.selectedCustomPackages.length} custom package(s)` });
+          this.msg.add({severity: "success", summary: "Remove Custom Package", detail: `Successfully removed ${this.selectedCustomPackages.length} custom package(s)`});
           this.store.load();
         } else {
-          this.msg.add({ severity: "success", summary: "Remove Custom Package", detail: response.message });
+          this.msg.add({severity: "success", summary: "Remove Custom Package", detail: response.message});
         }
 
-        this.loading = false;
-        this.loadingChange.emit(this.loading);
+        this.loadingChange.emit(false);
       })
       .catch((error) => console.log(error));
   }

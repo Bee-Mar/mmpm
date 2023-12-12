@@ -59,7 +59,7 @@ class TestMagicMirrorPackage(unittest.TestCase):
         mock_handler.return_value = mock_install
         self.package.is_installed = False
         self.package.install()
-        mock_install.execute.assert_called_once()
+        mock_install.install.assert_called_once()
 
     @patch("mmpm.magicmirror.package.run_cmd")
     def test_remove(self, mock_run_cmd):
@@ -79,19 +79,19 @@ class TestMagicMirrorPackage(unittest.TestCase):
         )
 
     @patch("os.chdir")
-    @patch('mmpm.magicmirror.package.repo_up_to_date')
+    @patch("mmpm.magicmirror.package.repo_up_to_date")
     @patch("pathlib.PosixPath.exists")
     def test_update(self, mock_exists, mock_repo_up_to_date, mock_chdir):
-       mock_exists.return_value = True
-       mock_repo_up_to_date.return_value = True
-       self.package.env = MMPMEnv()
-       expected_dir = MMPM_DEFAULT_ENV.get("MMPM_MAGICMIRROR_ROOT") / "modules" / self.package.directory
-       self.package.update()
-       mock_chdir.assert_called_with(expected_dir)
-       self.assertTrue(self.package.is_upgradable)
+        mock_exists.return_value = True
+        mock_repo_up_to_date.return_value = True
+        self.package.env = MMPMEnv()
+        expected_dir = MMPM_DEFAULT_ENV.get("MMPM_MAGICMIRROR_ROOT") / "modules" / self.package.directory
+        self.package.update()
+        mock_chdir.assert_called_with(expected_dir)
+        self.assertTrue(self.package.is_upgradable)
 
     @patch("os.chdir")
-    @patch('mmpm.magicmirror.package.repo_up_to_date')
+    @patch("mmpm.magicmirror.package.repo_up_to_date")
     @patch("pathlib.PosixPath.exists")
     def test_update_no_changes(self, mock_exists, mock_repo_up_to_date, mock_chdir):
         mock_repo_up_to_date.return_value = False
@@ -103,8 +103,8 @@ class TestMagicMirrorPackage(unittest.TestCase):
 
     @patch("os.chdir")
     @patch("mmpm.magicmirror.package.run_cmd")
-    @patch("mmpm.magicmirror.package.InstallationHandler.execute")
-    def test_upgrade(self, mock_install_execute, mock_run_cmd, mock_chdir):
+    @patch("mmpm.magicmirror.package.InstallationHandler.install")
+    def test_upgrade(self, mock_install_install, mock_run_cmd, mock_chdir):
         mock_run_cmd.return_value = (0, "", "")
         self.package.env = MMPMEnv()
         expected_dir = MMPM_DEFAULT_ENV.get("MMPM_MAGICMIRROR_ROOT") / "modules" / self.package.directory

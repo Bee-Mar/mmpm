@@ -18,31 +18,34 @@ class TestInstallationHandler(unittest.TestCase):
 
     @patch("os.chdir")
     @patch("os.system")
-    def test_execute_with_no_modules_dir(self, mock_system, mock_chdir):
-        # Setup
+    def test_install_with_no_modules_dir(self, mock_system, mock_chdir):
         self.mock_package.env.MMPM_MAGICMIRROR_ROOT.get.return_value = Path("/invalid/root")
         self.mock_package.directory = "test_dir"
 
-        # Test
-        result = self.handler.execute()
+        result = self.handler.install()
 
-        # Assert
         self.assertFalse(result)
         mock_chdir.assert_not_called()
         mock_system.assert_not_called()
 
     @patch("pathlib.Path.exists")
     def test_deps_file_exists(self, mock_exists):
+        mock_exists.return_value = False
+        file_name = "garbage"
+        result = self.handler.exists(file_name)
+        self.assertFalse(result)
+
+    @patch("pathlib.Path.exists")
+    def test_deps_file_exists(self, mock_exists):
         mock_exists.return_value = True
         file_name = "package.json"
-        result = self.handler.__deps_file_exists__(file_name)
+        result = self.handler.exists(file_name)
         self.assertTrue(result)
 
     @patch("mmpm.magicmirror.package.run_cmd")
     def test_bundle_install(self, mock_run_cmd):
         mock_run_cmd.return_value = (0, "stdout", "stderr")
-
-        error_code, stdout, stderr = self.handler.__bundle_install__()
+        error_code, stdout, stderr = self.handler.bundle_install()
 
         self.assertEqual(error_code, 0)
         self.assertEqual(stdout, "stdout")
@@ -52,8 +55,7 @@ class TestInstallationHandler(unittest.TestCase):
     @patch("mmpm.magicmirror.package.run_cmd")
     def test_npm_install(self, mock_run_cmd):
         mock_run_cmd.return_value = (0, "stdout", "stderr")
-
-        error_code, stdout, stderr = self.handler.__npm_install__()
+        error_code, stdout, stderr = self.handler.npm_install()
 
         self.assertEqual(error_code, 0)
         self.assertEqual(stdout, "stdout")
@@ -64,13 +66,42 @@ class TestInstallationHandler(unittest.TestCase):
     @patch("os.cpu_count", return_value=4)
     def test_make(self, mock_cpu_count, mock_run_cmd):
         mock_run_cmd.return_value = (0, "stdout", "stderr")
-
-        error_code, stdout, stderr = self.handler.__make__()
+        error_code, stdout, stderr = self.handler.make()
 
         self.assertEqual(error_code, 0)
         self.assertEqual(stdout, "stdout")
         self.assertEqual(stderr, "stderr")
         mock_run_cmd.assert_called_with(["make", "-j", f"{cpu_count()}"], "Building with 'make'")
+
+    @patch("mmpm.magicmirror.package.run_cmd")
+    def test_pip_install(self, mock_run_cmd):
+        mock_run_cmd.return_value = (0, "stdout", "stderr")
+        error_code, stdout, stderr = self.handler.pip_install()
+
+        self.assertEqual(error_code, 0)
+        self.assertEqual(stdout, "stdout")
+        self.assertEqual(stderr, "stderr")
+        mock_run_cmd.assert_called_with(["pip", "install", "-r", "requirements.txt"], "Installing Python dependencies")
+
+    @patch("mmpm.magicmirror.package.run_cmd")
+    def test_maven_install(self, mock_run_cmd):
+        mock_run_cmd.return_value = (0, "stdout", "stderr")
+        error_code, stdout, stderr = self.handler.maven_install()
+
+        self.assertEqual(error_code, 0)
+        self.assertEqual(stdout, "stdout")
+        self.assertEqual(stderr, "stderr")
+        mock_run_cmd.assert_called_with(["mvn", "install"], "Building with Maven")
+
+    @patch("mmpm.magicmirror.package.run_cmd")
+    def test_go_build(self, mock_run_cmd):
+        mock_run_cmd.return_value = (0, "stdout", "stderr")
+        error_code, stdout, stderr = self.handler.go_build()
+
+        self.assertEqual(error_code, 0)
+        self.assertEqual(stdout, "stdout")
+        self.assertEqual(stderr, "stderr")
+        mock_run_cmd.assert_called_with(["go", "build"], "Building Go project")
 
     @patch("mmpm.magicmirror.package.run_cmd")
     @patch("os.chdir")
@@ -81,13 +112,9 @@ class TestInstallationHandler(unittest.TestCase):
         build_dir = Path("fake/dir/build")
         self.mock_package.directory = Path("fake/dir")
 
-        # Mocking the build directory creation
         mock_mkdir.return_value = build_dir
+        error_code, stdout, stderr = self.handler.cmake()
 
-        # Running the test
-        error_code, stdout, stderr = self.handler.__cmake__()
-
-        # Assertions
         self.assertEqual(error_code, 0)
         self.assertEqual(stdout, "stdout")
         self.assertEqual(stderr, "stderr")

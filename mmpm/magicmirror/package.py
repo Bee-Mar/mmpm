@@ -7,7 +7,7 @@ from multiprocessing import cpu_count
 from pathlib import Path, PosixPath
 from re import sub
 from textwrap import fill
-from typing import Any, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 
 import requests
 from bs4 import NavigableString, Tag
@@ -168,16 +168,16 @@ class MagicMirrorPackage:
             None
         """
 
-        return InstallationHandler(self).execute()
+        return InstallationHandler(self).install()
 
     def remove(self) -> bool:
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
-        error_code, stdout, stderr = run_cmd(["rm", "-rf", str(modules_dir / self.directory)], progress=True)
+        error_code, stdout, stderr = run_cmd(["rm", "-rf", str(modules_dir / self.directory)], message="Removing package")
         return not error_code and not stderr and not stdout
 
     def clone(self) -> Tuple[int, str, str]:
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
-        return run_cmd(["git", "clone", self.repository, str(modules_dir / self.directory)], message="Retrieving package")
+        return run_cmd(["git", "clone", self.repository, str(modules_dir / self.directory)], message="Downloading package")
 
     def update(self) -> None:
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
@@ -214,13 +214,13 @@ class MagicMirrorPackage:
 
         os.chdir(modules_dir / self.directory)
 
-        error_code, stdout, stderr = run_cmd(["git", "pull"])
+        error_code, stdout, stderr = run_cmd(["git", "pull"], message="Retrieving changes")
 
         if error_code or stderr:
             logger.error(f"Failed to upgrade {self.title}: {stderr}")
             return False
 
-        elif "up to date" not in stdout or force and InstallationHandler(self).execute():
+        elif "up to date" not in stdout or force and InstallationHandler(self).install():
             print(f"Upgraded {color.n_green(self.title)}")
             logger.debug(f"Upgraded {color.n_green(self.title)}")
 
@@ -274,7 +274,16 @@ class InstallationHandler:
     def __init__(self, package: MagicMirrorPackage):
         self.package = package
 
-    def execute(self) -> bool:
+    def execute(self, funk: Callable) -> bool:
+        error_code, _, stderr = funk()
+
+        if error_code:
+            logger.error(stderr)
+            return False
+
+        return True
+
+    def install(self) -> bool:
         """
         Utility method that detects package.json, Gemfiles, Makefiles, and
         CMakeLists.txt files, and handles the build process for each of the
@@ -289,9 +298,7 @@ class InstallationHandler:
             stderr (str): success if the string is empty, fail if not
         """
         root = self.package.env.MMPM_MAGICMIRROR_ROOT
-
         modules_dir = root.get() / "modules"
-
         self.package.directory = modules_dir / self.package.directory
 
         if not modules_dir.exists():
@@ -299,7 +306,6 @@ class InstallationHandler:
             return False
 
         os.chdir(modules_dir)
-
         error_code = 0
 
         if not self.package.directory.exists():
@@ -311,37 +317,26 @@ class InstallationHandler:
         if error_code:
             logger.error(f"Failed to clone {self.package.title}: {stderr}")
 
-        failure = lambda message, code: f"Installation failed: {message}, {code}"
+        if self.exists("package.json"):
+            return self.execute(self.npm_install)
 
-        if self.__deps_file_exists__("package.json"):
-            error_code, _, stderr = self.__npm_install__()
+        if self.exists("Gemfile"):
+            return self.execute(self.bundle_install)
 
-            if error_code:
-                logger.error(failure(stderr, error_code))
+        if self.exists("Makefile"):
+            return self.execute(self.make)
 
-        if self.__deps_file_exists__("Gemfile"):
-            error_code, _, stderr = self.__bundle_install__()
+        if self.exists("CMakeLists.txt"):
+            return self.execute(self.cmake)
 
-            if error_code:
-                logger.error(failure(stderr, error_code))
+        if self.exists("requirements.txt"):
+            return self.execute(self.pip_install)
 
-        if self.__deps_file_exists__("Makefile"):
-            error_code, _, stderr = self.__make__()
+        if self.exists("pom.xml"):
+            return self.execute(self.maven_install)
 
-            if error_code:
-                logger.error(failure(stderr, error_code))
-
-        if self.__deps_file_exists__("CmakeLists.txt"):
-            error_code, _, stderr = self.__cmake__()
-
-            if error_code:
-                logger.error(failure(stderr, error_code))
-
-            if self.__deps_file_exists__("Makefile"):
-                error_code, _, stderr = self.__make__()
-
-                if error_code:
-                    logger.error(failure(stderr, error_code))
+        if self.exists("go.mod"):
+            return self.execute(self.go_build)
 
         if error_code:
             return False
@@ -349,16 +344,7 @@ class InstallationHandler:
         logger.debug(f"Exiting installation handler from {self.package.directory}")
         return True
 
-    def __cmake__(self) -> Tuple[int, str, str]:
-        """Used to run make from a directory known to have a CMakeLists.txt file
-
-        Parameters:
-            None
-
-        Returns:
-            Tuple[error_code (int), stdout (str), error_message (str)]
-
-        """
+    def cmake(self) -> Tuple[int, str, str]:
         logger.debug(f"Running 'cmake ..' in {self.package.directory}")
 
         build_dir = Path(self.package.directory / "build")
@@ -369,62 +355,32 @@ class InstallationHandler:
 
         return run_cmd(["cmake", ".."], message="Building with CMake")
 
-    def __make__(self) -> Tuple[int, str, str]:
-        """
-        Used to run make from a directory known to have a Makefile
-
-        Parameters:
-            None
-
-        Returns:
-            Tuple[error_code (int), stdout (str), error_message (str)]
-        """
-
+    def make(self) -> Tuple[int, str, str]:
         logger.debug(f"Found Makefile. Running `make -j {cpu_count()} in {self.package.directory}`")
-        return run_cmd(["make", "-j", f"{cpu_count()}"], "Building with 'make'")
+        return run_cmd(["make", "-j", f"{cpu_count()}"], message="Building with 'make'")
 
-    def __npm_install__(self) -> Tuple[int, str, str]:
-        """
-        Used to run npm install from a directory known to have a package.json file
-
-        Parameters:
-            None
-
-        Returns:
-            Tuple[error_code (int), stdout (str), error_message (str)]
-        """
+    def npm_install(self) -> Tuple[int, str, str]:
         logger.debug(f"Found package.json. Running `npm install` in {self.package.directory}")
         return run_cmd(["npm", "install"], message="Installing Node dependencies")
 
-    def __bundle_install__(self) -> Tuple[int, str, str]:
-        """
-        Used to run npm install from a directory known to have a package.json file
-
-        Parameters:
-            None
-
-        Returns:
-            Tuple[error_code (int), stdout (str), error_message (str)]
-        """
+    def bundle_install(self) -> Tuple[int, str, str]:
         logger.debug(f"Found Gemfile. Running `bundle install` in {self.package.directory}")
-        return run_cmd(["bundle", "install"], "Installing Ruby dependencies")
+        return run_cmd(["bundle", "install"], message="Installing Ruby dependencies")
 
-    def __deps_file_exists__(self, file_name: str) -> bool:
-        """
-        Case-insensitive search for existing package specification file in current directory
+    def pip_install(self) -> Tuple[int, str, str]:
+        logger.debug("Running 'pip install' in {}".format(self.package.directory))
+        return run_cmd(["pip", "install", "-r", "requirements.txt"], message="Installing Python dependencies")
 
-        Parameters:
-            file_name (str): The name of the file to search for
+    def maven_install(self) -> Tuple[int, str, str]:
+        logger.debug("Running 'mvn install' in {}".format(self.package.directory))
+        return run_cmd(["mvn", "install"], message="Building with Maven")
 
-        Returns:
-            bool: True if the file exists, False if not
-        """
+    def go_build(self) -> Tuple[int, str, str]:
+        logger.debug("Running 'go build' in {}".format(self.package.directory))
+        return run_cmd(["go", "build"], message="Building Go project")
 
-        for dependency_file in [file_name, file_name.lower(), file_name.upper()]:
-            if Path(self.package.directory / dependency_file).exists():
-                return True
-
-        return False
+    def exists(self, file_name: str) -> bool:
+        return Path(self.package.directory / file_name).exists()
 
 
 class RemotePackage:

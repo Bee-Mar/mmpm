@@ -316,32 +316,24 @@ class InstallationHandler:
 
         if error_code:
             logger.error(f"Failed to clone {self.package.title}: {stderr}")
-
-        if self.exists("package.json"):
-            return self.execute(self.npm_install)
-
-        if self.exists("Gemfile"):
-            return self.execute(self.bundle_install)
-
-        if self.exists("Makefile"):
-            return self.execute(self.make)
-
-        if self.exists("CMakeLists.txt"):
-            return self.execute(self.cmake)
-
-        if self.exists("requirements.txt"):
-            return self.execute(self.pip_install)
-
-        if self.exists("pom.xml"):
-            return self.execute(self.maven_install)
-
-        if self.exists("go.mod"):
-            return self.execute(self.go_build)
-
-        if error_code:
             return False
 
-        logger.debug(f"Exiting installation handler from {self.package.directory}")
+        elif self.exists("package.json"):
+            return self.execute(self.npm_install)
+        elif self.exists("Gemfile"):
+            return self.execute(self.bundle_install)
+        elif self.exists("Makefile"):
+            return self.execute(self.make)
+        elif self.exists("CMakeLists.txt"):
+            return self.execute(self.cmake)
+        elif self.exists("requirements.txt"):
+            return self.execute(self.pip_install)
+        elif self.exists("pom.xml"):
+            return self.execute(self.maven_install)
+        elif self.exists("go.mod"):
+            return self.execute(self.go_build)
+
+        logger.debug(f"Unable to find any dependency file associated with {self.package.title}")
         return True
 
     def cmake(self) -> Tuple[int, str, str]:

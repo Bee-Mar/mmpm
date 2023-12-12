@@ -55,7 +55,7 @@ def get_host_ip() -> str:
 
     try:
         skt.connect(("8.8.8.8", 80))
-        address = _socket.getsockname()[0]
+        address = skt.getsockname()[0]
         logger.debug(f"Determined Host IP={address}")
     except socket.gaierror as error:
         logger.error(f"Failed to determine host IP address: {error}")

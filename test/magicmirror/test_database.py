@@ -35,7 +35,7 @@ class TestMagicMirrorDatabase(unittest.TestCase):
 
         # Test the update method
         result = self.database.update()
-        self.assertIsInstance(result, int)
+        self.assertFalse(result)
 
     @patch("mmpm.magicmirror.database.open", new_callable=mock_open)
     def test_add_mm_pkg(self, mock_file):
@@ -51,16 +51,35 @@ class TestMagicMirrorDatabase(unittest.TestCase):
             description="Test Description",
         )
 
-        self.assertIsInstance(result, bool)
+        self.assertTrue(result)
 
     @patch("mmpm.magicmirror.database.open", new_callable=mock_open)
-    def test_remove_mm_pkg(self, mock_file):
+    def test_get_custom_packages(self, mock_file):
+
+        # Mock the open function
+        mock_file.return_value.read.return_value = '{"Custom Packages": [{"title": "Test Package"}]}'
+
+        result = self.database.custom_packages()
+
+        self.assertEqual(result, [MagicMirrorPackage(title="Test Package")])
+
+    @patch("mmpm.magicmirror.database.open", new_callable=mock_open)
+    def test_remove_mm_pkg_success(self, mock_file):
         # Mock the open function
         mock_file.return_value.read.return_value = '{"Custom Packages": [{"title": "Test Package"}]}'
 
         # Test the remove_mm_pkg method
         result = self.database.remove_mm_pkg(title="Test Package")
-        self.assertIsInstance(result, bool)
+        self.assertTrue(result)
+
+    @patch("mmpm.magicmirror.database.open", new_callable=mock_open)
+    def test_remove_mm_pkg_failure(self, mock_file):
+        # Mock the open function
+        mock_file.return_value.read.return_value = '{"Custom Packages": [{"title": "Test Package"}]}'
+
+        # Test the remove_mm_pkg method
+        result = self.database.remove_mm_pkg(title="Not found")
+        self.assertFalse(result)
 
 
 if __name__ == "__main__":

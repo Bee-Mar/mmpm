@@ -71,6 +71,8 @@ class EnvVar:
                 except json.JSONDecodeError:
                     print(color.b_yellow("WARNING:"), "Unable to parse environment variables file.")
 
+                # make sure we construct the expected type using from parsed data, otherwise instead of
+                # something like a Path object we would return a string
                 self.__value = self.__tipe(self.default if self.name not in env_vars else env_vars.get(self.name))
 
             self.__mtime = mtime
@@ -98,6 +100,7 @@ class MMPMEnv(Singleton):
         get(): Retrieves the current environment variables as a dictionary.
         display(): Prints the current environment variables in a formatted JSON structure for easy viewing.
     """
+
     __slots__ = tuple({key.lower() for key in MMPM_DEFAULT_ENV.keys()})
 
     def __init__(self):

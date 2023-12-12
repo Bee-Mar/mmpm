@@ -74,9 +74,7 @@ class TestMagicMirrorPackage(unittest.TestCase):
         modules = MMPM_DEFAULT_ENV.get("MMPM_MAGICMIRROR_ROOT") / "modules"
         self.package.env = MMPMEnv()
         self.package.clone()
-        mock_run_cmd.assert_called_with(
-            ["git", "clone", self.package.repository, str(modules / self.package.directory)], message="Retrieving package"
-        )
+        mock_run_cmd.assert_called_with(["git", "clone", self.package.repository, str(modules / self.package.directory)], message="Downloading")
 
     @patch("os.chdir")
     @patch("mmpm.magicmirror.package.repo_up_to_date")

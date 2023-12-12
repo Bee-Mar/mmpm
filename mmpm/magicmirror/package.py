@@ -177,7 +177,7 @@ class MagicMirrorPackage:
 
     def clone(self) -> Tuple[int, str, str]:
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
-        return run_cmd(["git", "clone", self.repository, str(modules_dir / self.directory)], message="Downloading package")
+        return run_cmd(["git", "clone", self.repository, str(modules_dir / self.directory)], message="Downloading")
 
     def update(self) -> None:
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"

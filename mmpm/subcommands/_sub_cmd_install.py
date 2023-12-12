@@ -67,4 +67,4 @@ class Install(SubCmd):
                 logger.info(f"Installed {color.n_green(package.title)} ({package.repository})")
             elif Prompt.confirm(f"Installation failed. Would you like to remove {package.title}?"):
                 package.is_installed = True
-                package.remove(assume_yes=True)
+                package.remove()

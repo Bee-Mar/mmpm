@@ -50,7 +50,7 @@ class TestInstallationHandler(unittest.TestCase):
         self.assertEqual(error_code, 0)
         self.assertEqual(stdout, "stdout")
         self.assertEqual(stderr, "stderr")
-        mock_run_cmd.assert_called_with(["bundle", "install"], "Installing Ruby dependencies")
+        mock_run_cmd.assert_called_with(["bundle", "install"], message="Installing Ruby dependencies")
 
     @patch("mmpm.magicmirror.package.run_cmd")
     def test_npm_install(self, mock_run_cmd):
@@ -71,7 +71,7 @@ class TestInstallationHandler(unittest.TestCase):
         self.assertEqual(error_code, 0)
         self.assertEqual(stdout, "stdout")
         self.assertEqual(stderr, "stderr")
-        mock_run_cmd.assert_called_with(["make", "-j", f"{cpu_count()}"], "Building with 'make'")
+        mock_run_cmd.assert_called_with(["make", "-j", f"{cpu_count()}"], message="Building with 'make'")
 
     @patch("mmpm.magicmirror.package.run_cmd")
     def test_pip_install(self, mock_run_cmd):
@@ -81,7 +81,7 @@ class TestInstallationHandler(unittest.TestCase):
         self.assertEqual(error_code, 0)
         self.assertEqual(stdout, "stdout")
         self.assertEqual(stderr, "stderr")
-        mock_run_cmd.assert_called_with(["pip", "install", "-r", "requirements.txt"], "Installing Python dependencies")
+        mock_run_cmd.assert_called_with(["pip", "install", "-r", "requirements.txt"], message="Installing Python dependencies")
 
     @patch("mmpm.magicmirror.package.run_cmd")
     def test_maven_install(self, mock_run_cmd):
@@ -91,7 +91,7 @@ class TestInstallationHandler(unittest.TestCase):
         self.assertEqual(error_code, 0)
         self.assertEqual(stdout, "stdout")
         self.assertEqual(stderr, "stderr")
-        mock_run_cmd.assert_called_with(["mvn", "install"], "Building with Maven")
+        mock_run_cmd.assert_called_with(["mvn", "install"], message="Building with Maven")
 
     @patch("mmpm.magicmirror.package.run_cmd")
     def test_go_build(self, mock_run_cmd):
@@ -101,7 +101,7 @@ class TestInstallationHandler(unittest.TestCase):
         self.assertEqual(error_code, 0)
         self.assertEqual(stdout, "stdout")
         self.assertEqual(stderr, "stderr")
-        mock_run_cmd.assert_called_with(["go", "build"], "Building Go project")
+        mock_run_cmd.assert_called_with(["go", "build"], message="Building Go project")
 
     @patch("mmpm.magicmirror.package.run_cmd")
     @patch("os.chdir")

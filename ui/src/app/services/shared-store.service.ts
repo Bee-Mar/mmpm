@@ -3,7 +3,7 @@ import {BehaviorSubject, Observable} from "rxjs";
 import {MagicMirrorPackage} from "@/models/magicmirror-package";
 import {MagicMirrorPackageAPI} from "./api/magicmirror-package-api.service";
 import {APIResponse} from "@/services/api/base-api";
-import {DatabaseInfo} from "@/models/database-details";
+import {DatabaseInfo} from "@/models/database-info";
 import {UpgradableDetails} from "@/models/upgradable-details";
 import {MMPMEnv} from '@/models/mmpm-env';
 
@@ -49,6 +49,7 @@ export class SharedStoreService {
         this.packagesSubj.next(response.message as Array<MagicMirrorPackage>);
         console.log("Retrieved packages");
       } else {
+        this.packagesSubj.next([]);
         console.log(response.message);
       }
 
@@ -57,6 +58,7 @@ export class SharedStoreService {
           this.dbInfoSubj.next(response.message as DatabaseInfo);
         } else {
           console.log(response.message);
+          this.dbInfoSubj.next({last_update: "N/A", categories: 0, packages: 0});
         }
       });
 
@@ -65,6 +67,7 @@ export class SharedStoreService {
           this.upgradeableSubj.next(response.message as UpgradableDetails);
         } else {
           console.log(response.message);
+          this.upgradeableSubj.next({mmpm: false, MagicMirror: false, packages: []});
         }
       });
     });

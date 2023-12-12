@@ -1,13 +1,13 @@
-import { Component, Input, OnDestroy, OnInit, Output, EventEmitter } from "@angular/core";
-import { DatabaseInfo } from "@/models/database-details";
-import { Subscription } from "rxjs";
-import { APIResponse, BaseAPI } from "@/services/api/base-api";
-import { SharedStoreService } from "@/services/shared-store.service";
-import { MagicMirrorPackage } from "@/models/magicmirror-package";
-import { UpgradableDetails } from "@/models/upgradable-details";
-import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
-import { MagicMirrorAPI } from "@/services/api/magicmirror-api.service";
-import { MessageService } from "primeng/api";
+import {Component, Input, OnDestroy, OnInit, Output, EventEmitter} from "@angular/core";
+import {DatabaseInfo} from "@/models/database-info";
+import {Subscription} from "rxjs";
+import {APIResponse, BaseAPI} from "@/services/api/base-api";
+import {SharedStoreService} from "@/services/shared-store.service";
+import {MagicMirrorPackage} from "@/models/magicmirror-package";
+import {UpgradableDetails} from "@/models/upgradable-details";
+import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
+import {MagicMirrorAPI} from "@/services/api/magicmirror-api.service";
+import {MessageService} from "primeng/api";
 
 @Component({
   selector: "app-database-info",
@@ -102,9 +102,9 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
         this.store.load();
         this.loadingChange.emit(false);
 
-        this.msg.add({ severity: "success", summary: "Update", detail: "Completed check for available updates" });
+        this.msg.add({severity: "success", summary: "Update", detail: "Completed check for available updates"});
       } else {
-        this.msg.add({ severity: "error", summary: "Update", detail: response.message });
+        this.msg.add({severity: "error", summary: "Update", detail: response.message});
       }
     });
   }
@@ -124,9 +124,9 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
       const response = await this.mmApi.getUpgrade();
 
       if (response.code === 200) {
-        this.msg.add({ severity: "success", summary: "Upgrade", detail: "MagicMirror has been upgraded" });
+        this.msg.add({severity: "success", summary: "Upgrade", detail: "MagicMirror has been upgraded"});
       } else {
-        this.msg.add({ severity: "error", summary: "Upgrade", detail: response.message });
+        this.msg.add({severity: "error", summary: "Upgrade", detail: response.message});
       }
     }
 
@@ -134,9 +134,9 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
       const response = await this.mmPkgApi.postUpgradePackages(packages);
 
       if (response.code === 200) {
-        this.msg.add({ severity: "success", summary: "Upgrade", detail: `${packages.length} packages have been upgraded` });
+        this.msg.add({severity: "success", summary: "Upgrade", detail: `${packages.length} packages have been upgraded`});
       } else {
-        this.msg.add({ severity: "error", summary: "Upgrade", detail: response.message });
+        this.msg.add({severity: "error", summary: "Upgrade", detail: response.message});
       }
     }
 
@@ -145,9 +145,9 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
     const response = await this.baseApi.get_("db/update");
 
     if (response.code === 200) {
-      this.msg.add({ severity: "success", summary: "Upgrade", detail: "Database updated to reflect changes" });
+      this.msg.add({severity: "success", summary: "Upgrade", detail: "Database updated to reflect changes"});
     } else {
-      this.msg.add({ severity: "error", summary: "Upgrade", detail: response.message });
+      this.msg.add({severity: "error", summary: "Upgrade", detail: response.message});
     }
 
     this.store.load();

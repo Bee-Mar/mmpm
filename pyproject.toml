@@ -6,26 +6,26 @@ authors = [
   { name = "Brandon Marlowe", email = "bpmarlowe-software@protonmail.com" },
 ]
 dependencies = [
-    "Flask-Cors>=3.0.8",
-    "argcomplete>=2.0.0",
-    "argparse>=1.4",
-    "beautifulsoup4>=4.11.1",
-    "colorama>=0.4.3",
-    "flask-socketio>=5.3.2",
-    "flask>=2.2.0",
-    "gevent>=22.10.0",
-    "gunicorn>=20.1.0",
-    "jinja2>=3.1.0",
-    "jsonpickle>=3.0.1",
-    "pygments>=2.12.0",
-    "python-socketio[client]>=5.7.0",
-    "requests>=2.28.0",
-    "systemd-service==1.8",
-    "yaspin>=2.3.0",
-    "pip>=23.3.1",
-    "gitpython>=3.1.40",
-    "ItsPrompt>=1.4",
-    "gevent-websocket>=0.10.1",
+  "Flask-Cors>=3.0.8",
+  "argcomplete>=2.0.0",
+  "argparse>=1.4",
+  "beautifulsoup4>=4.11.1",
+  "colorama>=0.4.3",
+  "flask-socketio>=5.3.2",
+  "flask>=2.2.0",
+  "gevent>=22.10.0",
+  "gunicorn>=20.1.0",
+  "jinja2>=3.1.0",
+  "jsonpickle>=3.0.1",
+  "pygments>=2.12.0",
+  "python-socketio[client]>=5.7.0",
+  "requests>=2.28.0",
+  "systemd-service==1.8",
+  "yaspin>=2.3.0",
+  "pip>=23.3.1",
+  "gitpython>=3.1.40",
+  "ItsPrompt>=1.4",
+  "gevent-websocket>=0.10.1",
 ]
 requires-python = ">=3.8"
 readme = "README.md"
@@ -62,7 +62,7 @@ test = "coverage run -m pytest test"
 report = "coverage report"
 lint = "pylint mmpm"
 mypy = "mypy mmpm"
-web = "bash -c 'cd web && bun run start'"
-build-web = "bash -c 'cd web && bun run build'"
+ui = "bash -c 'cd ui && bun run start'"
+build-ui = "bash -c 'cd ui && bun run build'"
 server = "gunicorn --worker-class gevent --bind 0.0.0.0:7890 mmpm.wsgi:app --reload"
 logs = "python3 ./mmpm/api/log_server.py"

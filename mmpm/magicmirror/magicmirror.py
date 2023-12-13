@@ -118,7 +118,7 @@ class MagicMirror(Singleton):
 
         for cmd in ["git", "npm"]:
             if not shutil.which(cmd):
-                logger.fatal(f"'{cmd}' command not found. Please install '{cmd}', then re-run 'mmpm install --magicmirror'")
+                logger.fatal(f"'{cmd}' command not found. Please install '{cmd}', then re-run 'mmpm mm-ctl --install'")
                 return False
 
         root_path.mkdir(exist_ok=True)
@@ -133,10 +133,10 @@ class MagicMirror(Singleton):
             return False
 
         os.chdir(root_path)
-        error_code, _, stderr = run_cmd(["npm", "run", "install-mm"], progress=True, message="Installing Node dependencies")
+        error_code, _, stderr = run_cmd(["npm", "run", "install-mm"], progress=True, message="Installing MagicMirror dependencies")
 
         if error_code:
-            logger.error(f"Failed to clone the MagicMirror repo: {stderr}")
+            logger.error(f"Failed to install MagicMirror dependencies: {stderr}")
             return False
 
         logger.info("Installed MagicMirror!")

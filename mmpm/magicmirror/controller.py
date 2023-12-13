@@ -116,45 +116,36 @@ class MagicMirrorController(Singleton):
         Returns:
             None
         """
-        logger.info("Starting MagicMirror")
-
-        process: str = ""
-        command: List[str] = []
-
-        MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = self.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get()
-        MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = self.env.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.get()
-
-        if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
-            logger.debug(f"docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}")
-
-        if MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
-            logger.debug(f"pm2 process set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}")
-
-        if shutil.which("pm2") and MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
-            command = ["pm2", "start", MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
-            process = "pm2"
-
-        elif shutil.which("docker-compose") and MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
-            command = ["docker-compose", "-f", MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, "up", "-d"]
-            process = "docker-compose"
-
-        if command and process:
-            logger.debug(f"Starting MagicMirror using {command[0]} ")
-            error_code, stderr, _ = run_cmd(command, progress=False, background=True)
-
-            if error_code:
-                logger.error(stderr.strip())
-                return False
-
-            logger.debug(f"Started MagicMirror using '{process}'")
-            return True
-
-        os.chdir(self.env.MMPM_MAGICMIRROR_ROOT.get())
 
         command = ["npm", "run", "start"]
-        logger.debug(f"Starting Magicmirror using `{' '.join(command)}`")
 
-        run_cmd(command, progress=False, background=True)
+        pm2_process: str = self.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get()
+        compose_file: str = self.env.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.get()
+
+        if compose_file:
+            logger.debug(f"Docker compose file set as {compose_file}")
+            command = ["docker", "compose", "-f", compose_file, "up", "-d"]
+        elif pm2_process:
+            logger.debug(f"pm2 process set as {pm2_process}")
+            command = ["pm2", "start", pm2_process]
+
+        if not shutil.which(command[0]):
+            logger.error(f"{command[0]} not found in PATH. Unable to start MagicMirror")
+            return False
+
+        root = self.env.MMPM_MAGICMIRROR_ROOT.get()
+        root.mkdir(exist_ok=True, parents=True)
+
+        os.chdir(root)
+
+        logger.debug(f"Attempting to start MagicMirror using {' '.join(command)} ")
+        error_code, _, stderr = run_cmd(command, message="Starting MagicMirror")
+
+        if error_code:
+            logger.error(stderr)
+            return False
+
+        logger.info(f"Started MagicMirror")
         return True
 
     def stop(self):
@@ -169,48 +160,34 @@ class MagicMirrorController(Singleton):
             success (bool): True if successful, False if failure
         """
 
-        process: str = ""
         command: List[str] = []
 
-        MMPM_MAGICMIRROR_PM2_PROCESS_NAME: str = self.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get()
-        MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: str = self.env.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.get()
+        pm2_process: str = self.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get()
+        compose_file: str = self.env.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.get()
 
-        if MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
-            logger.debug(f"docker-compose file set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}")
+        if compose_file:
+            logger.debug(f"docker-compose file set as {compose_file}")
+            command = ["docker", "compose", "-f", compose_file, "stop"]
+        elif pm2_process:
+            logger.debug(f"pm2 process set as {pm2_process}")
+            command = ["pm2", "stop", pm2_process]
 
-        if MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
-            logger.debug(f"pm2 process set as {MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE}")
-
-        if shutil.which("pm2") and MMPM_MAGICMIRROR_PM2_PROCESS_NAME:
-            command = ["pm2", "stop", MMPM_MAGICMIRROR_PM2_PROCESS_NAME]
-            process = "pm2"
-
-        elif shutil.which("docker-compose") and MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE:
-            command = ["docker-compose", "-f", MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE, "stop"]
-            process = "docker-compose"
-
-        logger.debug("Stopping MagicMirror ")
-
-        if command and process:
-            logger.debug(f"Using '{process}' to stop MagicMirror")
-            # pm2 and docker-compose cause the output to flip
-            error_code, stderr, _ = run_cmd(command, progress=False, background=True)
+        if command and shutil.which(command[0]):
+            logger.debug(f"Attempting to stop MagicMirror using '{command[0]}'")
+            # pm2 and docker-compose cause stdout/stderr to flip
+            error_code, stdout, stderr = run_cmd(command, message="Stopping MagicMirror")
 
             if error_code:
-                logger.error(stderr.strip())
+                logger.error(stderr)
                 return False
 
-            logger.debug(f"Stopped MagicMirror using '{process}'")
+            logger.debug(f"Stopped MagicMirror using '{command[0]}'")
+            logger.info("Stopped MagicMirror")
             return True
 
-        processes = ["electron"]
-
-        logger.debug(f"Killing processes associated with MagicMirror: {processes}")
-
-        for process in processes:
-            kill_pids_of_process(process)
-            logger.debug(f"Killed pids of process {process}")
-
+        logger.debug(f"Stopping electron processes associated with MagicMirror")
+        kill_pids_of_process("electron")
+        logger.info("Stopped MagicMirror")
         return True
 
     def restart(self):

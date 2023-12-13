@@ -128,7 +128,6 @@ class MagicMirrorDatabase(Singleton):
 
         return packages_found
 
-
     def update(self, can_upgrade_mmpm: bool = False, can_upgrade_magicmirror: bool = False) -> int:
         upgradable: List[MagicMirrorPackage] = []
 
@@ -256,8 +255,7 @@ class MagicMirrorDatabase(Singleton):
                 packages = json.load(db)
                 self.packages = [MagicMirrorPackage(**package) for package in packages]
 
-        custom_packages = self.custom_packages()
-        self.packages.extend(custom_packages)
+        self.packages.extend(self.custom_packages())
 
         self.categories = list({package.category for package in self.packages})
         discovered_packages: List[MagicMirrorPackage] = self.__discover_installed_packages__()
@@ -269,9 +267,8 @@ class MagicMirrorDatabase(Singleton):
 
         return bool(len(self.packages))
 
-
     def custom_packages(self) -> List[MagicMirrorPackage]:
-        data: Dict[str, List[Dict[str, str]]] = {"Custom Packages": []}
+        data: List[Dict[str, str]] = []
         packages: List[MagicMirrorPackage] = []
         db_ext_pkgs_file = paths.MMPM_CUSTOM_PACKAGES_FILE
 
@@ -283,11 +280,10 @@ class MagicMirrorDatabase(Singleton):
                     logger.error(f"{db_ext_pkgs_file} has an invalid layout. Recreating file.")
                     json.dump(data, ext_pkgs)
 
-        for package in data["Custom Packages"]:
+        for package in data:
             packages.append(MagicMirrorPackage(**package))  # type: ignore
 
         return packages
-
 
     def display_categories(self, title_only: bool = False) -> None:
         """
@@ -425,19 +421,19 @@ class MagicMirrorDatabase(Singleton):
                 with open(ext_pkgs_file, "r", encoding="utf-8") as mm_ext_pkgs:
                     custom_packages = json.load(mm_ext_pkgs)
 
-                existing_packages = [pkg.get("title").lower() for pkg in custom_packages["Custom Packages"]]
+                existing_packages = [pkg.get("title").lower() for pkg in custom_packages]
 
                 if package.title.lower() in existing_packages:
                     logger.error(f"A package with named {package.title} is already registered as an Custom Package")
                     return False
 
                 with open(ext_pkgs_file, "w", encoding="utf-8") as mm_ext_pkgs:
-                    custom_packages[package.category].append(package.serialize())
+                    custom_packages.append(package.serialize())
                     json.dump(custom_packages, mm_ext_pkgs)
             else:
                 # if file didn't exist previously, or it was empty, this is the first custom package that's been added
                 with open(ext_pkgs_file, "w", encoding="utf-8") as mm_ext_pkgs:
-                    json.dump({"Custom Packages": [package.serialize()]}, mm_ext_pkgs)
+                    json.dump([package.serialize()], mm_ext_pkgs)
 
             print(color.n_green(f"\nSuccessfully added {package.title} to 'Custom Packages'\n"))
 
@@ -466,11 +462,11 @@ class MagicMirrorDatabase(Singleton):
         with open(file, "r", encoding="utf-8") as mm_ext_pkgs:
             data = json.load(mm_ext_pkgs)
 
-            if not "Custom Packages" in data:
+            if not data:
                 logger.fatal("No custom packages found in database")
                 return False
 
-            packages = [MagicMirrorPackage(**package) for package in data["Custom Packages"]]
+            packages = [MagicMirrorPackage(**package) for package in data]
 
             try:
                 match: MagicMirrorPackage = next(filter(lambda pkg: pkg.title == title, packages))
@@ -482,8 +478,7 @@ class MagicMirrorDatabase(Singleton):
 
         # if the error_msg was triggered, there's no need to even bother writing back to the file
         with open(file, "w", encoding="utf-8") as mm_ext_pkgs:
-            data = {"Custom Packages": [package.serialize() for package in packages]}
-            json.dump(data, mm_ext_pkgs)
+            json.dump([package.serialize() for package in packages], mm_ext_pkgs)
 
         return True
 

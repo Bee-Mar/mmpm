@@ -4,7 +4,7 @@ import {MMPMEnv} from '@/models/mmpm-env';
 import {MagicMirrorModule} from '@/models/magicmirror-module';
 import {SharedStoreService} from '@/services/shared-store.service';
 import {Subscription} from 'rxjs';
-import {MessageService, ConfirmationService} from 'primeng/api';
+import {MessageService, ConfirmationService, MenuItem} from 'primeng/api';
 import {APIResponse, BaseAPI} from '@/services/api/base-api';
 
 @Component({
@@ -23,30 +23,35 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   public modules = new Array<MagicMirrorModule>();
   public selectedModules = new Array<MagicMirrorModule>();
 
-  public items = [
+  // The tooltips don't show up for some reason, which is annoying
+  public items: MenuItem[] = [
     {
       icon: 'fa-solid fa-eye',
       command: () => {
         this.msg.add({severity: 'info', summary: 'Add', detail: 'Data Added'});
-      }
+      },
+      tooltip: "Toggle Modules"
     },
     {
       icon: 'fa-solid fa-play',
       command: () => {
         this.onStart();
-      }
+      },
+      tooltip: "Start MagicMirror"
     },
     {
       icon: 'fa-solid fa-arrows-rotate',
       command: () => {
         this.onRestart();
-      }
+      },
+      tooltip: "Restart MagicMirror"
     },
     {
       icon: 'fa-solid fa-stop',
       command: () => {
         this.onStop();
-      }
+      },
+      tooltip: "Stop MagicMirror"
     },
     {
       icon: 'fa-solid fa-download',
@@ -62,7 +67,8 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
             return;
           }
         });
-      }
+      },
+      tooltip: "Install MagicMirror"
     },
     {
       icon: 'fa-solid fa-trash',
@@ -79,8 +85,8 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
             return;
           }
         });
-
-      }
+      },
+      tooltip: "Remove MagicMirror"
     }
   ];
 
@@ -137,8 +143,6 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   }
 
   public onRestart(): void {
-    console.log("restart");
-
     this.base_api.get_("mm-ctl/restart").then((response: APIResponse) => {
       if (response.code === 200) {
         this.msg.add({severity: 'success', summary: 'Restart MagicMirror', detail: 'Successfully restarted MagicMirror'});

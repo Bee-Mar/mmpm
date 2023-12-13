@@ -51,7 +51,7 @@ class TestMagicMirrorController(unittest.TestCase):
         controller = MagicMirrorController()
         success = controller.start()
         self.assertTrue(success)
-        mock_run_cmd.assert_called_with(["npm", "run", "start"], progress=False, background=True)
+        mock_run_cmd.assert_called_with(["npm", "run", "start"], message="Starting MagicMirror")
 
     # Similar structure for test_stop, test_restart, test_is_running
 

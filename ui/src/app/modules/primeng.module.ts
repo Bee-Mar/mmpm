@@ -24,6 +24,8 @@ import {AvatarModule} from "primeng/avatar";
 import {CardModule} from "primeng/card";
 import {SpeedDialModule} from 'primeng/speeddial';
 import {ConfirmDialogModule} from 'primeng/confirmdialog';
+import {ToggleButtonModule} from 'primeng/togglebutton';
+
 
 // all the modules from primeng are grouped in here for cleanliness
 const PrimeNg = [
@@ -52,6 +54,7 @@ const PrimeNg = [
   CardModule,
   SpeedDialModule,
   ConfirmDialogModule,
+  ToggleButtonModule,
 ];
 
 @NgModule({

@@ -1,5 +1,5 @@
-import { Injectable } from "@angular/core";
-import { APIResponse, BaseAPI } from "./base-api";
+import {Injectable} from "@angular/core";
+import {APIResponse, BaseAPI} from "./base-api";
 
 @Injectable({
   providedIn: "root",
@@ -24,9 +24,4 @@ export class MagicMirrorAPI extends BaseAPI {
     console.log("Requesting MagicMirror perform upgrade");
     return this.get_("mm-ctl/remove");
   }
-
-  //public getRemove(): Promise<APIResponse> {
-  //  console.log("Requesting MagicMirror perform upgrade");
-  //  return this.get_("mm-ctl/remove");
-  //}
 }

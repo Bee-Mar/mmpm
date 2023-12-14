@@ -5,7 +5,9 @@ import {MagicMirrorModule} from '@/models/magicmirror-module';
 import {SharedStoreService} from '@/services/shared-store.service';
 import {Subscription} from 'rxjs';
 import {MessageService, ConfirmationService, MenuItem} from 'primeng/api';
-import {APIResponse, BaseAPI} from '@/services/api/base-api';
+import {APIResponse} from '@/services/api/base-api';
+import {MagicMirrorAPI} from '@/services/api/magicmirror-api.service';
+import {MagicMirrorControllerAPI} from '@/services/api/magicmirror-controller-api.service';
 
 @Component({
   selector: 'app-magicmirror-controller',
@@ -14,12 +16,14 @@ import {APIResponse, BaseAPI} from '@/services/api/base-api';
   providers: [MessageService, ConfirmationService],
 })
 export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
-  constructor(private store: SharedStoreService, private msg: MessageService, private base_api: BaseAPI, private confirmation: ConfirmationService) {}
+  constructor(private store: SharedStoreService, private msg: MessageService, private mmControllerApi: MagicMirrorControllerAPI, private mmApi: MagicMirrorAPI, private confirmation: ConfirmationService) {}
 
   private envSubscription: Subscription = new Subscription();
 
-  public socket: any | null = null;
   public env: MMPMEnv;
+  public openHelpDialog = false;
+  public socket: any | null = null;
+  public openModuleVisibilityDialog = false;
   public modules = new Array<MagicMirrorModule>();
   public selectedModules = new Array<MagicMirrorModule>();
 
@@ -28,7 +32,7 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
     {
       icon: 'fa-solid fa-eye',
       command: () => {
-        this.msg.add({severity: 'info', summary: 'Add', detail: 'Data Added'});
+        this.openModuleVisibilityDialog = true;
       },
       tooltip: "Toggle Modules"
     },
@@ -87,6 +91,13 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
         });
       },
       tooltip: "Remove MagicMirror"
+    },
+    {
+      icon: 'fa-solid fa-circle-info',
+      command: () => {
+        this.openHelpDialog = true;
+      },
+      tooltip: "Remove MagicMirror"
     }
   ];
 
@@ -110,6 +121,20 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
     this.envSubscription.unsubscribe();
   }
 
+  public onModuleVisibilityChange(mmModule: MagicMirrorModule) {
+    // remember, the value was inverted when it was collected initially
+    // to make the toggleButton display as it would be expected
+    if (mmModule.hidden) {
+      this.mmControllerApi.postShow(mmModule).then((response: APIResponse) => {
+        console.log(response);
+      });
+    } else {
+      this.mmControllerApi.postHide(mmModule).then((response: APIResponse) => {
+        console.log(response);
+      });
+    }
+  }
+
   public onHide(): void {
     console.log("hide");
   }
@@ -119,9 +144,7 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   }
 
   public onStart(): void {
-    console.log("start");
-
-    this.base_api.get_("mm-ctl/start").then((response: APIResponse) => {
+    this.mmControllerApi.getStart().then((response: APIResponse) => {
       if (response.code === 200) {
         this.msg.add({severity: 'success', summary: 'Start MagicMirror', detail: 'Successfully started MagicMirror'});
       } else {
@@ -131,9 +154,7 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   }
 
   public onStop(): void {
-    console.log("stop");
-
-    this.base_api.get_("mm-ctl/stop").then((response: APIResponse) => {
+    this.mmControllerApi.getStop().then((response: APIResponse) => {
       if (response.code === 200) {
         this.msg.add({severity: 'success', summary: 'Stop MagicMirror', detail: 'Successfully stopped MagicMirror'});
       } else {
@@ -143,7 +164,7 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   }
 
   public onRestart(): void {
-    this.base_api.get_("mm-ctl/restart").then((response: APIResponse) => {
+    this.mmControllerApi.getRestart().then((response: APIResponse) => {
       if (response.code === 200) {
         this.msg.add({severity: 'success', summary: 'Restart MagicMirror', detail: 'Successfully restarted MagicMirror'});
       } else {
@@ -153,7 +174,7 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   }
 
   public onInstall(): void {
-    this.base_api.get_("mm-ctl/install").then((response: APIResponse) => {
+    this.mmApi.getInstall().then((response: APIResponse) => {
       if (response.code === 200) {
         this.msg.add({severity: 'success', summary: 'Install MagicMirror', detail: 'Successfully installed MagicMirror'});
       } else {
@@ -163,7 +184,7 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   }
 
   public onRemove(): void {
-    this.base_api.get_("mm-ctl/remove").then((response: APIResponse) => {
+    this.mmApi.getRemove().then((response: APIResponse) => {
       if (response.code === 200) {
         this.msg.add({severity: 'success', summary: 'Remove MagicMirror', detail: 'Successfully removed MagicMirror'});
       } else {
@@ -198,7 +219,16 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
     this.socket.on("ACTIVE_MODULES", (modules: Array<MagicMirrorModule>) => {
       if (modules?.length) {
         this.modules = modules;
-        console.log(this.modules);
+
+        // only doing this because the property is called "hidden" in the MagicMirror source code
+        // and for the toggle button to display it in a sane way, it needs to be inverted
+        // otherwise all the toggleButtons will look like they're off, when in reality those modules
+        // are visible. It's a little weird, yes.
+        for (const m of modules) {
+          m.hidden = !m.hidden;
+          m.key = m.key + 1;
+        }
+
       } else {
         console.log("No active modules returned from the MMM-mmpm module");
       }

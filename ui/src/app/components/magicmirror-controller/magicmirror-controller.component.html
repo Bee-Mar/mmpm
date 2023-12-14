@@ -4,3 +4,12 @@
   <p-speedDial pTooltip="MagicMirror Controller" tooltipPosition="right" [model]="items" showIcon="fa-solid fa-gamepad"
     [radius]="120" direction="right" buttonClassName="p-button-success"></p-speedDial>
 </div>
+
+<p-dialog header="MagicMirror Modules" [(visible)]="openModuleVisibilityDialog">
+  <div *ngFor="let module of modules" style="display: block; margin-bottom: 1em;">
+    <p-toggleButton [(ngModel)]="module.hidden" onLabel="{{ module.name }} ({{ module.key }})"
+      offLabel="{{ module.name }} ({{ module.key }})" onIcon="pi pi-check" offIcon="pi pi-times"
+      [style]="{ width: '20em' }" (onChange)="onModuleVisibilityChange(module)">
+    </p-toggleButton>
+  </div>
+</p-dialog>

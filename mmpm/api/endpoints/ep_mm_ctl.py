@@ -64,18 +64,18 @@ class MmCtl(Endpoint):
 
         @self.blueprint.route("/hide", methods=[http.POST])
         def hide() -> Response:
-            modules = request.get_json()["modules"]
+            module = request.get_json()["module"]
 
-            if self.controller.hide(modules):
-                return self.success("Hid modules")
+            if self.controller.hide(module):
+                return self.success("Hid module")
 
             return self.failure("Failed to hide modules. See logs for details.")
 
         @self.blueprint.route("/show", methods=[http.POST])
         def show() -> Response:
-            modules = request.get_json()["modules"]
+            module = request.get_json()["module"]
 
-            if self.controller.show(modules):
-                return self.success("Shown modules")
+            if self.controller.show(module):
+                return self.success("Shown module")
 
             return self.failure("Failed to show modules. See logs for details.")

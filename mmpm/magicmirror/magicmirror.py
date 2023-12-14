@@ -125,7 +125,9 @@ class MagicMirror(Singleton):
         os.chdir(root_path.parent)
 
         error_code, _, stderr = run_cmd(
-            ["git", "clone", "https://github.com/MichMich/MagicMirror"], progress=True, message=f"Cloning MagicMirror into '{root_path}'"
+            ["git", "clone", "https://github.com/MichMich/MagicMirror"],
+            progress=True,
+            message=f"Downloading MagicMirror",
         )
 
         if error_code:
@@ -133,7 +135,11 @@ class MagicMirror(Singleton):
             return False
 
         os.chdir(root_path)
-        error_code, _, stderr = run_cmd(["npm", "run", "install-mm"], progress=True, message="Installing MagicMirror dependencies")
+        error_code, _, stderr = run_cmd(
+            ["npm", "run", "install-mm"],
+            progress=True,
+            message="Installing MagicMirror dependencies",
+        )
 
         if error_code:
             logger.error(f"Failed to install MagicMirror dependencies: {stderr}")

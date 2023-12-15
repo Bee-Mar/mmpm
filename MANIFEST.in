@@ -1,3 +1,1 @@
-recursive-include mmpm/static *
-recursive-include mmpm/templates *
-recursive-include mmpm/etc *
+recursive-include mmpm/ui *

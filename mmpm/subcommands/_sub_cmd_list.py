@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ Command line options for 'list' subcommand """
+from mmpm.constants import color
 from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
@@ -89,8 +90,40 @@ class List(SubCmd):
                 package.display(title_only=args.title_only, exclude_installed=args.exclude_installed)
 
         elif args.categories:
-            self.database.display_categories(title_only=args.title_only)
+            categories = {package.category for package in self.database.packages}
+
+            if args.title_only:
+                for category in categories:
+                    print(category)
+                return
+
+            for category in categories:
+                package_count = sum(1 for package in self.database.packages if package.category == category)
+                print(color.n_green(category), f"\n\tPackages: {package_count}\n")
+
         elif args.upgradable:
-            self.database.display_upgradable()
+            app_label: str = f"{color.n_cyan('application')}"
+            pkg_label: str = f"{color.n_cyan('package')}"
+
+            upgrades_available: bool = False
+            upgradable = self.database.upgradable()
+
+            if upgradable["packages"] or upgradable["mmpm"] or upgradable["MagicMirror"]:
+                upgrades_available = True
+
+            for package in upgradable["packages"]:
+                print(color.n_green(MagicMirrorPackage(**package).title), f"[{pkg_label}]")
+
+            if upgradable["mmpm"]:
+                print(f'{color.n_green("mmpm")} [{app_label}]')
+
+            if upgradable["MagicMirror"]:
+                print(f'{color.n_green("MagicMirror")} [{app_label}]')
+
+            if upgrades_available:
+                print("Run `mmpm upgrade` to upgrade packages/applications")
+            else:
+                logger.info("No upgrades available")
+
         else:
             logger.error(f"No arguments provided. See '{self.app_name} {self.name} --help'")

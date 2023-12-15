@@ -138,7 +138,7 @@ class MagicMirrorDatabase(Singleton):
             if package.is_upgradable:
                 upgradable.append(package)
 
-        configuration = self.available_upgrades()
+        configuration = self.upgradable()
 
         configuration["MagicMirror"] = can_upgrade_magicmirror
         configuration["mmpm"] = can_upgrade_mmpm
@@ -285,67 +285,6 @@ class MagicMirrorDatabase(Singleton):
 
         return packages
 
-    def display_categories(self, title_only: bool = False) -> None:
-        """
-        Prints module category names and the total number of modules in one of two
-        formats. The default is similar to the Debian apt package manager.
-
-        Parameters:
-            title_only (bool): boolean flag to show only the title of the category
-
-        Returns:
-            None
-        """
-
-        categories = {package.category for package in self.packages}
-
-        if title_only:
-            for category in categories:
-                print(category)
-            return
-
-        for category in categories:
-            package_count = sum(1 for package in self.packages if package.category == category)
-            print(color.n_green(category), f"\n\tPackages: {package_count}\n")
-
-    def display_upgradable(self) -> None:
-        """
-        Based on the current environment, available upgrades for packages, and
-        MagicMirror will be displayed. The status of upgrades available for MMPM is
-        static, regardless of the environment. The available upgrades are read from
-        a file, `~/.config/mmpm/mmpm-available-upgrades.json`, which is updated
-        after running `mmpm update`
-
-        Parameters:
-            None
-
-        Returns:
-            None
-        """
-
-        app_label: str = f"{color.n_cyan('application')}"
-        pkg_label: str = f"{color.n_cyan('package')}"
-
-        upgrades_available: bool = False
-        upgradable = self.upgradable()
-
-        if upgradable["packages"] or upgradable["mmpm"] or upgradable["MagicMirror"]:
-            upgrades_available = True
-
-        for package in upgradable["packages"]:
-            print(color.n_green(MagicMirrorPackage(**package).title), f"[{pkg_label}]")
-
-        if upgradable["mmpm"]:
-            print(f'{color.n_green("mmpm")} [{app_label}]')
-
-        if upgradable["MagicMirror"]:
-            print(f'{color.n_green("MagicMirror")} [{app_label}]')
-
-        if upgrades_available:
-            print("Run `mmpm upgrade` to upgrade packages/applications")
-        else:
-            logger.info("No upgrades available")
-
     def upgradable(self) -> dict:
         """
         Retrieves all available packages and applications from the
@@ -481,15 +420,3 @@ class MagicMirrorDatabase(Singleton):
             json.dump([package.serialize() for package in packages], mm_ext_pkgs)
 
         return True
-
-    def available_upgrades(self) -> Dict[str, Any]:
-        configuration = {}
-
-        with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="r", encoding="utf-8") as upgrade_file:
-            try:
-                configuration = json.load(upgrade_file)
-            except json.JSONDecodeError as error:
-                logger.error(f"Failed to parse {paths.MMPM_AVAILABLE_UPGRADES_FILE}, resetting file: {error}")
-                configuration = {"mmpm": False, "MagicMirror": False, "packages": []}
-
-        return configuration

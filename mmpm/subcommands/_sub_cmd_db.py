@@ -2,6 +2,7 @@
 """ Command line options for 'db' subcommand """
 import json
 
+from mmpm.constants import color
 from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
@@ -57,7 +58,12 @@ class Db(SubCmd):
             return
 
         if args.info:
-            print(highlight(json.dumps(self.database.info(), indent=2), JsonLexer(), TerminalFormatter()))
+            info = self.database.info()
+            convert_string = lambda s: " ".join([s.split("_")[0].capitalize()] + [word.lower() for word in s.split("_")[1:]])
+
+            for key, value in info.items():
+                print(f"{color.n_green(convert_string(key))}:\n\t{value}\n")
+
         elif args.dump:
             print(
                 highlight(

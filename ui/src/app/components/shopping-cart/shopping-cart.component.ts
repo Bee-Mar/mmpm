@@ -44,38 +44,46 @@ export class ShoppingCartComponent {
       return;
     }
 
-    const remove = new Array<MagicMirrorPackage>();
-    const install = new Array<MagicMirrorPackage>();
+    const toRemove = new Array<MagicMirrorPackage>();
+    const toInstall = new Array<MagicMirrorPackage>();
 
     for (const pkg of this.selectedPackages) {
-      (pkg.is_installed ? remove : install).push(pkg);
+      (pkg.is_installed ? toRemove : toInstall).push(pkg);
     }
 
     this.selectedPackagesChange.emit([]);
     this.loadingChange.emit(true);
 
-    if (remove.length > 0) {
-      const response = await this.mmPkgApi.postRemovePackages(remove);
+    if (toRemove.length > 0) {
+      const response = await this.mmPkgApi.postRemovePackages(toRemove);
+      const success = response.message.success as Array<MagicMirrorPackage>;
+      const failure = response.message.failure as Array<MagicMirrorPackage>;
 
-      if (response.code === 200) {
-        const removed = response.message as Array<MagicMirrorPackage>;
-        this.msg.add({severity: "success", summary: "Remove Packages", detail: `Successfully removed ${removed.length}/${remove.length} selected packages`});
-      } else {
-        this.msg.add({severity: "error", summary: "Remove Packages", detail: response.message});
+      this.store.load();
+
+      if (success.length) {
+        this.msg.add({severity: "success", summary: "Remove Packages", detail: `Successfully removed: ${success.map(pkg => pkg.title).join(", ")}`});
+      }
+
+      if (failure.length) {
+        this.msg.add({severity: "error", summary: "Remove Packages", detail: `Failed to remove: ${failure.map(pkg => pkg.title).join(", ")}`});
       }
     }
 
-    if (install.length > 0) {
-      const response = await this.mmPkgApi.postInstallPackages(install);
+    if (toInstall.length > 0) {
+      const response = await this.mmPkgApi.postInstallPackages(toInstall);
+      const success = response.message.success as Array<MagicMirrorPackage>;
+      const failure = response.message.failure as Array<MagicMirrorPackage>;
 
-      if (response.code === 200) {
-        const installed = response.message as Array<MagicMirrorPackage>;
-        this.msg.add({severity: "success", summary: "Install Packages", detail: `Successfully installed ${installed.length}/${install.length} selected packages`});
-      } else {
-        this.msg.add({severity: "error", summary: "Install Packages", detail: response.message});
+      this.store.load();
+
+      if (success.length) {
+        this.msg.add({severity: "success", summary: "Install Packages", detail: `Successfully installed: ${success.map(pkg => pkg.title).join(", ")}`});
+      }
+
+      if (failure.length) {
+        this.msg.add({severity: "error", summary: "Install Packages", detail: `Failed to install: ${failure.map(pkg => pkg.title).join(", ")}. See logs for details, and try reinstalling manually.`});
       }
     }
-
-    this.store.load();
   }
 }

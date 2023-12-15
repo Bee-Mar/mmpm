@@ -44,20 +44,48 @@ class Packages(Endpoint):
         @self.blueprint.route("/install", methods=[http.POST])
         def install() -> Response:
             packages = request.get_json()["packages"]
-            installed = [package for package in packages if MagicMirrorPackage(**package).install()]
-            return self.success(installed)
+            success = []
+            failure = []
+
+            for package in packages:
+                pkg = MagicMirrorPackage(**package)
+
+                if pkg.install():
+                    success.append(package)
+                else:
+                    logger.debug(f"Removing {pkg.title} due to installation failure. Please try reinstalling manually.")
+                    failure.append(package)
+                    pkg.remove()
+
+            return self.success({"success": success, "failure": failure})
 
         @self.blueprint.route("/remove", methods=[http.POST])
         def remove() -> Response:
             packages = request.get_json()["packages"]
-            removed = [package for package in packages if MagicMirrorPackage(**package).remove()]
-            return self.success(removed)
+            success = []
+            failure = []
+
+            for package in packages:
+                if MagicMirrorPackage(**package).remove():
+                    success.append(package)
+                else:  # honestly, this should never fail anyway
+                    failure.append(package)
+
+            return self.success({"success": success, "failure": failure})
 
         @self.blueprint.route("/upgrade", methods=[http.POST])
         def upgrade() -> Response:
             packages = request.get_json()["packages"]
-            upgraded = [package for package in packages if MagicMirrorPackage(**package).upgrade()]
-            return self.success(upgraded)
+            success = []
+            failure = []
+
+            for package in packages:
+                if MagicMirrorPackage(**package).upgrade():
+                    success.append(package)
+                else:
+                    failure.append(package)
+
+            return self.success({"success": success, "failure": failure})
 
         @self.blueprint.route("/mm-pkg/add", methods=[http.POST])
         def add_mm_pkg() -> Response:
@@ -71,25 +99,31 @@ class Packages(Endpoint):
         @self.blueprint.route("/mm-pkg/remove", methods=[http.POST])
         def remove_mm_pkg() -> Response:
             packages = [MagicMirrorPackage(**pkg) for pkg in request.get_json()["packages"]]
-            removed = [package.title for package in packages if self.db.remove_mm_pkg(package.title)]
-            return self.success(removed)
+            success = []
+            failure = []
+
+            for package in packages:
+                if self.db.remove_mm_pkg(package.title):
+                    success.append(package.serialize(full=True))
+                else:
+                    failure.append(package.serialize(full=True))
+
+            return self.success({"success": success, "failure": failure})
 
         @self.blueprint.route("/details", methods=[http.POST])
         def details() -> Response:
             package = request.get_json()["packages"][0]
-            remote =  RemotePackage(MagicMirrorPackage(**package))
+            remote = RemotePackage(MagicMirrorPackage(**package))
             health = remote.health()
 
             for status in health.values():
                 if status["error"]:
                     message = status["error"]
                     logger.error(message)
-                    return self.failure(message,code=400)
+                    return self.failure(message, code=400)
                 elif status["warning"]:
                     message = status["warning"]
                     logger.warning(message)
-                    return self.failure(message,code=400)
+                    return self.failure(message, code=400)
 
             return self.success(remote.serialize())
-
-

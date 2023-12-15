@@ -96,18 +96,20 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
     this.mmPkgApi
       .postAddMmPkg(this.customPackage)
       .then((response: APIResponse) => {
-        if (response.code === 200) {
-          this.store.load();
+        this.reset();
+        this.store.load();
 
+        if (response.code === 200) {
           this.msg.add({severity: "success", summary: "Add Custom Package", detail: `Successfully added ${this.customPackage.title} to database`});
-          this.reset();
         } else {
           this.msg.add({severity: "error", summary: "Add Custom Package", detail: response.message});
         }
-
-        this.loadingChange.emit(false);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        this.reset();
+        this.store.load();
+        console.log(error);
+      });
   }
 
   public onRemoveMmPkg(): void {
@@ -116,16 +118,25 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
     this.mmPkgApi
       .postRemoveMmPkgs(this.selectedCustomPackages)
       .then((response: APIResponse) => {
-        if (response.code === 200) {
-          this.msg.add({severity: "success", summary: "Remove Custom Package", detail: `Successfully removed ${this.selectedCustomPackages.length} custom package(s)`});
-          this.store.load();
-        } else {
-          this.msg.add({severity: "success", summary: "Remove Custom Package", detail: response.message});
+        this.reset();
+        this.store.load();
+
+        const success = response.message.success as Array<MagicMirrorPackage>;
+        const failure = response.message.failure as Array<MagicMirrorPackage>;
+
+        if (success.length) {
+          this.msg.add({severity: "success", summary: "Remove Custom Packages", detail: `Successfully removed custom packages: ${success.map(pkg => pkg.title).join(", ")}`});
         }
 
-        this.loadingChange.emit(false);
+        if (failure.length) {
+          this.msg.add({severity: "error", summary: "Remove Custom Packages", detail: `Failed to remove custom packages: ${failure.map(pkg => pkg.title).join(", ")}. See logs for details.`});
+        }
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        this.reset();
+        this.store.load();
+        console.log(error);
+      });
   }
 
   public reset(): void {

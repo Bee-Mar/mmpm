@@ -100,6 +100,6 @@ class GuidedSetup(SubCmd):
         if install_as_module:
             print(color.b_green("mmpm install MMM-mmpm"))
         if install_ui:
-            print(color.b_green("mmpm ui --install"))
+            print(color.b_green("mmpm ui install"))
         if install_autocomplete:
             print(color.b_green("mmpm completion"))

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 import getpass
+import json
 import os
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 from re import findall
 from socket import gethostbyname, gethostname
 
@@ -12,13 +14,55 @@ from ItsPrompt.prompt import Prompt
 from mmpm.constants import paths
 from mmpm.logger import MMPMLogger
 from mmpm.singleton import Singleton
-from mmpm.utils import systemctl
+from mmpm.utils import run_cmd, systemctl
 
 logger = MMPMLogger.get_logger(__name__)
 
 
 class MMPMui(Singleton):
-    def install(self, assume_yes: bool = False):
+    def __init__(self):
+        self.ecosystem_config = Path("/tmp/mmpm/ecosystem.json")
+
+        self.pm2_processes = {
+            "apps": [
+                {
+                    "name": "MMPM-API-Server",
+                    "script": "cd ~/Development/github/mmpm && pdm run server",
+                    "watch": True,
+                },
+                {
+                    "name": "MMPM-UI",
+                    "script": "cd ~/Development/github/mmpm/ui/build/static && python3 -m http.server 7890 --bind 0.0.0.0",
+                    "watch": True,
+                },
+                {
+                    "name": "MMPM-Log-Server",
+                    "script": "cd ~/Development/github/mmpm && pdm run logs",
+                    "watch": True,
+                },
+            ]
+        }
+
+    def __create_config(self):
+        if not self.ecosystem_config.exists():
+            logger.debug(f"Creating {self.ecosystem_config} file")
+            self.ecosystem_config.parent.mkdir(exist_ok=True)
+            self.ecosystem_config.touch(exist_ok=True)
+
+        with open(self.ecosystem_config, mode="w", encoding="utf-8") as config:
+            logger.debug(f"Writing PM2 Configuration to {self.ecosystem_config}")
+            json.dump(self.pm2_processes, config)
+
+    def stop(self):
+        return run_cmd(["pm2", "stop", f"{self.ecosystem_config}"], message="Stopping MMPM UI")
+
+    def delete(self):
+        return run_cmd(["pm2", "delete", f"{self.ecosystem_config}"], message="Removing MMPM UI")
+
+    def start(self):
+        return run_cmd(["pm2", "start", f"{self.ecosystem_config}"], message="Installing MMPM UI")
+
+    def install(self, assume_yes: bool = False) -> bool:
         """
         Installs the MMPM UI. It sets up NGINX configuration files and Systemd service files required for running
         the MMPM UI. This process includes copying and modifying template configuration files, setting up necessary
@@ -31,93 +75,21 @@ class MMPMui(Singleton):
             None
         """
 
-        if not assume_yes and not Prompt.confirm("Are you sure you want to install the MMPM UI? (Requires sudo permission)"):
-            return
+        if not assume_yes and not Prompt.confirm("Are you sure you want to install the MMPM UI?"):
+            return False
 
-        if not shutil.which("nginx"):
-            logger.fatal("NGINX is not in your $PATH. Please install `nginx-full` (Debian), `nginx-mainline` (Arch) or equivalent")
+        if not shutil.which("pm2"):
+            logger.fatal("pm2 is not in your PATH. Please run `npm install -g pm2`, and run the UI installation again.")
+            return False
 
-        sub_gunicorn: str = "SUBSTITUTE_gunicorn"
-        sub_user: str = "SUBSTITUTE_user"
-        user: str = getpass.getuser()
+        self.__create_config()
+        error_code, _, stderr = self.start()
 
-        gunicorn_executable: str = shutil.which("gunicorn")
+        if error_code:
+            logger.error(f"Failed to install MMPM UI: {stderr}")
+            self.delete()
 
-        if not gunicorn_executable:
-            logger.fatal("Gunicorn executable not found. Please ensure Gunicorn is installed and in your PATH")
-
-        temp_etc: str = "/tmp/etc"
-
-        shutil.rmtree(temp_etc, ignore_errors=True)
-        shutil.copytree(paths.MMPM_BUNDLED_ETC_DIR, temp_etc)
-
-        temp_mmpm_service: str = f"{temp_etc}/systemd/system/mmpm.service"
-
-        self.remove(assume_yes=True)
-
-        with open(temp_mmpm_service, "r", encoding="utf-8") as original:
-            config = original.read()
-
-        with open(temp_mmpm_service, "w", encoding="utf-8") as mmpm_service:
-            subbed = config.replace(sub_gunicorn, gunicorn_executable)
-            subbed = subbed.replace(sub_user, user)
-            mmpm_service.write(subbed)
-
-        logger.info("Copying NGINX and SystemdD service configs ")
-
-        os.system(
-            f"""
-                  sudo mkdir -p /var/www/mmpm;
-                  sudo cp -r /tmp/etc /;
-                  sudo cp -r {paths.MMPM_PYTHON_ROOT_DIR}/static /var/www/mmpm;
-                  sudo cp -r {paths.MMPM_PYTHON_ROOT_DIR}/templates /var/www/mmpm;
-                  """
-        )
-
-        logger.info("Cleaning configuration files and resetting SystemdD daemons ")
-
-        os.system("rm -rf /tmp/etc")
-
-        logger.info("Reloading SystemdD daemon ")
-        daemon_reload = systemctl("daemon-reload")
-
-        if daemon_reload.returncode != 0:
-            logger.error(f"Failed to reload SystemdD daemon: {daemon_reload.stderr.decode('utf-8')}")
-
-        logger.info("Enabling MMPM SystemdD daemon ")
-
-        enable_mmpm_service = systemctl("enable", ["mmpm.service"])
-
-        if enable_mmpm_service.returncode != 0:
-            if Prompt.confirm("Failed to enable MMPM SystemD service. Would you like to remove the MMPM-UI?"):
-                self.remove()
-            sys.exit(127)
-
-        start_mmpm_service = systemctl("start", ["mmpm.service"])
-
-        if start_mmpm_service.returncode != 0:
-            if Prompt.confirm("Failed to start MMPM SystemD service. Would you like to remove the MMPM-UI?"):
-                self.remove()
-            sys.exit(127)
-
-        link_nginx_conf = subprocess.run(
-            ["sudo", "ln", "-sf", "/etc/nginx/sites-available/mmpm.conf", "/etc/nginx/sites-enabled"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-
-        if link_nginx_conf.returncode != 0:
-            if Prompt.confirm("Failed to create sym link for NGINX config. Would you like to remove the MMPM-UI?"):
-                self.remove()
-            sys.exit(127)
-
-        logger.info("Restarting NGINX SystemD service ")
-        restart_nginx = systemctl("restart", ["nginx"])
-
-        if restart_nginx.returncode != 0:
-            if Prompt.confirm("Failed to restart NGINX SystemD service. Would you like to remove the MMPM-UI?"):
-                self.remove()
-            sys.exit(127)
+        return True
 
     def remove(self, assume_yes: bool = False):
         """
@@ -131,66 +103,22 @@ class MMPMui(Singleton):
         Returns:
         None
         """
-        if not assume_yes and not Prompt.confirm("Are you sure you want to remove the MMPM UI? (Requires sudo permission)"):
-            return
 
-        INACTIVE: str = "inactive\n"
-        DISABLED: str = "disabled\n"
+        if not assume_yes and not Prompt.confirm("Are you sure you want to remove the MMPM UI?"):
+            return False
 
-        is_active = systemctl("is-active", ["mmpm.service"])
+        if not shutil.which("pm2"):
+            logger.fatal("pm2 is not in your PATH. Please run `npm install -g pm2`, and run the UI installation again.")
+            return False
 
-        if is_active.returncode == 0:
-            logger.info("Stopping MMPM SystemD service ")
-            stopping = systemctl("stop", ["mmpm.service"])
+        self.__create_config()
+        error_code, _, stderr = self.delete()
 
-            if stopping.returncode:
-                logger.error("Failed to stop MMPM SystemD service. See `mmpm log` for details")
-                logger.error(f"{stopping.stdout.decode('utf-8')}\n{stopping.stderr.decode('utf-8')}")
+        if error_code:
+            logger.error(f"Failed to remove MMPM UI: {stderr}")
+            self.delete()
 
-        elif is_active.stdout.decode("utf-8") == INACTIVE:
-            logger.info("MMPM SystemD service not active, nothing to do")
-
-        is_enabled = systemctl("is-enabled", ["mmpm.service"])
-
-        if is_enabled.returncode == 0:
-            disabling = systemctl("disable", ["mmpm.service"])
-
-            if disabling.returncode == 0:
-                logger.info("Disabled MMPM SystemD service")
-            else:
-                error = f"{disabling.stdout.decode('utf-8')}\n{disabling.stderr.decode('utf-8')}"
-                logger.error(f"Failed to disable MMPM SystemD service: {error}")
-
-        elif is_enabled.stdout.decode("utf-8") == DISABLED:
-            logger.info("MMPM SystemD service not enabled, nothing to do")
-
-        logger.info("Force removing NGINX and SystemD configs")
-
-        cmd: str = f"""
-        sudo rm -f {paths.MMPM_SYSTEMD_SERVICE_FILE};
-        sudo rm -f {paths.MMPM_NGINX_CONF_FILE};
-        sudo rm -rf /var/www/mmpm;
-        sudo rm -f /etc/nginx/sites-available/mmpm.conf;
-        sudo rm -f /etc/nginx/sites-enabled/mmpm.conf;
-        """
-
-        os.system(cmd)
-
-        logger.info("Reloading SystemdD daemon ")
-        daemon_reload = systemctl("daemon-reload")
-
-        if daemon_reload.returncode != 0:
-            error = daemon_reload.stderr.decode("utf-8")
-            logger.error(f"Failed to reload SystemdD daemon. {error}")
-
-        logger.info("Restarting NGINX SystemD service")
-        restart_nginx = systemctl("restart", ["nginx"])
-
-        if restart_nginx.returncode:
-            error = restart_nginx.stderr.decode("utf-8")
-            logger.error(f"Failed to restart NGINX SystemdD daemon. See `mmpm log` for details: {error}")
-
-        print("MMPM UI Removed!")
+        shutil.rmtree(self.ecosystem_config.parent, ignore_errors=True)
 
     def get_uri(self) -> str:
         """
@@ -200,17 +128,4 @@ class MMPMui(Singleton):
         Returns:
             str: The URL of the MMPM web interface.
         """
-
-        if not os.path.exists(paths.MMPM_NGINX_CONF_FILE):
-            logger.fatal("The MMPM NGINX configuration file does not appear to exist. Is the UI installed?")
-
-        # this value needs to be retrieved dynamically in case the user modifies the nginx conf
-        with open(paths.MMPM_NGINX_CONF_FILE, "r", encoding="utf-8") as conf:
-            mmpm_conf = conf.read()
-
-        try:
-            port: str = findall(r"listen\s?\d+", mmpm_conf)[0].split()[1]
-        except IndexError:
-            logger.fatal("Unable to retrieve the port number of the MMPM web interface")
-
         return f"http://{gethostbyname(gethostname())}:{port}"

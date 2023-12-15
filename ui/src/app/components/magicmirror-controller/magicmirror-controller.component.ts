@@ -201,11 +201,13 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
       this.socket.emit("FROM_MMPM_APP_get_active_modules");
     });
 
-    this.socket.on("notification", (data: any) => {
-      console.log(data);
+    this.socket.on("reconnect", () => {
+      console.log("Reconnected to MagicMirror Socket.IO server");
+      this.socket.emit("FROM_MMPM_APP_get_active_modules");
     });
 
     this.socket.on("disconnect", (data: any) => {
+      this.modules = [];
       console.log(data);
     });
 
@@ -217,20 +219,15 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
     });
 
     this.socket.on("ACTIVE_MODULES", (modules: Array<MagicMirrorModule>) => {
-      if (modules?.length) {
-        this.modules = modules;
+      this.modules = modules;
 
-        // only doing this because the property is called "hidden" in the MagicMirror source code
-        // and for the toggle button to display it in a sane way, it needs to be inverted
-        // otherwise all the toggleButtons will look like they're off, when in reality those modules
-        // are visible. It's a little weird, yes.
-        for (const m of modules) {
-          m.hidden = !m.hidden;
-          m.key = m.key + 1;
-        }
-
-      } else {
-        console.log("No active modules returned from the MMM-mmpm module");
+      // only doing this because the property is called "hidden" in the MagicMirror source code
+      // and for the toggle button to display it in a sane way, it needs to be inverted
+      // otherwise all the toggleButtons will look like they're off, when in reality those modules
+      // are visible. It's a little weird, yes.
+      for (const m of modules) {
+        m.hidden = !m.hidden;
+        m.key = m.key + 1;
       }
     });
 

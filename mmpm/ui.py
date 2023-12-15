@@ -23,7 +23,7 @@ class MMPMui(Singleton):
             "apps": [
                 {
                     "name": "MMPM-API-Server",
-                    "script": f"python3 -m gunicorn --worker-class gevent -b 0.0.0.0:7891 mmpm.wsgi:app",
+                    "script": f"python3 -m gunicorn -k gevent -b 0.0.0.0:7891 mmpm.wsgi:app",
                     "watch": True,
                 },
                 {
@@ -33,7 +33,7 @@ class MMPMui(Singleton):
                 },
                 {
                     "name": "MMPM-UI",
-                    "script": f"python3 -m http.server 7890 --bind 0.0.0.0 -d {paths.MMPM_PYTHON_ROOT_DIR / 'ui' / 'static'}",
+                    "script": f"python3 -m http.server 7890 -b 0.0.0.0 -d {paths.MMPM_PYTHON_ROOT_DIR / 'ui' / 'static'}",
                     "watch": True,
                 },
             ]

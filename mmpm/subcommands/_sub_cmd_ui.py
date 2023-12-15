@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """ Command line options for 'db' subcommand """
 
+from socket import gethostbyname, gethostname
+
+from ItsPrompt.prompt import Prompt
 from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
@@ -82,12 +85,23 @@ class Ui(SubCmd):
             return
 
         if args.url:
-            print(self.ui.get_uri())
+            print(f"http://{gethostbyname(gethostname())}:7890")
         elif args.status:
             self.ui.status()
         elif args.command == "install":
-            self.ui.install(assume_yes=args.assume_yes)
+            if not args.assume_yes and not Prompt.confirm("Are you sure you want to install the MMPM UI?"):
+                return
+
+            if not self.ui.install():
+                logger.error("Failed to install MMPM UI")
+                self.ui.delete()
+
         elif args.command == "remove":
-            self.ui.remove(assume_yes=args.assume_yes)
+            if not args.assume_yes and not Prompt.confirm("Are you sure you want to remove the MMPM UI?"):
+                return
+
+            if not self.ui.remove():
+                logger.error("Failed to remove MMPM UI")
+                self.ui.delete()
         else:
             logger.error(f"No arguments provided. See '{self.app_name} {self.name} --help'")

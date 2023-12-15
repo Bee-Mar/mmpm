@@ -7,9 +7,6 @@ import subprocess
 import sys
 from pathlib import Path
 from re import findall
-from socket import gethostbyname, gethostname
-
-from ItsPrompt.prompt import Prompt
 
 from mmpm.constants import paths
 from mmpm.log.logger import MMPMLogger
@@ -43,10 +40,13 @@ class MMPMui(Singleton):
         }
 
     def create_pm2_config(self):
-        if not self.pm2_config.exists():
-            logger.debug(f"Creating {self.pm2_config} file")
-            self.pm2_config.parent.mkdir(exist_ok=True)
-            self.pm2_config.touch(exist_ok=True)
+        if self.pm2_config.exists():
+            logger.debug(f"{self.pm2_config} exists. Nothing to do.")
+            return
+
+        logger.debug(f"Creating {self.pm2_config} file")
+        self.pm2_config.parent.mkdir(exist_ok=True)
+        self.pm2_config.touch(exist_ok=True)
 
         with open(self.pm2_config, mode="w", encoding="utf-8") as config:
             logger.debug(f"Writing PM2 Configuration to {self.pm2_config}")
@@ -61,21 +61,18 @@ class MMPMui(Singleton):
     def start(self):
         return run_cmd(["pm2", "start", f"{self.pm2_config}"], message="Installing MMPM UI")
 
-    def install(self, assume_yes: bool = False) -> bool:
+    def install(self) -> bool:
         """
         Installs the MMPM UI. It sets up NGINX configuration files and Systemd service files required for running
         the MMPM UI. This process includes copying and modifying template configuration files, setting up necessary
         directories, and ensuring the required services are enabled and running.
 
         Parameters:
-            assume_yes (bool): If True, skips confirmation prompts and proceeds with installation.
+            None
 
         Returns:
             None
         """
-
-        if not assume_yes and not Prompt.confirm("Are you sure you want to install the MMPM UI?"):
-            return False
 
         if not shutil.which("pm2"):
             logger.fatal("pm2 is not in your PATH. Please run `npm install -g pm2`, and run the UI installation again.")
@@ -86,7 +83,7 @@ class MMPMui(Singleton):
 
         if error_code:
             logger.error(f"Failed to install MMPM UI: {stderr}")
-            self.delete()
+            return False
 
         return True
 
@@ -101,22 +98,18 @@ class MMPMui(Singleton):
             else:
                 print(stdout)
 
-    def remove(self, assume_yes: bool = False):
+    def remove(self):
         """
         Removes the MMPM UI. This method handles the deletion of NGINX configurations, Systemd service files,
         and any static web files associated with the MMPM UI. It stops and disables the relevant services
         and removes the related files. The user is prompted for confirmation unless assume_yes is True.
 
         Parameters:
-        assume_yes (bool): If True, skips confirmation prompts and proceeds with removal.
+            None
 
         Returns:
-        None
+            None
         """
-
-        if not assume_yes and not Prompt.confirm("Are you sure you want to remove the MMPM UI?"):
-            return False
-
         if not shutil.which("pm2"):
             logger.fatal("pm2 is not in your PATH. Please run `npm install -g pm2`, and run the UI installation again.")
             return False
@@ -125,17 +118,8 @@ class MMPMui(Singleton):
         error_code, _, stderr = self.delete()
 
         if error_code:
-            logger.error(f"Failed to remove MMPM UI: {stderr}")
-            self.delete()
+            logger.error(stderr)
+            return False
 
         shutil.rmtree(self.pm2_config.parent, ignore_errors=True)
-
-    def get_uri(self) -> str:
-        """
-        Retrieves the URI of the MMPM web interface. It parses the NGINX configuration file to find the
-        port number and constructs the URI using the host IP and the identified port.
-
-        Returns:
-            str: The URL of the MMPM web interface.
-        """
-        return f"http://{gethostbyname(gethostname())}:7890"
+        return True

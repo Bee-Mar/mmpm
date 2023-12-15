@@ -16,7 +16,7 @@ from yaspin.spinners import Spinners
 
 from mmpm.__version__ import version as current_version
 from mmpm.constants import color
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
 

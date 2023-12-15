@@ -4,7 +4,7 @@ from flask import Blueprint, Response, request
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.constants import paths
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.controller import MagicMirrorController
 from mmpm.magicmirror.magicmirror import MagicMirror
 

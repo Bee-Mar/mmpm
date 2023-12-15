@@ -2,7 +2,7 @@
 """ Command line options for 'db' subcommand """
 import json
 
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
 from pygments import highlight

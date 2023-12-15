@@ -7,7 +7,7 @@ from typing import List
 import socketio
 from mmpm.constants import color
 from mmpm.env import MMPMEnv
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.singleton import Singleton
 from mmpm.utils import get_pids, kill_pids_of_process, run_cmd
 

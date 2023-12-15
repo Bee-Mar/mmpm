@@ -2,7 +2,7 @@
 """ Command line options for 'mm-pkg' subcommand """
 from ItsPrompt.prompt import Prompt
 from mmpm.constants import color
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
 

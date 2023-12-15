@@ -3,7 +3,7 @@
 from flask import Blueprint, Response, jsonify
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
 

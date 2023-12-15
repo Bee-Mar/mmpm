@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ Command line options for 'db' subcommand """
 
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
 from mmpm.ui import MMPMui
@@ -84,7 +84,7 @@ class Ui(SubCmd):
         if args.url:
             print(self.ui.get_uri())
         elif args.status:
-            raise NotImplementedError("TODO")  # TODO
+            self.ui.status()
         elif args.command == "install":
             self.ui.install(assume_yes=args.assume_yes)
         elif args.command == "remove":

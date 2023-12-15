@@ -6,7 +6,7 @@ from shutil import copyfile
 
 from mmpm.constants import paths, urls
 from mmpm.env import MMPMEnv
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.subcommands.sub_cmd import SubCmd
 from mmpm.ui import MMPMui
 from mmpm.utils import run_cmd

@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from ItsPrompt.prompt import Prompt
 from mmpm.constants import color, paths, urls
 from mmpm.env import MMPMEnv
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.singleton import Singleton
 from mmpm.utils import run_cmd

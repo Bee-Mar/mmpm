@@ -2,7 +2,7 @@
 """ Command line options for 'update' subcommand """
 
 import mmpm.utils
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.subcommands.sub_cmd import SubCmd

@@ -9,12 +9,12 @@ import mmpm.api.endpoints
 from flask import Flask, Response
 from flask_cors import CORS
 from mmpm.api.endpoints.index import Index
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.subcommands.loader import Loader
 
 logger = MMPMLogger.get_logger(__name__)
 
-app = Flask(__name__, root_path="/var/www/mmpm", static_url_path="")
+app = Flask(__name__)
 app.config["CORS_HEADERS"] = "Content-Type"
 CORS(app)
 
@@ -62,7 +62,7 @@ entrypoints.append(Index(app.url_map))
 
 for endpoint in entrypoints:
     try:
-        app.register_blueprint(endpoint.blueprint) # type: ignore
+        app.register_blueprint(endpoint.blueprint)  # type: ignore
         logger.debug(f"Loaded blueprint for {endpoint}")
     except Exception as exception:
         logger.error(f"Failed to load blueprint for {endpoint}: {exception}")

@@ -2,7 +2,7 @@
 from argparse import Namespace, _SubParsersAction
 from typing import List
 
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
 

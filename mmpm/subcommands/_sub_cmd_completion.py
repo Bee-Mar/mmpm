@@ -2,7 +2,7 @@
 """ Command line options for 'completion' subcommand """
 from typing import Dict
 
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogger.get_logger(__name__)

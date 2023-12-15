@@ -6,7 +6,7 @@ from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.constants import paths
 from mmpm.env import MMPM_DEFAULT_ENV, MMPMEnv
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
 

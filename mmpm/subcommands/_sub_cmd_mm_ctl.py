@@ -2,7 +2,7 @@
 """ Command line options for 'mm-ctl' subcommand """
 from ItsPrompt.prompt import Prompt
 from mmpm.env import MMPMEnv
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.controller import MagicMirrorController
 from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.subcommands.sub_cmd import SubCmd

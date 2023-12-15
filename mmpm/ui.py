@@ -12,7 +12,7 @@ from socket import gethostbyname, gethostname
 from ItsPrompt.prompt import Prompt
 
 from mmpm.constants import paths
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.singleton import Singleton
 from mmpm.utils import run_cmd, systemctl
 
@@ -21,46 +21,45 @@ logger = MMPMLogger.get_logger(__name__)
 
 class MMPMui(Singleton):
     def __init__(self):
-        self.ecosystem_config = Path("/tmp/mmpm/ecosystem.json")
-
+        self.pm2_config = Path("/tmp/mmpm/ecosystem.json")
         self.pm2_processes = {
             "apps": [
                 {
                     "name": "MMPM-API-Server",
-                    "script": "cd ~/Development/github/mmpm && pdm run server",
-                    "watch": True,
-                },
-                {
-                    "name": "MMPM-UI",
-                    "script": "cd ~/Development/github/mmpm/ui/build/static && python3 -m http.server 7890 --bind 0.0.0.0",
+                    "script": f"python3 -m gunicorn --worker-class gevent -b 0.0.0.0:7891 mmpm.wsgi:app",
                     "watch": True,
                 },
                 {
                     "name": "MMPM-Log-Server",
-                    "script": "cd ~/Development/github/mmpm && pdm run logs",
+                    "script": f"python3 -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.log.server:create_app()' -b 0.0.0.0:6789",
+                    "watch": True,
+                },
+                {
+                    "name": "MMPM-UI",
+                    "script": f"python3 -m http.server 7890 --bind 0.0.0.0 -d {paths.MMPM_PYTHON_ROOT_DIR / 'ui' / 'static'}",
                     "watch": True,
                 },
             ]
         }
 
-    def __create_config(self):
-        if not self.ecosystem_config.exists():
-            logger.debug(f"Creating {self.ecosystem_config} file")
-            self.ecosystem_config.parent.mkdir(exist_ok=True)
-            self.ecosystem_config.touch(exist_ok=True)
+    def create_pm2_config(self):
+        if not self.pm2_config.exists():
+            logger.debug(f"Creating {self.pm2_config} file")
+            self.pm2_config.parent.mkdir(exist_ok=True)
+            self.pm2_config.touch(exist_ok=True)
 
-        with open(self.ecosystem_config, mode="w", encoding="utf-8") as config:
-            logger.debug(f"Writing PM2 Configuration to {self.ecosystem_config}")
+        with open(self.pm2_config, mode="w", encoding="utf-8") as config:
+            logger.debug(f"Writing PM2 Configuration to {self.pm2_config}")
             json.dump(self.pm2_processes, config)
 
     def stop(self):
-        return run_cmd(["pm2", "stop", f"{self.ecosystem_config}"], message="Stopping MMPM UI")
+        return run_cmd(["pm2", "stop", f"{self.pm2_config}"], message="Stopping MMPM UI")
 
     def delete(self):
-        return run_cmd(["pm2", "delete", f"{self.ecosystem_config}"], message="Removing MMPM UI")
+        return run_cmd(["pm2", "delete", f"{self.pm2_config}"], message="Removing MMPM UI")
 
     def start(self):
-        return run_cmd(["pm2", "start", f"{self.ecosystem_config}"], message="Installing MMPM UI")
+        return run_cmd(["pm2", "start", f"{self.pm2_config}"], message="Installing MMPM UI")
 
     def install(self, assume_yes: bool = False) -> bool:
         """
@@ -82,7 +81,7 @@ class MMPMui(Singleton):
             logger.fatal("pm2 is not in your PATH. Please run `npm install -g pm2`, and run the UI installation again.")
             return False
 
-        self.__create_config()
+        self.create_pm2_config()
         error_code, _, stderr = self.start()
 
         if error_code:
@@ -90,6 +89,17 @@ class MMPMui(Singleton):
             self.delete()
 
         return True
+
+    def status(self):
+        self.create_pm2_config()
+
+        for process in self.pm2_processes["apps"]:
+            error_code, stdout, stderr = run_cmd(["pm2", "describe", process["name"]])
+
+            if error_code:
+                logger.error(stderr)
+            else:
+                print(stdout)
 
     def remove(self, assume_yes: bool = False):
         """
@@ -111,14 +121,14 @@ class MMPMui(Singleton):
             logger.fatal("pm2 is not in your PATH. Please run `npm install -g pm2`, and run the UI installation again.")
             return False
 
-        self.__create_config()
+        self.create_pm2_config()
         error_code, _, stderr = self.delete()
 
         if error_code:
             logger.error(f"Failed to remove MMPM UI: {stderr}")
             self.delete()
 
-        shutil.rmtree(self.ecosystem_config.parent, ignore_errors=True)
+        shutil.rmtree(self.pm2_config.parent, ignore_errors=True)
 
     def get_uri(self) -> str:
         """
@@ -128,4 +138,4 @@ class MMPMui(Singleton):
         Returns:
             str: The URL of the MMPM web interface.
         """
-        return f"http://{gethostbyname(gethostname())}:{port}"
+        return f"http://{gethostbyname(gethostname())}:7890"

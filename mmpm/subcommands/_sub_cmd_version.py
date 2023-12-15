@@ -2,7 +2,7 @@
 """ Command line options for 'version' subcommand """
 
 from mmpm.__version__ import version
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogger.get_logger(__name__)

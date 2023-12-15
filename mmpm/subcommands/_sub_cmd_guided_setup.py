@@ -7,7 +7,7 @@ from pathlib import Path
 from ItsPrompt.prompt import Prompt
 from mmpm.constants import color, paths
 from mmpm.env import MMPMEnv
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.subcommands.sub_cmd import SubCmd
 from mmpm.utils import get_host_ip
 

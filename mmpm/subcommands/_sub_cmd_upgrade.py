@@ -4,7 +4,7 @@ import json
 from typing import List
 
 from mmpm.constants import paths
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.magicmirror.package import MagicMirrorPackage

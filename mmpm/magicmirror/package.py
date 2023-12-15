@@ -13,7 +13,7 @@ import requests
 from bs4 import NavigableString, Tag
 from mmpm.constants import color
 from mmpm.env import MMPMEnv
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.utils import repo_up_to_date, run_cmd, safe_get_request
 
 NA: str = "N/A"

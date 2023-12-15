@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ Command line options for 'show' subcommand """
 
-from mmpm.logger import MMPMLogger
+from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.package import RemotePackage
 from mmpm.subcommands.sub_cmd import SubCmd

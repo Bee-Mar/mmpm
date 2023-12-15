@@ -53,7 +53,7 @@ class GuidedSetup(SubCmd):
         magicmirror_pm2_proc: str = ""
         magicmirror_docker_compose_file: str = ""
         MMPM_IS_DOCKER_IMAGE: bool = False
-        install_gui: bool = False
+        install_ui: bool = False
         install_autocomplete: bool = False
         install_as_module: bool = False
 
@@ -71,7 +71,7 @@ class GuidedSetup(SubCmd):
         if not Prompt.confirm(f"Is {magicmirror_uri} the address used to open MagicMirror in your browser?"):
             magicmirror_uri = Prompt.input("Enter the address and port used to access MagicMirror:")
 
-        install_gui = not MMPM_IS_DOCKER_IMAGE and Prompt.confirm("Would you like to install the MMPM GUI (web interface)?")
+        install_ui = not MMPM_IS_DOCKER_IMAGE and Prompt.confirm("Would you like to install the MMPM UI (web interface)?")
         install_as_module = Prompt.confirm("Would you like to hide/show MagicMirror modules through MMPM?")
         install_autocomplete = Prompt.confirm("Would you like to install tab-autocomplete for the MMPM CLI?")
 
@@ -99,7 +99,7 @@ class GuidedSetup(SubCmd):
 
         if install_as_module:
             print(color.b_green("mmpm install MMM-mmpm"))
-        if install_gui:
-            print(color.b_green("mmpm install --gui"))
+        if install_ui:
+            print(color.b_green("mmpm ui --install"))
         if install_autocomplete:
             print(color.b_green("mmpm completion"))

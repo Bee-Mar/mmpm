@@ -14,6 +14,7 @@ class Logs(SubCmd):
     Custom Attributes:
         None
     """
+
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "logs"
@@ -40,18 +41,18 @@ class Logs(SubCmd):
         )
 
         self.parser.add_argument(
-            "-g",
-            "--gui",
+            "-u",
+            "--ui",
             action="store_true",
-            help=f"Display {self.app_name} GUI log file(s)",
-            dest="gui",
+            help=f"Display {self.app_name} UI log file(s)",
+            dest="ui",
         )
 
         self.parser.add_argument(
             "-z",
             "--zip",
             action="store_true",
-            help=f"Zip {self.app_name} CLI and/or GUI log file(s)",
+            help=f"Zip {self.app_name} CLI and/or UI log file(s)",
             dest="zip",
         )
 
@@ -60,8 +61,8 @@ class Logs(SubCmd):
             logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")
         elif args.zip:
             MMPMLogger.zip()
-        elif not args.cli and not args.gui:
+        elif not args.cli and not args.ui:
             # if the user doesn't provide arguments, just display everything, but consider the --tail arg
-            MMPMLogger.display(cli_logs=True, gui_logs=True, tail=args.tail)
+            MMPMLogger.display(cli_logs=True, ui_logs=True, tail=args.tail)
         else:
-            MMPMLogger.display(args.cli, args.gui, args.tail)
+            MMPMLogger.display(args.cli, args.ui, args.tail)

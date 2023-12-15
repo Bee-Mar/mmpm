@@ -131,14 +131,14 @@ class MMPMLogger:
         return MMPMLogger.__logger
 
     @classmethod
-    def display(cls, cli_logs: bool = False, gui_logs: bool = False, tail: bool = False) -> None:
+    def display(cls, cli_logs: bool = False, ui_logs: bool = False, tail: bool = False) -> None:
         """
         Displays contents of log files to stdout. If the --tail option is supplied,
         log contents will be displayed in real-time
 
         Parameters:
             cli_logs (bool): if True, the CLI log files will be displayed
-        gui_logs (bool): if True, the Gunicorn log files for the web interface will be displayed
+        ui_logs (bool): if True, the Gunicorn log files for the web interface will be displayed
         tail (bool): if True, the contents will be displayed in real time
 
         Returns:
@@ -152,7 +152,7 @@ class MMPMLogger:
             else:
                 MMPMLogger.__logger.error("MMPM log file not found")
 
-        if gui_logs:
+        if ui_logs:
             if paths.MMPM_NGINX_ACCESS_LOG_FILE.exists():
                 logs.append(str(paths.MMPM_NGINX_ACCESS_LOG_FILE))
             else:

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """ Command line options for 'db' subcommand """
 
-from mmpm.gui import MMPMGui
 from mmpm.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
+from mmpm.ui import MMPMui
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -16,7 +16,7 @@ class Ui(SubCmd):
 
     Custom Attributes:
         database (MagicMirrorDatabase): An instance of the MagicMirrorDatabase class for managing the database.
-        gui (MMPMGui): An instance of the MMPMGui class for managing the MMPM user interface.
+        ui (MMPMui): An instance of the MMPMui class for managing the MMPM user interface.
     """
 
     def __init__(self, app_name):
@@ -25,7 +25,7 @@ class Ui(SubCmd):
         self.help = f"Interact with the {self.app_name} UI "
         self.usage = f"{self.app_name} {self.name} [--url] [--status] <install/remove>"
         self.database = MagicMirrorDatabase()
-        self.gui = MMPMGui()
+        self.ui = MMPMui()
 
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
@@ -82,12 +82,12 @@ class Ui(SubCmd):
             return
 
         if args.url:
-            print(self.gui.get_uri())
+            print(self.ui.get_uri())
         elif args.status:
             raise NotImplementedError("TODO")  # TODO
         elif args.command == "install":
-            self.gui.install(assume_yes=args.assume_yes)
+            self.ui.install(assume_yes=args.assume_yes)
         elif args.command == "remove":
-            self.gui.remove(assume_yes=args.assume_yes)
+            self.ui.remove(assume_yes=args.assume_yes)
         else:
             logger.error(f"No arguments provided. See '{self.app_name} {self.name} --help'")

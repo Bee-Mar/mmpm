@@ -6,9 +6,9 @@ from shutil import copyfile
 
 from mmpm.constants import paths, urls
 from mmpm.env import MMPMEnv
-from mmpm.gui import MMPMGui
 from mmpm.logger import MMPMLogger
 from mmpm.subcommands.sub_cmd import SubCmd
+from mmpm.ui import MMPMui
 from mmpm.utils import run_cmd
 
 logger = MMPMLogger.get_logger(__name__)
@@ -21,7 +21,7 @@ class Open(SubCmd):
 
     Custom Attributes:
         env (MMPMEnv): An instance of the MMPMEnv class for managing environment variables.
-        gui (MMPMGui): An instance of the MMPMGui class for managing the MMPM GUI.
+        ui (MMPMui): An instance of the MMPMui class for managing the MMPM UI.
         [Method] edit(self, file: PosixPath): see method docs
     """
 
@@ -31,7 +31,7 @@ class Open(SubCmd):
         self.help = "Open config files, documentation, wikis, and MagicMirror itself"
         self.usage = f"{self.app_name} {self.name} [--<option>]"
         self.env = MMPMEnv()
-        self.gui = MMPMGui()
+        self.ui = MMPMui()
 
     def edit(self, file: PosixPath) -> None:
         """
@@ -136,7 +136,7 @@ class Open(SubCmd):
         elif args.magicmirror:
             run_cmd(["xdg-open", self.env.MMPM_MAGICMIRROR_URI.get()], background=True)
         elif args.ui:
-            run_cmd(["xdg-open", self.gui.get_uri()], background=True)
+            run_cmd(["xdg-open", self.ui.get_uri()], background=True)
         elif args.mm_wiki:
             run_cmd(["xdg-open", urls.MAGICMIRROR_WIKI_URL], background=True)
         elif args.mm_docs:

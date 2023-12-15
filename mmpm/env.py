@@ -49,7 +49,7 @@ class EnvVar:
     def get(self):
         """
         Reads environment variables from the MMPM_ENV_FILE. In order to ensure
-        hot-reloading is usable in the GUI, the environment variables need to be
+        hot-reloading is usable in the UI, the environment variables need to be
         re-read from the file each time. Otherwise, cached data will be sent back
         to the user.
 

@@ -145,6 +145,8 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   public onStop(): void {
     this.mmControllerApi.getStop().then((response: APIResponse) => {
       if (response.code === 200) {
+        this.modules = [];
+        this.socket.close();
         this.msg.add({ severity: "success", summary: "Stop MagicMirror", detail: "Successfully stopped MagicMirror" });
       } else {
         this.msg.add({ severity: "error", summary: "Stop MagicMirror", detail: response.message });

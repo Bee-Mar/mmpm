@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """ Command line options for 'db' subcommand """
 
-from socket import gethostbyname, gethostname
 
 from ItsPrompt.prompt import Prompt
+from mmpm.constants import urls
 from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
@@ -85,7 +85,7 @@ class Ui(SubCmd):
             return
 
         if args.url:
-            print(f"http://{gethostbyname(gethostname())}:7890")
+            print(f"http://{urls.HOST}:{urls.MMPM_UI_PORT}")
         elif args.status:
             self.ui.status()
         elif args.command == "install":
@@ -95,6 +95,9 @@ class Ui(SubCmd):
             if not self.ui.install():
                 logger.error("Failed to install MMPM UI")
                 self.ui.delete()
+            else:
+                logger.info(f"Installed MMPM-UI")
+                print("Run `mmpm ui --url` to display the UI address, or execute `mmpm open --ui` to open it.")
 
         elif args.command == "remove":
             if not args.assume_yes and not Prompt.confirm("Are you sure you want to remove the MMPM UI?"):

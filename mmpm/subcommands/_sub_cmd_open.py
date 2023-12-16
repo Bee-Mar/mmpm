@@ -3,6 +3,7 @@
 from os import getenv, system
 from pathlib import PosixPath
 from shutil import copyfile
+from socket import gethostbyname, gethostname
 
 from mmpm.constants import paths, urls
 from mmpm.env import MMPMEnv
@@ -136,7 +137,7 @@ class Open(SubCmd):
         elif args.magicmirror:
             run_cmd(["xdg-open", self.env.MMPM_MAGICMIRROR_URI.get()], background=True)
         elif args.ui:
-            run_cmd(["xdg-open", self.ui.get_uri()], background=True)
+            run_cmd(["xdg-open", f"{urls.HOST}:{urls.MMPM_UI_PORT}"], background=True)
         elif args.mm_wiki:
             run_cmd(["xdg-open", urls.MAGICMIRROR_WIKI_URL], background=True)
         elif args.mm_docs:

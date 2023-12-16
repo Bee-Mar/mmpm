@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 from re import findall
 
-from mmpm.constants import paths
+from mmpm.constants import paths, urls
 from mmpm.log.logger import MMPMLogger
 from mmpm.singleton import Singleton
 from mmpm.utils import run_cmd, systemctl
@@ -23,17 +23,17 @@ class MMPMui(Singleton):
             "apps": [
                 {
                     "name": "MMPM-API-Server",
-                    "script": f"python3 -m gunicorn -k gevent -b 0.0.0.0:7891 mmpm.wsgi:app",
+                    "script": f"python3 -m gunicorn -k gevent -b 0.0.0.0:{urls.MMPM_API_SERVER_PORT} mmpm.wsgi:app",
                     "watch": True,
                 },
                 {
                     "name": "MMPM-Log-Server",
-                    "script": f"python3 -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.log.server:create_app()' -b 0.0.0.0:6789",
+                    "script": f"python3 -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.log.server:create_app()' -b 0.0.0.0:{urls.MMPM_LOG_SERVER_PORT}",
                     "watch": True,
                 },
                 {
                     "name": "MMPM-UI",
-                    "script": f"python3 -m http.server 7890 -b 0.0.0.0 -d {paths.MMPM_PYTHON_ROOT_DIR / 'ui' / 'static'}",
+                    "script": f"python3 -m http.server -d {paths.MMPM_PYTHON_ROOT_DIR / 'ui' / 'static'} -b 0.0.0.0 {urls.MMPM_UI_PORT}",
                     "watch": True,
                 },
             ]

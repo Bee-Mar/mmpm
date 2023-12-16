@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:767e98cad7d846581b06541275f2df678cea58b131b731c8394de76561f12735"
+content_hash = "sha256:f681aacd56f7fb3f07adfb4c3511763e08ebe2c1bf26403d5dd105640dbe36a1"
 
 [[package]]
 name = "argcomplete"
@@ -657,16 +657,6 @@ files = [
 ]
 
 [[package]]
-name = "jsonpickle"
-version = "3.0.2"
-requires_python = ">=3.7"
-summary = "Python library for serializing any arbitrary object graph into JSON"
-files = [
-    {file = "jsonpickle-3.0.2-py3-none-any.whl", hash = "sha256:4a8442d97ca3f77978afa58068768dba7bff2dbabe79a9647bc3cdafd4ef019f"},
-    {file = "jsonpickle-3.0.2.tar.gz", hash = "sha256:e37abba4bfb3ca4a4647d28bb9f4706436f7b46c8a8333b4a718abafa8e46b37"},
-]
-
-[[package]]
 name = "markupsafe"
 version = "2.1.3"
 requires_python = ">=3.7"
@@ -1022,16 +1012,6 @@ summary = "A modern CSS selector implementation for Beautiful Soup."
 files = [
     {file = "soupsieve-2.5-py3-none-any.whl", hash = "sha256:eaa337ff55a1579b6549dc679565eac1e3d000563bcb1c8ab0d0fefbc0c2cdc7"},
     {file = "soupsieve-2.5.tar.gz", hash = "sha256:5663d5a7b3bfaeee0bc4372e7fc48f9cff4940b3eec54a6451cc5299f1097690"},
-]
-
-[[package]]
-name = "systemd-service"
-version = "1.8"
-requires_python = ">=3.7"
-summary = "Simple API to automate the creation of custom daemons for GNU/Linux."
-files = [
-    {file = "systemd_service-1.8-py3-none-any.whl", hash = "sha256:c818669d3e28188ecbe1911c7651e710eaa2604497a0ba5d943ffe5aa242d9f7"},
-    {file = "systemd_service-1.8.tar.gz", hash = "sha256:3c53a0180c7ebe6b62461c3218816d2d3f87050f058c0f3281006e7fac301e19"},
 ]
 
 [[package]]

@@ -234,7 +234,6 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
     this.socket.on("error", (data: any) => {
       console.log(data);
     });
-
   }
 }
 

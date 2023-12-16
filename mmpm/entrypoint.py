@@ -57,7 +57,12 @@ def main():
     args, extra = parser.parse_known_args()
     subcommand = loader.objects.get(args.subcmd)
 
-    subcommand.exec(args, extra)
+    if not subcommand:
+        logger.debug(f"Unable to match '{args.subcmd}' to a valid subcommand")
+        parser.print_help()
+    else:
+        subcommand.exec(args, extra)
+
     MMPMLogger.shutdown()
 
 

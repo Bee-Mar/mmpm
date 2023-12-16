@@ -128,7 +128,7 @@ def kill_pids_of_process(process: str) -> None:
         processes (str): the processes IDs found
     """
     os.system(f"for process in $(pgrep {process}); do kill -9 $process; done")
-    logger.info(f"Stopped all processes of type {process}")
+    logger.debug(f"Stopped all processes of type {process}")
 
 
 def safe_get_request(url: str) -> requests.Response:

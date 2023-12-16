@@ -2,8 +2,6 @@ import { Component, HostListener, OnDestroy, OnInit } from "@angular/core";
 import { io } from "socket.io-client";
 import { MMPMEnv } from "@/models/mmpm-env";
 import { MagicMirrorModule } from "@/models/magicmirror-module";
-import { SharedStoreService } from "@/services/shared-store.service";
-import { Subscription } from "rxjs";
 import { MessageService, ConfirmationService, MenuItem } from "primeng/api";
 import { APIResponse } from "@/services/api/base-api";
 import { MagicMirrorAPI } from "@/services/api/magicmirror-api.service";
@@ -16,15 +14,7 @@ import { MagicMirrorControllerAPI } from "@/services/api/magicmirror-controller-
   providers: [MessageService, ConfirmationService],
 })
 export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
-  constructor(
-    private store: SharedStoreService,
-    private msg: MessageService,
-    private mmControllerApi: MagicMirrorControllerAPI,
-    private mmApi: MagicMirrorAPI,
-    private confirmation: ConfirmationService,
-  ) {}
-
-  private envSubscription: Subscription = new Subscription();
+  constructor(private msg: MessageService, private mmControllerApi: MagicMirrorControllerAPI, private mmApi: MagicMirrorAPI, private confirmation: ConfirmationService) {}
 
   public env: MMPMEnv;
   public openHelpDialog = false;
@@ -107,22 +97,13 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   ];
 
   public ngOnInit(): void {
-    this.envSubscription = this.store.env.subscribe((env: MMPMEnv) => {
-      this.env = env;
-
-      // only initialize the socket one time after we have the env data
-      if (this.env !== null && this.env !== undefined && (!this.socket || !this.socket.connected)) {
-        this.initSocket();
-      }
-    });
+    this.initSocket();
   }
 
   public ngOnDestroy(): void {
     if (this.socket.connected) {
       this.socket.disconnect();
     }
-
-    this.envSubscription.unsubscribe();
   }
 
   public onModuleVisibilityChange(mmModule: MagicMirrorModule) {
@@ -150,6 +131,10 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   public onStart(): void {
     this.mmControllerApi.getStart().then((response: APIResponse) => {
       if (response.code === 200) {
+        if (this.socket?.connected) {
+          this.socket.close();
+          this.initSocket();
+        }
         this.msg.add({ severity: "success", summary: "Start MagicMirror", detail: "Successfully started MagicMirror" });
       } else {
         this.msg.add({ severity: "error", summary: "Start MagicMirror", detail: response.message });
@@ -198,6 +183,8 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   }
 
   public initSocket(): void {
+    console.log("Initializing socket");
+
     this.socket = io(`${window.location.hostname}:8907`, { reconnection: true });
 
     this.socket.on("connect", () => {

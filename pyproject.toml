@@ -72,3 +72,5 @@ down = "pm2 stop dev/ecosystem.json"
 rm = "pm2 delete dev/ecosystem.json"
 remove = "pm2 delete dev/ecosystem.json"
 delete = "pm2 delete dev/ecosystem.json"
+
+logs = "pm2 logs mmpm"

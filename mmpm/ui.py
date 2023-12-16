@@ -32,14 +32,14 @@ class MMPMui(Singleton):
                 {
                     "namespace": "mmpm",
                     "name": "mmpm.log-server",
-                    "script": f"python3 -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.log.server:create_app()' -b 0.0.0.0:{urls.MMPM_LOG_SERVER_PORT}",
+                    "script": f"python3 -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.log.server:create()' -b 0.0.0.0:{urls.MMPM_LOG_SERVER_PORT}",
                     "version": version,
                     "watch": True,
                 },
                 {
                     "namespace": "mmpm",
                     "name": "mmpm.repeater",
-                    "script": f"python3 -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.api.repeater:create_app()' -b 0.0.0.0:{urls.MMPM_REPEATER_SERVER_PORT}",
+                    "script": f"python3 -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.api.repeater:create()' -b 0.0.0.0:{urls.MMPM_REPEATER_SERVER_PORT}",
                     "version": version,
                     "watch": True
                 },

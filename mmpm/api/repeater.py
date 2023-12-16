@@ -1,7 +1,17 @@
 #!/usr/bin/env python3
+"""
+This socketio server/client repeats the information collected by the MMM-mmpm module back to the UI. MagicMirror
+has network settings which prevent the UI from directly interacting with MMM-mmpm if you open up the UI on a computer
+other than the one hosting MMPM. It's weird, it's annoying, but it's the workaround for it. Maybe there will be simpler
+solution later on, but for now this is what works. Otherwise, users would need to be told how to modify MagicMirror's
+source code, and let's face it, practically nobody is going to want to do that. The other option is to make a PR to MagicMirror
+but I'm sure it won't get accepted for security purposes.
+"""
 from gevent import monkey
 
 monkey.patch_all()
+
+from time import sleep
 
 import socketio
 from mmpm.env import MMPMEnv
@@ -9,7 +19,7 @@ from mmpm.log.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
 
-def create_app():
+def create():
     server = socketio.Server(cors_allowed_origins="*", async_mode="gevent")
     app = socketio.WSGIApp(server)
     env = MMPMEnv()
@@ -18,7 +28,7 @@ def create_app():
 
     def create_connection(sid):
         try:
-            client.connect(env.MMPM_MAGICMIRROR_URI.get())
+            client.connect(env.MMPM_MAGICMIRROR_URI.get(), wait_timeout=10, wait=True)
 
             if sid not in client_ids:
                 client_ids.add(sid)
@@ -44,6 +54,8 @@ def create_app():
 
         if sid in client_ids:
             client_ids.remove(sid)
+
+        client.disconnect()
 
     @server.event
     def error(sid):

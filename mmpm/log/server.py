@@ -15,19 +15,19 @@ logger = MMPMLogger.get_logger(__name__)
 
 # Function to create the SocketIO server
 def create_app():
-    sio = socketio.Server(cors_allowed_origins="*", async_mode="gevent")
+    server = socketio.Server(cors_allowed_origins="*", async_mode="gevent")
 
-    @sio.event
+    @server.event
     def connect(sid, environ):
         logger.debug(f"Client connected to SocketIO-Log-Server: {sid}")
 
-    @sio.event
+    @server.event
     def logs(sid, data):
-        sio.emit("logs", data, skip_sid=sid)
+        server.emit("logs", data, skip_sid=sid)
 
-    @sio.event
+    @server.event
     def disconnect(sid):
         logger.debug("Client disconnected:", sid)
 
-    app = socketio.WSGIApp(sio)
+    app = socketio.WSGIApp(server)
     return app

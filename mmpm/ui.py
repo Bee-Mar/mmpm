@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from re import findall
 
+from mmpm.__version__ import version
 from mmpm.constants import paths, urls
 from mmpm.log.logger import MMPMLogger
 from mmpm.singleton import Singleton
@@ -22,18 +23,31 @@ class MMPMui(Singleton):
         self.pm2_processes = {
             "apps": [
                 {
-                    "name": "MMPM-API-Server",
+                    "namespace": "mmpm",
+                    "name": "mmpm.api",
                     "script": f"python3 -m gunicorn -k gevent -b 0.0.0.0:{urls.MMPM_API_SERVER_PORT} mmpm.wsgi:app",
+                    "version": version,
                     "watch": True,
                 },
                 {
-                    "name": "MMPM-Log-Server",
+                    "namespace": "mmpm",
+                    "name": "mmpm.log-server",
                     "script": f"python3 -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.log.server:create_app()' -b 0.0.0.0:{urls.MMPM_LOG_SERVER_PORT}",
+                    "version": version,
                     "watch": True,
                 },
                 {
-                    "name": "MMPM-UI",
+                    "namespace": "mmpm",
+                    "name": "mmpm.repeater",
+                    "script": f"python3 -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.api.repeater:create_app()' -b 0.0.0.0:{urls.MMPM_REPEATER_SERVER_PORT}",
+                    "version": version,
+                    "watch": True
+                },
+                {
+                    "namespace": "mmpm",
+                    "name": "mmpm.ui",
                     "script": f"python3 -m http.server -d {paths.MMPM_PYTHON_ROOT_DIR / 'ui' / 'static'} -b 0.0.0.0 {urls.MMPM_UI_PORT}",
+                    "version": version,
                     "watch": True,
                 },
             ]

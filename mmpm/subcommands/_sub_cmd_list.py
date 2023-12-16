@@ -3,6 +3,7 @@
 from mmpm.constants import color
 from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
+from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogger.get_logger(__name__)

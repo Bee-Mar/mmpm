@@ -60,7 +60,15 @@ test = "coverage run -m pytest test"
 report = "coverage report"
 lint = "pylint mmpm"
 mypy = "mypy mmpm"
-ui = "bash -c 'cd ui && bun run start'"
 build-ui = "bash -c 'cd ui && bun run build'"
-server = "gunicorn --worker-class gevent --bind 0.0.0.0:7891 mmpm.wsgi:app --reload"
-logs = "gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.log.server:create_app()' -b 0.0.0.0:6789"
+
+# quickstarts for dev testing
+up = "pm2 start dev/ecosystem.json"
+start = "pm2 start dev/ecosystem.json"
+
+stop = "pm2 stop dev/ecosystem.json"
+down = "pm2 stop dev/ecosystem.json"
+
+rm = "pm2 delete dev/ecosystem.json"
+remove = "pm2 delete dev/ecosystem.json"
+delete = "pm2 delete dev/ecosystem.json"

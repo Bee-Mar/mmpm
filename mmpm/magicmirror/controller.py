@@ -78,8 +78,11 @@ class MagicMirrorController(Singleton):
         try:
             client = self.factory.create_client("FROM_MMPM_APP_get_active_modules", {})
             client.connect(self.env.MMPM_MAGICMIRROR_URI.get())
+            return True
         except (OSError, BrokenPipeError, Exception) as error:
             logger.error(f"Failed to connect to MagicMirror, closing socket. Is MagicMirror running? : {error}")
+
+        return False
 
     def hide(self, modules: List[str]):
         try:
@@ -90,8 +93,11 @@ class MagicMirrorController(Singleton):
 
             client.connect(self.env.MMPM_MAGICMIRROR_URI.get())
             logger.info(f"Hid modules with keys: {', '.join(modules)}")
+            return True
         except (OSError, BrokenPipeError, Exception) as error:
             logger.error(f"Failed to connect to MagicMirror, closing socket. Is MagicMirror running? : {error}")
+
+        return False
 
     def show(self, modules: List[str]):
         try:
@@ -102,8 +108,11 @@ class MagicMirrorController(Singleton):
 
             client.connect(self.env.MMPM_MAGICMIRROR_URI.get())
             logger.info(f"Made modules visible with keys: {', '.join(modules)}")
+            return True
         except (OSError, BrokenPipeError, Exception) as error:
             logger.error(f"Failed to connect to MagicMirror, closing socket. Is MagicMirror running? : {error}")
+
+        return False
 
     def start(self):
         """

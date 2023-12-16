@@ -1,0 +1,28 @@
+{
+  "apps": [
+    {
+      "namespace": "mmpm",
+      "name": "mmpm.api",
+      "script": "python3 -m gunicorn -k gevent -b 0.0.0.0:7891 mmpm.wsgi:app --reload",
+      "watch": true
+    },
+    {
+      "namespace": "mmpm",
+      "name": "mmpm.log-server",
+      "script": "python3 -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.log.server:create_app()' -b 0.0.0.0:6789 --reload",
+      "watch": true
+    },
+    {
+      "namespace": "mmpm",
+      "name": "mmpm.repeater",
+      "script": "python3 -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.api.repeater:create_app()' -b 0.0.0.0:8907 --reload",
+      "watch": true
+    },
+    {
+      "namespace": "mmpm",
+      "name": "mmpm.ui",
+      "script": "cd ui && bun run start --host 0.0.0.0",
+      "watch": true
+    }
+  ]
+}

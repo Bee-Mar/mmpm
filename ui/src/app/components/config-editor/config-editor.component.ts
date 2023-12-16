@@ -1,10 +1,10 @@
-import {Component, HostListener, OnInit, ViewChild} from "@angular/core";
-import {EditorComponent} from "ngx-monaco-editor-v2";
-import {getCookie, setCookie} from "@/utils/utils";
-import {ConfigFileAPI} from "@/services/api/config-file-api.service";
-import {MessageService} from "primeng/api";
-import {APIResponse} from "@/services/api/base-api";
-import {SharedStoreService} from "@/services/shared-store.service";
+import { Component, HostListener, OnInit, ViewChild } from "@angular/core";
+import { EditorComponent } from "ngx-monaco-editor-v2";
+import { getCookie, setCookie } from "@/utils/utils";
+import { ConfigFileAPI } from "@/services/api/config-file-api.service";
+import { MessageService } from "primeng/api";
+import { APIResponse } from "@/services/api/base-api";
+import { SharedStoreService } from "@/services/shared-store.service";
 
 interface FileContentsState {
   current: string;
@@ -21,13 +21,13 @@ interface FileContentsState {
 export class ConfigEditorComponent implements OnInit {
   constructor(private configFileApi: ConfigFileAPI, private store: SharedStoreService, private msg: MessageService) {}
 
-  @ViewChild(EditorComponent, {static: false})
+  @ViewChild(EditorComponent, { static: false })
   public editor: EditorComponent;
 
   public file = getCookie("mmpm-config-editor-selected-file", "config.js");
   public fontSize = Number(getCookie("mmpm-config-editor-font-size", "12"));
 
-  public state: {[key: string]: FileContentsState;} = {
+  public state: { [key: string]: FileContentsState } = {
     "config.js": {
       current: "",
       saved: "",
@@ -90,7 +90,7 @@ export class ConfigEditorComponent implements OnInit {
   };
 
   @HostListener("window:beforeunload", ["$event"])
-  public before_user_exits($event: BeforeUnloadEvent) {
+  public beforeUnload($event: BeforeUnloadEvent) {
     if (this.state[this.file].current !== this.state[this.file].saved) {
       $event.returnValue = `You have unsaved changes made to ${this.file}. Are you sure you want to exit?`;
     }
@@ -130,7 +130,7 @@ export class ConfigEditorComponent implements OnInit {
   }
 
   private setLanguage() {
-    this.options = Object.assign({}, this.options, {language: this.state[this.file].language});
+    this.options = Object.assign({}, this.options, { language: this.state[this.file].language });
   }
 
   public onSaveFile(): void {
@@ -138,16 +138,16 @@ export class ConfigEditorComponent implements OnInit {
       if (response.code === 200) {
         this.state[this.file].saved = this.state[this.file].current;
         this.store.load();
-        this.msg.add({severity: "success", summary: "Save File", detail: `Saved ${this.file}`});
+        this.msg.add({ severity: "success", summary: "Save File", detail: `Saved ${this.file}` });
       } else {
         console.log(response.message);
-        this.msg.add({severity: "error", summary: "Save File", detail: response.message});
+        this.msg.add({ severity: "error", summary: "Save File", detail: response.message });
       }
     });
   }
 
   public onFontSizeChange(): void {
     setCookie("mmpm-config-editor-font-size", String(this.fontSize));
-    this.options = Object.assign({}, this.options, {fontSize: this.fontSize});
+    this.options = Object.assign({}, this.options, { fontSize: this.fontSize });
   }
 }

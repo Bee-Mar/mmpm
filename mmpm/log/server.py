@@ -19,7 +19,7 @@ def create_app():
 
     @sio.event
     def connect(sid, environ):
-        logger.debug("Client connected:", sid)
+        logger.debug(f"Client connected to SocketIO-Log-Server: {sid}")
 
     @sio.event
     def logs(sid, data):

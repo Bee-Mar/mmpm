@@ -2,8 +2,80 @@
 import unittest
 from unittest.mock import MagicMock, mock_open, patch
 
-from mmpm.ui import MMPMui
+from mmpm.ui import MMPMui  # Replace 'mmpm.ui' with the name of your module
 
 
 class TestMMPMui(unittest.TestCase):
-    pass
+    def setUp(self):
+        self.mmpm_ui = MMPMui()
+
+    @patch("shutil.which")
+    @patch("mmpm.ui.MMPMui.create_pm2_config")
+    @patch("mmpm.ui.MMPMui.start")
+    def test_install_pm2_missing(self, mock_start, mock_create_config, mock_which):
+        mock_which.return_value = None
+        result = self.mmpm_ui.install()
+        self.assertFalse(result)
+        mock_create_config.assert_not_called()
+        mock_start.assert_not_called()
+
+    @patch("shutil.which")
+    @patch("mmpm.ui.MMPMui.create_pm2_config")
+    @patch("mmpm.ui.MMPMui.start")
+    def test_install_failure_start(self, mock_start, mock_create_config, mock_which):
+        mock_which.return_value = "/usr/bin/pm2"
+        mock_start.return_value = (1, "", "error")  # Simulate failure
+        result = self.mmpm_ui.install()
+        self.assertFalse(result)
+        mock_create_config.assert_called_once()
+        mock_start.assert_called_once()
+
+    @patch("shutil.which")
+    @patch("mmpm.ui.MMPMui.create_pm2_config")
+    @patch("mmpm.ui.MMPMui.start")
+    def test_install_success(self, mock_start, mock_create_config, mock_which):
+        mock_which.return_value = "/usr/bin/pm2"
+        mock_start.return_value = (0, "", "")  # Simulate success
+        result = self.mmpm_ui.install()
+        self.assertTrue(result)
+        mock_create_config.assert_called_once()
+        mock_start.assert_called_once()
+
+    # Test remove method
+    @patch("shutil.which")
+    @patch("mmpm.ui.MMPMui.create_pm2_config")
+    @patch("mmpm.ui.MMPMui.delete")
+    @patch("shutil.rmtree")
+    def test_remove_pm2_missing(self, mock_rmtree, mock_delete, mock_create_config, mock_which):
+        mock_which.return_value = None
+        result = self.mmpm_ui.remove()
+        self.assertFalse(result)
+        mock_create_config.assert_not_called()
+        mock_delete.assert_not_called()
+        mock_rmtree.assert_not_called()
+
+    @patch("shutil.which")
+    @patch("mmpm.ui.MMPMui.create_pm2_config")
+    @patch("mmpm.ui.MMPMui.delete")
+    @patch("shutil.rmtree")
+    def test_remove_success(self, mock_rmtree, mock_delete, mock_create_config, mock_which):
+        mock_which.return_value = "/usr/bin/pm2"
+        mock_delete.return_value = (0, "", "")  # Simulate success
+        result = self.mmpm_ui.remove()
+        self.assertTrue(result)
+        mock_create_config.assert_called_once()
+        mock_delete.assert_called_once()
+        mock_rmtree.assert_called_once_with(self.mmpm_ui.pm2_config.parent, ignore_errors=True)
+
+    # Test status method
+    @patch("mmpm.ui.MMPMui.create_pm2_config")
+    @patch("mmpm.ui.run_cmd")
+    def test_status(self, mock_run_cmd, mock_create_config):
+        mock_run_cmd.return_value = (0, "running", "")  # Simulate success
+        self.mmpm_ui.status()
+        self.assertEqual(mock_run_cmd.call_count, len(self.mmpm_ui.pm2_processes["apps"]))
+        mock_create_config.assert_called_once()
+
+
+if __name__ == "__main__":
+    unittest.main()

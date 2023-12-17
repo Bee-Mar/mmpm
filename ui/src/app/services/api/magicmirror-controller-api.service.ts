@@ -8,17 +8,17 @@ import {catchError, firstValueFrom, map, retry} from 'rxjs';
 })
 export class MagicMirrorControllerAPI extends BaseAPI {
   public getStart(): Promise<APIResponse> {
-    console.log("Restarting to restart MagicMirror");
+    console.log("Requesting to start MagicMirror");
     return this.get_("mm-ctl/start");
   }
 
   public getRestart(): Promise<APIResponse> {
-    console.log("Restarting to restart MagicMirror");
+    console.log("Requesting to restart MagicMirror");
     return this.get_("mm-ctl/restart");
   }
 
   public getStop(): Promise<APIResponse> {
-    console.log("Restarting to restart MagicMirror");
+    console.log("Requesting to stop MagicMirror");
     return this.get_("mm-ctl/stop");
   }
 
@@ -40,8 +40,5 @@ export class MagicMirrorControllerAPI extends BaseAPI {
         catchError(this.handle_error),
       ),
     );
-
   }
-
-
 }

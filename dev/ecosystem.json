@@ -21,7 +21,7 @@
     {
       "namespace": "mmpm",
       "name": "mmpm.ui",
-      "script": "cd ui && bun run start --host 0.0.0.0",
+      "script": "cd ui && bun run start --host 0.0.0.0 --port 7890",
       "watch": true
     }
   ]

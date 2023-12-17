@@ -41,11 +41,19 @@ jobs:
       - name: Python Build
         run: |
           pdm build
+      - name: Cache Python Build Artifacts
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/work/mmpm/mmpm/dist
+          key: ${{ runner.os }}-build-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
       - name: Install Test
         run: |
           pdm install
-          $HOME/work/mmpm/mmpm/.venv/bin/mmpm version
-          $HOME/work/mmpm/mmpm/.venv/bin/mmpm --help
+          ~/work/mmpm/mmpm/.venv/bin/mmpm version
+          ~/work/mmpm/mmpm/.venv/bin/mmpm --help
 
   mmpm-ui:
     runs-on: ubuntu-latest
@@ -81,20 +89,27 @@ jobs:
         run: |
           cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href /
 
-    #package-and-publish:
-    #  needs: [mmpm-cli, mmpm-ui]
-    #  runs-on: ubuntu-latest
-    #  container:
-    #    image: beemar/python3-nodejs:python${PYTHON_VERSION}-nodejs${NODEJS_VERSION}
-    #  steps:
-    #    - uses: actions/checkout@v3
-    #    - name: Package Application
-    #      run: |
-    #    - name: Publish to PyPi
-    #      if: github.ref == 'refs/heads/master' && startsWith(github.ref, 'refs/tags/')
-    #      uses: pypa/gh-action-pypi-publish@release/v1
-    #      with:
-    #        user: __token__
-    #        password: ${{ secrets.PYPI_TOKEN }}
-    #        skip_existing: true
-    #        verbose: true
+      - name: Cache Angular Build Artifacts
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/work/mmpm/mmpm/ui/build
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package.json') }}
+
+  package-and-publish:
+    needs: [mmpm-cli, mmpm-ui]
+    runs-on: ubuntu-latest
+    container:
+      image: beemar/python3-nodejs:python${PYTHON_VERSION}-nodejs${NODEJS_VERSION}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Package Application
+        run: |
+      - name: Publish to PyPi
+        if: github.ref == 'refs/heads/master' && startsWith(github.ref, 'refs/tags/')
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          skip_existing: true
+          verbose: true

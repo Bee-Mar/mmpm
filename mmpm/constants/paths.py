@@ -4,15 +4,10 @@ from pathlib import Path
 HOME_DIR = Path.home()
 MMPM_CONFIG_DIR = HOME_DIR / ".config" / "mmpm"
 MMPM_LOG_DIR = MMPM_CONFIG_DIR / "log"
-MMPM_CLI_LOG_FILE = MMPM_LOG_DIR / "mmpm-cli-interface.log"
+MMPM_CLI_LOG_FILE = MMPM_LOG_DIR / "mmpm-cli.log"
 MMPM_ENV_FILE = MMPM_CONFIG_DIR / "mmpm-env.json"
 MMPM_CUSTOM_PACKAGES_FILE = MMPM_CONFIG_DIR / "mmpm-custom-packages.json"
 MMPM_AVAILABLE_UPGRADES_FILE = MMPM_CONFIG_DIR / "mmpm-available-upgrades.json"
-MMPM_NGINX_CONF_FILE = Path("/etc/nginx/sites-enabled/mmpm.conf")
-MMPM_NGINX_LOG_DIR = Path("/var/log/nginx")
-MMPM_NGINX_ACCESS_LOG_FILE = MMPM_NGINX_LOG_DIR / "mmpm-access.log"
-MMPM_NGINX_ERROR_LOG_FILE = MMPM_NGINX_LOG_DIR / "mmpm-error.log"
-
 MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE = MMPM_CONFIG_DIR / "MagicMirror-3rd-party-packages-db.json"
 MAGICMIRROR_3RD_PARTY_PACKAGES_DB_LAST_UPDATE_FILE = MMPM_CONFIG_DIR / "MagicMirror-3rd-party-packages-db-last-update.json"
 

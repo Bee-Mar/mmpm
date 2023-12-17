@@ -21,10 +21,10 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 def create():
-    server = socketio.Server(cors_allowed_origins="*", async_mode="gevent")
+    server = socketio.Server(cors_allowed_origins="*", async_mode="gevent", logger=logger)
     app = socketio.WSGIApp(server)
     env = MMPMEnv()
-    mm_client = socketio.Client(request_timeout=300)
+    mm_client = socketio.Client(request_timeout=300, logger=logger)
     client_ids = set()
 
     def setup_mm_client():

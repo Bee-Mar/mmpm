@@ -26,7 +26,5 @@ class Logs(Endpoint):
             zip_file_name = f"mmpm-logs-{today.year}-{today.month}-{today.day}"
             logger.debug(f"Creating zip of log files named '{zip_file_name}'")
             archive_name = make_archive(zip_file_name, "zip", paths.MMPM_LOG_DIR)
-
             logger.debug(f"Archive created: {bool(archive_name)}")
-
             return send_file(f"/tmp/{zip_file_name}.zip", f"{zip_file_name}.zip", as_attachment=True)

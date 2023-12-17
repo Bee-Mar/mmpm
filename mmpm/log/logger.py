@@ -9,7 +9,6 @@ from threading import Lock
 from typing import List
 
 import socketio
-
 from mmpm.__version__ import version
 from mmpm.constants import paths
 from mmpm.env import MMPMEnv
@@ -131,42 +130,26 @@ class MMPMLogger:
         return MMPMLogger.__logger
 
     @classmethod
-    def display(cls, cli_logs: bool = False, ui_logs: bool = False, tail: bool = False) -> None:
+    def display(cls, tail: bool = False) -> None:
         """
         Displays contents of log files to stdout. If the --tail option is supplied,
         log contents will be displayed in real-time
 
         Parameters:
             cli_logs (bool): if True, the CLI log files will be displayed
-        ui_logs (bool): if True, the Gunicorn log files for the web interface will be displayed
-        tail (bool): if True, the contents will be displayed in real time
+            ui_logs (bool): if True, the Gunicorn log files for the web interface will be displayed
+            tail (bool): if True, the contents will be displayed in real time
 
         Returns:
             None
         """
-        logs: List[str] = []
-
-        if cli_logs:
-            if paths.MMPM_CLI_LOG_FILE.exists():
-                logs.append(str(paths.MMPM_CLI_LOG_FILE))
-            else:
-                MMPMLogger.__logger.error("MMPM log file not found")
-
-        if ui_logs:
-            if paths.MMPM_NGINX_ACCESS_LOG_FILE.exists():
-                logs.append(str(paths.MMPM_NGINX_ACCESS_LOG_FILE))
-            else:
-                MMPMLogger.__logger.error("Gunicorn access log file not found")
-            if paths.MMPM_NGINX_ERROR_LOG_FILE.exists():
-                logs.append(str(paths.MMPM_NGINX_ERROR_LOG_FILE))
-            else:
-                MMPMLogger.__logger.error("Gunicorn error log file not found")
-
-        if logs:
-            os.system(f"{'tail -F' if tail else 'cat'} {' '.join(logs)}")
+        if paths.MMPM_CLI_LOG_FILE.exists():
+            os.system(f"{'tail -F' if tail else 'cat'} {paths.MMPM_CLI_LOG_FILE}")
+        else:
+            MMPMLogger.__logger.error("MMPM log file not found")
 
     @classmethod
-    def zip(cls) -> None:
+    def archive(cls) -> None:
         """
         Compresses all log files in ~/.config/mmpm/log. The NGINX log files are
         excluded due to mostly irrelevant information the user, or I would need

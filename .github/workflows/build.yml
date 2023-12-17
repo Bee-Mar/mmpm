@@ -45,15 +45,15 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ~/work/mmpm/mmpm/dist
+            ./dist
           key: ${{ runner.os }}-build-${{ hashFiles('**/pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-build-
+            ${{ runner.os }}-build-${{ hashFiles('**/pyproject.toml') }}
       - name: Install Test
         run: |
           pdm install
-          ~/work/mmpm/mmpm/.venv/bin/mmpm version
-          ~/work/mmpm/mmpm/.venv/bin/mmpm --help
+          .venv/bin/mmpm version
+          .venv/bin/mmpm --help
 
   mmpm-ui:
     runs-on: ubuntu-latest
@@ -93,14 +93,14 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ~/work/mmpm/mmpm/ui/build
+            ./ui/build
           key: ${{ runner.os }}-node-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ hashFiles('**/package.json') }}
 
   package-and-publish:
     needs: [mmpm-cli, mmpm-ui]
     runs-on: ubuntu-latest
-    container:
-      image: beemar/python3-nodejs:python${PYTHON_VERSION}-nodejs${NODEJS_VERSION}
     steps:
       - uses: actions/checkout@v3
       - name: Package Application

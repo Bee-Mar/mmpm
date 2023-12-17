@@ -44,7 +44,7 @@ jobs:
       - name: Install Test
         run: |
           pdm install
-          mmpm --help
+          $HOME/.local/bin/mmpm --help
 
   mmpm-ui:
     runs-on: ubuntu-latest

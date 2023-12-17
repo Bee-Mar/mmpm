@@ -24,7 +24,7 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   public selectedModules = new Array<MagicMirrorModule>();
 
   // The tooltips don't show up for some reason, which is annoying
-  public items: MenuItem[] = [
+  public menuItems: MenuItem[] = [
     {
       icon: "fa-solid fa-eye",
       command: () => {
@@ -92,7 +92,7 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
       command: () => {
         this.openHelpDialog = true;
       },
-      tooltip: "Remove MagicMirror",
+      tooltip: "MagicMirror Controller Help",
     },
   ];
 

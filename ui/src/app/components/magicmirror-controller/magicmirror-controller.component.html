@@ -1,34 +1,31 @@
 <div class="speeddial-circle-demo">
   <p-toast></p-toast>
   <p-confirmDialog [style]="{ width: '50vw' }"></p-confirmDialog>
-  <p-speedDial
-    pTooltip="MagicMirror Controller"
-    tooltipPosition="right"
-    [model]="items"
-    showIcon="fa-solid fa-gamepad"
-    [radius]="120"
-    direction="right"
-    buttonClassName="p-button-success"
-  ></p-speedDial>
+  <p-speedDial pTooltip="MagicMirror Controller" tooltipPosition="right" [model]="menuItems"
+    showIcon="fa-solid fa-gamepad" [radius]="120" direction="right" buttonClassName="p-button-success"></p-speedDial>
 </div>
 
 <p-dialog header="MagicMirror Modules" [(visible)]="openModuleVisibilityDialog">
   <div *ngIf="modules.length === 0; else showModules">
-    Unable to retrieve modules. Is MagicMirror running, and is <a href="https://github.com/bee-mar/mmm-mmpm" target="_blank">MMM-mmpm</a> installed?
+    Unable to retrieve modules. Is MagicMirror running, and is <a href="https://github.com/bee-mar/mmm-mmpm"
+      target="_blank">MMM-mmpm</a> installed?
   </div>
 
   <ng-template #showModules>
     <div *ngFor="let module of modules" style="display: block; margin-bottom: 1em">
-      <p-toggleButton
-        [(ngModel)]="module.hidden"
-        onLabel="{{ module.name }} ({{ module.key }})"
-        offLabel="{{ module.name }} ({{ module.key }})"
-        onIcon="pi pi-check"
-        offIcon="pi pi-times"
-        [style]="{ width: '20em' }"
-        (onChange)="onModuleVisibilityChange(module)"
-      >
+      <p-toggleButton [(ngModel)]="module.hidden" onLabel="{{ module.name }} ({{ module.key }})"
+        offLabel="{{ module.name }} ({{ module.key }})" onIcon="pi pi-check" offIcon="pi pi-times"
+        [style]="{ width: '20em' }" (onChange)="onModuleVisibilityChange(module)">
       </p-toggleButton>
     </div>
   </ng-template>
+</p-dialog>
+
+<p-dialog header="MagicMirror Controller Help" [(visible)]="openHelpDialog">
+  <div
+    style="display: grid; grid-template-columns: max-content; justify-content: center; grid-gap: 10px; margin: 0 auto; text-align: left;">
+    <span *ngFor="let menuItem of menuItems" style="margin-bottom: 1em">
+      <i class="{{ menuItem.icon }}" style="margin-right: 1em"></i>{{ menuItem.tooltip }}
+    </span>
+  </div>
 </p-dialog>

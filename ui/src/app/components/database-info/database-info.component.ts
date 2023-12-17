@@ -35,6 +35,7 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
   public upgradableItems = new Array<MagicMirrorPackage>();
   public selectedPackages = new Array<MagicMirrorPackage>();
   public selectedUpgrades = new Array<MagicMirrorPackage>();
+  public mmpmUpgradeMessage = "Upgrade MMPM by executing <code>`python3 -m pip install --upgrade --no-cache-dir mmpm`</code> followed by <code>`mmpm ui reinstall -y`</code]>";
 
   public databaseOptions = [
     {
@@ -83,6 +84,7 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
         this.upgradableItems.push(this.dummyPackage("MagicMirror"));
       }
 
+      // update the title of the menu item based on the number of available upgrades
       if (this.upgradableItems.length) {
         this.databaseOptions[1].label = `Upgrades (${this.upgradableItems.length})`;
       }
@@ -112,11 +114,16 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
   async onUpgrade() {
     const packages = this.selectedUpgrades.filter((pkg: MagicMirrorPackage) => pkg.title !== "MMPM" && pkg.title !== "MagicMirror");
 
-    this.selectedUpgrades = [];
     this.loadingChange.emit(true);
 
     if (this.selectedUpgrades.findIndex((pkg: MagicMirrorPackage) => pkg.title === "MMPM") !== -1) {
-      console.log("mmpm");
+      this.baseApi.get_("mmpm/upgrade").then((response: APIResponse) => {
+        if (response.code === 200) {
+          this.msg.add({severity: "success", summary: "Upgrade", detail: "MMPM has been upgraded"});
+        } else {
+          this.msg.add({severity: "error", summary: "Upgrade", detail: response.message});
+        }
+      });
       // TODO: make this a toast pop up with a message or something else to let the user know
     }
 
@@ -129,6 +136,8 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
         this.msg.add({severity: "error", summary: "Upgrade", detail: response.message});
       }
     }
+
+    this.selectedUpgrades = [];
 
     if (packages.length) {
       const response = await this.mmPkgApi.postUpgradePackages(packages);

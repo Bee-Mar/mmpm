@@ -12,7 +12,7 @@ from mmpm.__version__ import version
 from mmpm.constants import paths, urls
 from mmpm.log.logger import MMPMLogger
 from mmpm.singleton import Singleton
-from mmpm.utils import run_cmd, systemctl
+from mmpm.utils import run_cmd
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -41,7 +41,7 @@ class MMPMui(Singleton):
                     "name": "mmpm.repeater",
                     "script": f"python3 -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.api.repeater:create()' -b 0.0.0.0:{urls.MMPM_REPEATER_SERVER_PORT}",
                     "version": version,
-                    "watch": True
+                    "watch": True,
                 },
                 {
                     "namespace": "mmpm",

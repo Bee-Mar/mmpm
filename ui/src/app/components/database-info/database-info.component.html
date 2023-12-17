@@ -51,7 +51,8 @@
     <div *ngIf="upgradesAvailable; else noUpgrades" class="package-details-grid">
       <p-listbox [options]="upgradableItems" [(ngModel)]="selectedUpgrades" [selectAll]="true" optionLabel="title"
         [style]="{ width: '25rem', margin: '0 auto' }" [multiple]="true" [checkbox]="true" [showToggleAll]="false"
-        [metaKeySelection]="false" [listStyle]="{ 'max-height': '220px' }"></p-listbox>
+        [metaKeySelection]="false" [listStyle]="{ 'max-height': '220px' }">
+      </p-listbox>
 
       <div class="confirm-button">
         <p-button [style.marginTop]="'4em'" label="Confirm" [disabled]="!selectedUpgrades.length" (click)="onUpgrade()"

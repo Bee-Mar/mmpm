@@ -150,6 +150,20 @@ def safe_get_request(url: str) -> requests.Response:
     return data
 
 
+def upgrade() -> bool:
+    error_code, stdout, stderr = run_cmd(
+        ["python3", "-m", "pip", "install", "--upgrade", "--no-cache-dir", "mmpm"],
+        message="Upgrading MMPM",
+    )
+
+    if error_code:
+        logger.error(stderr)
+        return False
+
+    logger.debug(stdout)
+    return True
+
+
 def update_available() -> bool:
     url = "https://pypi.org/pypi/mmpm/json"
 
@@ -164,17 +178,3 @@ def update_available() -> bool:
         logger.error(f"Failed to get remote version of MMPM: {error}")
 
     return version.parse(remote_version) > version.parse(current_version)
-
-
-def systemctl(subcmd: str, services: List[str] = []) -> subprocess.CompletedProcess:
-    """
-    A wrapper around a subprocess.run call to target systemctl
-
-    Parameters:
-        subcmd (str): the systemctl subcommand, ie. stop, start, restart, status, etc
-        services (List[str]): the systemd service(s) being queried
-
-    Returns:
-        process (subprocess.CompletedProcess): the completed subprocess following execution
-    """
-    return subprocess.run(["sudo", "systemctl", subcmd] + services, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

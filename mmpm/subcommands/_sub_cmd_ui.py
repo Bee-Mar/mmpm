@@ -2,6 +2,8 @@
 """ Command line options for 'db' subcommand """
 
 
+from time import sleep
+
 from ItsPrompt.prompt import Prompt
 from mmpm.constants import urls
 from mmpm.log.logger import MMPMLogger
@@ -42,11 +44,31 @@ class Ui(SubCmd):
         )
 
         self.parser.add_argument(
-            "-s",
             "--status",
             action="store_true",
             help=f"display the status of the {self.app_name} {self.name}",
             dest="status",
+        )
+
+        self.parser.add_argument(
+            "--start",
+            action="store_true",
+            help=f"Start the {self.app_name} {self.name}",
+            dest="start",
+        )
+
+        self.parser.add_argument(
+            "--restart",
+            action="store_true",
+            help=f"Restart the {self.app_name} {self.name}",
+            dest="restart",
+        )
+
+        self.parser.add_argument(
+            "--stop",
+            action="store_true",
+            help=f"Stop the {self.app_name} {self.name}",
+            dest="stop",
         )
 
         subparsers = self.parser.add_subparsers(
@@ -76,6 +98,16 @@ class Ui(SubCmd):
             dest="assume_yes",
         )
 
+        reinstall_parser = subparsers.add_parser("reinstall", help=f"Reinstall the {self.app_name} {self.name}")
+
+        reinstall_parser.add_argument(
+            "-y",
+            "--yes",
+            action="store_true",
+            help="assume yes",
+            dest="assume_yes",
+        )
+
     def exec(self, args, extra):
         if not self.database.is_initialized():
             self.database.load()
@@ -86,8 +118,21 @@ class Ui(SubCmd):
 
         if args.url:
             print(f"http://{urls.HOST}:{urls.MMPM_UI_PORT}")
+
         elif args.status:
             self.ui.status()
+
+        elif args.start:
+            self.ui.start()
+
+        elif args.stop:
+            self.ui.stop()
+
+        elif args.restart:
+            self.ui.stop()
+            sleep(1)
+            self.ui.start()
+
         elif args.command == "install":
             if not args.assume_yes and not Prompt.confirm("Are you sure you want to install the MMPM UI?"):
                 return
@@ -97,6 +142,21 @@ class Ui(SubCmd):
                 self.ui.delete()
             else:
                 logger.info(f"Installed MMPM-UI")
+                print("Run `mmpm ui --url` to display the UI address, or execute `mmpm open --ui` to open it.")
+
+        elif args.command == "reinstall":
+            if not args.assume_yes and not Prompt.confirm("Are you sure you want to reinstall the MMPM UI?"):
+                return
+
+            if not self.ui.remove():
+                logger.error("Failed to remove MMPM UI")
+                self.ui.delete()
+
+            if not self.ui.install():
+                logger.error("Failed to install MMPM UI")
+                self.ui.delete()
+            else:
+                logger.info(f"Reinstalled MMPM-UI")
                 print("Run `mmpm ui --url` to display the UI address, or execute `mmpm open --ui` to open it.")
 
         elif args.command == "remove":

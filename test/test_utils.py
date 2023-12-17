@@ -12,7 +12,7 @@ import requests
 from faker import Faker
 from mmpm.__version__ import major, version
 from mmpm.utils import (get_host_ip, get_pids, kill_pids_of_process, run_cmd,
-                        safe_get_request, systemctl, update_available)
+                        safe_get_request, update_available)
 
 fake = Faker()
 
@@ -85,14 +85,6 @@ class TestUtils(unittest.TestCase):
     def test_safe_get_request_failure(self, mock_get):
         data = safe_get_request(fake.url())
         self.assertIsInstance(data, requests.Response)
-
-    @patch("mmpm.utils.subprocess.run")
-    def test_systemctl(self, mock_run):
-        mock_process = mock_run.return_value
-        subcommand = fake.pystr()
-        services = [fake.pystr(), fake.pystr()]
-        process = systemctl(subcommand, services)
-        self.assertEqual(process, mock_process)
 
     @patch("mmpm.utils.urllib.request.urlopen")
     def test_no_update_available(self, mock_urlopen):

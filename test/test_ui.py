@@ -65,15 +65,13 @@ class TestMMPMui(unittest.TestCase):
         self.assertTrue(result)
         mock_create_config.assert_called_once()
         mock_delete.assert_called_once()
-        mock_rmtree.assert_called_once_with(self.mmpm_ui.pm2_config.parent, ignore_errors=True)
+        mock_rmtree.assert_called_once_with(self.mmpm_ui.pm2_config_path.parent, ignore_errors=True)
 
-    # Test status method
     @patch("mmpm.ui.MMPMui.create_pm2_config")
-    @patch("mmpm.ui.run_cmd")
-    def test_status(self, mock_run_cmd, mock_create_config):
-        mock_run_cmd.return_value = (0, "running", "")  # Simulate success
+    @patch("mmpm.ui.os.system")
+    def test_status(self, mock_os_system, mock_create_config):
         self.mmpm_ui.status()
-        self.assertEqual(mock_run_cmd.call_count, 1)
+        mock_os_system.assert_called_once_with("pm2 list mmpm")
         mock_create_config.assert_called_once()
 
 

@@ -11,7 +11,6 @@ from typing import Any, Callable, Dict, List, Tuple
 
 import requests
 from bs4 import NavigableString, Tag
-
 from mmpm.constants import color
 from mmpm.env import MMPMEnv
 from mmpm.log.logger import MMPMLogger
@@ -57,6 +56,21 @@ class MagicMirrorPackage:
         is_installed: bool = False,
         **kwargs,
     ) -> None:
+        """
+        Initializes a MagicMirrorPackage instance with the provided metadata.
+
+        Parameters:
+            title (str): The title of the package.
+            author (str): The author of the package.
+            repository (str): The repository URL of the package.
+            description (str): The description of the package.
+            category (str): The category of the package.
+            directory (str): The directory where the package is installed.
+            is_installed (bool): A flag indicating whether the package is installed.
+
+        Additional keyword arguments are ignored, but intentionally provided as a means to simplify API interaction.
+        """
+
         self.env = MMPMEnv()
         self.title = __sanitize__(title).strip()
         self.author = __sanitize__(author).strip()
@@ -66,10 +80,6 @@ class MagicMirrorPackage:
         self.category = category.strip()
         self.is_installed = is_installed
         self.is_upgradable = False
-
-        # the **kwargs is primarily because of the API. The API sends fully serialized MagicMirrorPackage objects, and
-        # they contain fields not set in the constructor of a MagicMirrorPackage in the python source. This allows those
-        # fields to be passed in and effectively discarded
 
     def __str__(self) -> str:
         return str(self.serialize())
@@ -98,18 +108,14 @@ class MagicMirrorPackage:
         hide_installed_indicator: bool = False,
     ) -> None:
         """
-        Displays more detailed information that presented in normal search results.
-        The output is formatted similarly to the output of the Debian/Ubunut 'apt' CLI
+        Displays the package information, optionally with additional details or in a simplified format.
 
         Parameters:
-            detailed (bool):
-                if True, extra detail is displayed about the package
-
-            remote (bool):
-                if True, info is retrieved from the repository's API (GitHub, GitLab, or Bitbucket)
-
-            title_only (bool):
-                if True, only the title is displayed
+            detailed (bool): Whether to display detailed information about the package.
+            remote (bool): Whether to retrieve additional information from the remote repository.
+            title_only (bool): Whether to display only the title of the package.
+            exclude_installed (bool): Whether to exclude the package if it is installed.
+            hide_installed_indicator (bool): Whether to hide the indicator that shows if the package is installed.
 
         Returns:
             None
@@ -144,13 +150,13 @@ class MagicMirrorPackage:
 
     def serialize(self, full: bool = False) -> Dict[str, Any]:
         """
-        Produces either a subset or full representation of the __dict__ method.
+        Serializes the package data into a dictionary.
 
         Parameters:
-            full (bool): if True, the full output of __dict__ is returned, otherwise a subset is returned
+            full (bool): If True, returns the full data, otherwise a subset.
 
         Returns:
-            serialized (Dict[str, Any]): a dict containing title, author, repository, description, etc.
+            Dict[str, Any]: The serialized package data.
         """
 
         serialized = {
@@ -170,10 +176,53 @@ class MagicMirrorPackage:
 
     def install(self) -> bool:
         """
-        Delegates installation to an InstallationHandler instance. The repo is
-        cloned, and all dependencies are installed (to the best of the package
-        manager's ability). Errors are displayed as they occur, but they are
-        mostly ignored.
+        Installs the package by cloning the repository and installing dependencies.
+
+        Parameters:
+            None
+
+        Returns:
+            bool: True if the installation is successful, False otherwise.
+        """
+
+        return InstallationHandler(self).install()
+
+    def remove(self) -> bool:
+        """
+        Removes the package from the installation directory.
+
+        Parameters:
+            None
+
+        Returns:
+            bool: True if the package is successfully removed, False otherwise.
+        """
+
+        modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
+        error_code, stdout, stderr = run_cmd(["rm", "-rf", str(modules_dir / self.directory)], message="Removing package")
+        return not error_code and not stderr and not stdout
+
+    def clone(self) -> Tuple[int, str, str]:
+        """
+        Clones the package repository into the MagicMirror modules directory.
+
+        Parameters:
+            None
+
+        Returns:
+            Tuple[int, str, str]: The result of the clone operation including any error codes and messages.
+        """
+
+        modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
+
+        return run_cmd(
+            ["git", "clone", self.repository, str(modules_dir / self.directory)],
+            message="Downloading",
+        )
+
+    def update(self) -> None:
+        """
+        Checks for updates to the package by querying the remote repository.
 
         Parameters:
             None
@@ -181,22 +230,6 @@ class MagicMirrorPackage:
         Returns:
             None
         """
-
-        return InstallationHandler(self).install()
-
-    def remove(self) -> bool:
-        modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
-        error_code, stdout, stderr = run_cmd(["rm", "-rf", str(modules_dir / self.directory)], message="Removing package")
-        return not error_code and not stderr and not stdout
-
-    def clone(self) -> Tuple[int, str, str]:
-        modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
-        return run_cmd(
-            ["git", "clone", self.repository, str(modules_dir / self.directory)],
-            message="Downloading",
-        )
-
-    def update(self) -> None:
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
 
         if not modules_dir.exists():
@@ -214,18 +247,13 @@ class MagicMirrorPackage:
 
     def upgrade(self, force: bool = False) -> bool:
         """
-        Checks for available package updates, and alerts the user. Or, pulls latest
-        version of module(s) from the associated repos.
-
-        If upgrading, a user can upgrade all modules that have available upgrades
-        by ommitting additional arguments. Or, upgrade specific modules by
-        supplying their case-sensitive name(s) as an addtional argument.
+        Upgrades the package by pulling the latest changes from the remote repository.
 
         Parameters:
-            force (bool): force an upgrade regardless of the status of the git repo (aka, try reinstalling deps)
+            force (bool): If True, forces the upgrade even if the repository is up to date.
 
         Returns:
-            stderr (str): the resulting error message of the upgrade. If the message is zero length, it was successful
+            bool: True if the upgrade is successful, False otherwise.
         """
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
 
@@ -245,6 +273,16 @@ class MagicMirrorPackage:
 
     @classmethod
     def from_raw_data(cls, raw_data: List[Tag], category=NA):
+        """
+        Creates a MagicMirrorPackage instance from raw HTML data.
+
+        Parameters:
+            raw_data (List[Tag]): A list of BeautifulSoup Tag objects representing HTML elements.
+            category (str): The category of the package.
+
+        Returns:
+            MagicMirrorPackage: An instance of MagicMirrorPackage created from the provided data.
+        """
         title_info = raw_data[0].contents[0].contents[0]
         package_title: str = __sanitize__(title_info) if title_info else NA
 
@@ -286,6 +324,11 @@ __NULL__: int = hash(MagicMirrorPackage())
 
 
 class InstallationHandler:
+    """
+    Delegate class that handles the installation process of
+    MagicMirrorPackage's by cloning their repo and identifying dependencies
+    that need to be installed.
+    """
     __slots__ = {"package"}
 
     def __init__(self, package: MagicMirrorPackage):
@@ -300,6 +343,7 @@ class InstallationHandler:
 
         return True
 
+    # pylint: disable=too-many-return-statements
     def install(self) -> bool:
         """
         Utility method that detects package.json, Gemfiles, Makefiles, and
@@ -354,6 +398,15 @@ class InstallationHandler:
         return True
 
     def cmake(self) -> Tuple[int, str, str]:
+        """
+        Wrapper method around calling cmake to build a module's dependencies.
+
+        Parameters:
+            None
+
+        Returns:
+            Tuple[int, str, str]: A tuple containing the exit code, stdout, and stderr from the 'pip install' command.
+        """
         logger.debug(f"Running 'cmake ..' in {self.package.directory}")
 
         build_dir = Path(self.package.directory / "build")
@@ -365,54 +418,115 @@ class InstallationHandler:
         return run_cmd(["cmake", ".."], message="Building with CMake")
 
     def make(self) -> Tuple[int, str, str]:
+        """
+        Wrapper method around calling make to build a module's dependencies.
+
+        Parameters:
+            None
+
+        Returns:
+            Tuple[int, str, str]: A tuple containing the exit code, stdout, and stderr from the 'pip install' command.
+        """
         logger.debug(f"Found Makefile. Running `make -j {cpu_count()} in {self.package.directory}`")
         return run_cmd(["make", "-j", f"{cpu_count()}"], message="Building with 'make'")
 
     def npm_install(self) -> Tuple[int, str, str]:
+        """
+        Wrapper method around calling 'npm install' to install/build a module's dependencies.
+
+        Parameters:
+            None
+
+        Returns:
+            Tuple[int, str, str]: A tuple containing the exit code, stdout, and stderr from the 'pip install' command.
+        """
         logger.debug(f"Found package.json. Running `npm install` in {self.package.directory}")
         return run_cmd(["npm", "install"], message="Installing Node dependencies")
 
     def bundle_install(self) -> Tuple[int, str, str]:
+        """
+        Wrapper method around calling 'bundle install' to install/build a module's dependencies.
+
+        Parameters:
+            None
+
+        Returns:
+            Tuple[int, str, str]: A tuple containing the exit code, stdout, and stderr from the 'pip install' command.
+        """
         logger.debug(f"Found Gemfile. Running `bundle install` in {self.package.directory}")
         return run_cmd(["bundle", "install"], message="Installing Ruby dependencies")
 
     def pip_install(self) -> Tuple[int, str, str]:
-        logger.debug("Running 'pip install' in {}".format(self.package.directory))
+        """
+        Wrapper method around calling 'pip install' to install/build a module's dependencies.
+
+        Parameters:
+            None
+
+        Returns:
+            Tuple[int, str, str]: A tuple containing the exit code, stdout, and stderr from the 'pip install' command.
+        """
+        logger.debug(f"Running 'pip install' in {self.package.directory}")
         return run_cmd(
             ["pip", "install", "-r", "requirements.txt"],
             message="Installing Python dependencies",
         )
 
     def maven_install(self) -> Tuple[int, str, str]:
-        logger.debug("Running 'mvn install' in {}".format(self.package.directory))
+        """
+        Wrapper method around calling 'maven install' to install/build a module's dependencies.
+
+        Parameters:
+            None
+
+        Returns:
+            Tuple[int, str, str]: A tuple containing the exit code, stdout, and stderr from the 'pip install' command.
+        """
+        logger.debug(f"Running 'mvn install' in {self.package.directory}")
         return run_cmd(["mvn", "install"], message="Building with Maven")
 
     def go_build(self) -> Tuple[int, str, str]:
-        logger.debug("Running 'go build' in {}".format(self.package.directory))
+        """
+        Wrapper method around calling 'go install' to install/build a module's dependencies.
+
+        Parameters:
+            None
+
+        Returns:
+            Tuple[int, str, str]: A tuple containing the exit code, stdout, and stderr from the 'pip install' command.
+        """
+        logger.debug(f"Running 'go build' in {self.package.directory}")
         return run_cmd(["go", "build"], message="Building Go project")
 
     def exists(self, file_name: str) -> bool:
+        """
+        Verifies the dependency file exists in the module's directory.
+
+        Parameters:
+            file_name (str): the name of the dependency to look for
+
+        Returns:
+            True if the file exists, False otherwise
+        """
         return Path(self.package.directory / file_name).exists()
 
 
 class RemotePackage:
+    """
+    Class that collects details about a MagicMirrorPackage from its repository.
+    """
     def __init__(self, package: MagicMirrorPackage):
         self.package = package
 
     @classmethod
     def health(cls):
         """
-        Contacts GitHub, GitLab, and Bitbucket APIs to ensure they are up and
-        running. Also, captures the number of requests that may be made to the
-        GitHub API, which is more restrictive than GitLab and Bitbucket
+        Checks the health of GitHub, GitLab, and Bitbucket APIs and their rate limits.
 
-        Parameters:
-            None
+        Parameters: None
 
         Returns:
-            health (dict): a dictionary corresponding to each of the APIs,
-                        containing errors and/or warnings, if applicable.
-                        If no errors or warnings are present, the API is reachable
+            dict: A dictionary containing the health status of GitHub, GitLab, and Bitbucket APIs.
         """
         health: dict = {
             "github": {"error": "", "warning": ""},
@@ -460,14 +574,12 @@ class RemotePackage:
 
     def serialize(self):
         """
-        Retrieves details about the provided MagicMirrorPackage from it's
-        repository. GitHub, GitLab, and Bitbucket projects are supported
+        Retrieves and formats details about the MagicMirror package from its remote repository.
 
-        Parameters:
-            package (MagicMirrorPackage): the packge to be queried
+        Parameters: None
 
         Returns:
-            details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
+            dict: A dictionary containing details such as stars, forks, issue counts, and creation and last updated dates of the repository.
         """
         spliced: List[str] = self.package.repository.split("/")
         user: str = spliced[-2]
@@ -508,14 +620,14 @@ class RemotePackage:
 
     def __format_bitbucket_api_details__(self, data: dict, url: str) -> dict:
         """
-        Helper method to format remote repository data from Bitbucket
+        Helper method to format remote repository data from Bitbucket.
 
         Parameters:
-            data (dict): JSON data from the API request
-            url (str): the constructed url of the API used to retrieve additional info
+            data (dict): JSON data from the API request.
+            url (str): The constructed URL of the API used to retrieve additional info.
 
         Returns:
-            details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
+            dict: A dictionary with stars, forks, issue counts, and creation and last updated dates.
         """
         stars = safe_get_request(f"{url}/watchers")
         forks = safe_get_request(f"{url}/forks")
@@ -535,14 +647,14 @@ class RemotePackage:
 
     def __format_gitlab_api_details__(self, data: dict, url: str) -> dict:
         """
-        Helper method to format remote repository data from GitLab
+        Helper method to format remote repository data from GitLab.
 
         Parameters:
-            data (dict): JSON data from the API request
-            url (str): the constructed url of the API used to retrieve additional info
+            data (dict): JSON data from the API request.
+            url (str): The constructed URL of the API used to retrieve additional info.
 
         Returns:
-            details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
+            dict: A dictionary with stars, forks, issue counts, and creation and last updated dates.
         """
         issues = safe_get_request(f"{url}/issues")
 
@@ -560,13 +672,13 @@ class RemotePackage:
 
     def __format_github_api_details__(self, data: dict) -> dict:
         """
-        Helper method to format remote repository data from GitHub
+        Helper method to format remote repository data from GitHub.
 
         Parameters:
-            data (dict): JSON data from the API request
+            data (dict): JSON data from the API request.
 
         Returns:
-            details (dict): a dictionary with star, forks, and issue counts, and creation and last updated dates
+            dict: A dictionary with stars, forks, issue counts, and creation and last updated dates.
         """
         return (
             {

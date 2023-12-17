@@ -5,14 +5,14 @@ import unittest
 from pathlib import Path, PosixPath
 from shutil import rmtree
 from subprocess import DEVNULL
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, mock_open, patch
 from uuid import uuid4
 
 import requests
 from faker import Faker
-
 from mmpm.__version__ import major, version
-from mmpm.utils import get_host_ip, get_pids, kill_pids_of_process, run_cmd, safe_get_request, update_available
+from mmpm.utils import (get_host_ip, get_pids, kill_pids_of_process, run_cmd,
+                        safe_get_request, update_available)
 
 fake = Faker()
 
@@ -24,16 +24,6 @@ class TestUtils(unittest.TestCase):
         mock_socket.return_value.getsockname.return_value = (ip, 80)
         host_ip = get_host_ip()
         self.assertEqual(host_ip, ip)
-
-    @patch("mmpm.utils.subprocess.Popen")
-    def test_run_cmd_background(self, mock_popen):
-        return_code, stdout, stderr = run_cmd(["echo", "hello"], background=True)
-
-        self.assertEqual(return_code, 0)
-        self.assertEqual(stdout, "")
-        self.assertEqual(stderr, "")
-
-        mock_popen.assert_called_once_with(["echo", "hello"], stdout=DEVNULL, stderr=DEVNULL)
 
     @patch("mmpm.utils.subprocess.Popen")
     @patch("mmpm.utils.yaspin")

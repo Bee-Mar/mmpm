@@ -14,7 +14,6 @@ monkey.patch_all()
 from time import sleep
 
 import socketio
-
 from mmpm.env import MMPMEnv
 from mmpm.log.logger import MMPMLogger
 
@@ -49,7 +48,7 @@ def create():
 
     @server.on("reconnect")
     @server.on("connect")
-    def connect(sid, environ):
+    def connect(sid, environ):  # pylint: disable=unused-argument
         logger.debug(f"Client connected to SocketIO-Repeater: {sid}")
 
         if sid not in client_ids:
@@ -68,11 +67,11 @@ def create():
             client_ids.remove(sid)
 
         if not client_ids:
-            logger.debug(f"No clients connected. Disconnecting from MagicMirror SocketIO Server.")
+            logger.debug("No clients connected. Disconnecting from MagicMirror SocketIO Server.")
             mm_client.disconnect()
 
     @server.event
-    def request_modules(sid):
+    def request_modules(sid):  # pylint: disable=unused-argument
         logger.debug(f"SocketIO-Repeater connected to MagicMirror SocketIO server: {mm_client.connected}")
         mm_client.emit("FROM_MMPM_APP_get_active_modules", namespace="/MMM-mmpm", data={})
         logger.debug("Emitted data request to MagicMirror SocketIO server")

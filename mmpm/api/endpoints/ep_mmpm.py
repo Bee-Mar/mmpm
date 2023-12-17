@@ -1,21 +1,19 @@
 #!/usr/bin/env python3
-from datetime import datetime
-from os import chdir
-from shutil import make_archive
-
-from flask import Blueprint, Response, send_file
-
 import mmpm.__version__
 import mmpm.utils
+from flask import Blueprint, Response
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
-from mmpm.constants import paths
 from mmpm.log.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
 
 
 class Mmpm(Endpoint):
+    """
+    A Flask endpoint class for interacting with the MMPM application in more 'meta' manner.
+    """
+
     def __init__(self):
         self.name = "mmpm"
         self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
@@ -23,10 +21,28 @@ class Mmpm(Endpoint):
 
         @self.blueprint.route("/version", methods=[http.GET])
         def version() -> Response:
+            """
+            A Flask route method for retrieving the current MMPM version.
+
+            Parameters:
+                None
+
+            Returns:
+                Response: A Flask Response object containing the current MMPM version.
+            """
             return self.success(mmpm.__version__.version)
 
         @self.blueprint.route("/upgrade", methods=[http.GET])
         def upgrade() -> Response:
+            """
+            A Flask route method for upgrading MMPM.
+
+            Parameters:
+                None
+
+            Returns:
+                Response: A Flask Response object indicating success or failure of the upgrade operation.
+            """
             if mmpm.utils.upgrade():
                 return self.success("Upgrade MMPM")
 

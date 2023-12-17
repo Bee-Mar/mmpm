@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
-import getpass
 import json
 import os
 import shutil
-import subprocess
-import sys
 from pathlib import Path
-from re import findall
 
 from mmpm.__version__ import version
 from mmpm.constants import paths, urls
@@ -18,9 +14,15 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class MMPMui(Singleton):
+    """
+    Class responsible for managing the MMPM user interface. It provides methods to control and monitor
+    the MMPM UI application, including starting, stopping, installing, and removing the UI.
+    """
+
     def __init__(self):
-        self.pm2_config = Path("/tmp/mmpm/ecosystem.json")
-        self.pm2_processes = {
+        self.pm2_config_path = Path("/tmp/mmpm/ecosystem.json")
+
+        self.pm2_ecosystem_config = {
             "apps": [
                 {
                     "namespace": "mmpm",
@@ -54,38 +56,78 @@ class MMPMui(Singleton):
         }
 
     def create_pm2_config(self):
-        if self.pm2_config.exists():
-            logger.debug(f"{self.pm2_config} exists. Nothing to do.")
-            return
-
-        logger.debug(f"Creating {self.pm2_config} file")
-        self.pm2_config.parent.mkdir(exist_ok=True)
-        self.pm2_config.touch(exist_ok=True)
-
-        with open(self.pm2_config, mode="w", encoding="utf-8") as config:
-            logger.debug(f"Writing PM2 Configuration to {self.pm2_config}")
-            json.dump(self.pm2_processes, config)
-
-    def stop(self):
-        return run_cmd(["pm2", "stop", f"{self.pm2_config}"], message="Stopping MMPM UI")
-
-    def delete(self):
-        return run_cmd(["pm2", "delete", f"{self.pm2_config}"], message="Removing MMPM UI")
-
-    def start(self):
-        return run_cmd(["pm2", "start", f"{self.pm2_config}"], message="Installing MMPM UI")
-
-    def install(self) -> bool:
         """
-        Installs the MMPM UI. It sets up NGINX configuration files and Systemd service files required for running
-        the MMPM UI. This process includes copying and modifying template configuration files, setting up necessary
-        directories, and ensuring the required services are enabled and running.
+        Creates the PM2 configuration file for MMPM if it does not already exist. This configuration
+        file is used to manage the MMPM UI processes.
 
         Parameters:
             None
 
         Returns:
             None
+        """
+
+        if self.pm2_config_path.exists():
+            logger.debug(f"{self.pm2_config_path} exists. Nothing to do.")
+            return
+
+        logger.debug(f"Creating {self.pm2_config_path} file")
+        self.pm2_config_path.parent.mkdir(exist_ok=True)
+        self.pm2_config_path.touch(exist_ok=True)
+
+        with open(self.pm2_config_path, mode="w", encoding="utf-8") as config:
+            logger.debug(f"Writing PM2 Configuration to {self.pm2_config_path}")
+            json.dump(self.pm2_ecosystem_config, config)
+
+    def stop(self):
+        """
+        Stops the MMPM UI application using PM2.
+
+        Parameters:
+            None
+
+        Returns:
+            A tuple containing the process exit code, stdout, and stderr.
+        """
+
+        return run_cmd(["pm2", "stop", f"{self.pm2_config_path}"], message="Stopping MMPM UI")
+
+    def delete(self):
+        """
+        Deletes the MMPM UI application from PM2's process list.
+
+        Parameters:
+            None
+
+        Returns:
+            A tuple containing the process exit code, stdout, and stderr.
+        """
+
+        return run_cmd(["pm2", "delete", f"{self.pm2_config_path}"], message="Removing MMPM UI")
+
+    def start(self):
+        """
+        Starts the MMPM UI application using PM2.
+
+        Parameters:
+            None
+
+        Returns:
+            A tuple containing the process exit code, stdout, and stderr.
+        """
+
+        return run_cmd(["pm2", "start", f"{self.pm2_config_path}"], message="Installing MMPM UI")
+
+    def install(self) -> bool:
+        """
+        Installs the MMPM UI by setting up necessary configurations and services. It creates the PM2
+        configuration file and starts the MMPM UI application. If PM2 is not installed, logs a fatal error.
+
+        Parameters:
+            None
+
+        Returns:
+            True if the installation is successful, False otherwise.
         """
 
         if not shutil.which("pm2"):
@@ -101,21 +143,26 @@ class MMPMui(Singleton):
 
         return True
 
-    def status(self):
-        self.create_pm2_config()
-        os.system("pm2 list mmpm")
-
-    def remove(self):
+    def status(self) -> None:
         """
-        Removes the MMPM UI. This method handles the deletion of NGINX configurations, Systemd service files,
-        and any static web files associated with the MMPM UI. It stops and disables the relevant services
-        and removes the related files. The user is prompted for confirmation unless assume_yes is True.
+        Displays the current status of the MMPM UI processes using PM2.
 
         Parameters:
             None
 
         Returns:
             None
+        """
+        self.create_pm2_config()
+        os.system("pm2 list mmpm")
+
+    def remove(self) -> bool:
+        """
+        Removes the MMPM UI by stopping and deleting its processes from PM2 and cleaning up configuration
+        files. Logs a fatal error if PM2 is not installed.
+
+        Returns:
+            True if the removal is successful, False otherwise.
         """
         if not shutil.which("pm2"):
             logger.fatal("pm2 is not in your PATH. Please run `npm install -g pm2`, and run the UI installation again.")
@@ -128,5 +175,5 @@ class MMPMui(Singleton):
             logger.error(stderr)
             return False
 
-        shutil.rmtree(self.pm2_config.parent, ignore_errors=True)
+        shutil.rmtree(self.pm2_config_path.parent, ignore_errors=True)
         return True

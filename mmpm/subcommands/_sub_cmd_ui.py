@@ -141,7 +141,7 @@ class Ui(SubCmd):
                 logger.error("Failed to install MMPM UI")
                 self.ui.delete()
             else:
-                logger.info(f"Installed MMPM-UI")
+                logger.info("Installed MMPM-UI")
                 print("Run `mmpm ui --url` to display the UI address, or execute `mmpm open --ui` to open it.")
 
         elif args.command == "reinstall":
@@ -156,7 +156,7 @@ class Ui(SubCmd):
                 logger.error("Failed to install MMPM UI")
                 self.ui.delete()
             else:
-                logger.info(f"Reinstalled MMPM-UI")
+                logger.info("Reinstalled MMPM-UI")
                 print("Run `mmpm ui --url` to display the UI address, or execute `mmpm open --ui` to open it.")
 
         elif args.command == "remove":

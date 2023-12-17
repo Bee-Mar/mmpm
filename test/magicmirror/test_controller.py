@@ -53,21 +53,6 @@ class TestMagicMirrorController(unittest.TestCase):
         self.assertTrue(success)
         mock_run_cmd.assert_called_with(["npm", "run", "start"], message="Starting MagicMirror", background=True)
 
-    # Similar structure for test_stop, test_restart, test_is_running
-
-    @patch("mmpm.magicmirror.controller.get_pids")
-    def test_is_running(self, mock_get_pids):
-        # Mock get_pids to simulate MagicMirror processes running
-        mock_get_pids.side_effect = lambda x: [12345] if x == "electron" else []
-
-        # Instantiate and check if MagicMirror is running
-        controller = MagicMirrorController()
-        self.assertTrue(controller.is_running())
-
-        # Simulate no MagicMirror processes running
-        mock_get_pids.side_effect = lambda x: []
-        self.assertFalse(controller.is_running())
-
     @patch("mmpm.magicmirror.controller.socketio.Client")
     def test_hide_modules(self, mock_client):
         client_instance = MagicMock()

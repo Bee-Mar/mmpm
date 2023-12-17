@@ -2,14 +2,11 @@
 """
 An incredibly simplistic SocketIO server used for repeating logs from the MMPM CLI to the UI.
 """
-
 from gevent import monkey
 
 monkey.patch_all()
 
 import socketio
-from gevent.pywsgi import WSGIServer
-
 from mmpm.log.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
@@ -20,7 +17,7 @@ def create():
     server = socketio.Server(cors_allowed_origins="*", async_mode="gevent")
 
     @server.event
-    def connect(sid, environ):
+    def connect(sid, environ):  # pylint: disable=unused-argument
         logger.debug(f"Client connected to SocketIO-Log-Server: {sid}")
 
     @server.event

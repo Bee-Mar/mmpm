@@ -6,17 +6,29 @@ import logging.handlers
 import os
 import shutil
 from threading import Lock
-from typing import List
 
 import socketio
-
 from mmpm.__version__ import version
 from mmpm.constants import paths
 from mmpm.env import MMPMEnv
 
 
 class JsonFormatter(logging.Formatter):
+    """
+    A custom formatter for logging, which outputs log records in a JSON format.
+    """
+
     def format(self, record):
+        """
+        Formats the log record into JSON.
+
+        Parameters:
+            record (logging.LogRecord): The log record to be formatted.
+
+        Returns:
+            str: A JSON string representation of the log record.
+        """
+
         try:
             message = record.getMessage()
         except TypeError:
@@ -41,6 +53,14 @@ class SocketIOHandler(logging.Handler):
     """A logging handler that emits records with SocketIO."""
 
     def __init__(self, host, port):
+        """
+        Initializes the SocketIOHandler with a specified host and port for the SocketIO server.
+
+        Parameters:
+            host (str): The host name of the SocketIO server.
+            port (int): The port number of the SocketIO server.
+        """
+
         super().__init__()
         self.formatter = JsonFormatter()
         self.sio = socketio.Client()
@@ -51,6 +71,13 @@ class SocketIOHandler(logging.Handler):
             pass
 
     def emit(self, record):
+        """
+        Emits the log record to the connected SocketIO server.
+
+        Parameters:
+            record (logging.LogRecord): The log record to be emitted.
+        """
+
         if self.sio.connected:
             try:
                 self.sio.emit("logs", self.formatter.format(record))
@@ -58,13 +85,34 @@ class SocketIOHandler(logging.Handler):
                 pass
 
     def close(self):
+        """
+        Closes the connection to the SocketIO server and performs any necessary cleanup.
+
+        Parameters:
+            None
+        """
+
         if self.sio.connected:
             self.sio.disconnect()
             super().close()
 
 
 class StdoutFormatter(logging.Formatter):
+    """
+    A custom formatter for logging, which outputs log records to stdout with a simplified format.
+    """
+
     def format(self, record):
+        """
+        Formats the log record for stdout.
+
+        Parameters:
+            record (logging.LogRecord): The log record to be formatted.
+
+        Returns:
+            str: A string representation of the log record for stdout.
+        """
+
         label = "+" if record.levelname == "INFO" else record.levelname
 
         return f"[{label}] {record.getMessage()}"
@@ -72,8 +120,8 @@ class StdoutFormatter(logging.Formatter):
 
 class MMPMLogger:
     """
-    Object used for logging while MMPM is executing.
-    Log files can be found in ~/.config/mmpm/log
+    A custom logging class for MMPM, providing functionalities for logging to files, stdout, and SocketIO.
+    Logs can be found in ~/.config/mmpm/log.
     """
 
     __logger: logging.Logger = None
@@ -117,12 +165,29 @@ class MMPMLogger:
 
     @staticmethod
     def shutdown() -> None:
+        """
+        Shuts down the logger, closing any SocketIO connections.
+
+        Parameters:
+            None
+        """
+
         if MMPMLogger.__socketio_handler is not None:
             MMPMLogger.__logger.debug("Disconnecting from SocketIO server")
             MMPMLogger.__socketio_handler.close()
 
     @staticmethod
     def get_logger(name: str) -> logging.Logger:
+        """
+        Retrieves a logger instance with the given name, initializing it if necessary.
+
+        Parameters:
+            name (str): The name of the logger.
+
+        Returns:
+            logging.Logger: The logger instance associated with the given name.
+        """
+
         if MMPMLogger.__logger is None:
             with MMPMLogger.__lock:
                 if MMPMLogger.__logger is None:
@@ -133,13 +198,10 @@ class MMPMLogger:
     @classmethod
     def display(cls, tail: bool = False) -> None:
         """
-        Displays contents of log files to stdout. If the --tail option is supplied,
-        log contents will be displayed in real-time
+        Displays contents of log files to stdout. If the tail option is supplied, log contents will be displayed in real-time.
 
         Parameters:
-            cli_logs (bool): if True, the CLI log files will be displayed
-            ui_logs (bool): if True, the Gunicorn log files for the web interface will be displayed
-            tail (bool): if True, the contents will be displayed in real time
+            tail (bool): If True, displays the log contents in real time.
 
         Returns:
             None
@@ -152,9 +214,7 @@ class MMPMLogger:
     @classmethod
     def archive(cls) -> None:
         """
-        Compresses all log files in ~/.config/mmpm/log. The NGINX log files are
-        excluded due to mostly irrelevant information the user, or I would need
-        when creating GitHub issues
+        Compresses all log files in ~/.config/mmpm/log, excluding NGINX logs.
 
         Parameters:
             None

@@ -97,7 +97,8 @@ disable=unnecessary-lambda-assignment,
         too-many-lines,
         use-maxsplit-arg,
         too-many-instance-attributes,
-        super-init-not-called
+        super-init-not-called,
+        ungrouped-imports
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

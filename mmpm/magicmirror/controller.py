@@ -6,19 +6,35 @@ from time import sleep
 from typing import List
 
 import socketio
-
 from mmpm.constants import color
 from mmpm.env import MMPMEnv
 from mmpm.log.logger import MMPMLogger
 from mmpm.singleton import Singleton
-from mmpm.utils import get_pids, kill_pids_of_process, run_cmd
+from mmpm.utils import kill_pids_of_process, run_cmd
 
 logger = MMPMLogger.get_logger(__name__)
 
 
 class MagicMirrorClientFactory:
+    """
+    A factory class for creating SocketIO clients to interact with MagicMirror modules. It
+    facilitates communication between MMPM and MagicMirror via websockets.
+    """
+
     @staticmethod
     def create_client(event: str, data: dict, namespace: str = "/MMM-mmpm"):
+        """
+        Creates and configures a SocketIO client for communicating with MagicMirror modules.
+
+        Parameters:
+            event (str): The event name to emit to the MagicMirror module.
+            data (dict): The data payload to send with the event.
+            namespace (str): The namespace for the SocketIO connection.
+
+        Returns:
+            socketio.Client: Configured SocketIO client, or None on failure.
+        """
+
         client = None
 
         if not event:
@@ -72,11 +88,24 @@ class MagicMirrorClientFactory:
 
 
 class MagicMirrorController(Singleton):
+    """
+    Controller class for managing and interacting with the MagicMirror application. It provides
+    methods to start, stop, restart, and check the status of MagicMirror, as well as to show
+    or hide specific modules.
+    """
+
     def __init__(self):
         self.env = MMPMEnv()
         self.factory = MagicMirrorClientFactory()
 
     def status(self):
+        """
+        Checks the status of MagicMirror by attempting to connect to it using a SocketIO client.
+
+        Returns:
+            True if the connection is successful, False otherwise.
+        """
+
         try:
             client = self.factory.create_client("FROM_MMPM_APP_get_active_modules", {})
             client.connect(self.env.MMPM_MAGICMIRROR_URI.get())
@@ -87,6 +116,16 @@ class MagicMirrorController(Singleton):
         return False
 
     def hide(self, modules: List[str]):
+        """
+        Hides specified modules in MagicMirror using a SocketIO client.
+
+        Parameters:
+            modules (List[str]): List of module names or identifiers to hide.
+
+        Returns:
+            True if the operation is successful, False otherwise.
+        """
+
         try:
             client = self.factory.create_client(
                 "FROM_MMPM_APP_toggle_modules",
@@ -102,6 +141,16 @@ class MagicMirrorController(Singleton):
         return False
 
     def show(self, modules: List[str]):
+        """
+        Hides specified modules in MagicMirror using a SocketIO client.
+
+        Parameters:
+            modules (List[str]): List of module names or identifiers to hide.
+
+        Returns:
+            True if the operation is successful, False otherwise.
+        """
+
         try:
             client = self.factory.create_client(
                 "FROM_MMPM_APP_toggle_modules",
@@ -116,7 +165,7 @@ class MagicMirrorController(Singleton):
 
         return False
 
-    def start(self):
+    def start(self) -> bool:
         """
         Launches MagicMirror using pm2, if found, otherwise a 'npm start' is run as
         a background process
@@ -125,7 +174,7 @@ class MagicMirrorController(Singleton):
             None
 
         Returns:
-            None
+            True if the operation is successful, False otherwise.
         """
         command = ["npm", "run", "start"]
 
@@ -163,10 +212,10 @@ class MagicMirrorController(Singleton):
             logger.error(stderr)
             return False
 
-        logger.info(f"Started MagicMirror")
+        logger.info("Started MagicMirror")
         return True
 
-    def stop(self):
+    def stop(self) -> bool:
         """
         Stops MagicMirror using pm2, if found, otherwise the associated
         processes are killed
@@ -193,7 +242,7 @@ class MagicMirrorController(Singleton):
         if command and shutil.which(command[0]):
             logger.debug(f"Attempting to stop MagicMirror using '{command[0]}'")
             # pm2 and docker-compose cause stdout/stderr to flip
-            error_code, stdout, stderr = run_cmd(command, message="Stopping MagicMirror")
+            error_code, _, stderr = run_cmd(command, message="Stopping MagicMirror")
 
             if error_code:
                 logger.error(stderr)
@@ -203,12 +252,12 @@ class MagicMirrorController(Singleton):
             logger.info("Stopped MagicMirror")
             return True
 
-        logger.debug(f"Stopping electron processes associated with MagicMirror")
+        logger.debug("Stopping electron processes associated with MagicMirror")
         kill_pids_of_process("electron")
         logger.info("Stopped MagicMirror")
         return True
 
-    def restart(self):
+    def restart(self) -> bool:
         """
         Restarts MagicMirror using pm2, if found, otherwise the associated
         processes are killed and 'npm start' is re-run a background process
@@ -217,7 +266,7 @@ class MagicMirrorController(Singleton):
             None
 
         Returns:
-            None
+            success (bool): True if successful, False if failure
         """
         if not self.stop():
             return False
@@ -228,17 +277,3 @@ class MagicMirrorController(Singleton):
             return False
 
         return True
-
-    def is_running(self):
-        """
-        The status of MagicMirror running is determined by the presence of certain
-        types of processes running. If those are found, it's assumed to be running,
-        otherwise, not
-
-        Parameters:
-            None
-
-        Returns:
-            running (bool): True if running, False if not
-        """
-        return bool(get_pids("electron") or get_pids("pm2"))

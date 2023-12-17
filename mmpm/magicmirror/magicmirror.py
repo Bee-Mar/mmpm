@@ -15,18 +15,23 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class MagicMirror(Singleton):
+    """
+    A class for managing the MagicMirror application including update, upgrade, install,
+    and removal functionalities.
+    """
+
     def __init__(self):
         self.env = MMPMEnv()
 
     def update(self):
         """
-        Checks for updates available to the MagicMirror repository. Alerts user if an upgrade is available.
+        Checks for updates available to the MagicMirror repository
 
         Parameters:
             None
 
         Returns:
-            bool: True upon success, False upon failure
+            bool: True if an upgrade is available, False otherwise
         """
         magicmirror_root: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get()
 
@@ -93,13 +98,9 @@ class MagicMirror(Singleton):
         print("Upgrade complete! Restart MagicMirror for the changes to take effect")
         return True
 
-    def install(self):  # TODO fix docs
+    def install(self):
         """
-        Installs MagicMirror. First checks if a MagicMirror installation can be
-        found, and if one is found, prompts user to update the MagicMirror.
-        Otherwise, searches for current version of NodeJS on the system. If one is
-        found, the MagicMirror is then installed. If an old version of NodeJS is
-        found, a newer version is installed before installing MagicMirror.
+        Installs MagicMirror by downloading the git repo and using NPM to install dependencies.
 
         Parameters:
             None
@@ -128,7 +129,7 @@ class MagicMirror(Singleton):
             error_code, _, stderr = run_cmd(
                 ["git", "clone", "https://github.com/MichMich/MagicMirror"],
                 progress=True,
-                message=f"Downloading MagicMirror",
+                message="Downloading MagicMirror",
             )
 
             if error_code:
@@ -152,6 +153,16 @@ class MagicMirror(Singleton):
         return True
 
     def remove(self) -> bool:
+        """
+        Removes the MagicMirror installation from the specified directory.
+
+        Parameters:
+            None
+
+        Returns:
+            bool: True if the removal is successful, False otherwise.
+        """
+
         root = self.env.MMPM_MAGICMIRROR_ROOT
         root_path: PosixPath = root.get()
 

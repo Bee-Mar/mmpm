@@ -43,7 +43,7 @@ class Show(SubCmd):
             self.database.load()
 
         if args.remote:
-            health = RemotePackage.health()  # TODO: figure out something better than this
+            health = RemotePackage.health()
 
             for status in health.values():
                 if status["error"]:

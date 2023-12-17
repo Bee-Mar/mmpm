@@ -99,7 +99,12 @@ def run_cmd(command: List[str], progress=True, background=False, message: str = 
     """
     if background:
         logger.debug(f"Executing command `{' '.join(command)}` in background")
-        subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        # fully detach the terminal from the process so nothing hangs
+        with open(os.devnull, "wb") as devnull:
+            # pylint: disable=subprocess-popen-preexec-fn
+            subprocess.Popen(command, stdout=devnull, stderr=devnull, stdin=devnull, close_fds=True, preexec_fn=os.setsid)
+
         return 0, "", ""
 
     logger.debug(f'Executing command `{" ".join(command)}`')

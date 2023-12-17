@@ -3,7 +3,6 @@
 from os import getenv, system
 from pathlib import PosixPath
 from shutil import copyfile
-from socket import gethostbyname, gethostname
 
 from mmpm.constants import paths, urls
 from mmpm.env import MMPMEnv

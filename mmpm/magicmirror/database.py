@@ -2,13 +2,11 @@
 import datetime
 import json
 import os
-import sys
 from pathlib import Path, PosixPath
 from typing import Any, Dict, List
 
 import requests
 from bs4 import BeautifulSoup
-
 from mmpm.constants import color, paths, urls
 from mmpm.env import MMPMEnv
 from mmpm.log.logger import MMPMLogger
@@ -20,6 +18,11 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 class MagicMirrorDatabase(Singleton):
+    """
+    Class for managing the MagicMirror package database. It is responsible for retrieving, updating,
+    and managing the list of available MagicMirror modules and custom packages.
+    """
+
     def __init__(self):
         self.env = MMPMEnv()
         self.packages: List[MagicMirrorPackage] = None
@@ -29,13 +32,13 @@ class MagicMirrorDatabase(Singleton):
 
     def __download_packages__(self) -> List[MagicMirrorPackage]:
         """
-        Scrapes the MagicMirror 3rd Party Wiki for all packages listed by community members
+        Scrapes the MagicMirror 3rd Party Wiki for all packages listed by community members.
 
         Parameters:
             None
 
         Returns:
-            None
+            packages: List[MagicMirrorPackage] A list of MagicMirrorPackage objects extracted from the 3rd party wiki.
         """
 
         packages: List[MagicMirrorPackage] = []
@@ -83,15 +86,13 @@ class MagicMirrorDatabase(Singleton):
 
     def __discover_installed_packages__(self) -> List[MagicMirrorPackage]:
         """
-        Scans the list <MMPM_MAGICMIRROR_ROOT>/modules directory, and compares
-        against the known packages from the MagicMirror 3rd Party Wiki. Returns a
-        dictionary of all found packages
+        Discovers installed MagicMirror packages by scanning the modules directory.
 
         Parameters:
-            packages (Dict[str, List[MagicMirrorPackage]]): Dictionary of MagicMirror packages
+            None
 
         Returns:
-            installed_modules (Dict[str, List[MagicMirrorPackage]]): Dictionary of installed MagicMirror packages
+            installed_modules (List[MagicMirrorPackage]): Dictionary of installed MagicMirror packages
         """
 
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
@@ -129,6 +130,17 @@ class MagicMirrorDatabase(Singleton):
         return packages_found
 
     def update(self, can_upgrade_mmpm: bool = False, can_upgrade_magicmirror: bool = False) -> int:
+        """
+        Updates the list of upgradable packages and writes them to the available upgrades file.
+
+        Parameters:
+            can_upgrade_mmpm (bool): Indicates if MMPM can be upgraded.
+            can_upgrade_magicmirror (bool): Indicates if MagicMirror can be upgraded.
+
+        Returns:
+            int: The count of upgradable items, including MMPM, MagicMirror, and packages.
+        """
+
         upgradable: List[MagicMirrorPackage] = []
 
         for package in filter(lambda pkg: pkg.is_installed, self.packages):
@@ -151,16 +163,11 @@ class MagicMirrorDatabase(Singleton):
 
     def info(self) -> Dict[str, Any]:
         """
-        Displays information regarding the most recent database file, ie. when it
-        was taken, when the next scheduled database retrieval will be taken, how many module
-        categories exist, and the total number of modules available. Additionally,
-        tells user how to forcibly request the database be updated.
-
-        Parameters:
-            None
+        Gathers information about the database including the last update time, number of categories,
+        and total number of packages.
 
         Returns:
-            None
+            Dict[str, Any]: A dictionary containing database information.
         """
 
         return {
@@ -170,23 +177,27 @@ class MagicMirrorDatabase(Singleton):
         }
 
     def is_initialized(self) -> bool:
+        """
+        Checks if the MagicMirror database has been initialized with packages.
+
+        Returns:
+            bool: True if initialized, False otherwise.
+        """
+
         return self.packages is not None and bool(len(self.packages) > 0)
 
     def search(self, query: str, case_sensitive: bool = False, title_only: bool = False) -> List[MagicMirrorPackage]:
         """
-        Used to search the 'modules' for either a category, or keyword/phrase
-        appearing within module descriptions. If the argument supplied is a
-        category name, all modules from that category will be listed. Otherwise,
-        all modules whose descriptions contain the keyword/phrase will be
-        displayed.
+        Searches the MagicMirror packages based on a query, with options for case sensitivity
+        and title-only search.
 
         Parameters:
-            query (str): user provided search string
-            case_sensitive (bool): if True, the query's exact casing is used in search
-            title_only (bool): if True, only the title is considered when matching packages to query
+            query (str): The search query.
+            case_sensitive (bool): Whether the search is case sensitive.
+            title_only (bool): Whether to search only within titles.
 
         Returns:
-            search_results (List[MagicMirrorPackage]): the dictionary of packages, grouped by category that are search matches
+            List[MagicMirrorPackage]: A list of MagicMirrorPackage objects matching the search criteria.
         """
 
         query = query.strip()
@@ -211,21 +222,19 @@ class MagicMirrorDatabase(Singleton):
 
     def load(self, update: bool = False) -> bool:
         """
-        Reads in modules from the hidden database file and checks if the file is
-        out of date. If so, the modules are gathered again from the MagicMirror 3rd
-        Party Modules wiki.
+        Loads the MagicMirror packages from the database. Optionally forces an update
+        of the database from the 3rd party wiki.
 
         Parameters:
-            update (bool): Boolean flag to force update the database
+            update (bool): Flag to force database update.
 
         Returns:
-            None
+            bool: True if successful, False otherwise.
         """
         self.packages = []  # this is really related to the API, needing to clear the list out
 
         db_file = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE
         db_exists = db_file.exists() and bool(db_file.stat().st_size)
-        db_ext_pkgs_file = paths.MMPM_CUSTOM_PACKAGES_FILE
         db_last_update = paths.MAGICMIRROR_3RD_PARTY_PACKAGES_DB_LAST_UPDATE_FILE
 
         should_update = update or not db_exists or not db_last_update.exists() or not db_last_update.stat().st_size
@@ -271,35 +280,40 @@ class MagicMirrorDatabase(Singleton):
         return bool(len(self.packages))
 
     def custom_packages(self) -> List[MagicMirrorPackage]:
+        """
+        Retrieves custom MagicMirror packages added by the user.
+
+        Returns:
+            List[MagicMirrorPackage]: A list of custom MagicMirrorPackage objects.
+        """
+
         data: List[Dict[str, str]] = []
         packages: List[MagicMirrorPackage] = []
-        db_ext_pkgs_file = paths.MMPM_CUSTOM_PACKAGES_FILE
+        db_custom_pkgs_file = paths.MMPM_CUSTOM_PACKAGES_FILE
 
-        if not db_ext_pkgs_file.stat().st_size == 0:
-            with open(db_ext_pkgs_file, mode="r+", encoding="utf-8") as ext_pkgs:
+        if not db_custom_pkgs_file.stat().st_size == 0:
+            with open(db_custom_pkgs_file, mode="r+", encoding="utf-8") as custom_pkgs:
                 try:
-                    data = json.load(ext_pkgs)
+                    data = json.load(custom_pkgs)
                 except json.decoder.JSONDecodeError:
-                    logger.error(f"{db_ext_pkgs_file} has an invalid layout. Recreating file.")
-                    json.dump(data, ext_pkgs)
+                    logger.error(f"{db_custom_pkgs_file} has an invalid layout. Recreating file.")
+                    json.dump(data, custom_pkgs)
+                    data = []
 
         for package in data:
-            packages.append(MagicMirrorPackage(**package))  # type: ignore
+            try:
+                packages.append(MagicMirrorPackage(**package))  # type: ignore
+            except Exception as error:
+                logger.debug(f"Unable to parse custom package: {error}")
 
         return packages
 
-    def upgradable(self) -> dict:
+    def upgradable(self) -> Dict[str, Any]:
         """
-        Retrieves all available packages and applications from the
-        mmpm-available-upgrades.json file, and ensures the contents are valid.
-        If the contents are malformed, the file is reset.
-
-        Parameters:
-            None
+        Checks for upgradable MagicMirror packages and applications.
 
         Returns:
-            upgradable (dict): a dictionary containg the upgrades available
-                                    for every MagicMirror environment encountered
+            Dict[str, Any]: A dictionary containing information about upgradable items.
         """
         reset_file: bool = False
         upgrades_file = paths.MMPM_AVAILABLE_UPGRADES_FILE
@@ -322,20 +336,18 @@ class MagicMirrorDatabase(Singleton):
 
     def add_mm_pkg(self, title: str, author: str, repository: str, description: str = None) -> bool:
         """
-        Adds an custom source for user to install a module from. This may be a
-        private git repo, or a specific branch of a public repo. All modules added
-        in this manner will be added to the 'Custom Packages' category.
-        These sources are stored in ~/.config/mmpm/mmpm-custom-packages.json
+        Adds a custom MagicMirror package to the user's configuration.
 
         Parameters:
-            title (str): module title
-            author (str): module author
-            repo (str): module repo url
-            description (str): module description
+            title (str): The title of the package.
+            author (str): The author of the package.
+            repository (str): The repository URL of the package.
+            description (str, optional): A description of the package.
 
         Returns:
-            (bool): Upon success, a True result is returned
+            bool: True on successful addition, False otherwise.
         """
+
         package = MagicMirrorPackage(
             title=title,
             author=author,
@@ -393,25 +405,29 @@ class MagicMirrorDatabase(Singleton):
 
         packages: List[MagicMirrorPackage] = []
 
-        with open(file, "r", encoding="utf-8") as mm_ext_pkgs:
-            data = json.load(mm_ext_pkgs)
+        with open(file, "r", encoding="utf-8") as custom_pkgs:
+            data = json.load(custom_pkgs)
 
             if not data:
                 logger.fatal("No custom packages found in database")
                 return False
 
-            packages = [MagicMirrorPackage(**package) for package in data]
+            try:
+                packages = [MagicMirrorPackage(**package) for package in data]
+            except Exception as error:
+                logger.debug(f"Unable to parse custom package: {error}")
+                packages = []
 
             try:
                 match: MagicMirrorPackage = next(filter(lambda pkg: pkg.title == title, packages))
-            except StopIteration as error:
+            except StopIteration:
                 logger.error(f"Unable to locate Custom Package named '{color.n_green(title)}'")
                 return False
 
-        packages.remove(match)
+        if match:
+            packages.remove(match)
 
-        # if the error_msg was triggered, there's no need to even bother writing back to the file
-        with open(file, "w", encoding="utf-8") as mm_ext_pkgs:
-            json.dump([package.serialize() for package in packages], mm_ext_pkgs)
+        with open(file, "w", encoding="utf-8") as custom_pkgs:
+            json.dump([package.serialize() for package in packages], custom_pkgs)
 
         return True

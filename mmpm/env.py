@@ -104,7 +104,7 @@ class MMPMEnv(Singleton):
         display(): Prints the current environment variables in a formatted JSON structure for easy viewing.
     """
 
-    __slots__ = tuple({key.lower() for key in MMPM_DEFAULT_ENV.keys()})
+    __slots__ = tuple({key.lower() for key in MMPM_DEFAULT_ENV})
 
     def __init__(self):
         super().__init__()

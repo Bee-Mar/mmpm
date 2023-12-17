@@ -18,7 +18,7 @@ jobs:
   mmpm-cli:
     runs-on: ubuntu-latest
     container:
-      image: docker://beemar/python3-nodejs:python$PYTHON_VERSION-nodejs$NODEJS_VERSION
+      image: beemar/python3-nodejs:python$PYTHON_VERSION-nodejs$NODEJS_VERSION
     steps:
       - uses: actions/checkout@v3
         with:
@@ -47,7 +47,7 @@ jobs:
   mmpm-ui:
     runs-on: ubuntu-latest
     container:
-      image: docker://beemar/python3-nodejs:python$PYTHON_VERSION-nodejs$NODEJS_VERSION
+      image: beemar/python3-nodejs:python$PYTHON_VERSION-nodejs$NODEJS_VERSION
     steps:
       - uses: actions/checkout@v3
         with:
@@ -75,7 +75,7 @@ jobs:
     needs: [mmpm-cli, mmpm-ui]
     runs-on: ubuntu-latest
     container:
-      image: docker://beemar/python3-nodejs:python${PYTHON_VERSION}-nodejs${NODEJS_VERSION}
+      image: beemar/python3-nodejs:python${PYTHON_VERSION}-nodejs${NODEJS_VERSION}
     steps:
       - uses: actions/checkout@v3
       - name: Package Application

@@ -18,7 +18,7 @@ jobs:
   mmpm-cli:
     runs-on: ubuntu-latest
     container:
-      image: docker://beemar/python3-nodejs:python${{ env.PYTHON_VERSION }}-nodejs${{ env.NODEJS_VERSION }}
+      image: docker://beemar/python3-nodejs:python$PYTHON_VERSION-nodejs$NODEJS_VERSION
     steps:
       - uses: actions/checkout@v3
         with:
@@ -47,7 +47,7 @@ jobs:
   mmpm-ui:
     runs-on: ubuntu-latest
     container:
-      image: docker://beemar/python3-nodejs:python${{ env.PYTHON_VERSION }}-nodejs${{ env.NODEJS_VERSION }}
+      image: docker://beemar/python3-nodejs:python$PYTHON_VERSION-nodejs$NODEJS_VERSION
     steps:
       - uses: actions/checkout@v3
         with:
@@ -60,15 +60,15 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
       - name: Angular Dependencies
         run: |
-          export PATH="$PATH:/root/.nvm/versions/node/v${{ env.NODEJS_VERSION }}/bin"
+          export PATH="$PATH:/root/.nvm/versions/node/v$NODEJS_VERSION/bin"
           cd ui && npm install
       - name: Angular Tests
         run: |
-          export PATH="$PATH:/root/.nvm/versions/node/v${{ env.NODEJS_VERSION }}/bin"
+          export PATH="$PATH:/root/.nvm/versions/node/v$NODEJS_VERSION/bin"
           cd ui && npm run lint
       - name: Angular Build
         run: |
-          export PATH="$PATH:/root/.nvm/versions/node/v${{ env.NODEJS_VERSION }}/bin"
+          export PATH="$PATH:/root/.nvm/versions/node/v$NODEJS_VERSION/bin"
           cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href /
 
   package-and-publish:

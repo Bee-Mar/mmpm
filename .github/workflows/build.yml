@@ -15,7 +15,7 @@ on:
       - "*"
 
 jobs:
-  cli:
+  mmpm-cli:
     runs-on: ubuntu-latest
     container:
       image: docker://beemar/python3-nodejs:python${PYTHON_VERSION}-nodejs${NODE_VERSION}
@@ -44,7 +44,7 @@ jobs:
         run: |
           pdm build
 
-  ui:
+  mmpm-ui:
     runs-on: ubuntu-latest
     container:
       image: docker://beemar/python3-nodejs:python${PYTHON_VERSION}-nodejs${NODE_VERSION}
@@ -72,7 +72,7 @@ jobs:
           cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href /
 
   package-and-publish:
-    needs: [cli, ui]
+    needs: [mmpm-cli, mmpm-ui]
     runs-on: ubuntu-latest
     container:
       image: docker://beemar/python3-nodejs:python${PYTHON_VERSION}-nodejs${NODE_VERSION}

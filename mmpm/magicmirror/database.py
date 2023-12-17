@@ -8,7 +8,6 @@ from typing import Any, Dict, List
 
 import requests
 from bs4 import BeautifulSoup
-from ItsPrompt.prompt import Prompt
 from mmpm.constants import color, paths, urls
 from mmpm.env import MMPMEnv
 from mmpm.log.logger import MMPMLogger
@@ -317,7 +316,7 @@ class MagicMirrorDatabase(Singleton):
 
         return upgrades
 
-    def add_mm_pkg(self, title: str = None, author: str = None, repository: str = None, description: str = None) -> bool:
+    def add_mm_pkg(self, title: str, author: str, repository: str, description: str = None) -> bool:
         """
         Adds an custom source for user to install a module from. This may be a
         private git repo, or a specific branch of a public repo. All modules added
@@ -333,22 +332,7 @@ class MagicMirrorDatabase(Singleton):
         Returns:
             (bool): Upon success, a True result is returned
         """
-
         package = MagicMirrorPackage(category="Custom Packages")
-
-        try:
-            fields = [("Title", title), ("Author", author), ("Repository", repository), ("Description", description)]
-
-            for field_name, field_value in fields:
-                if field_value is None:
-                    field_value = Prompt.input(f"{field_name}: ")
-
-                setattr(package, field_name.lower(), field_value)
-
-        except KeyboardInterrupt:
-            logger.info("User killed process with CTRL-C")
-            sys.exit(127)
-
         package.directory = Path(f'{package.repository.split("/")[-1].replace(".git", "")}-ext-mm-pkg')
 
         try:

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """ Command line options for 'mm-ctl' subcommand """
-from ItsPrompt.prompt import Prompt
 from mmpm.env import MMPMEnv
 from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.controller import MagicMirrorController
 from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.subcommands.sub_cmd import SubCmd
+from mmpm.utils import confirm
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -97,10 +97,10 @@ class MmCtl(SubCmd):
         if extra:
             logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")
         elif args.install:
-            if Prompt.confirm("Are your sure you want to install MagicMirror?"):
+            if confirm("Are your sure you want to install MagicMirror?"):
                 self.magicmirror.install()
         elif args.remove:
-            if Prompt.confirm("Are your sure you want to remove MagicMirror?"):
+            if confirm("Are your sure you want to remove MagicMirror?"):
                 self.magicmirror.remove()
         elif args.status:
             self.controller.status()

@@ -2,11 +2,11 @@
 """ Command line options for 'remove' subcommand """
 from typing import List
 
-from ItsPrompt.prompt import Prompt
 from mmpm.constants import color
 from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
+from mmpm.utils import confirm
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -59,7 +59,7 @@ class Remove(SubCmd):
                 logger.error(f"'{package.title}' is not installed")
                 continue
 
-            if not args.assume_yes and not Prompt.confirm(f"Remove {package.title} ({package.repository})?"):
+            if not args.assume_yes and not confirm(f"Remove {package.title} ({package.repository})?"):
                 continue
 
             if package.remove():

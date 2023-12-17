@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """ Command line options for 'mm-pkg' subcommand """
-from ItsPrompt.prompt import Prompt
 from mmpm.constants import color
 from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
+from mmpm.utils import confirm, prompt
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -83,6 +83,7 @@ class MmPkg(SubCmd):
             nargs="+",
             help="name(s) of the MagicMirror package(s) to remove",
         )
+
         remove_parser.add_argument(
             "-y",
             "--yes",
@@ -97,10 +98,19 @@ class MmPkg(SubCmd):
             self.database.load()
 
         if args.command == "add":
+            if not args.title:
+                args.title = prompt("Title: ")
+            if not args.author:
+                args.author = prompt("Author: ")
+            if not args.repo:
+                args.repo = prompt("Repository: ")
+            if not args.desc:
+                args.desc = prompt("Description: ")
+
             self.database.add_mm_pkg(args.title, args.author, args.repo, args.desc)
         elif args.command == "remove":
             for name in args.pkg_name:
-                if not args.assume_yes and not Prompt.confirm(f"Remove {name} from the local database?"):
+                if not args.assume_yes and not confirm(f"Remove {name} from the local database?"):
                     continue
                 if not self.database.remove_mm_pkg(name):
                     logger.error(f"Unable to locate Custom Package named '{color.n_green(name)}'")

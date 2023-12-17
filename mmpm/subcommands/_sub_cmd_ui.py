@@ -4,12 +4,12 @@
 
 from time import sleep
 
-from ItsPrompt.prompt import Prompt
 from mmpm.constants import urls
 from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
 from mmpm.ui import MMPMui
+from mmpm.utils import confirm
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -134,7 +134,7 @@ class Ui(SubCmd):
             self.ui.start()
 
         elif args.command == "install":
-            if not args.assume_yes and not Prompt.confirm("Are you sure you want to install the MMPM UI?"):
+            if not args.assume_yes and not confirm("Are you sure you want to install the MMPM UI?"):
                 return
 
             if not self.ui.install():
@@ -145,7 +145,7 @@ class Ui(SubCmd):
                 print("Run `mmpm ui --url` to display the UI address, or execute `mmpm open --ui` to open it.")
 
         elif args.command == "reinstall":
-            if not args.assume_yes and not Prompt.confirm("Are you sure you want to reinstall the MMPM UI?"):
+            if not args.assume_yes and not confirm("Are you sure you want to reinstall the MMPM UI?"):
                 return
 
             if not self.ui.remove():
@@ -160,7 +160,7 @@ class Ui(SubCmd):
                 print("Run `mmpm ui --url` to display the UI address, or execute `mmpm open --ui` to open it.")
 
         elif args.command == "remove":
-            if not args.assume_yes and not Prompt.confirm("Are you sure you want to remove the MMPM UI?"):
+            if not args.assume_yes and not confirm("Are you sure you want to remove the MMPM UI?"):
                 return
 
             if not self.ui.remove():

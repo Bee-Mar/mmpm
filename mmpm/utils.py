@@ -11,6 +11,8 @@ from typing import List, Tuple
 import git
 import requests
 from packaging import version
+from prompt_toolkit import prompt as ptk_prompt
+from prompt_toolkit.shortcuts import confirm as ptk_confirm
 from yaspin import yaspin
 from yaspin.spinners import Spinners
 
@@ -178,3 +180,12 @@ def update_available() -> bool:
         logger.error(f"Failed to get remote version of MMPM: {error}")
 
     return version.parse(remote_version) > version.parse(current_version)
+
+# wrapping the prompt_toolkit so if I do ever want to change the library used
+# for confirmation/input, I can do it more easily throughout the CLI
+def confirm(message: str) -> bool: # pragma: no cover
+    return ptk_confirm(message)
+
+def prompt(message: str): # pragma: no cover
+    return ptk_prompt(message)
+

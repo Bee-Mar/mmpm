@@ -73,7 +73,7 @@ class TestMMPMui(unittest.TestCase):
     def test_status(self, mock_run_cmd, mock_create_config):
         mock_run_cmd.return_value = (0, "running", "")  # Simulate success
         self.mmpm_ui.status()
-        self.assertEqual(mock_run_cmd.call_count, len(self.mmpm_ui.pm2_processes["apps"]))
+        self.assertEqual(mock_run_cmd.call_count, 1)
         mock_create_config.assert_called_once()
 
 

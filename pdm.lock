@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:f681aacd56f7fb3f07adfb4c3511763e08ebe2c1bf26403d5dd105640dbe36a1"
+content_hash = "sha256:0149f7df98630e6befa895502cc028a7a72f150ddeb6cd261fb1df8fd8c46b4b"
 
 [[package]]
 name = "argcomplete"
@@ -631,19 +631,6 @@ files = [
 ]
 
 [[package]]
-name = "itsprompt"
-version = "1.4"
-requires_python = ">=3.8"
-summary = "Prompting - the fancy way"
-dependencies = [
-    "prompt-toolkit<4.0,>=3.0.37",
-]
-files = [
-    {file = "ItsPrompt-1.4-py3-none-any.whl", hash = "sha256:bc04f6a2a225f23afc958bc8dd451407349680741ec282c78d3b76d5047edd4b"},
-    {file = "ItsPrompt-1.4.tar.gz", hash = "sha256:29219156af21a29ecfad5fb0192632e7337acb87fae8e3ce872f868c9ab40936"},
-]
-
-[[package]]
 name = "jinja2"
 version = "3.1.2"
 requires_python = ">=3.7"
@@ -817,15 +804,15 @@ files = [
 
 [[package]]
 name = "prompt-toolkit"
-version = "3.0.41"
+version = "3.0.43"
 requires_python = ">=3.7.0"
 summary = "Library for building powerful interactive command lines in Python"
 dependencies = [
     "wcwidth",
 ]
 files = [
-    {file = "prompt_toolkit-3.0.41-py3-none-any.whl", hash = "sha256:f36fe301fafb7470e86aaf90f036eef600a3210be4decf461a5b1ca8403d3cb2"},
-    {file = "prompt_toolkit-3.0.41.tar.gz", hash = "sha256:941367d97fc815548822aa26c2a269fdc4eb21e9ec05fc5d447cf09bad5d75f0"},
+    {file = "prompt_toolkit-3.0.43-py3-none-any.whl", hash = "sha256:a11a29cb3bf0a28a387fe5122cdb649816a957cd9261dcedf8c9f1fef33eacf6"},
+    {file = "prompt_toolkit-3.0.43.tar.gz", hash = "sha256:3527b7af26106cbc65a040bcc84839a3566ec1b051bb0bfe953631e704b0ff7d"},
 ]
 
 [[package]]

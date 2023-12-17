@@ -3,7 +3,7 @@
 <p-button (click)="menu.toggle($event)" icon="fa-solid fa-cube" label="Custom Packages" severity="primary"></p-button>
 
 <p-dialog header="Add Custom Package" [(visible)]="displayCustomPkgAddDialog">
-  <p-overlayPanel #op [style]="{ 'max-width': '300px', 'word-wrap': 'break-word', 'overflow-wrap': 'break-word' }">
+  <p-overlayPanel #op [style]="{ 'max-width': '450px', 'word-wrap': 'break-word', 'overflow-wrap': 'break-word' }">
     <span>Adds a custom package source to your local database, which can then be installed/removed using MMPM. This is
       useful in testing/development of MagicMirror modules not listed
       in the 3rd Party Modules.</span>

@@ -17,8 +17,9 @@ on:
 jobs:
   mmpm-cli:
     runs-on: ubuntu-latest
-    container:
-      image: beemar/python3-nodejs:python$PYTHON_VERSION-nodejs$NODEJS_VERSION
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -26,6 +27,7 @@ jobs:
       - name: Cache Python Dependencies
         uses: actions/cache@v2
         with:
+          python-version: ${{ matrix.python-version }}
           path: |
             ~/.cache/pip
           key: ${{ runner.os }}-python-${{ hashFiles('**/pyproject.toml') }}
@@ -44,47 +46,47 @@ jobs:
         run: |
           pdm build
 
-  mmpm-ui:
-    runs-on: ubuntu-latest
-    container:
-      image: beemar/python3-nodejs:python$PYTHON_VERSION-nodejs$NODEJS_VERSION
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Cache Node Modules
-        uses: actions/cache@v2
-        with:
-          path: |
-            '**/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-      - name: Angular Dependencies
-        run: |
-          export PATH="$PATH:/root/.nvm/versions/node/v$NODEJS_VERSION/bin"
-          cd ui && npm install
-      - name: Angular Tests
-        run: |
-          export PATH="$PATH:/root/.nvm/versions/node/v$NODEJS_VERSION/bin"
-          cd ui && npm run lint
-      - name: Angular Build
-        run: |
-          export PATH="$PATH:/root/.nvm/versions/node/v$NODEJS_VERSION/bin"
-          cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href /
+    #mmpm-ui:
+    #  runs-on: ubuntu-latest
+    #  container:
+    #    image: beemar/python3-nodejs:python$PYTHON_VERSION-nodejs$NODEJS_VERSION
+    #  steps:
+    #    - uses: actions/checkout@v3
+    #      with:
+    #        fetch-depth: 0
+    #    - name: Cache Node Modules
+    #      uses: actions/cache@v2
+    #      with:
+    #        path: |
+    #          '**/node_modules'
+    #        key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+    #    - name: Angular Dependencies
+    #      run: |
+    #        export PATH="$PATH:/root/.nvm/versions/node/v$NODEJS_VERSION/bin"
+    #        cd ui && npm install
+    #    - name: Angular Tests
+    #      run: |
+    #        export PATH="$PATH:/root/.nvm/versions/node/v$NODEJS_VERSION/bin"
+    #        cd ui && npm run lint
+    #    - name: Angular Build
+    #      run: |
+    #        export PATH="$PATH:/root/.nvm/versions/node/v$NODEJS_VERSION/bin"
+    #        cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href /
 
-  package-and-publish:
-    needs: [mmpm-cli, mmpm-ui]
-    runs-on: ubuntu-latest
-    container:
-      image: beemar/python3-nodejs:python${PYTHON_VERSION}-nodejs${NODEJS_VERSION}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Package Application
-        run: |
-      - name: Publish to PyPi
-        if: github.ref == 'refs/heads/master' && startsWith(github.ref, 'refs/tags/')
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_TOKEN }}
-          skip_existing: true
-          verbose: true
+    #package-and-publish:
+    #  needs: [mmpm-cli, mmpm-ui]
+    #  runs-on: ubuntu-latest
+    #  container:
+    #    image: beemar/python3-nodejs:python${PYTHON_VERSION}-nodejs${NODEJS_VERSION}
+    #  steps:
+    #    - uses: actions/checkout@v3
+    #    - name: Package Application
+    #      run: |
+    #    - name: Publish to PyPi
+    #      if: github.ref == 'refs/heads/master' && startsWith(github.ref, 'refs/tags/')
+    #      uses: pypa/gh-action-pypi-publish@release/v1
+    #      with:
+    #        user: __token__
+    #        password: ${{ secrets.PYPI_TOKEN }}
+    #        skip_existing: true
+    #        verbose: true

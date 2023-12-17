@@ -41,6 +41,10 @@ jobs:
       - name: Python Build
         run: |
           pdm build
+      - name: Install Test
+        run: |
+          pdm install
+          mmpm --help
 
   mmpm-ui:
     runs-on: ubuntu-latest

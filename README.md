@@ -34,49 +34,27 @@ The MagicMirror Package Manager is featured as an alternative installation metho
 
 ## Features
 
-- Installation, removal, updating, and upgrading of packages
-- Search for and show package details
-- Adding external packages (think of it like PPAs for Ubuntu)
-- Tab-Autocompletion for the CLI
-- Quick MagicMirror config editing access
-- Installing MagicMirror
-- [Hide/Show MagicMirror modules](https://github.com/Bee-Mar/mmpm/wiki/Status,-Hide,-Show-MagicMirror-Modules)
-- Start/Stop/Restart MagicMirror (works with `npm`, `pm2`, and `docker-compose`)
-- RaspberryPi 3 screen rotation
+- Manage packages: install, remove, update, and upgrade.
+- Search and view package details.
+- Add custom packages (similar to Ubuntu PPAs).
+- CLI tab-autocompletion.
+- Easy access to MMPM and MagicMirror configuration.
+- Manage MagicMirror: install, upgrade, remove.
+- Control MagicMirror modules: hide/show ([details](https://github.com/Bee-Mar/mmpm/wiki/Status,-Hide,-Show-MagicMirror-Modules))
+- Control MagicMirror state: start, stop, restart (supports npm, pm2, docker-compose).
 
 ## Quick Installation Guide
 
+### Install MMPM
+
 ```sh
-sudo apt install libffi-dev nginx-full -y
 python3 -m pip install --upgrade --no-cache-dir mmpm
-mmpm --guided-setup
-echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc
-source ~/.bashrc
 ```
 
-## Possible Installation Error
-
-If you happen to see the following after installing and running a `mmpm` command:
+### Ensure Your PATH is Correct
 
 ```sh
-Traceback (most recent call last):
-  File "setup.py", line 2, in <module>
-    from setuptools import setup, find_packages
-  File "/usr/local/lib/python3.7/site-packages/setuptools/__init__.py", line 12, in <module>
-    from setuptools.extension import Extension
-  File "/usr/local/lib/python3.7/site-packages/setuptools/extension.py", line 7, in <module>
-    from setuptools.dist import _get_unpatched
-  File "/usr/local/lib/python3.7/site-packages/setuptools/dist.py", line 16, in <module>
-    import pkg_resources
-  File "/usr/local/lib/python3.7/site-packages/pkg_resources.py", line 1479, in <module>
-    register_loader_type(importlib_bootstrap.SourceFileLoader, DefaultProvider)
-AttributeError: module 'importlib._bootstrap' has no attribute 'SourceFileLoader'
-```
-
-Run the following command to shore up your `pip` version:
-
-```sh
-python -m ensurepip --upgrade # you may need to call python3 instead of python
+echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc && source ~/.bashrc
 ```
 
 ## Look to the [Wiki](https://github.com/Bee-Mar/mmpm/wiki)
@@ -84,43 +62,3 @@ python -m ensurepip --upgrade # you may need to call python3 instead of python
 Make sure you've followed all the instructions for [installation](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installation), configuring [environment variables](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Environment-Variables), and the [hide/show modules feature](https://github.com/Bee-Mar/mmpm/wiki/Status,-Hide,-Show-MagicMirror-Modules) setup.
 
 Note: the Environment Variables setup is **extremely** important.
-
-## Creating Issues
-
-Consult the Wiki before posting any issues, and use one of the provided templates (if possible) when filing an issue.
-
-For any bugs encountered, examine the log files by running `mmpm log`. If creating a GitHub issue is
-needed, use one of the issue templates, and please attach the log files, your `config.js`, and
-provide what steps can be take to reproduce the bug. You can create a ZIP archive of the MMPM log
-files files through the Control Center of the GUI, or by running `mmpm log --zip` through the CLI. If for some reason you cannot access `mmpm log --zip`, you can find the files in `~/.config/mmpm/log` and `/var/log/nginx`. All log files for MMPM in `/var/log/nginx` will be prefixed with either `mmpm-access` or `mmpm-error`.
-
-## GUI Preview
-
-Control Center:
-
-![GUI Control Center](assets/Control-Center.png)
-
-Config Editor:
-
-![GUI Config Editor](assets/Config-Editor.png)
-
-Active Processes:
-
-![GUI Active Processes](assets/Active-Processes.png)
-
-MMPM/MagicMirror Marketplace:
-
-![GUI MarketPlace](assets/MarketPlace.png)
-
-MMPM/MagicMirror Locally Installed Packages:
-
-![GUI LocalPackages](assets/Local-Packages.png)
-
-## Potential Problems
-
-This project is entirely dependent on the structure of the [MagicMirror 3rd Party
-Modules](https://github.com/MichMich/MagicMirror/wiki/3rd-Party-Modules) page. The HTML is parsed,
-and the appropriate text of each module is extracted. If for some reason any of the information is
-not displayed correctly, it is most likely due to someone changing the structure of the page.
-Ideally, in the future, a database will be constructed, and things will be handeled in a more
-formal, predictable way.

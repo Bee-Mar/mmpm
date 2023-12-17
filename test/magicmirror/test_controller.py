@@ -3,9 +3,9 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from faker import Faker
-
 from mmpm.env import MMPMEnv
-from mmpm.magicmirror.controller import MagicMirrorClientFactory, MagicMirrorController
+from mmpm.magicmirror.controller import (MagicMirrorClientFactory,
+                                         MagicMirrorController)
 
 fake = Faker()
 
@@ -35,15 +35,17 @@ class TestMagicMirrorController(unittest.TestCase):
 
         client_instance.connect.assert_called_with(MMPMEnv().MMPM_MAGICMIRROR_URI.get())
 
+    @patch("mmpm.magicmirror.controller.Path.exists")
     @patch("mmpm.magicmirror.controller.run_cmd")
     @patch("mmpm.magicmirror.controller.shutil.which")
     @patch("mmpm.magicmirror.controller.os.chdir")
     @patch("mmpm.magicmirror.controller.MMPMEnv")
-    def test_start_with_npm(self, mock_env, mock_chdir, mock_which, mock_run_cmd):
+    def test_start_with_npm(self, mock_env, mock_chdir, mock_which, mock_run_cmd, mock_exists):
         # Mock environment and dependencies
         mock_env.return_value.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get.return_value = None
         mock_env.return_value.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.get.return_value = None
         mock_env.return_value.MMPM_MAGICMIRROR_ROOT.get.return_value = "/path/to/magicmirror"
+        mock_exists.return_value = True
         mock_which.side_effect = lambda x: "/usr/bin/" + x if x in ["npm"] else None
         mock_run_cmd.return_value = (0, "", "")  # Simulate successful command execution
 

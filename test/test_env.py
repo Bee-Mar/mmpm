@@ -73,14 +73,20 @@ class TestMMPMEnv(unittest.TestCase):
     def test_environment_variable_update(self):
         env = MMPMEnv()
         new_uri = "http://example.com:8080"
-        with patch("mmpm.env.open", mock_open(read_data=json.dumps({"MMPM_MAGICMIRROR_URI": new_uri}))):
+        with patch(
+            "mmpm.env.open",
+            mock_open(read_data=json.dumps({"MMPM_MAGICMIRROR_URI": new_uri})),
+        ):
             self.assertEqual(env.MMPM_MAGICMIRROR_URI.get(), new_uri)
 
     def test_environment_file_error_handling(self):
         with patch("mmpm.env.open", mock_open(read_data="{invalid_json")):
             env = MMPMEnv()
             # Test default values are used in case of JSON error
-            self.assertEqual(env.MMPM_MAGICMIRROR_ROOT.get(), MMPM_DEFAULT_ENV["MMPM_MAGICMIRROR_ROOT"])
+            self.assertEqual(
+                env.MMPM_MAGICMIRROR_ROOT.get(),
+                MMPM_DEFAULT_ENV["MMPM_MAGICMIRROR_ROOT"],
+            )
 
 
 if __name__ == "__main__":

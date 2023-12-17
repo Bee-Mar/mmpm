@@ -14,6 +14,7 @@ class Search(SubCmd):
     Custom Attributes:
         database (MagicMirrorDatabase): An instance of the MagicMirrorDatabase class for managing the database.
     """
+
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "search"

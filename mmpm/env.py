@@ -69,7 +69,10 @@ class EnvVar:
                 try:
                     env_vars = json.load(env)
                 except json.JSONDecodeError:
-                    print(color.b_yellow("WARNING:"), "Unable to parse environment variables file.")
+                    print(
+                        color.b_yellow("WARNING:"),
+                        "Unable to parse environment variables file.",
+                    )
 
                 # make sure we construct the expected type using from parsed data, otherwise instead of
                 # something like a Path object we would return a string

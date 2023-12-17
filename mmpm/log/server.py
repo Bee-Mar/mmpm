@@ -14,6 +14,7 @@ from mmpm.log.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 # Function to create the SocketIO server
 def create():
     server = socketio.Server(cors_allowed_origins="*", async_mode="gevent")

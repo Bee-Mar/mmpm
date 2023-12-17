@@ -33,7 +33,17 @@ class MagicMirrorPackage:
     MagicMirror package's metadata
     """
 
-    __slots__ = "title", "author", "repository", "description", "category", "directory", "is_installed", "env", "is_upgradable"
+    __slots__ = (
+        "title",
+        "author",
+        "repository",
+        "description",
+        "category",
+        "directory",
+        "is_installed",
+        "env",
+        "is_upgradable",
+    )
 
     # pylint: disable=unused-argument
     def __init__(
@@ -111,7 +121,10 @@ class MagicMirrorPackage:
             print(f"{self.title} [installed]" if self.is_installed and not hide_installed_indicator else self.title)
             return
 
-        print(color.n_green(self.title) + (" [installed]" if self.is_installed else ""), end="")
+        print(
+            color.n_green(self.title) + (" [installed]" if self.is_installed else ""),
+            end="",
+        )
 
         if detailed:
             modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
@@ -178,7 +191,10 @@ class MagicMirrorPackage:
 
     def clone(self) -> Tuple[int, str, str]:
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
-        return run_cmd(["git", "clone", self.repository, str(modules_dir / self.directory)], message="Downloading")
+        return run_cmd(
+            ["git", "clone", self.repository, str(modules_dir / self.directory)],
+            message="Downloading",
+        )
 
     def update(self) -> None:
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
@@ -362,7 +378,10 @@ class InstallationHandler:
 
     def pip_install(self) -> Tuple[int, str, str]:
         logger.debug("Running 'pip install' in {}".format(self.package.directory))
-        return run_cmd(["pip", "install", "-r", "requirements.txt"], message="Installing Python dependencies")
+        return run_cmd(
+            ["pip", "install", "-r", "requirements.txt"],
+            message="Installing Python dependencies",
+        )
 
     def maven_install(self) -> Tuple[int, str, str]:
         logger.debug("Running 'mvn install' in {}".format(self.package.directory))

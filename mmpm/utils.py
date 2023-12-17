@@ -212,8 +212,9 @@ def update_available() -> bool:
 
     return version.parse(remote_version) > version.parse(current_version)
 
+
 # wrapping prompt_toolkit so it's easier to switch out in the future if desired
-def confirm(message: str) -> bool: # pragma: no cover
+def confirm(message: str) -> bool:  # pragma: no cover
     """
     Displays a confirmation prompt to the user with the given message.
 
@@ -226,8 +227,9 @@ def confirm(message: str) -> bool: # pragma: no cover
 
     return ptk_confirm(message)
 
+
 # wrapping prompt_toolkit so it's easier to switch out in the future if desired
-def prompt(message: str): # pragma: no cover
+def prompt(message: str):  # pragma: no cover
     """
     Displays a prompt to the user with the given message and waits for input.
 
@@ -238,4 +240,3 @@ def prompt(message: str): # pragma: no cover
         str: The user's input as a string.
     """
     return ptk_prompt(message)
-

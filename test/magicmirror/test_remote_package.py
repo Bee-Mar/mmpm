@@ -23,11 +23,17 @@ class TestRemotePackage(unittest.TestCase):
         mock_response.status_code = 200
         mock_response.text = json.dumps(data)
         mock_json_loads.return_value = data
-        mock_head.side_effect = [MagicMock(status_code=200), MagicMock(status_code=200)]  # GitLab  # Bitbucket
+        mock_head.side_effect = [
+            MagicMock(status_code=200),
+            MagicMock(status_code=200),
+        ]  # GitLab  # Bitbucket
 
         health = RemotePackage.health()
 
-        self.assertEqual(health["github"]["warning"], "5 GitHub API requests remaining. Request count will reset at 2009-02-13 23:31:30")
+        self.assertEqual(
+            health["github"]["warning"],
+            "5 GitHub API requests remaining. Request count will reset at 2009-02-13 23:31:30",
+        )
         self.assertEqual(health["gitlab"]["error"], "")
         self.assertEqual(health["bitbucket"]["error"], "")
 
@@ -57,12 +63,22 @@ class TestRemotePackage(unittest.TestCase):
         details = remote_package.serialize()
 
         self.assertEqual(
-            details, {"stars": stars, "issues": open_issues, "created": "2020-01-01", "last_updated": "2020-12-31", "forks": forks_count}
+            details,
+            {
+                "stars": stars,
+                "issues": open_issues,
+                "created": "2020-01-01",
+                "last_updated": "2020-12-31",
+                "forks": forks_count,
+            },
         )
 
     def test_format_bitbucket_api_details(self):
         remote_package = RemotePackage(MagicMirrorPackage())
-        data = {"created_on": "2020-01-01T00:00:00Z", "updated_on": "2020-12-31T23:59:59Z"}
+        data = {
+            "created_on": "2020-01-01T00:00:00Z",
+            "updated_on": "2020-12-31T23:59:59Z",
+        }
         url = "https://api.bitbucket.org/2.0/repositories/user/repo"
 
         # Assuming the `safe_get_request` function is used to fetch additional data
@@ -70,4 +86,13 @@ class TestRemotePackage(unittest.TestCase):
             mock_request.return_value.text = json.dumps({"pagelen": 5})
             details = remote_package.__format_bitbucket_api_details__(data, url)
 
-        self.assertEqual(details, {"stars": 5, "issues": 5, "created": "2020-01-01", "last_updated": "2020-12-31", "forks": 5})
+        self.assertEqual(
+            details,
+            {
+                "stars": 5,
+                "issues": 5,
+                "created": "2020-01-01",
+                "last_updated": "2020-12-31",
+                "forks": 5,
+            },
+        )

@@ -27,7 +27,10 @@ class Db(Endpoint):
 
             can_upgrade_mmpm = update_available()
             can_upgrade_magicmirror = self.magicmirror.update()
-            upgradable_count = self.db.update(can_upgrade_mmpm=can_upgrade_mmpm, can_upgrade_magicmirror=can_upgrade_magicmirror)
+            upgradable_count = self.db.update(
+                can_upgrade_mmpm=can_upgrade_mmpm,
+                can_upgrade_magicmirror=can_upgrade_magicmirror,
+            )
 
             return self.success(self.db.upgradable())
 

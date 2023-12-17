@@ -14,6 +14,7 @@ class Env(SubCmd):
     Custom Attributes:
         env (MMPMEnv): A singleton of MMPMEnv which contains environment variables
     """
+
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "env"

@@ -153,7 +153,11 @@ class MagicMirrorController(Singleton):
         os.chdir(root)
 
         logger.debug(f"Attempting to start MagicMirror using {' '.join(command)} ")
-        error_code, _, stderr = run_cmd(command, message="Starting MagicMirror", background=bool(command[0] == "npm"))
+        error_code, _, stderr = run_cmd(
+            command,
+            message="Starting MagicMirror",
+            background=bool(command[0] == "npm"),
+        )
 
         if error_code:
             logger.error(stderr)

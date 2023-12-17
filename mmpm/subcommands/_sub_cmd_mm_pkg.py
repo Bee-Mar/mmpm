@@ -65,7 +65,7 @@ class MmPkg(SubCmd):
         )
 
         add_parser.add_argument(
-           "-d",
+            "-d",
             "--desc",
             type=str,
             help="description of MagicMirror package",

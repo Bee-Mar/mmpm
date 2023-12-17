@@ -8,7 +8,6 @@ from typing import Any, Dict, List
 
 import requests
 from bs4 import BeautifulSoup
-
 from mmpm.constants import color, paths, urls
 from mmpm.env import MMPMEnv
 from mmpm.log.logger import MMPMLogger
@@ -240,7 +239,10 @@ class MagicMirrorDatabase(Singleton):
 
                 with open(db_last_update, "w", encoding="utf-8") as last_update_file:
                     self.last_update = datetime.datetime.now()
-                    json.dump({"last_update": str(self.last_update.replace(microsecond=0))}, last_update_file)
+                    json.dump(
+                        {"last_update": str(self.last_update.replace(microsecond=0))},
+                        last_update_file,
+                    )
             else:
                 logger.error(f"Failed to retrieve packages from {urls.MAGICMIRROR_MODULES_URL}. Please check your internet connection.")
 
@@ -333,14 +335,21 @@ class MagicMirrorDatabase(Singleton):
         Returns:
             (bool): Upon success, a True result is returned
         """
-        package = MagicMirrorPackage(category="Custom Packages")
+        package = MagicMirrorPackage(
+            title=title,
+            author=author,
+            repository=repository,
+            description=description,
+            category="Custom Packages",
+        )
+
         package.directory = Path(f'{package.repository.split("/")[-1].replace(".git", "")}-ext-mm-pkg')
 
         try:
             ext_pkgs_file = paths.MMPM_CUSTOM_PACKAGES_FILE
 
             if ext_pkgs_file.exists() and ext_pkgs_file.stat().st_size:
-                custom_packages = {}
+                custom_packages = []
 
                 with open(ext_pkgs_file, "r", encoding="utf-8") as mm_ext_pkgs:
                     custom_packages = json.load(mm_ext_pkgs)

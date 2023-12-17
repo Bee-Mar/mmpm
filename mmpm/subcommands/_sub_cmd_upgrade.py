@@ -21,6 +21,7 @@ class Upgrade(SubCmd):
         database (MagicMirrorDatabase): An instance of the MagicMirrorDatabase class for managing the database.
         magicmirror (MagicMirror): An instance of the MagicMirror object (similar to a MagicMirrorPackage)
     """
+
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "upgrade"

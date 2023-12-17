@@ -39,7 +39,10 @@ class Update(SubCmd):
 
         can_upgrade_mmpm = mmpm.utils.update_available()
         can_upgrade_magicmirror = self.magicmirror.update()
-        available_upgrades = self.database.update(can_upgrade_mmpm=can_upgrade_mmpm, can_upgrade_magicmirror=can_upgrade_magicmirror)
+        available_upgrades = self.database.update(
+            can_upgrade_mmpm=can_upgrade_mmpm,
+            can_upgrade_magicmirror=can_upgrade_magicmirror,
+        )
 
         if not available_upgrades:
             print("Everything is up to date.")

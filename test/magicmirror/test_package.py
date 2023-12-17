@@ -41,16 +41,36 @@ class TestMagicMirrorPackage(unittest.TestCase):
         self.assertTrue("is_upgradable" not in serialized_data)
 
     def test_equality(self):
-        package1 = MagicMirrorPackage(title="Test Title", repository="https://example.com/repo.git", directory="same")
-        package2 = MagicMirrorPackage(title="Test Title", repository="https://example.com/repo.git", directory="same")
-        package3 = MagicMirrorPackage(title="Different Title", repository="https://example.com/repo.git", directory="different")
+        package1 = MagicMirrorPackage(
+            title="Test Title",
+            repository="https://example.com/repo.git",
+            directory="same",
+        )
+        package2 = MagicMirrorPackage(
+            title="Test Title",
+            repository="https://example.com/repo.git",
+            directory="same",
+        )
+        package3 = MagicMirrorPackage(
+            title="Different Title",
+            repository="https://example.com/repo.git",
+            directory="different",
+        )
 
         self.assertTrue(package1 == package2)
         self.assertFalse(package1 == package3)
 
     def test_inequality(self):
-        package1 = MagicMirrorPackage(title="Test Title", repository="https://example.com/repo.git", directory="different")
-        package2 = MagicMirrorPackage(title="Different Title", repository="https://example.com/repo.git", directory="more-different")
+        package1 = MagicMirrorPackage(
+            title="Test Title",
+            repository="https://example.com/repo.git",
+            directory="different",
+        )
+        package2 = MagicMirrorPackage(
+            title="Different Title",
+            repository="https://example.com/repo.git",
+            directory="more-different",
+        )
 
         self.assertTrue(package1 != package2)
 
@@ -75,7 +95,15 @@ class TestMagicMirrorPackage(unittest.TestCase):
         modules = MMPM_DEFAULT_ENV.get("MMPM_MAGICMIRROR_ROOT") / "modules"
         self.package.env = MMPMEnv()
         self.package.clone()
-        mock_run_cmd.assert_called_with(["git", "clone", self.package.repository, str(modules / self.package.directory)], message="Downloading")
+        mock_run_cmd.assert_called_with(
+            [
+                "git",
+                "clone",
+                self.package.repository,
+                str(modules / self.package.directory),
+            ],
+            message="Downloading",
+        )
 
     @patch("os.chdir")
     @patch("mmpm.magicmirror.package.repo_up_to_date")

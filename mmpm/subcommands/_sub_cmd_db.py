@@ -68,7 +68,11 @@ class Db(SubCmd):
         elif args.dump:
             print(
                 highlight(
-                    json.dumps(self.database.packages, indent=2, default=lambda package: package.serialize()),
+                    json.dumps(
+                        self.database.packages,
+                        indent=2,
+                        default=lambda package: package.serialize(),
+                    ),
                     JsonLexer(),
                     TerminalFormatter(),
                 ),

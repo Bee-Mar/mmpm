@@ -81,7 +81,10 @@ class TestInstallationHandler(unittest.TestCase):
         self.assertEqual(error_code, 0)
         self.assertEqual(stdout, "stdout")
         self.assertEqual(stderr, "stderr")
-        mock_run_cmd.assert_called_with(["pip", "install", "-r", "requirements.txt"], message="Installing Python dependencies")
+        mock_run_cmd.assert_called_with(
+            ["pip", "install", "-r", "requirements.txt"],
+            message="Installing Python dependencies",
+        )
 
     @patch("mmpm.magicmirror.package.run_cmd")
     def test_maven_install(self, mock_run_cmd):

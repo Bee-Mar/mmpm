@@ -12,8 +12,7 @@ import requests
 from faker import Faker
 
 from mmpm.__version__ import major, version
-from mmpm.utils import (get_host_ip, get_pids, kill_pids_of_process, run_cmd,
-                        safe_get_request, update_available)
+from mmpm.utils import get_host_ip, get_pids, kill_pids_of_process, run_cmd, safe_get_request, update_available
 
 fake = Faker()
 
@@ -65,7 +64,10 @@ class TestUtils(unittest.TestCase):
     def test_get_pids(self, mock_popen):
         random_proccess_ids = [str(fake.pyint()), str(fake.pyint())]
         mock_process = mock_popen.return_value
-        mock_process.__enter__.return_value.communicate.return_value = (bytes("\n".join(random_proccess_ids), "utf-8"), b"")
+        mock_process.__enter__.return_value.communicate.return_value = (
+            bytes("\n".join(random_proccess_ids), "utf-8"),
+            b"",
+        )
         process_name = "my_process"
         pids = get_pids(process_name)
         self.assertEqual(pids, random_proccess_ids)

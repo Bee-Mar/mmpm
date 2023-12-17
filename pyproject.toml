@@ -52,6 +52,8 @@ dev = [
   "pytest>=7.4.3",
   "faker>=20.1.0",
   "coverage>=7.3.2",
+  "pdm>=2.11.1",
+  "black>=23.12.0",
 ]
 
 # pdm is required to make use of these (pip install pdm)
@@ -61,7 +63,7 @@ report = "coverage report"
 lint = "pylint mmpm"
 mypy = "mypy mmpm"
 build-ui = "bash -c 'cd ui && bun run build'"
-format = "isort ."
+format = "bash -c 'isort . && black . --line-length=150'"
 
 # quickstarts for dev testing
 up = "pm2 start dev/ecosystem.json"

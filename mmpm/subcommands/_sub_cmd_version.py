@@ -15,6 +15,7 @@ class Version(SubCmd):
     Custom Attributes:
         None
     """
+
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "version"

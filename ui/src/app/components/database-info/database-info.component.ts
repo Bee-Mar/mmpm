@@ -35,7 +35,7 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
   public upgradableItems = new Array<MagicMirrorPackage>();
   public selectedPackages = new Array<MagicMirrorPackage>();
   public selectedUpgrades = new Array<MagicMirrorPackage>();
-  public mmpmUpgradeMessage = "Upgrade MMPM by executing <code>`python3 -m pip install --upgrade --no-cache-dir mmpm`</code> followed by <code>`mmpm ui reinstall -y`</code]>";
+  public mmpmUpgradeMessage = "After upgrading MMPM, execute <code>mmpm ui reinstall -y</code>";
 
   public databaseOptions = [
     {
@@ -113,7 +113,6 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
 
   async onUpgrade() {
     const packages = this.selectedUpgrades.filter((pkg: MagicMirrorPackage) => pkg.title !== "MMPM" && pkg.title !== "MagicMirror");
-
     this.loadingChange.emit(true);
 
     if (this.selectedUpgrades.findIndex((pkg: MagicMirrorPackage) => pkg.title === "MMPM") !== -1) {
@@ -124,7 +123,6 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
           this.msg.add({severity: "error", summary: "Upgrade", detail: response.message});
         }
       });
-      // TODO: make this a toast pop up with a message or something else to let the user know
     }
 
     if (this.selectedUpgrades.findIndex((pkg: MagicMirrorPackage) => pkg.title === "MagicMirror") !== -1) {

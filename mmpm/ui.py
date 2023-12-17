@@ -103,14 +103,12 @@ class MMPMui(Singleton):
 
     def status(self):
         self.create_pm2_config()
+        error_code, stdout, stderr = run_cmd(["pm2", "list", "mmpm"])
 
-        for process in self.pm2_processes["apps"]:
-            error_code, stdout, stderr = run_cmd(["pm2", "describe", process["name"]])
-
-            if error_code:
-                logger.error(stderr)
-            else:
-                print(stdout)
+        if error_code:
+            logger.error(stderr)
+        else:
+            print(stdout)
 
     def remove(self):
         """

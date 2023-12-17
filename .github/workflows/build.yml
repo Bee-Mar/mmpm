@@ -1,9 +1,5 @@
 name: MMPM Build Pipeline
 
-env:
-  NODEJS_VERSION: "18.19.0"
-  PYTHON_VERSION: "3.8.10"
-
 on:
   push:
     branches:
@@ -21,7 +17,7 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Cache Python Dependencies
@@ -46,33 +42,39 @@ jobs:
         run: |
           pdm build
 
-    #mmpm-ui:
-    #  runs-on: ubuntu-latest
-    #  container:
-    #    image: beemar/python3-nodejs:python$PYTHON_VERSION-nodejs$NODEJS_VERSION
-    #  steps:
-    #    - uses: actions/checkout@v3
-    #      with:
-    #        fetch-depth: 0
-    #    - name: Cache Node Modules
-    #      uses: actions/cache@v2
-    #      with:
-    #        path: |
-    #          '**/node_modules'
-    #        key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-    #    - name: Angular Dependencies
-    #      run: |
-    #        export PATH="$PATH:/root/.nvm/versions/node/v$NODEJS_VERSION/bin"
-    #        cd ui && npm install
-    #    - name: Angular Tests
-    #      run: |
-    #        export PATH="$PATH:/root/.nvm/versions/node/v$NODEJS_VERSION/bin"
-    #        cd ui && npm run lint
-    #    - name: Angular Build
-    #      run: |
-    #        export PATH="$PATH:/root/.nvm/versions/node/v$NODEJS_VERSION/bin"
-    #        cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href /
+  mmpm-ui:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ["16.x", "18.x"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      - name: Cache Node Modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package.json') }}
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Angular Dependencies
+        run: |
+          cd ui && npm install
+
+      - name: Angular Tests
+        run: |
+          cd ui && npm run lint
+
+      - name: Angular Build
+        run: |
+          cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href /
     #package-and-publish:
     #  needs: [mmpm-cli, mmpm-ui]
     #  runs-on: ubuntu-latest

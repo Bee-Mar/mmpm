@@ -1,11 +1,11 @@
-import { Component, HostListener, OnDestroy, OnInit } from "@angular/core";
-import { io } from "socket.io-client";
-import { MMPMEnv } from "@/models/mmpm-env";
-import { MagicMirrorModule } from "@/models/magicmirror-module";
-import { MessageService, ConfirmationService, MenuItem } from "primeng/api";
-import { APIResponse } from "@/services/api/base-api";
-import { MagicMirrorAPI } from "@/services/api/magicmirror-api.service";
-import { MagicMirrorControllerAPI } from "@/services/api/magicmirror-controller-api.service";
+import {Component, HostListener, OnDestroy, OnInit} from "@angular/core";
+import {io} from "socket.io-client";
+import {MMPMEnv} from "@/models/mmpm-env";
+import {MagicMirrorModule} from "@/models/magicmirror-module";
+import {MessageService, ConfirmationService, MenuItem} from "primeng/api";
+import {APIResponse} from "@/services/api/base-api";
+import {MagicMirrorAPI} from "@/services/api/magicmirror-api.service";
+import {MagicMirrorControllerAPI} from "@/services/api/magicmirror-controller-api.service";
 
 @Component({
   selector: "app-magicmirror-controller",
@@ -112,54 +112,66 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
     if (mmModule.hidden) {
       this.mmControllerApi.postShow(mmModule).then((response: APIResponse) => {
         if (response.code !== 200) {
-          this.msg.add({ severity: "error", summary: "Show Modules", detail: response.message });
+          this.msg.add({severity: "error", summary: "Show Modules", detail: response.message});
         } else {
-          this.msg.add({ severity: "success", summary: "Show Modules" });
+          this.msg.add({severity: "success", summary: "Show Modules"});
         }
       });
     } else {
       this.mmControllerApi.postHide(mmModule).then((response: APIResponse) => {
         if (response.code !== 200) {
-          this.msg.add({ severity: "error", summary: "Hid Modules", detail: response.message });
+          this.msg.add({severity: "error", summary: "Hid Modules", detail: response.message});
         } else {
-          this.msg.add({ severity: "success", summary: "Hid Modules" });
+          this.msg.add({severity: "success", summary: "Hid Modules"});
         }
       });
     }
   }
 
   public onStart(): void {
+    this.modules = [];
+
     this.mmControllerApi.getStart().then((response: APIResponse) => {
       if (response.code === 200) {
-        if (this.socket?.connected) {
-          this.socket.close();
+        setTimeout(() => {
           this.initSocket();
-        }
-        this.msg.add({ severity: "success", summary: "Start MagicMirror", detail: "Successfully started MagicMirror" });
+        }, 3000);
+
+        this.msg.add({severity: "success", summary: "Start MagicMirror", detail: "Successfully started MagicMirror"});
       } else {
-        this.msg.add({ severity: "error", summary: "Start MagicMirror", detail: response.message });
+        this.msg.add({severity: "error", summary: "Start MagicMirror", detail: response.message});
       }
     });
   }
 
   public onStop(): void {
+    this.modules = [];
+    this.socket.disconnect();
+    this.socket.close();
+
     this.mmControllerApi.getStop().then((response: APIResponse) => {
       if (response.code === 200) {
-        this.modules = [];
-        this.socket.close();
-        this.msg.add({ severity: "success", summary: "Stop MagicMirror", detail: "Successfully stopped MagicMirror" });
+        this.msg.add({severity: "success", summary: "Stop MagicMirror", detail: "Successfully stopped MagicMirror"});
       } else {
-        this.msg.add({ severity: "error", summary: "Stop MagicMirror", detail: response.message });
+        this.msg.add({severity: "error", summary: "Stop MagicMirror", detail: response.message});
       }
     });
   }
 
   public onRestart(): void {
+    this.modules = [];
+    this.socket.disconnect();
+    this.socket.close();
+
     this.mmControllerApi.getRestart().then((response: APIResponse) => {
       if (response.code === 200) {
-        this.msg.add({ severity: "success", summary: "Restart MagicMirror", detail: "Successfully restarted MagicMirror" });
+        setTimeout(() => {
+          this.initSocket();
+        }, 3000);
+
+        this.msg.add({severity: "success", summary: "Restart MagicMirror", detail: "Successfully restarted MagicMirror"});
       } else {
-        this.msg.add({ severity: "error", summary: "Restart MagicMirror", detail: response.message });
+        this.msg.add({severity: "error", summary: "Restart MagicMirror", detail: response.message});
       }
     });
   }
@@ -167,9 +179,9 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   public onInstall(): void {
     this.mmApi.getInstall().then((response: APIResponse) => {
       if (response.code === 200) {
-        this.msg.add({ severity: "success", summary: "Install MagicMirror", detail: "Successfully installed MagicMirror" });
+        this.msg.add({severity: "success", summary: "Install MagicMirror", detail: "Successfully installed MagicMirror"});
       } else {
-        this.msg.add({ severity: "error", summary: "Install MagicMirror", detail: response.message });
+        this.msg.add({severity: "error", summary: "Install MagicMirror", detail: response.message});
       }
     });
   }
@@ -177,9 +189,9 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   public onRemove(): void {
     this.mmApi.getRemove().then((response: APIResponse) => {
       if (response.code === 200) {
-        this.msg.add({ severity: "success", summary: "Remove MagicMirror", detail: "Successfully removed MagicMirror" });
+        this.msg.add({severity: "success", summary: "Remove MagicMirror", detail: "Successfully removed MagicMirror"});
       } else {
-        this.msg.add({ severity: "error", summary: "Remove MagicMirror", detail: response.message });
+        this.msg.add({severity: "error", summary: "Remove MagicMirror", detail: response.message});
       }
     });
   }
@@ -187,20 +199,21 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   public initSocket(): void {
     console.log("Initializing socket");
 
-    this.socket = io(`${window.location.hostname}:8907`, { reconnection: true });
+    this.socket = io(`${window.location.hostname}:8907`, {reconnection: true});
 
     this.socket.on("connect", () => {
-      console.log("Connected to MagicMirror Socket.IO server");
+      console.log("Connected to MMPM Socket.IO Repeater");
+      this.socket.emit("request_modules");
     });
 
     this.socket.on("reconnect", () => {
-      this.modules = [];
-      console.log("Reconnected to MagicMirror Socket.IO server");
+      console.log("Reconnected to MMPM Socket.IO Repeater");
+      this.socket.emit("request_modules");
     });
 
-    this.socket.on("disconnect", (data) => {
+    this.socket.on("disconnect", (error) => {
       this.modules = [];
-      console.log(data);
+      console.log(error);
     });
 
     this.socket.on("error", (error) => {
@@ -208,30 +221,30 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
       console.log(error);
     });
 
-    // these keywords are used in node_helper.js and mmpm.js within the mmpm magicmirror module
-    this.socket.on("toggled", (result) => {
-      console.log(`Received toggled modules from Repeater: ${result}`);
-      this.socket.emit("FROM_MMPM_APP_get_active_modules");
-    });
-
     this.socket.on("modules", (modules: Array<MagicMirrorModule>) => {
-      console.log("Received modules from Repeater");
-
-      // only doing this because the property is called "hidden" in the MagicMirror source code
-      // and for the toggle button to display it in a sane way, it needs to be inverted
-      // otherwise all the toggleButtons will look like they're off, when in reality those modules
-      // are visible. It's a little weird, yes.
-      for (const m of modules) {
-        m.hidden = !m.hidden;
-        m.key = m.key + 1;
-      }
-
-      this.modules = modules;
+      console.log("Received modules from MMPM Socket.IO Repeater");
+      this.modules = this.formatModules(modules);
     });
+
+    this.socket.connect();
+  }
+
+  private formatModules(modules: Array<MagicMirrorModule>) {
+    // only doing this because the property is called "hidden" in the MagicMirror source code
+    // and for the toggle button to display it in a sane way, it needs to be inverted
+    // otherwise all the toggleButtons will look like they're off, when in reality those modules
+    // are visible. It's a little weird, yes.
+
+    for (const mod of modules) {
+      mod.hidden = !mod.hidden;
+    }
+
+    return modules;
   }
 
   @HostListener("window:beforeunload", ["$event"])
   public beforeUnload() {
+    this.socket.disconnect();
     this.socket.close();
   }
 }

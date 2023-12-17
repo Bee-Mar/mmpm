@@ -19,67 +19,69 @@ from mmpm.log.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)
 
+
 def create():
     server = socketio.Server(cors_allowed_origins="*", async_mode="gevent")
     app = socketio.WSGIApp(server)
     env = MMPMEnv()
-    mmm_mmpm_client = socketio.Client(request_timeout=300)
+    mm_client = socketio.Client(request_timeout=300)
     client_ids = set()
 
-    def create_connection(sid, max_retries=5):
+    def setup_mm_client():
         attempt = 0
+        max_retries = 250
 
-        while attempt < max_retries:
+        while attempt < max_retries and not mm_client.connected:
             try:
-                mmm_mmpm_client.connect(env.MMPM_MAGICMIRROR_URI.get(), wait_timeout=10, wait=True)
+                mm_client.connect(env.MMPM_MAGICMIRROR_URI.get(), wait_timeout=10, wait=True)
 
-                if sid not in client_ids:
-                    client_ids.add(sid)
                 logger.debug("Successfully connected to the MagicMirror SocketIO server")
                 break  # Connection successful, break out of the loop
             except Exception as error:
                 logger.error(error)
                 logger.error(f"Connection failed on attempt ({attempt+1}/{max_retries}). Retrying.")
                 attempt += 1
-                sleep(retry_delay)
+                sleep(1)
 
         if attempt == max_retries:
             logger.error("Maximum retry attempts reached, failed to connect.")
 
-    @server.event
+    @server.on("reconnect")
+    @server.on("connect")
     def connect(sid, environ):
         logger.debug(f"Client connected to SocketIO-Repeater: {sid}")
 
-        if not mmm_mmpm_client.connected:
-            create_connection(sid)
+        if sid not in client_ids:
+            logger.debug(f"Added {sid} to known Client IDs")
+            client_ids.add(sid)
 
-        if mmm_mmpm_client.connected:
-            logger.debug(f"SocketIO-Repeater connected to MagicMirror SocketIO server: {mmm_mmpm_client.connected}")
-            mmm_mmpm_client.emit("FROM_MMPM_APP_get_active_modules", namespace="/MMM-mmpm", data={})
-
-            logger.debug("Emitted data request to MagicMirror SocketIO server")
+        if not mm_client.connected:
+            setup_mm_client()
 
     @server.event
     def disconnect(sid):
         logger.debug(f"Client disconnected: {sid}")
 
         if sid in client_ids:
+            logger.debug(f"Removed {sid} from known Client IDs")
             client_ids.remove(sid)
 
-        if mmm_mmpm_client.connected:
-            mmm_mmpm_client.disconnect()
+        if not client_ids:
+            logger.debug(f"No clients connected. Disconnecting from MagicMirror SocketIO Server.")
+            mm_client.disconnect()
+
+    @server.event
+    def request_modules(sid):
+        logger.debug(f"SocketIO-Repeater connected to MagicMirror SocketIO server: {mm_client.connected}")
+        mm_client.emit("FROM_MMPM_APP_get_active_modules", namespace="/MMM-mmpm", data={})
+        logger.debug("Emitted data request to MagicMirror SocketIO server")
 
     @server.event
     def error(sid):
         logger.debug(f"Client encountered error: {sid}")
 
-        mmm_mmpm_client.disconnect()
-        client_ids = set()
-
-        create_connection()
-
     # Event handler for receiving data from server2
-    @mmm_mmpm_client.on("ACTIVE_MODULES", namespace="/MMM-mmpm")
+    @mm_client.on("ACTIVE_MODULES", namespace="/MMM-mmpm")
     def active_modules(data):
         logger.debug(f"Received data from MagicMirror SocketIO Server: {data}")
 
@@ -88,9 +90,12 @@ def create():
             server.emit("modules", data=data, to=client_id)
 
     # Event handler for receiving data from server2
-    @mmm_mmpm_client.on("MODULES_TOGGLED", namespace="/MMM-mmpm")
+    @mm_client.on("MODULES_TOGGLED", namespace="/MMM-mmpm")
     def modules_toggled(data):
         logger.debug(f"Received toggled modules from MagicMirror SocketIO Server: {data}")
-        mmm_mmpm_client.emit("FROM_MMPM_APP_get_active_modules", namespace="/MMM-mmpm", data={})
+
+        for client_id in client_ids:
+            logger.debug(f"Repeating data to {client_id}")
+            server.emit("modules", data=data, to=client_id)
 
     return app

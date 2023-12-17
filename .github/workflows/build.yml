@@ -44,8 +44,8 @@ jobs:
       - name: Install Test
         run: |
           pdm install
-          ./__pypackages/${{ matrix.python-version }}/bin/mmpm version
-          ./__pypackages/${{ matrix.python-version }}/bin/mmpm --help
+          $HOME/work/mmpm/mmpm/.venv/bin/mmpm version
+          $HOME/work/mmpm/mmpm/.venv/bin/mmpm --help
 
   mmpm-ui:
     runs-on: ubuntu-latest

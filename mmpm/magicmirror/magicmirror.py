@@ -111,7 +111,7 @@ class MagicMirror(Singleton):
         root = self.env.MMPM_MAGICMIRROR_ROOT
         root_path: PosixPath = root.get()
 
-        if root_path.exists() and Path(root_path / "modules").exists():
+        if root_path.exists() and Path(root_path / "modules").exists() and Path(root_path / "node_modules").exists():
             message = f"MagicMirror appears to already be installed in {root_path}. To install MagicMirror elsewhere, modify the {root.name} using 'mmpm open --env'"
             logger.fatal(message)
             return False
@@ -121,24 +121,26 @@ class MagicMirror(Singleton):
                 logger.fatal(f"'{cmd}' command not found. Please install '{cmd}', then re-run 'mmpm mm-ctl --install'")
                 return False
 
-        root_path.mkdir(exist_ok=True)
-        os.chdir(root_path.parent)
+        if not root_path.exists():
+            root_path.mkdir(exist_ok=True)
+            os.chdir(root_path.parent)
 
-        error_code, _, stderr = run_cmd(
-            ["git", "clone", "https://github.com/MichMich/MagicMirror"],
-            progress=True,
-            message=f"Downloading MagicMirror",
-        )
+            error_code, _, stderr = run_cmd(
+                ["git", "clone", "https://github.com/MichMich/MagicMirror"],
+                progress=True,
+                message=f"Downloading MagicMirror",
+            )
 
-        if error_code:
-            logger.error(f"Failed to clone the MagicMirror repo: {stderr}")
-            return False
+            if error_code:
+                logger.error(f"Failed to download MagicMirror: {stderr}")
+                return False
 
         os.chdir(root_path)
+
         error_code, _, stderr = run_cmd(
             ["npm", "run", "install-mm"],
             progress=True,
-            message="Installing MagicMirror dependencies",
+            message="Installing MagicMirror",
         )
 
         if error_code:

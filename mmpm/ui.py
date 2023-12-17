@@ -103,12 +103,7 @@ class MMPMui(Singleton):
 
     def status(self):
         self.create_pm2_config()
-        error_code, stdout, stderr = run_cmd(["pm2", "list", "mmpm"])
-
-        if error_code:
-            logger.error(stderr)
-        else:
-            print(stdout)
+        os.system("pm2 list mmpm")
 
     def remove(self):
         """

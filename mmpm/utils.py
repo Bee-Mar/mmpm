@@ -24,6 +24,16 @@ logger = MMPMLogger.get_logger(__name__)
 
 
 def repo_up_to_date(path: Path):
+    """
+    Checks if the Git repository at the given path is up-to-date with its remote origin.
+
+    Parameters:
+        path (Path): The file system path to the Git repository.
+
+    Returns:
+        bool: True if the local repository is up-to-date, False otherwise.
+    """
+
     try:
         repo = git.Repo(path)
 
@@ -50,6 +60,13 @@ def repo_up_to_date(path: Path):
 
 
 def get_host_ip() -> str:
+    """
+    Retrieves the local IP address of the host machine.
+
+    Returns:
+        str: The local IP address.
+    """
+
     logger.debug("Getting host IP")
 
     address: str = "localhost"
@@ -69,13 +86,16 @@ def get_host_ip() -> str:
 
 def run_cmd(command: List[str], progress=True, background=False, message: str = "") -> Tuple[int, str, str]:
     """
-    Executes shell command and captures errors
+    Executes a shell command and captures its output and errors.
 
     Parameters:
-        command (List[str]): The command string to be executed
+        command (List[str]): The command and its arguments to be executed.
+        progress (bool): If True, displays a spinner during command execution.
+        background (bool): If True, runs the command in the background.
+        message (str): The message to display alongside the spinner.
 
     Returns:
-        Tuple[returncode (int), stdout (str), stderr (str)]
+        Tuple[int, str, str]: A tuple containing the command's return code, standard output, and standard error.
     """
     if background:
         logger.debug(f"Executing command `{' '.join(command)}` in background")
@@ -99,13 +119,13 @@ def run_cmd(command: List[str], progress=True, background=False, message: str = 
 
 def get_pids(process_name: str) -> List[str]:
     """
-    Kills all processes of given name
+    Retrieves process IDs for all processes with the given name.
 
     Parameters:
-        process (str): the name of the process
+        process_name (str): The name of the process to search for.
 
     Returns:
-        processes (List[str]): list of the processes IDs found
+        List[str]: A list of process IDs.
     """
 
     logger.info(f"Getting process IDs related to '{process_name}'")
@@ -121,13 +141,10 @@ def get_pids(process_name: str) -> List[str]:
 
 def kill_pids_of_process(process: str) -> None:
     """
-    Kills all processes of given name
+    Terminates all processes with the given name.
 
     Parameters:
-        process (str): the name of the process
-
-    Returns:
-        processes (str): the processes IDs found
+        process (str): The name of the process to be terminated.
     """
     os.system(f"for process in $(pgrep {process}); do kill -9 $process; done")
     logger.debug(f"Stopped all processes of type {process}")
@@ -135,13 +152,13 @@ def kill_pids_of_process(process: str) -> None:
 
 def safe_get_request(url: str) -> requests.Response:
     """
-    Wrapper method around the 'requests.get' call, containing a try, except block
+    Safely performs a GET request to the specified URL, handling any exceptions.
 
     Parameters:
-        url (str): the url used for the API request
+        url (str): The URL to send the GET request to.
 
     Returns:
-        response (requests.Response): the Reponse object, which may be empty if the request failed
+        requests.Response: The response from the GET request.
     """
     try:
         logger.debug(f"Creating request for {url}")
@@ -153,6 +170,13 @@ def safe_get_request(url: str) -> requests.Response:
 
 
 def upgrade() -> bool:
+    """
+    Attempts to upgrade the MMPM package using pip.
+
+    Returns:
+        bool: True if the upgrade is successful, False otherwise.
+    """
+
     error_code, stdout, stderr = run_cmd(
         ["python3", "-m", "pip", "install", "--upgrade", "--no-cache-dir", "mmpm"],
         message="Upgrading MMPM",
@@ -167,6 +191,13 @@ def upgrade() -> bool:
 
 
 def update_available() -> bool:
+    """
+    Checks if an update is available for MMPM on PyPi.
+
+    Returns:
+        bool: True if an update is available, False otherwise.
+    """
+
     url = "https://pypi.org/pypi/mmpm/json"
 
     logger.debug("Getting remote version of MMPM from PyPi")
@@ -181,11 +212,30 @@ def update_available() -> bool:
 
     return version.parse(remote_version) > version.parse(current_version)
 
-# wrapping the prompt_toolkit so if I do ever want to change the library used
-# for confirmation/input, I can do it more easily throughout the CLI
+# wrapping prompt_toolkit so it's easier to switch out in the future if desired
 def confirm(message: str) -> bool: # pragma: no cover
+    """
+    Displays a confirmation prompt to the user with the given message.
+
+    Parameters:
+        message (str): The message to display in the confirmation prompt.
+
+    Returns:
+        bool: True if the user confirms, False otherwise.
+    """
+
     return ptk_confirm(message)
 
+# wrapping prompt_toolkit so it's easier to switch out in the future if desired
 def prompt(message: str): # pragma: no cover
+    """
+    Displays a prompt to the user with the given message and waits for input.
+
+    Parameters:
+        message (str): The message to display in the prompt.
+
+    Returns:
+        str: The user's input as a string.
+    """
     return ptk_prompt(message)
 

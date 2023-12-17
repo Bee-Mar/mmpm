@@ -1,10 +1,11 @@
 <p-toast></p-toast>
 <p-menu #menu [model]="databaseOptions" [popup]="true"></p-menu>
-<p-button (click)="menu.toggle($event)" icon="fa-solid fa-database" label="Database" severity="secondary"
-  badge="{{ upgradableItems.length }}" badgeClass="p-badge-info"></p-button>
 
-<p-dialog [header]="'Database Info'" [(visible)]="displayDbInfoDialog"
-  [style]="{ width: '20vw', 'max-width': '500px', 'min-width': '400px' }">
+<p-button (click)="menu.toggle($event)" icon="fa-solid fa-database" label="Database" severity="secondary" badge="{{ upgradableItems.length }}" badgeClass="p-badge-info"></p-button>
+
+<p-confirmDialog [style]="{ width: '50vw' }"></p-confirmDialog>
+
+<p-dialog [header]="'Database Info'" [(visible)]="displayDbInfoDialog" [style]="{ width: '20vw', 'max-width': '500px', 'min-width': '400px' }">
   <p-card>
     <div class="package-details-grid">
       <div class="detail">
@@ -16,7 +17,8 @@
       </div>
       <div class="detail">
         <strong>Last Updated:</strong>
-        <span>{{ dbInfo.last_update }}
+        <span
+          >{{ dbInfo.last_update }}
           <i class="fa-solid fa-calendar-days" [style.color]="'white'"></i>
         </span>
       </div>
@@ -37,26 +39,32 @@
       <div class="detail">
         <strong>Upgrades Available:</strong>
         <span>
-          <i class="pi pi-{{ upgradesAvailable ? 'check' : 'times' }}-circle"
-            [style.color]="upgradesAvailable ? '#009933' : '#e05252'"></i>
+          <i class="pi pi-{{ upgradesAvailable ? 'check' : 'times' }}-circle" [style.color]="upgradesAvailable ? '#009933' : '#e05252'"></i>
         </span>
       </div>
     </div>
   </p-card>
 </p-dialog>
 
-<p-dialog [header]="'Available Upgrades'" [(visible)]="displayDbUpgradeDialog"
-  [style]="{ width: '30rem', 'max-width': '700px' }">
+<p-dialog [header]="'Available Upgrades'" [(visible)]="displayDbUpgradeDialog" [style]="{ width: '30rem', 'max-width': '700px' }">
   <p-card>
     <div *ngIf="upgradesAvailable; else noUpgrades" class="package-details-grid">
-      <p-listbox [options]="upgradableItems" [(ngModel)]="selectedUpgrades" [selectAll]="true" optionLabel="title"
-        [style]="{ width: '25rem', margin: '0 auto' }" [multiple]="true" [checkbox]="true" [showToggleAll]="false"
-        [metaKeySelection]="false" [listStyle]="{ 'max-height': '220px' }">
+      <p-listbox
+        [options]="upgradableItems"
+        [(ngModel)]="selectedUpgrades"
+        [selectAll]="true"
+        optionLabel="title"
+        [style]="{ width: '25rem', margin: '0 auto' }"
+        [multiple]="true"
+        [checkbox]="true"
+        [showToggleAll]="false"
+        [metaKeySelection]="false"
+        [listStyle]="{ 'max-height': '220px' }"
+      >
       </p-listbox>
 
       <div class="confirm-button">
-        <p-button [style.marginTop]="'4em'" label="Confirm" [disabled]="!selectedUpgrades.length" (click)="onUpgrade()"
-          icon="fa-solid fa-check" severity="success"></p-button>
+        <p-button [style.marginTop]="'4em'" label="Confirm" [disabled]="!selectedUpgrades.length" (click)="onUpgrade()" icon="fa-solid fa-check" severity="success"></p-button>
       </div>
     </div>
     <ng-template #noUpgrades>

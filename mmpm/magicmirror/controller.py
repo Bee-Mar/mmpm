@@ -5,11 +5,13 @@ from time import sleep
 from typing import List
 
 import socketio
+from pathlib import Path
 from mmpm.constants import color
 from mmpm.env import MMPMEnv
 from mmpm.log.logger import MMPMLogger
 from mmpm.singleton import Singleton
 from mmpm.utils import get_pids, kill_pids_of_process, run_cmd
+
 
 logger = MMPMLogger.get_logger(__name__)
 
@@ -125,7 +127,6 @@ class MagicMirrorController(Singleton):
         Returns:
             None
         """
-
         command = ["npm", "run", "start"]
 
         pm2_process: str = self.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get()
@@ -144,6 +145,10 @@ class MagicMirrorController(Singleton):
 
         root = self.env.MMPM_MAGICMIRROR_ROOT.get()
         root.mkdir(exist_ok=True, parents=True)
+
+        if not Path(root / "node_modules").exists():
+            logger.error("MagicMirror dependencies have not been installed. Please run `mmpm mm-ctl --install` first.")
+            return False
 
         os.chdir(root)
 

@@ -34,20 +34,39 @@ class MmCtl(SubCmd):
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
 
-        self.parser.add_argument(
-            "-i",
-            "--install",
-            action="store_true",
-            help="install MagicMirror",
-            dest="install",
+        subparsers = self.parser.add_subparsers(
+            dest="command",
+            description=f"use `{self.app_name} {self.name} <add/remove> --help` to see more details",
+            title=f"{self.app_name} {self.name} subcommands",
+            metavar="",
         )
 
-        self.parser.add_argument(
-            "-rm",
-            "--remove",
+        install_parser = subparsers.add_parser(
+            "install",
+            help="Install MagicMirror",
+            usage=f"{self.app_name} {self.name} install [--yes]",
+        )
+
+        install_parser.add_argument(
+            "-y",
+            "--yes",
             action="store_true",
+            help="assume yes for user response and do not show prompt",
+            dest="assume_yes",
+        )
+
+        remove_parser = subparsers.add_parser(
+            "remove",
             help="Remove MagicMirror",
-            dest="remove",
+            usage=f"{self.app_name} {self.name} remove [--yes]",
+        )
+
+        remove_parser.add_argument(
+            "-y",
+            "--yes",
+            action="store_true",
+            help="assume yes for user response and do not show prompt",
+            dest="assume_yes",
         )
 
         self.parser.add_argument(
@@ -86,7 +105,6 @@ class MmCtl(SubCmd):
         )
 
         self.parser.add_argument(
-            "-rs",
             "--restart",
             action="store_true",
             help="restart MagicMirror; works with pm2 and docker-compose",
@@ -96,10 +114,10 @@ class MmCtl(SubCmd):
     def exec(self, args, extra):
         if extra:
             logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")
-        elif args.install:
+        elif args.command == "install":
             if confirm("Are your sure you want to install MagicMirror?"):
                 self.magicmirror.install()
-        elif args.remove:
+        elif args.command == "remove":
             if confirm("Are your sure you want to remove MagicMirror?"):
                 self.magicmirror.remove()
         elif args.status:

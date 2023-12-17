@@ -1,76 +1,87 @@
 name: MMPM Build Pipeline
 
 env:
-  NODE_VERSION: 16.19.0
-  PYTHON_VERSION: 3.7.3
+  NODE_VERSION: "18.19.0"
+  PYTHON_VERSION: "3.8.10"
 
 on:
   push:
     branches:
-      - "master"
-      - "develop"
+      - "*"
     tags:
-      - '*'
+      - "*"
   pull_request:
     branches:
-      - '*'
+      - "*"
 
 jobs:
-  build:
+  cli:
     runs-on: ubuntu-latest
     container:
-      image: docker://beemar/python3-nodejs:python3.7.3-nodejs16.19.0
+      image: docker://beemar/python3-nodejs:python${PYTHON_VERSION}-nodejs${NODE_VERSION}
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: actions/cache@v2
+      - name: Cache Python Dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/pip
+          key: ${{ runner.os }}-python-${{ hashFiles('**/pyproject.toml') }}
+      - name: Python Dependencies
+        run: |
+          python -m pip install pdm
+          yes | mypy mmpm --install-types || true
+          pdm install
+      - name: Python Tests
+        run: |
+          pdm run lint
+          pdm run mypy
+          pdm run test
+          pdm run report
+      - name: Python Build
+        run: |
+          pdm build
+
+  ui:
+    runs-on: ubuntu-latest
+    container:
+      image: docker://beemar/python3-nodejs:python${PYTHON_VERSION}-nodejs${NODE_VERSION}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Cache Node Modules
+        uses: actions/cache@v2
         with:
           path: |
             '**/node_modules'
-             ~/mmpm/dist
-             ~/.cache/pip
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: Build Prep
-        shell: bash
-        run: |
-          python --version
-          pip --version
-          mkdir -p ~/.config/mmpm/log
-          touch ~/.config/mmpm/mmpm-cli-interface.log
-      - name: Python Dependencies
-        shell: bash
-        run: |
-          source scripts/ci/requirements.sh
-          yes | mypy mmpm --install-types || true
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
       - name: Angular Dependencies
-        shell: bash
         run: |
-          source scripts/ci/export-env.sh 16.19.0
-          cd gui
-          npm install -g eslint @typescript-eslint/eslint-plugin@latest
-          npm install
-          cd ..
-      - name: Python Tests
-        shell: bash
-        run: |
-          source tests/ci/mypy.sh
-          source tests/ci/pylint.sh
+          export PATH="$PATH:/root/.nvm/versions/node/v${NODE_VERSION}/bin"
+          cd ui && npm install
       - name: Angular Tests
-        shell: bash
         run: |
-          source scripts/ci/export-env.sh 16.19.0
-          bash tests/ci/eslint.sh
-      - name: Build & Bundle
-        shell: bash
+          export PATH="$PATH:/root/.nvm/versions/node/v${NODE_VERSION}/bin"
+          cd ui && npm run lint
+      - name: Angular Build
         run: |
-          source scripts/ci/export-env.sh 16.19.0
-          source scripts/ci/requirements.sh
-          source scripts/ci/build-prod-gui.sh
-          source scripts/ci/compress-static-files.sh
-          source scripts/ci/package-mmpm.sh
+          export PATH="$PATH:/root/.nvm/versions/node/v${NODE_VERSION}/bin"
+          cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href /
+
+  package-and-publish:
+    needs: [cli, ui]
+    runs-on: ubuntu-latest
+    container:
+      image: docker://beemar/python3-nodejs:python${PYTHON_VERSION}-nodejs${NODE_VERSION}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Package Application
+        run: |
       - name: Publish to PyPi
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+        if: github.ref == 'refs/heads/master' && startsWith(github.ref, 'refs/tags/')
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__

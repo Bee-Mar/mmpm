@@ -44,7 +44,8 @@ jobs:
       - name: Install Test
         run: |
           pdm install
-          $HOME/.local/bin/mmpm --help
+          ./__pypackages/${{ matrix.python-version }}/bin/mmpm version
+          ./__pypackages/${{ matrix.python-version }}/bin/mmpm --help
 
   mmpm-ui:
     runs-on: ubuntu-latest
@@ -79,6 +80,7 @@ jobs:
       - name: Angular Build
         run: |
           cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href /
+
     #package-and-publish:
     #  needs: [mmpm-cli, mmpm-ui]
     #  runs-on: ubuntu-latest

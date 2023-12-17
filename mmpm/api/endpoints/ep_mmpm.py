@@ -3,9 +3,10 @@ from datetime import datetime
 from os import chdir
 from shutil import make_archive
 
+from flask import Blueprint, Response, send_file
+
 import mmpm.__version__
 import mmpm.utils
-from flask import Blueprint, Response, send_file
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.constants import paths

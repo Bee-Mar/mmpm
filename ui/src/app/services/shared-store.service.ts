@@ -1,11 +1,11 @@
-import {Injectable} from "@angular/core";
-import {BehaviorSubject, Observable} from "rxjs";
-import {MagicMirrorPackage} from "@/models/magicmirror-package";
-import {MagicMirrorPackageAPI} from "./api/magicmirror-package-api.service";
-import {APIResponse} from "@/services/api/base-api";
-import {DatabaseInfo} from "@/models/database-info";
-import {UpgradableDetails} from "@/models/upgradable-details";
-import {MMPMEnv} from '@/models/mmpm-env';
+import { Injectable } from "@angular/core";
+import { BehaviorSubject, Observable } from "rxjs";
+import { MagicMirrorPackage } from "@/models/magicmirror-package";
+import { MagicMirrorPackageAPI } from "./api/magicmirror-package-api.service";
+import { APIResponse } from "@/services/api/base-api";
+import { DatabaseInfo } from "@/models/database-info";
+import { UpgradableDetails } from "@/models/upgradable-details";
+import { MMPMEnv } from "@/models/mmpm-env";
 
 @Injectable({
   providedIn: "root",
@@ -19,7 +19,7 @@ export class SharedStoreService {
   private dbInfoSubj: BehaviorSubject<DatabaseInfo> = new BehaviorSubject<DatabaseInfo>({});
   public readonly dbInfo: Observable<DatabaseInfo> = this.dbInfoSubj.asObservable();
 
-  private upgradeableSubj: BehaviorSubject<UpgradableDetails> = new BehaviorSubject<UpgradableDetails>({mmpm: false, MagicMirror: false, packages: []});
+  private upgradeableSubj: BehaviorSubject<UpgradableDetails> = new BehaviorSubject<UpgradableDetails>({ mmpm: false, MagicMirror: false, packages: [] });
   public readonly upgradable: Observable<UpgradableDetails> = this.upgradeableSubj.asObservable();
 
   private envSubj: BehaviorSubject<MMPMEnv> = new BehaviorSubject<MMPMEnv>({
@@ -58,7 +58,7 @@ export class SharedStoreService {
           this.dbInfoSubj.next(response.message as DatabaseInfo);
         } else {
           console.log(response.message);
-          this.dbInfoSubj.next({last_update: "N/A", categories: 0, packages: 0});
+          this.dbInfoSubj.next({ last_update: "N/A", categories: 0, packages: 0 });
         }
       });
 
@@ -67,7 +67,7 @@ export class SharedStoreService {
           this.upgradeableSubj.next(response.message as UpgradableDetails);
         } else {
           console.log(response.message);
-          this.upgradeableSubj.next({mmpm: false, MagicMirror: false, packages: []});
+          this.upgradeableSubj.next({ mmpm: false, MagicMirror: false, packages: [] });
         }
       });
     });

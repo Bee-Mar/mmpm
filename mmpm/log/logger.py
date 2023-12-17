@@ -9,6 +9,7 @@ from threading import Lock
 from typing import List
 
 import socketio
+
 from mmpm.__version__ import version
 from mmpm.constants import paths
 from mmpm.env import MMPMEnv

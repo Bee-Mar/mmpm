@@ -1,5 +1,5 @@
-import {Component} from "@angular/core";
-import {getCookie, setCookie} from "./utils/utils";
+import { Component } from "@angular/core";
+import { getCookie, setCookie } from "./utils/utils";
 
 @Component({
   selector: "app-root",

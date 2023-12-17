@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 import os
 import shutil
+from pathlib import Path
 from time import sleep
 from typing import List
 
 import socketio
-from pathlib import Path
+
 from mmpm.constants import color
 from mmpm.env import MMPMEnv
 from mmpm.log.logger import MMPMLogger
 from mmpm.singleton import Singleton
 from mmpm.utils import get_pids, kill_pids_of_process, run_cmd
-
 
 logger = MMPMLogger.get_logger(__name__)
 

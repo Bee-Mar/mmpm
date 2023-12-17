@@ -3,4 +3,3 @@ export interface DatabaseInfo {
   categories?: number;
   packages?: number;
 }
-

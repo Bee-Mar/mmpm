@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import unittest
+
 from mmpm.singleton import Singleton
 
 

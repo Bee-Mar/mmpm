@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
 from faker import Faker
+
 from mmpm.env import MMPM_DEFAULT_ENV, EnvVar, MMPMEnv
 from mmpm.singleton import Singleton
 

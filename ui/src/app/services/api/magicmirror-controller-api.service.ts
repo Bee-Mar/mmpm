@@ -1,7 +1,7 @@
-import {Injectable} from "@angular/core";
-import {APIResponse, BaseAPI} from "./base-api";
-import {MagicMirrorModule} from '@/models/magicmirror-module';
-import {catchError, firstValueFrom, map, retry} from 'rxjs';
+import { Injectable } from "@angular/core";
+import { APIResponse, BaseAPI } from "./base-api";
+import { MagicMirrorModule } from "@/models/magicmirror-module";
+import { catchError, firstValueFrom, map, retry } from "rxjs";
 
 @Injectable({
   providedIn: "root",
@@ -32,7 +32,7 @@ export class MagicMirrorControllerAPI extends BaseAPI {
 
   private postModule(url: string, mmModule: MagicMirrorModule): Promise<APIResponse> {
     return firstValueFrom(
-      this.http.post(this.route(url), {"module": [String(mmModule.key)]}, {headers: this.headers({"Content-Type": "application/json"})}).pipe(
+      this.http.post(this.route(url), { module: [String(mmModule.key)] }, { headers: this.headers({ "Content-Type": "application/json" }) }).pipe(
         map((response) => {
           return typeof response === "string" ? JSON.parse(response) : response;
         }),

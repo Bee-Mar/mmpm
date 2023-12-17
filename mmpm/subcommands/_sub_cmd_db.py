@@ -2,13 +2,14 @@
 """ Command line options for 'db' subcommand """
 import json
 
+from pygments import highlight
+from pygments.formatters.terminal import TerminalFormatter
+from pygments.lexers.data import JsonLexer
+
 from mmpm.constants import color
 from mmpm.log.logger import MMPMLogger
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
-from pygments import highlight
-from pygments.formatters.terminal import TerminalFormatter
-from pygments.lexers.data import JsonLexer
 
 logger = MMPMLogger.get_logger(__name__)
 

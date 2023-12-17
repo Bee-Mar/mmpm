@@ -1,8 +1,8 @@
-import {TestBed} from '@angular/core/testing';
+import { TestBed } from "@angular/core/testing";
 
-import {ConfigFileAPI} from './config-file-api.service';
+import { ConfigFileAPI } from "./config-file-api.service";
 
-describe('ConfigFileAPI', () => {
+describe("ConfigFileAPI", () => {
   let service: ConfigFileAPI;
 
   beforeEach(() => {
@@ -10,7 +10,7 @@ describe('ConfigFileAPI', () => {
     service = TestBed.inject(ConfigFileAPI);
   });
 
-  it('should be created', () => {
+  it("should be created", () => {
     expect(service).toBeTruthy();
   });
 });

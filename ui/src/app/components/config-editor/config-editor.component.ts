@@ -19,7 +19,11 @@ interface FileContentsState {
   providers: [MessageService],
 })
 export class ConfigEditorComponent implements OnInit {
-  constructor(private configFileApi: ConfigFileAPI, private store: SharedStoreService, private msg: MessageService) {}
+  constructor(
+    private configFileApi: ConfigFileAPI,
+    private store: SharedStoreService,
+    private msg: MessageService,
+  ) {}
 
   @ViewChild(EditorComponent, { static: false })
   public editor: EditorComponent;

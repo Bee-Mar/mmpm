@@ -11,6 +11,7 @@ from typing import Any, Callable, Dict, List, Tuple
 
 import requests
 from bs4 import NavigableString, Tag
+
 from mmpm.constants import color
 from mmpm.env import MMPMEnv
 from mmpm.log.logger import MMPMLogger

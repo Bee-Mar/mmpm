@@ -12,7 +12,10 @@ import { MessageService } from "primeng/api";
   providers: [MessageService],
 })
 export class PackageDetailsViewerComponent {
-  constructor(private mmPkgApi: MagicMirrorPackageAPI, private msg: MessageService) {}
+  constructor(
+    private mmPkgApi: MagicMirrorPackageAPI,
+    private msg: MessageService,
+  ) {}
 
   @Input()
   public display: boolean;

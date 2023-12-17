@@ -14,6 +14,7 @@ monkey.patch_all()
 from time import sleep
 
 import socketio
+
 from mmpm.env import MMPMEnv
 from mmpm.log.logger import MMPMLogger
 

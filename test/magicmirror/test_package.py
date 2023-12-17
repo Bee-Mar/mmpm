@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from faker import Faker
+
 from mmpm.env import MMPM_DEFAULT_ENV, MMPMEnv
 from mmpm.magicmirror.package import MagicMirrorPackage, __sanitize__
 

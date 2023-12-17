@@ -1,6 +1,6 @@
-import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {Injectable} from "@angular/core";
-import {catchError, firstValueFrom, retry} from "rxjs";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { Injectable } from "@angular/core";
+import { catchError, firstValueFrom, retry } from "rxjs";
 
 export interface APIResponse {
   code: number;
@@ -31,7 +31,7 @@ export class BaseAPI {
   public get_(endpoint: string): Promise<APIResponse> {
     console.log(`Requesting data from ${endpoint}`);
 
-    return firstValueFrom(this.http.get<APIResponse>(this.route(endpoint), {headers: this.headers()}).pipe(retry(1), catchError(this.handle_error)));
+    return firstValueFrom(this.http.get<APIResponse>(this.route(endpoint), { headers: this.headers() }).pipe(retry(1), catchError(this.handle_error)));
   }
 
   public get_zip_archive(endpoint: string): Promise<ArrayBuffer> {

@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from faker import Faker
+
 from mmpm.env import MMPMEnv
 from mmpm.magicmirror.controller import (MagicMirrorClientFactory,
                                          MagicMirrorController)

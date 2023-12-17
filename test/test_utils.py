@@ -10,6 +10,7 @@ from uuid import uuid4
 
 import requests
 from faker import Faker
+
 from mmpm.__version__ import major, version
 from mmpm.utils import (get_host_ip, get_pids, kill_pids_of_process, run_cmd,
                         safe_get_request, update_available)

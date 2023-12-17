@@ -1,8 +1,8 @@
-import {Component, OnInit, OnDestroy} from "@angular/core";
-import {MagicMirrorPackage} from "@/models/magicmirror-package";
-import {SharedStoreService} from "@/services/shared-store.service";
-import {Subscription} from "rxjs";
-import {MarketPlaceIcons, DefaultMarketPlaceIcon} from "./marketplace-icons.model";
+import { Component, OnInit, OnDestroy } from "@angular/core";
+import { MagicMirrorPackage } from "@/models/magicmirror-package";
+import { SharedStoreService } from "@/services/shared-store.service";
+import { Subscription } from "rxjs";
+import { MarketPlaceIcons, DefaultMarketPlaceIcon } from "./marketplace-icons.model";
 
 @Component({
   selector: "app-marketplace",
@@ -34,7 +34,7 @@ export class MarketPlaceComponent implements OnInit, OnDestroy {
       // add a default icon for any category that isn't recognized
       this.packages.forEach((pkg: MagicMirrorPackage) => {
         if (pkg.category && !this.icons[pkg.category]) {
-          this.icons[pkg.category] = {...DefaultMarketPlaceIcon};
+          this.icons[pkg.category] = { ...DefaultMarketPlaceIcon };
         }
       });
 

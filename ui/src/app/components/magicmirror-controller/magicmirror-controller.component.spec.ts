@@ -1,21 +1,21 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { MagicMirrorControllerComponent } from './magic-mirror-controller.component';
+import { MagicMirrorControllerComponent } from "./magic-mirror-controller.component";
 
-describe('MagicMirrorControllerComponent', () => {
+describe("MagicMirrorControllerComponent", () => {
   let component: MagicMirrorControllerComponent;
   let fixture: ComponentFixture<MagicMirrorControllerComponent>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [MagicMirrorControllerComponent]
+      declarations: [MagicMirrorControllerComponent],
     });
     fixture = TestBed.createComponent(MagicMirrorControllerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

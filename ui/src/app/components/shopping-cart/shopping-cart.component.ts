@@ -1,8 +1,8 @@
-import {MagicMirrorPackage} from "@/models/magicmirror-package";
-import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
-import {SharedStoreService} from "@/services/shared-store.service";
-import {Component, Input, Output, EventEmitter} from "@angular/core";
-import {ConfirmationService, MessageService} from "primeng/api";
+import { MagicMirrorPackage } from "@/models/magicmirror-package";
+import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
+import { SharedStoreService } from "@/services/shared-store.service";
+import { Component, Input, Output, EventEmitter } from "@angular/core";
+import { ConfirmationService, MessageService } from "primeng/api";
 
 @Component({
   selector: "app-shopping-cart",
@@ -11,7 +11,12 @@ import {ConfirmationService, MessageService} from "primeng/api";
   providers: [MessageService, ConfirmationService],
 })
 export class ShoppingCartComponent {
-  constructor(private store: SharedStoreService, private mmPkgApi: MagicMirrorPackageAPI, private msg: MessageService, private confirmation: ConfirmationService) {}
+  constructor(
+    private store: SharedStoreService,
+    private mmPkgApi: MagicMirrorPackageAPI,
+    private msg: MessageService,
+    private confirmation: ConfirmationService,
+  ) {}
 
   @Input()
   public selectedPackages: Array<MagicMirrorPackage>;
@@ -27,15 +32,15 @@ export class ShoppingCartComponent {
 
   public onCheckout(): void {
     this.confirmation.confirm({
-      message: 'Are you sure you want to install/remove the selected packages?',
-      header: 'Confirmation',
-      icon: 'pi pi-exclamation-triangle',
+      message: "Are you sure you want to install/remove the selected packages?",
+      header: "Confirmation",
+      icon: "pi pi-exclamation-triangle",
       accept: () => {
         this.checkout();
       },
       reject: () => {
         return;
-      }
+      },
     });
   }
 
@@ -62,11 +67,11 @@ export class ShoppingCartComponent {
       this.store.load();
 
       if (success.length) {
-        this.msg.add({severity: "success", summary: "Remove Packages", detail: `Successfully removed: ${success.map(pkg => pkg.title).join(", ")}`});
+        this.msg.add({ severity: "success", summary: "Remove Packages", detail: `Successfully removed: ${success.map((pkg) => pkg.title).join(", ")}` });
       }
 
       if (failure.length) {
-        this.msg.add({severity: "error", summary: "Remove Packages", detail: `Failed to remove: ${failure.map(pkg => pkg.title).join(", ")}`});
+        this.msg.add({ severity: "error", summary: "Remove Packages", detail: `Failed to remove: ${failure.map((pkg) => pkg.title).join(", ")}` });
       }
     }
 
@@ -78,11 +83,15 @@ export class ShoppingCartComponent {
       this.store.load();
 
       if (success.length) {
-        this.msg.add({severity: "success", summary: "Install Packages", detail: `Successfully installed: ${success.map(pkg => pkg.title).join(", ")}`});
+        this.msg.add({ severity: "success", summary: "Install Packages", detail: `Successfully installed: ${success.map((pkg) => pkg.title).join(", ")}` });
       }
 
       if (failure.length) {
-        this.msg.add({severity: "error", summary: "Install Packages", detail: `Failed to install: ${failure.map(pkg => pkg.title).join(", ")}. See logs for details, and try reinstalling manually.`});
+        this.msg.add({
+          severity: "error",
+          summary: "Install Packages",
+          detail: `Failed to install: ${failure.map((pkg) => pkg.title).join(", ")}. See logs for details, and try reinstalling manually.`,
+        });
       }
     }
   }

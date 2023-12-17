@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-from mmpm.env import MMPMEnv, EnvVar
 from pathlib import Path
 from unittest.mock import MagicMock
+
 from pytest import fixture
+
+from mmpm.env import EnvVar, MMPMEnv
 
 # TODO: get this to work with the conftest.py for pytest
 # not sure why using a helper fixture isn't working properly, but thats the

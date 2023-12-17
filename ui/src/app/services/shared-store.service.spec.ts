@@ -1,8 +1,8 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed } from "@angular/core/testing";
 
-import { SharedStoreService } from './shared-store.service';
+import { SharedStoreService } from "./shared-store.service";
 
-describe('SharedStoreService', () => {
+describe("SharedStoreService", () => {
   let service: SharedStoreService;
 
   beforeEach(() => {
@@ -10,7 +10,7 @@ describe('SharedStoreService', () => {
     service = TestBed.inject(SharedStoreService);
   });
 
-  it('should be created', () => {
+  it("should be created", () => {
     expect(service).toBeTruthy();
   });
 });

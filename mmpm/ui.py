@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
+import importlib.resources as pkg_resources
 import json
 import os
 import shutil
 from pathlib import Path
 
 from mmpm.__version__ import version
-from mmpm.constants import paths, urls
+from mmpm.constants import urls
 from mmpm.log.logger import MMPMLogger
 from mmpm.singleton import Singleton
 from mmpm.utils import run_cmd
@@ -48,7 +49,7 @@ class MMPMui(Singleton):
                 {
                     "namespace": "mmpm",
                     "name": "mmpm.ui",
-                    "script": f"python3 -m http.server -d {paths.MMPM_PYTHON_ROOT_DIR / 'ui' / 'static'} -b 0.0.0.0 {urls.MMPM_UI_PORT}",
+                    "script": f"python3 -m http.server -d {pkg_resources.files('mmpm').resolve() / 'ui'} -b 0.0.0.0 {urls.MMPM_UI_PORT}",
                     "version": version,
                     "watch": True,
                 },

@@ -11,11 +11,6 @@ MMPM_AVAILABLE_UPGRADES_FILE = MMPM_CONFIG_DIR / "mmpm-available-upgrades.json"
 MAGICMIRROR_3RD_PARTY_PACKAGES_DB_FILE = MMPM_CONFIG_DIR / "MagicMirror-3rd-party-packages-db.json"
 MAGICMIRROR_3RD_PARTY_PACKAGES_DB_LAST_UPDATE_FILE = MMPM_CONFIG_DIR / "MagicMirror-3rd-party-packages-db-last-update.json"
 
-MMPM_PYTHON_ROOT_DIR = Path(__file__).parent.absolute().parent
-MMPM_JS_DIR = MMPM_PYTHON_ROOT_DIR / "js"
-MMPM_BUNDLED_ETC_DIR = MMPM_PYTHON_ROOT_DIR / "etc"
-MMPM_SYSTEMD_SERVICE_FILE = Path("/etc/systemd/system/mmpm.service")
-
 # Setup the directories and files
 MMPM_CONFIG_DIR.mkdir(exist_ok=True, parents=True)
 MMPM_LOG_DIR.mkdir(exist_ok=True)

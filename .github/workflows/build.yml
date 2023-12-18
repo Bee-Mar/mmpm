@@ -140,6 +140,10 @@ jobs:
 
       - name: Package MMPM
         run: |
+          pwd
+          ls
+          ls ui
+          ls ui/build
           python -m pip install pdm
           pdm install
           mkdir -p ./mmpm/ui

@@ -2,7 +2,6 @@
 """ Command line options for 'guided-setup' subcommand """
 import json
 from os import getenv
-from os.path import normpath
 from pathlib import Path
 
 from mmpm.constants import color, paths
@@ -57,7 +56,7 @@ class GuidedSetup(SubCmd):
         install_autocomplete: bool = False
         install_as_module: bool = False
 
-        magicmirror_root = prompt(f"Enter the absolute path to your MagicMirror installation: ", default=f"{Path.home()}/MagicMirror")
+        magicmirror_root = prompt("Enter the absolute path to your MagicMirror installation: ", default=f"{Path.home()}/MagicMirror")
         mmpm_is_docker_image = confirm("Is MMPM running as a Docker image?")
 
         if not mmpm_is_docker_image and confirm("Did you install MagicMirror using docker-compose?"):

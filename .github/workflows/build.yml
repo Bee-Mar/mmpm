@@ -26,6 +26,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
           path: |
             ~/.cache/pip
+            ./pdm.lock
+            ./.venv
           key: ${{ runner.os }}-python-${{ hashFiles('**/pdm.lock') }}
       - name: Python Dependencies
         run: |
@@ -46,6 +48,7 @@ jobs:
         with:
           path: |
             ./dist
+            ./pdm.lock
           key: ${{ runner.os }}-build-${{ hashFiles('**/pdm.lock') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ hashFiles('**/pdm.lock') }}
@@ -102,6 +105,15 @@ jobs:
     needs: [mmpm-cli, mmpm-ui]
     runs-on: ubuntu-latest
     steps:
+      - name: Restore Python Dependencies Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ./pdm.lock
+            ./.venv
+          key: ${{ runner.os }}-python-${{ hashFiles('**/pdm.lock') }}
+
       - name: Restore Python Build Artifacts Cache
         uses: actions/cache@v3
         with:

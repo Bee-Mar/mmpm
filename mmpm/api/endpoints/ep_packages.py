@@ -76,6 +76,7 @@ class Packages(Endpoint):
                 pkg = MagicMirrorPackage(**package)
 
                 if pkg.install():
+                    logger.debug(f"Installed {pkg.title}")
                     success.append(package)
                 else:
                     logger.debug(f"Removing {pkg.title} due to installation failure. Please try reinstalling manually.")
@@ -102,8 +103,10 @@ class Packages(Endpoint):
 
             for package in packages:
                 if MagicMirrorPackage(**package).remove():
+                    logger.debug(f"Removed {package['title']}")
                     success.append(package)
                 else:  # honestly, this should never fail anyway
+                    logger.debug(f"Failed to remove {package['title']}")
                     failure.append(package)
 
             return self.success({"success": success, "failure": failure})
@@ -126,8 +129,10 @@ class Packages(Endpoint):
 
             for package in packages:
                 if MagicMirrorPackage(**package).upgrade():
+                    logger.debug(f"Upgraded {package['title']}")
                     success.append(package)
                 else:
+                    logger.debug(f"Failed to upgrade {package['title']}")
                     failure.append(package)
 
             return self.success({"success": success, "failure": failure})

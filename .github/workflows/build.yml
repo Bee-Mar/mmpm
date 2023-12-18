@@ -122,6 +122,8 @@ jobs:
 
       - name: Package MMPM
         run: |
+          python -m pip install pdm
+          pdm install
           mkdir -p ./mmpm/ui
           cp -r ./ui/build/* ./mmpm/ui
           pdm build

@@ -22,6 +22,7 @@ class MmCtl(Endpoint):
 
         @self.blueprint.route("/install", methods=[http.GET])
         def install() -> Response:
+            logger.info("Received request to install MagicMirror")
             if self.magicmirror.install():
                 return self.success("MagicMirror installed")
 
@@ -29,6 +30,7 @@ class MmCtl(Endpoint):
 
         @self.blueprint.route("/remove", methods=[http.GET])
         def remove() -> Response:
+            logger.info("Received request to remove MagicMirror")
             if self.magicmirror.remove():
                 return self.success("MagicMirror removed")
 
@@ -36,6 +38,7 @@ class MmCtl(Endpoint):
 
         @self.blueprint.route("/upgrade", methods=[http.GET])
         def upgrade() -> Response:
+            logger.info("Received request to upgrade MagicMirror")
             if self.magicmirror.upgrade():
                 return self.success("MagicMirror updated")
 
@@ -43,6 +46,7 @@ class MmCtl(Endpoint):
 
         @self.blueprint.route("/start", methods=[http.GET])
         def start() -> Response:
+            logger.info("Received request to start MagicMirror")
             if self.controller.start():
                 return self.success("MagicMirror started")
 
@@ -50,6 +54,7 @@ class MmCtl(Endpoint):
 
         @self.blueprint.route("/stop", methods=[http.GET])
         def stop() -> Response:
+            logger.info("Received request to stop MagicMirror")
             if self.controller.stop():
                 return self.success("MagicMirror stopped")
 
@@ -57,6 +62,7 @@ class MmCtl(Endpoint):
 
         @self.blueprint.route("/restart", methods=[http.GET])
         def restart() -> Response:
+            logger.info("Received request to restart MagicMirror")
             if self.controller.restart():
                 return self.success("MagicMirror restarted")
 
@@ -65,6 +71,7 @@ class MmCtl(Endpoint):
         @self.blueprint.route("/hide", methods=[http.POST])
         def hide() -> Response:
             module = request.get_json()["module"]
+            logger.info(f"Received request to hide MagicMirror module {module}")
 
             if self.controller.hide(module):
                 return self.success("Hid module")
@@ -74,6 +81,8 @@ class MmCtl(Endpoint):
         @self.blueprint.route("/show", methods=[http.POST])
         def show() -> Response:
             module = request.get_json()["module"]
+
+            logger.info(f"Received request to show MagicMirror module {module}")
 
             if self.controller.show(module):
                 return self.success("Shown module")

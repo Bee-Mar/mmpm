@@ -8,9 +8,9 @@ from flask import Blueprint, Response, send_file
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.constants import paths
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class Logs(Endpoint):

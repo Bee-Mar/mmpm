@@ -7,11 +7,11 @@ from pathlib import Path
 
 from mmpm.__version__ import version
 from mmpm.constants import urls
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.singleton import Singleton
 from mmpm.utils import run_cmd
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class MMPMui(Singleton):

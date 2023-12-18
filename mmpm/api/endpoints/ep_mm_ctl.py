@@ -4,11 +4,11 @@ from flask import Blueprint, Response, request
 
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.controller import MagicMirrorController
 from mmpm.magicmirror.magicmirror import MagicMirror
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class MmCtl(Endpoint):

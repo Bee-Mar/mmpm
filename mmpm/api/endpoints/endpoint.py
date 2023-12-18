@@ -3,9 +3,9 @@ from typing import Any
 
 from flask import Response, jsonify
 
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class Endpoint:

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """ Command line options for 'search' subcommand """
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class Search(SubCmd):

@@ -10,12 +10,12 @@ from bs4 import BeautifulSoup
 
 from mmpm.constants import color, paths, urls
 from mmpm.env import MMPMEnv
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.singleton import Singleton
 from mmpm.utils import run_cmd
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class MagicMirrorDatabase(Singleton):

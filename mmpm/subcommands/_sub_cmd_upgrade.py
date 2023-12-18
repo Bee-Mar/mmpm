@@ -4,13 +4,13 @@ import json
 from typing import List
 
 from mmpm.constants import paths
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.subcommands.sub_cmd import SubCmd
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class Upgrade(SubCmd):

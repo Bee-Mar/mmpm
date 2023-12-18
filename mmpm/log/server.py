@@ -8,9 +8,9 @@ monkey.patch_all()
 
 import socketio
 
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 # Function to create the SocketIO server

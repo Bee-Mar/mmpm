@@ -18,9 +18,9 @@ from yaspin.spinners import Spinners
 
 from mmpm.__version__ import version as current_version
 from mmpm.constants import color
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 def repo_up_to_date(path: Path):

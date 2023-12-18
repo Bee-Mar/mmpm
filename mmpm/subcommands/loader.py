@@ -3,9 +3,9 @@ from importlib import import_module
 from pkgutil import iter_modules
 from typing import Dict
 
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class Loader:

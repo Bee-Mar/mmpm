@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """ Command line options for 'mm-pkg' subcommand """
 from mmpm.constants import color
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
 from mmpm.utils import confirm, prompt
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class MmPkg(SubCmd):
@@ -20,7 +20,7 @@ class MmPkg(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "mm-pkg"
-        self.help = "Manually add/remove MagicMirror packages in your local database (similar to add-apt-repository)"
+        self.help = "Manually add/remove custom MagicMirror packages in your local database (similar to add-apt-repository)"
         self.usage = f"{self.app_name} {self.name} <add/remove> [--<option>]"
         self.database = MagicMirrorDatabase()
 

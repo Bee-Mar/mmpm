@@ -2,9 +2,9 @@
 from argparse import Namespace, _SubParsersAction
 from typing import List
 
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class SubCmd:

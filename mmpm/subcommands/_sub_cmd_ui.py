@@ -5,13 +5,13 @@
 from time import sleep
 
 from mmpm.constants import urls
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
 from mmpm.ui import MMPMui
 from mmpm.utils import confirm
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class Ui(SubCmd):

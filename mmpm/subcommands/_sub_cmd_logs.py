@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """ Command line options for 'log' subcommand """
 
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.subcommands.sub_cmd import SubCmd
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class Logs(SubCmd):
@@ -44,6 +44,6 @@ class Logs(SubCmd):
         if extra:
             logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")
         elif args.zip:
-            MMPMLogger.archive()
+            MMPMLogFactory.archive()
         else:
-            MMPMLogger.display(tail=args.tail)
+            MMPMLogFactory.display(tail=args.tail)

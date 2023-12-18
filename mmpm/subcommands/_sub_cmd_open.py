@@ -6,12 +6,12 @@ from shutil import copyfile
 
 from mmpm.constants import paths, urls
 from mmpm.env import MMPMEnv
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.subcommands.sub_cmd import SubCmd
 from mmpm.ui import MMPMui
 from mmpm.utils import run_cmd
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class Open(SubCmd):

@@ -14,12 +14,12 @@ from bs4 import NavigableString, Tag
 
 from mmpm.constants import color
 from mmpm.env import MMPMEnv
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.utils import repo_up_to_date, run_cmd, safe_get_request
 
 NA: str = "N/A"
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 def __sanitize__(string: str) -> str:

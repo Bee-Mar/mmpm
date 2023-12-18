@@ -4,12 +4,12 @@ from flask import Blueprint, Response
 
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.utils import update_available
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class Db(Endpoint):

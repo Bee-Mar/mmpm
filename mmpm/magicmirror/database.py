@@ -7,6 +7,7 @@ from typing import Any, Dict, List
 
 import requests
 from bs4 import BeautifulSoup
+
 from mmpm.constants import color, paths, urls
 from mmpm.env import MMPMEnv
 from mmpm.log.logger import MMPMLogger

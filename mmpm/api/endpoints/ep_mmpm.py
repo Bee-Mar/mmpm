@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+from flask import Blueprint, Response
+
 import mmpm.__version__
 import mmpm.utils
-from flask import Blueprint, Response
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.log.logger import MMPMLogger

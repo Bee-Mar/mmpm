@@ -11,6 +11,7 @@ from typing import Any, Callable, Dict, List, Tuple
 
 import requests
 from bs4 import NavigableString, Tag
+
 from mmpm.constants import color
 from mmpm.env import MMPMEnv
 from mmpm.log.logger import MMPMLogger
@@ -329,6 +330,7 @@ class InstallationHandler:
     MagicMirrorPackage's by cloning their repo and identifying dependencies
     that need to be installed.
     """
+
     __slots__ = {"package"}
 
     def __init__(self, package: MagicMirrorPackage):
@@ -515,6 +517,7 @@ class RemotePackage:
     """
     Class that collects details about a MagicMirrorPackage from its repository.
     """
+
     def __init__(self, package: MagicMirrorPackage):
         self.package = package
 

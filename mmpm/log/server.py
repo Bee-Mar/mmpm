@@ -7,6 +7,7 @@ from gevent import monkey
 monkey.patch_all()
 
 import socketio
+
 from mmpm.log.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)

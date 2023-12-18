@@ -115,8 +115,10 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ./ui/build  # Adjust this to the correct relative path
+            ./ui/build
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
       - name: Package MMPM
         run: |

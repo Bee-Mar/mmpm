@@ -6,6 +6,7 @@ from time import sleep
 from typing import List
 
 import socketio
+
 from mmpm.constants import color
 from mmpm.env import MMPMEnv
 from mmpm.log.logger import MMPMLogger

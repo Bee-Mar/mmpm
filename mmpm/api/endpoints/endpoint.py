@@ -2,6 +2,7 @@
 from typing import Any
 
 from flask import Response, jsonify
+
 from mmpm.log.logger import MMPMLogger
 
 logger = MMPMLogger.get_logger(__name__)

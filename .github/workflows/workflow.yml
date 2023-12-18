@@ -148,6 +148,18 @@ jobs:
           skip_existing: true
           verbose: true
 
+      - name: Create Release
+        if: github.ref == 'refs/heads/code-cleanup' # && startsWith(github.ref, 'refs/tags/')
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: true
+
       - name: Upload Release Artifacts
         if: github.ref == 'refs/heads/code-cleanup' # && startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-release-asset@v1

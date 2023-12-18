@@ -43,15 +43,6 @@ jobs:
       - name: Python Build
         run: |
           pdm build
-      - name: Cache Python Build Artifacts
-        uses: actions/cache@v3
-        with:
-          path: |
-            ./dist
-            ./pdm.lock
-          key: ${{ runner.os }}-python-build-${{ hashFiles('**/pdm.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-python-build-${{ hashFiles('**/pdm.lock') }}
       - name: Install Test
         run: |
           pdm install
@@ -77,6 +68,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-angular-deps-${{ hashFiles('**/package-lock.json') }}
 
+      - name: Cache Angular Build Artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/work/mmpm/mmpm/ui/build
+          key: ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
@@ -93,15 +93,6 @@ jobs:
       - name: Angular Build
         run: |
           cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href / && cd ..
-
-      - name: Cache Angular Build Artifacts
-        uses: actions/cache@v3
-        with:
-          path: |
-            ./ui/build
-          key: ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
 
   package-and-publish:
     needs: [mmpm-cli, mmpm-ui]
@@ -120,7 +111,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-python-deps-${{ hashFiles('**/pdm.lock') }}
 
-      - name: Restore Python Build Artifacts Cache
+      - name: Restore Angular Build Artifacts Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/work/mmpm/mmpm/ui/build
+          key: ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Package MMPM
+        run: |
+          python -m pip install pdm
+          pdm install
+          mkdir -p ./mmpm/ui
+          cp -r ./ui/build/* ./mmpm/ui
+          pdm build
+
+      - name: Cache MMPM Artifacts
         uses: actions/cache@v3
         with:
           path: |
@@ -128,27 +136,6 @@ jobs:
           key: ${{ runner.os }}-python-build-${{ hashFiles('**/pdm.lock') }}
           restore-keys: |
             ${{ runner.os }}-python-build-${{ hashFiles('**/pdm.lock') }}
-
-      - name: Restore Angular Build Artifacts Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ./ui/build
-          key: ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Package MMPM
-        run: |
-          pwd
-          ls
-          ls ui
-          ls ui/build
-          python -m pip install pdm
-          pdm install
-          mkdir -p ./mmpm/ui
-          cp -r ./ui/build/* ./mmpm/ui
-          pdm build
 
       - name: Publish to PyPi
         if: github.ref == 'refs/heads/master' && startsWith(github.ref, 'refs/tags/')

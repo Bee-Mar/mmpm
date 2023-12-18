@@ -13,7 +13,7 @@
 - Added doc-strings to functions
 
 - Added new method `check_for_mmpm_enhancements` to check for updates to MMPM, which will run
-    intermittently, and prompt the user when one is found
+  intermittently, and prompt the user when one is found
 
 - The user may also run `check_for_mmpm_enhancements` by specifying the `-e` flag
 
@@ -290,3 +290,11 @@
 - fixed URL path causing duplicate static endpoints
 - changed import path of gevent.monkey `patch_all` call
 - changed installation method of MagicMirror via `mmpm install --magicmirror`
+
+## Version 3.1
+
+- hotfix to update parsing based on 3rd Party Modules page changes
+
+## Version 4.0.0
+
+- total rework of the entire application

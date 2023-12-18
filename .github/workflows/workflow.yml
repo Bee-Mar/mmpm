@@ -140,7 +140,7 @@ jobs:
             ${{ runner.os }}-python-build-${{ hashFiles('**/pdm.lock') }}
 
       - name: Publish to PyPi
-        if: github.ref == 'refs/heads/master' && startsWith(github.ref, 'refs/tags/')
+        if: github.ref == 'refs/heads/code-cleanup' && startsWith(github.ref, 'refs/tags/')
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
@@ -148,10 +148,9 @@ jobs:
           skip_existing: true
           verbose: true
 
-      - name: Create Release
+      - name: Publish Release
         if: github.ref == 'refs/heads/code-cleanup' && startsWith(github.ref, 'refs/tags/')
-        id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: actions/upload-artifact@v3
         with:
-          files: |
-            ${{ github.workspace }}/dist/*whl
+          name: python-package-distributions
+          path: ${{ github.workspace }}/dist/

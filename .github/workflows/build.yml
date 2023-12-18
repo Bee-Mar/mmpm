@@ -9,6 +9,8 @@ on:
   pull_request:
     branches:
       - "*"
+  release:
+    types: [created]
 
 jobs:
   mmpm-cli:
@@ -126,14 +128,13 @@ jobs:
           pdm install
           mkdir -p ${{ github.workspace }}/mmpm/ui
           cp -r ${{ github.workspace }}/ui/build/* ${{ github.workspace }}/mmpm/ui
-          ls ${{ github.workspace }}/mmpm/ui
           pdm build
 
       - name: Cache MMPM Artifacts
         uses: actions/cache@v3
         with:
           path: |
-            ./dist
+            ${{ github.workspace }}/dist
           key: ${{ runner.os }}-python-build-${{ hashFiles('**/pdm.lock') }}
           restore-keys: |
             ${{ runner.os }}-python-build-${{ hashFiles('**/pdm.lock') }}
@@ -146,3 +147,14 @@ jobs:
           password: ${{ secrets.PYPI_TOKEN }}
           skip_existing: true
           verbose: true
+
+      - name: Upload Release Artifacts
+        if: github.ref == 'refs/heads/code-cleanup' # && startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ github.workspace }}/dist
+          asset_name: mmpm-${{ github.event.release.tag_name }}.zip
+          asset_content_type: application/zip

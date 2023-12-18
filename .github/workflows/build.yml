@@ -27,9 +27,9 @@ jobs:
           path: |
             ~/.cache/pip
             ./.venv
-          key: ${{ runner.os }}-python-${{ hashFiles('**/pdm.lock') }}
+          key: ${{ runner.os }}-python-deps-${{ hashFiles('**/pdm.lock') }}
           restore-keys: |
-            ${{ runner.os }}-python-${{ hashFiles('**/pdm.lock') }}
+            ${{ runner.os }}-python-deps-${{ hashFiles('**/pdm.lock') }}
       - name: Python Dependencies
         run: |
           python -m pip install pdm
@@ -49,9 +49,9 @@ jobs:
           path: |
             ./dist
             ./pdm.lock
-          key: ${{ runner.os }}-build-${{ hashFiles('**/pdm.lock') }}
+          key: ${{ runner.os }}-python-build-${{ hashFiles('**/pdm.lock') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ hashFiles('**/pdm.lock') }}
+            ${{ runner.os }}-python-build-${{ hashFiles('**/pdm.lock') }}
       - name: Install Test
         run: |
           pdm install
@@ -73,9 +73,9 @@ jobs:
         with:
           path: |
             './ui/node_modules'
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-angular-deps-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+            ${{ runner.os }}-angular-deps-${{ hashFiles('**/package-lock.json') }}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -99,9 +99,9 @@ jobs:
         with:
           path: |
             ./ui/build
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+            ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
 
   package-and-publish:
     needs: [mmpm-cli, mmpm-ui]
@@ -116,27 +116,27 @@ jobs:
           path: |
             ~/.cache/pip
             ./.venv
-          key: ${{ runner.os }}-python-${{ hashFiles('**/pdm.lock') }}
+          key: ${{ runner.os }}-python-deps-${{ hashFiles('**/pdm.lock') }}
           restore-keys: |
-            ${{ runner.os }}-python-${{ hashFiles('**/pdm.lock') }}
+            ${{ runner.os }}-python-deps-${{ hashFiles('**/pdm.lock') }}
 
       - name: Restore Python Build Artifacts Cache
         uses: actions/cache@v3
         with:
           path: |
             ./dist
-          key: ${{ runner.os }}-build-${{ hashFiles('**/pdm.lock') }}
+          key: ${{ runner.os }}-python-build-${{ hashFiles('**/pdm.lock') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ hashFiles('**/pdm.lock') }}
+            ${{ runner.os }}-python-build-${{ hashFiles('**/pdm.lock') }}
 
       - name: Restore Angular Build Artifacts Cache
         uses: actions/cache@v3
         with:
           path: |
             ./ui/build
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+            ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
 
       - name: Package MMPM
         run: |

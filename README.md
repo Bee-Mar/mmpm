@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
   </a>
   <a href="https://github.com/Bee-Mar/mmpm/actions" target="_blank">
-    <img src="https://github.com/bee-mar/mmpm/actions/workflows/build.yml/badge.svg?master" alt="Travis CI">
+    <img src="https://github.com/bee-mar/mmpm/actions/workflows/workflow.yml/badge.svg?master" alt="GitHub Actions">
   </a>
   <a href="https://hub.docker.com/r/karsten13/mmpm" target="_blank">
     <img src="https://img.shields.io/docker/pulls/karsten13/mmpm.svg" alt="Docker Pulls">

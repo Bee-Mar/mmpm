@@ -79,15 +79,15 @@ jobs:
 
       - name: Angular Dependencies
         run: |
-          cd ui && npm install --legacy-peer-deps
+          cd ui && npm install --legacy-peer-deps && cd ..
 
       - name: Angular Tests
         run: |
-          cd ui && npm run lint
+          cd ui && npm run lint && cd ..
 
       - name: Angular Build
         run: |
-          cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href /
+          cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href / && cd ..
 
       - name: Cache Angular Build Artifacts
         uses: actions/cache@v2
@@ -102,9 +102,33 @@ jobs:
     needs: [mmpm-cli, mmpm-ui]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Package Application
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Restore Python Build Artifacts Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./dist
+          key: ${{ runner.os }}-build-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ hashFiles('**/pyproject.toml') }}
+
+      - name: Restore Angular Build Artifacts Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./ui/build  # Adjust this to the correct relative path
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package.json') }}
+
+      - name: Package MMPM
         run: |
+          mkdir -p ./mmpm/ui
+          cp -r ./ui/build/static ./mmpm/ui
+          pdm build
+
       - name: Publish to PyPi
         if: github.ref == 'refs/heads/master' && startsWith(github.ref, 'refs/tags/')
         uses: pypa/gh-action-pypi-publish@release/v1

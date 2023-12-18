@@ -26,13 +26,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
           path: |
             ~/.cache/pip
-            ./pdm.lock
             ./.venv
           key: ${{ runner.os }}-python-${{ hashFiles('**/pdm.lock') }}
       - name: Python Dependencies
         run: |
           python -m pip install pdm
-          yes | mypy mmpm --install-types || true
           pdm install
       - name: Python Tests
         run: |
@@ -105,12 +103,14 @@ jobs:
     needs: [mmpm-cli, mmpm-ui]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Restore Python Dependencies Cache
         uses: actions/cache@v3
         with:
           path: |
             ~/.cache/pip
-            ./pdm.lock
             ./.venv
           key: ${{ runner.os }}-python-${{ hashFiles('**/pdm.lock') }}
 

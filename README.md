@@ -59,6 +59,10 @@ echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc && source ~/.bashrc
 
 ## Look to the [Wiki](https://github.com/Bee-Mar/mmpm/wiki)
 
-Make sure you've followed all the instructions for [installation](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installation), configuring [environment variables](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Environment-Variables), and the [hide/show modules feature](https://github.com/Bee-Mar/mmpm/wiki/Status,-Hide,-Show-MagicMirror-Modules) setup.
+Key Pages:
 
-Note: the Environment Variables setup is **extremely** important.
+- [Migrating to MMPM 4.x.x](https://github.com/Bee-Mar/mmpm/wiki/Migrating-to-MMPM%E2%80%904.x.x)
+- [Installation & Removal](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installation-&-Removal)
+- [UI Installation & Removal](https://github.com/Bee-Mar/mmpm/wiki/MMPM-UI-Installation-&-Removal)
+- [Environment Variables](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Environment-Variables) (**Extremely** important)
+- [Hide/Show MagicMirror Modules](https://github.com/Bee-Mar/mmpm/wiki/Status,-Hide,-Show-MagicMirror-Modules)

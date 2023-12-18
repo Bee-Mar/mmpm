@@ -234,7 +234,7 @@ def confirm(message: str) -> bool:  # pragma: no cover
 
 
 # wrapping prompt_toolkit so it's easier to switch out in the future if desired
-def prompt(message: str):  # pragma: no cover
+def prompt(message: str, default=""):  # pragma: no cover
     """
     Displays a prompt to the user with the given message and waits for input.
 
@@ -244,4 +244,4 @@ def prompt(message: str):  # pragma: no cover
     Returns:
         str: The user's input as a string.
     """
-    return ptk_prompt(message)
+    return ptk_prompt(message, default=default)

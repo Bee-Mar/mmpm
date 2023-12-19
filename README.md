@@ -48,7 +48,7 @@ The MagicMirror Package Manager is featured as an alternative installation metho
 ### Install MMPM
 
 ```sh
-python3 -m pip install --upgrade --no-cache-dir mmpm
+python3 -m pip install --upgrade mmpm
 ```
 
 ### Ensure Your PATH is Correct

@@ -114,7 +114,7 @@ class Ui(SubCmd):
         if not self.database.is_initialized():
             self.database.load()
 
-        if self.env.MMPM_IS_DOCKER_IMAGE:
+        if self.env.MMPM_IS_DOCKER_IMAGE.get():
             logger.error("MMPM is a Docker image. Unable to interact with MMPM UI from CLI.")
             return
 

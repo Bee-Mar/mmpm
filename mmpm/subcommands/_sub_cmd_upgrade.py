@@ -79,7 +79,7 @@ class Upgrade(SubCmd):
         upgradable["MagicMirror"] = upgradable["MagicMirror"] and self.magicmirror.upgrade()
 
         if upgradable["mmpm"]:
-            if self.env.MMPM_IS_DOCKER_IMAGE:
+            if self.env.MMPM_IS_DOCKER_IMAGE.get():
                 logger.warning("Cannot perform self-upgrade because MMPM is a Docker image. Stop MMPM and run `docker pull karsten13/mmpm:latest`")
             else:
                 upgradable["mmpm"] = utils.upgrade()

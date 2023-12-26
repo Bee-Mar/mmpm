@@ -45,7 +45,7 @@ class Mmpm(Endpoint):
             Returns:
                 Response: A Flask Response object indicating success or failure of the upgrade operation.
             """
-            if self.env.MMPM_IS_DOCKER_IMAGE:
+            if self.env.MMPM_IS_DOCKER_IMAGE.get():
                 self.failure("MMPM is a Docker image. MMPM must be upgraded using the Docker CLI.")
             if mmpm.utils.upgrade():
                 return self.success("Upgrade MMPM")

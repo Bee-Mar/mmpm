@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-import importlib.resources as pkg_resources
+import sys
+
+if sys.version_info < (3, 9):
+    import importlib_resources as pkg_resources
+else:
+    import importlib.resources as pkg_resources
+
 import json
 import os
 import shutil

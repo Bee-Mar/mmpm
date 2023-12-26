@@ -69,7 +69,7 @@ def get_host_ip() -> str:
 
     logger.debug("Getting host IP")
 
-    address: str = "localhost"
+    address = "localhost"
     skt = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     try:
@@ -78,6 +78,7 @@ def get_host_ip() -> str:
         logger.debug(f"Determined Host IP={address}")
     except socket.gaierror as error:
         logger.error(f"Failed to determine host IP address: {error}")
+        address = "localhost"  # just to be extra safe and make sure it's set to something usable
     finally:
         skt.close()
 

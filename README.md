@@ -32,6 +32,29 @@
 
 The MagicMirror Package Manager is featured as an alternative installation method on the [MagicMirror Documentation](https://docs.magicmirror.builders/getting-started/installation.html#alternative-installation-methods).
 
+
+## Quick Installation Guide
+
+MMPM can be installed as a Docker image, or through `pip`.
+
+### [Docker](https://hub.docker.com/r/karsten13/mmpm/)
+
+```sh
+docker pull karsten13/mmpm
+```
+
+### [pip](https://pypi.org/project/mmpm/)
+
+```sh
+python3 -m pip install --upgrade mmpm
+```
+
+### Ensure Your PATH is Correct
+
+```sh
+echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc && source ~/.bashrc
+```
+
 ## Features
 
 - Manage packages: install, remove, update, and upgrade.
@@ -43,19 +66,6 @@ The MagicMirror Package Manager is featured as an alternative installation metho
 - Control MagicMirror modules: hide/show ([details](https://github.com/Bee-Mar/mmpm/wiki/Status,-Hide,-Show-MagicMirror-Modules))
 - Control MagicMirror state: start, stop, restart (supports npm, pm2, docker-compose).
 
-## Quick Installation Guide
-
-### Install MMPM
-
-```sh
-python3 -m pip install --upgrade mmpm
-```
-
-### Ensure Your PATH is Correct
-
-```sh
-echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc && source ~/.bashrc
-```
 
 ## Look to the [Wiki](https://github.com/Bee-Mar/mmpm/wiki)
 

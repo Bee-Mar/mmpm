@@ -8,6 +8,7 @@ import shutil
 from threading import Lock
 
 import socketio
+
 from mmpm.__version__ import version
 from mmpm.constants import paths
 from mmpm.env import MMPMEnv

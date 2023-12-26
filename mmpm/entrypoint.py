@@ -6,10 +6,10 @@ import argcomplete
 
 import mmpm.subcommands
 from mmpm.constants import urls
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.subcommands.loader import Loader
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 # for the console script
@@ -26,7 +26,7 @@ def main():
 
     if "--help" in sys.argv or "-h" in sys.argv:
         # close up any SocketIO connection in the logger that could linger before it becomes a problem
-        MMPMLogger.shutdown()
+        MMPMLogFactory.shutdown()
 
     app_name = "mmpm"
 
@@ -68,7 +68,7 @@ def main():
     else:
         subcommand.exec(args, extra)
 
-    MMPMLogger.shutdown()
+    MMPMLogFactory.shutdown()
 
 
 if __name__ == "__main__":

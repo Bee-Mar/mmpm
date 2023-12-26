@@ -15,7 +15,7 @@ immediately without needing a manual restart.
 
 Attributes:
     app (Flask): The Flask application instance imported from mmpm.api.entrypoint.
-    logger (Logger): A logger instance for logging information, imported from mmpm.log.logger.
+    logger (Logger): A logger instance for logging information, imported from mmpm.log.factory.
 
 Functions:
     __main__: If this script is run as the main program, it starts the Flask application with specific configurations.
@@ -27,9 +27,9 @@ monkey.patch_all()  # do not move these
 
 from mmpm.api.entrypoint import app
 from mmpm.constants import paths
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 if __name__ == "__main__":
     app.run(

@@ -9,11 +9,11 @@ import socketio
 
 from mmpm.constants import color
 from mmpm.env import MMPMEnv
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.singleton import Singleton
 from mmpm.utils import kill_pids_of_process, run_cmd
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class MagicMirrorClientFactory:

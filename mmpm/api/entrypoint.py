@@ -10,10 +10,10 @@ from flask_cors import CORS
 
 import mmpm.api.endpoints
 from mmpm.api.endpoints.index import Index
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.subcommands.loader import Loader
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 app = Flask(__name__)
 app.config["CORS_HEADERS"] = "Content-Type"

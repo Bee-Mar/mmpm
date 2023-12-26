@@ -298,3 +298,13 @@
 ## Version 4.0.0
 
 - total rework of the entire application
+
+## Version 4.0.1
+
+- fix for opening UI url from CLI
+
+## Version 4.0.2
+
+- added guard on determining host IP address in `mmpm.constants.paths`
+- added import guard for Python3.8 when using `importlib.resources` in `mmpm.ui`
+- added check for MMPM being a docker image when self upgrading

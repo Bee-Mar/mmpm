@@ -7,11 +7,11 @@ from pygments.formatters.terminal import TerminalFormatter
 from pygments.lexers.data import JsonLexer
 
 from mmpm.constants import color
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class Db(SubCmd):
@@ -25,7 +25,7 @@ class Db(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "db"
-        self.help = "Refresh or display basic details about the database"
+        self.help = "Display database metadata, or display raw database contents"
         self.usage = f"{self.app_name} {self.name} [--<option>]"
         self.database = MagicMirrorDatabase()
 
@@ -38,7 +38,7 @@ class Db(SubCmd):
             "-i",
             "--info",
             action="store_true",
-            help="display information about the MagicMirror packages database",
+            help="display database metadata",
             dest="info",
         )
 

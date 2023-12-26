@@ -6,11 +6,11 @@ from pathlib import Path
 
 from mmpm.constants import color, paths
 from mmpm.env import MMPMEnv
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.subcommands.sub_cmd import SubCmd
 from mmpm.utils import confirm, get_host_ip, prompt
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class GuidedSetup(SubCmd):

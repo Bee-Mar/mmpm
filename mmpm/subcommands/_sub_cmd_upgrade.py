@@ -3,14 +3,16 @@
 import json
 from typing import List
 
+from mmpm import utils
 from mmpm.constants import paths
-from mmpm.log.logger import MMPMLogger
+from mmpm.env import MMPMEnv
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.subcommands.sub_cmd import SubCmd
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class Upgrade(SubCmd):
@@ -29,6 +31,7 @@ class Upgrade(SubCmd):
         self.usage = f"{self.app_name} {self.name} <package(s)> [--yes]"
         self.database = MagicMirrorDatabase()
         self.magicmirror = MagicMirror()
+        self.env = MMPMEnv()
 
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
@@ -76,7 +79,10 @@ class Upgrade(SubCmd):
         upgradable["MagicMirror"] = upgradable["MagicMirror"] and self.magicmirror.upgrade()
 
         if upgradable["mmpm"]:
-            print("Run 'pip install --upgrade --no-cache-dir mmpm' to install the latest version of MMPM. Run 'mmpm update' after upgrading.")
+            if self.env.MMPM_IS_DOCKER_IMAGE:
+                logger.warning("Cannot perform self-upgrade because MMPM is a Docker image. Stop MMPM and run `docker pull karsten13/mmpm:latest`")
+            else:
+                upgradable["mmpm"] = utils.upgrade()
 
         with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="w", encoding="utf-8") as upgrade_file:
             json.dump(upgradable, upgrade_file)

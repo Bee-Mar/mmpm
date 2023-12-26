@@ -119,7 +119,7 @@ class StdoutFormatter(logging.Formatter):
         return f"[{label}] {record.getMessage()}"
 
 
-class MMPMLogger:
+class MMPMLogFactory:
     """
     A custom logging class for MMPM, providing functionalities for logging to files, stdout, and SocketIO.
     Logs can be found in ~/.config/mmpm/log.
@@ -131,7 +131,7 @@ class MMPMLogger:
 
     @staticmethod
     def __setup__(name: str) -> None:
-        MMPMLogger.__logger = logging.getLogger(name)
+        MMPMLogFactory.__logger = logging.getLogger(name)
 
         file_handler = logging.handlers.RotatingFileHandler(
             paths.MMPM_CLI_LOG_FILE,
@@ -143,26 +143,26 @@ class MMPMLogger:
         )
 
         level = MMPMEnv().MMPM_LOG_LEVEL.get()
-        MMPMLogger.__logger.setLevel(logging.DEBUG)  # set the main logging handler set to the lowest level possible
+        MMPMLogFactory.__logger.setLevel(logging.DEBUG)  # set the main logging handler set to the lowest level possible
 
         file_handler.setFormatter(JsonFormatter())
         file_handler.setLevel(logging.DEBUG)  # always have the log files be DEBUG
-        MMPMLogger.__logger.addHandler(file_handler)
+        MMPMLogFactory.__logger.addHandler(file_handler)
 
         stdout_handler = logging.StreamHandler()
         stdout_handler.setFormatter(StdoutFormatter())
         stdout_handler.setLevel(level)
 
-        MMPMLogger.__logger.addHandler(stdout_handler)
+        MMPMLogFactory.__logger.addHandler(stdout_handler)
 
         socketio_handler = SocketIOHandler("localhost", 6789)
 
         if socketio_handler.sio.connected:
-            MMPMLogger.__socketio_handler = socketio_handler
-            MMPMLogger.__socketio_handler.setLevel(logging.DEBUG)
-            MMPMLogger.__logger.addHandler(MMPMLogger.__socketio_handler)
+            MMPMLogFactory.__socketio_handler = socketio_handler
+            MMPMLogFactory.__socketio_handler.setLevel(logging.DEBUG)
+            MMPMLogFactory.__logger.addHandler(MMPMLogFactory.__socketio_handler)
         else:
-            MMPMLogger.__logger.debug("Failed to connect to SocketIO server")
+            MMPMLogFactory.__logger.debug("Failed to connect to SocketIO server")
 
     @staticmethod
     def shutdown() -> None:
@@ -173,9 +173,9 @@ class MMPMLogger:
             None
         """
 
-        if MMPMLogger.__socketio_handler is not None:
-            MMPMLogger.__logger.debug("Disconnecting from SocketIO server")
-            MMPMLogger.__socketio_handler.close()
+        if MMPMLogFactory.__socketio_handler is not None:
+            MMPMLogFactory.__logger.debug("Disconnecting from SocketIO server")
+            MMPMLogFactory.__socketio_handler.close()
 
     @staticmethod
     def get_logger(name: str) -> logging.Logger:
@@ -189,12 +189,12 @@ class MMPMLogger:
             logging.Logger: The logger instance associated with the given name.
         """
 
-        if MMPMLogger.__logger is None:
-            with MMPMLogger.__lock:
-                if MMPMLogger.__logger is None:
-                    MMPMLogger.__setup__(name)
+        if MMPMLogFactory.__logger is None:
+            with MMPMLogFactory.__lock:
+                if MMPMLogFactory.__logger is None:
+                    MMPMLogFactory.__setup__(name)
 
-        return MMPMLogger.__logger
+        return MMPMLogFactory.__logger
 
     @classmethod
     def display(cls, tail: bool = False) -> None:
@@ -210,7 +210,7 @@ class MMPMLogger:
         if paths.MMPM_CLI_LOG_FILE.exists():
             os.system(f"{'tail -F' if tail else 'cat'} {paths.MMPM_CLI_LOG_FILE}")
         else:
-            MMPMLogger.__logger.error("MMPM log file not found")
+            MMPMLogFactory.__logger.error("MMPM log file not found")
 
     @classmethod
     def archive(cls) -> None:
@@ -230,7 +230,7 @@ class MMPMLogger:
         try:
             shutil.make_archive(file_name, "zip", paths.MMPM_LOG_DIR)
         except Exception as error:
-            MMPMLogger.__logger.error(f"{error}")
+            MMPMLogFactory.__logger.error(f"{error}")
             return
 
-        MMPMLogger.__logger.info(f"Compressed MMPM log files to {os.getcwd()}/{file_name}.zip ")
+        MMPMLogFactory.__logger.info(f"Compressed MMPM log files to {os.getcwd()}/{file_name}.zip ")

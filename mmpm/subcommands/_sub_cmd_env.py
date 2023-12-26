@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """ Command line options for 'env' subcommand """
 from mmpm.env import MMPMEnv
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.subcommands.sub_cmd import SubCmd
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class Env(SubCmd):
@@ -32,4 +32,4 @@ class Env(SubCmd):
 
         logger.debug("Printing user environment to stdout")
         self.env.display()
-        MMPMLogger.shutdown()
+        MMPMLogFactory.shutdown()

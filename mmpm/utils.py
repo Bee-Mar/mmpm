@@ -18,9 +18,9 @@ from yaspin.spinners import Spinners
 
 from mmpm.__version__ import version as current_version
 from mmpm.constants import color
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 def repo_up_to_date(path: Path):
@@ -69,7 +69,7 @@ def get_host_ip() -> str:
 
     logger.debug("Getting host IP")
 
-    address: str = "localhost"
+    address = "localhost"
     skt = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     try:
@@ -78,6 +78,7 @@ def get_host_ip() -> str:
         logger.debug(f"Determined Host IP={address}")
     except socket.gaierror as error:
         logger.error(f"Failed to determine host IP address: {error}")
+        address = "localhost"  # just to be extra safe and make sure it's set to something usable
     finally:
         skt.close()
 
@@ -183,7 +184,7 @@ def upgrade() -> bool:
     """
 
     error_code, stdout, stderr = run_cmd(
-        ["python3", "-m", "pip", "install", "--upgrade", "--no-cache-dir", "mmpm"],
+        ["python3", "-m", "pip", "install", "--upgrade", "mmpm"],
         message="Upgrading MMPM",
     )
 

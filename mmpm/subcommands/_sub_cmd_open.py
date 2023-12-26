@@ -6,12 +6,12 @@ from shutil import copyfile
 
 from mmpm.constants import paths, urls
 from mmpm.env import MMPMEnv
-from mmpm.log.logger import MMPMLogger
+from mmpm.log.factory import MMPMLogFactory
 from mmpm.subcommands.sub_cmd import SubCmd
 from mmpm.ui import MMPMui
 from mmpm.utils import run_cmd
 
-logger = MMPMLogger.get_logger(__name__)
+logger = MMPMLogFactory.get_logger(__name__)
 
 
 class Open(SubCmd):
@@ -136,7 +136,7 @@ class Open(SubCmd):
         elif args.magicmirror:
             run_cmd(["xdg-open", self.env.MMPM_MAGICMIRROR_URI.get()], background=True)
         elif args.ui:
-            run_cmd(["xdg-open", f"{urls.HOST}:{urls.MMPM_UI_PORT}"], background=True)
+            run_cmd(["xdg-open", f"http://{urls.HOST}:{urls.MMPM_UI_PORT}"], background=True)
         elif args.mm_wiki:
             run_cmd(["xdg-open", urls.MAGICMIRROR_WIKI_URL], background=True)
         elif args.mm_docs:

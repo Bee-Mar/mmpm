@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 from mmpm.utils import get_host_ip
 
-HOST = f"{get_host_ip()}"
+try:
+    HOST = f"{get_host_ip()}"
+except:
+    HOST = "localhost"
 
 MMPM_UI_PORT = 7890
 MMPM_API_SERVER_PORT = 7891

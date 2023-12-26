@@ -184,7 +184,7 @@ def upgrade() -> bool:
     """
 
     error_code, stdout, stderr = run_cmd(
-        ["python3", "-m", "pip", "install", "--upgrade", "--no-cache-dir", "mmpm"],
+        ["python3", "-m", "pip", "install", "--upgrade", "mmpm"],
         message="Upgrading MMPM",
     )
 

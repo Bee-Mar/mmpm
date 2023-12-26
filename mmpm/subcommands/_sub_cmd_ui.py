@@ -5,6 +5,7 @@
 from time import sleep
 
 from mmpm.constants import urls
+from mmpm.env import MMPMEnv
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
@@ -31,6 +32,7 @@ class Ui(SubCmd):
         self.usage = f"{self.app_name} {self.name} [--url] [--status] <install/remove>"
         self.database = MagicMirrorDatabase()
         self.ui = MMPMui()
+        self.env = MMPMEnv()
 
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
@@ -111,6 +113,10 @@ class Ui(SubCmd):
     def exec(self, args, extra):
         if not self.database.is_initialized():
             self.database.load()
+
+        if self.env.MMPM_IS_DOCKER_IMAGE:
+            logger.error("MMPM is a Docker image. Unable to interact with MMPM UI from CLI.")
+            return
 
         if extra:
             logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")

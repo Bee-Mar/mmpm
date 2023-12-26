@@ -5,6 +5,7 @@ import mmpm.__version__
 import mmpm.utils
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
+from mmpm.env import MMPMEnv
 from mmpm.log.factory import MMPMLogFactory
 
 logger = MMPMLogFactory.get_logger(__name__)
@@ -18,7 +19,7 @@ class Mmpm(Endpoint):
     def __init__(self):
         self.name = "mmpm"
         self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
-        self.handler = None
+        self.env = MMPMEnv()
 
         @self.blueprint.route("/version", methods=[http.GET])
         def version() -> Response:
@@ -44,6 +45,8 @@ class Mmpm(Endpoint):
             Returns:
                 Response: A Flask Response object indicating success or failure of the upgrade operation.
             """
+            if self.env.MMPM_IS_DOCKER_IMAGE:
+                self.failure("MMPM is a Docker image. MMPM must be upgraded using the Docker CLI.")
             if mmpm.utils.upgrade():
                 return self.success("Upgrade MMPM")
 

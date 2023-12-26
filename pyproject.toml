@@ -24,6 +24,7 @@ dependencies = [
   "gitpython>=3.1.40",
   "gevent-websocket>=0.10.1",
   "prompt-toolkit>=3.0.43",
+  "importlib_resources; python_version<'3.9'",
 ]
 requires-python = ">=3.8"
 readme = "README.md"

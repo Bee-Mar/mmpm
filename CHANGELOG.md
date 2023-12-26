@@ -312,3 +312,7 @@
 ## Version 4.0.3
 
 - hotfix of conditional dependency
+
+## Version 4.0.4
+
+- hotfix of calling get on env vars

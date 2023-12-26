@@ -308,3 +308,7 @@
 - added guard on determining host IP address in `mmpm.constants.paths`
 - added import guard for Python3.8 when using `importlib.resources` in `mmpm.ui`
 - added check for MMPM being a docker image when self upgrading
+
+## Version 4.0.3
+
+- hotfix of conditional dependency

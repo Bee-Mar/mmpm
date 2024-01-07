@@ -158,6 +158,8 @@ class Ui(SubCmd):
                 logger.error("Failed to remove MMPM UI")
                 self.ui.delete()
 
+            sleep(2)
+
             if not self.ui.install():
                 logger.error("Failed to install MMPM UI")
                 self.ui.delete()

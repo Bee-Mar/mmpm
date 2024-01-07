@@ -33,7 +33,7 @@ logger = MMPMLogFactory.get_logger(__name__)
 
 if __name__ == "__main__":
     app.run(
-        threaded=True,
+        threaded=False,
         keepalive=True,
         log=logger,
         extra_files=[

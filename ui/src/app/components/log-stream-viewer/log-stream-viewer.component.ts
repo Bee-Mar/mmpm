@@ -74,7 +74,7 @@ export class LogStreamViewerComponent implements OnInit, OnDestroy {
   }
 
   public onDownload() {
-    this.base_api.get_zip_archive("logs/archive").then((archive: ArrayBuffer) => {
+    this.base_api.getZipArchive("logs/archive").then((archive: ArrayBuffer) => {
       const blob = new Blob([archive], { type: "application/zip" });
       const date = new Date();
 

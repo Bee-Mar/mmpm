@@ -336,7 +336,8 @@ class InstallationHandler:
     def __init__(self, package: MagicMirrorPackage):
         self.package = package
 
-    def execute(self, funk: Callable) -> bool:
+    def exec(self, funk: Callable) -> bool:
+        logger.debug(f"Calling exec wrapper to install dependencies for '{self.package.title}'")
         error_code, _, stderr = funk()
 
         if error_code:
@@ -369,32 +370,31 @@ class InstallationHandler:
             return False
 
         os.chdir(modules_dir)
-        error_code = 0
 
-        if not self.package.directory.exists():
-            self.package.directory.mkdir(exist_ok=True)
+        if not (self.package.directory / ".git").exists():
+            logger.debug(f"{self.package.directory / '.git'} not found. Cloning repo.")
             error_code, _, stderr = self.package.clone()
+
+            if error_code:
+                logger.error(f"Failed to clone {self.package.title}: {stderr}")
+                return False
 
         os.chdir(self.package.directory)
 
-        if error_code:
-            logger.error(f"Failed to clone {self.package.title}: {stderr}")
-            return False
-
-        elif self.exists("package.json"):
-            return self.execute(self.npm_install)
+        if self.exists("package.json"):
+            return self.exec(self.npm_install)
         elif self.exists("Gemfile"):
-            return self.execute(self.bundle_install)
+            return self.exec(self.bundle_install)
         elif self.exists("Makefile"):
-            return self.execute(self.make)
+            return self.exec(self.make)
         elif self.exists("CMakeLists.txt"):
-            return self.execute(self.cmake)
+            return self.exec(self.cmake)
         elif self.exists("requirements.txt"):
-            return self.execute(self.pip_install)
+            return self.exec(self.pip_install)
         elif self.exists("pom.xml"):
-            return self.execute(self.maven_install)
+            return self.exec(self.maven_install)
         elif self.exists("go.mod"):
-            return self.execute(self.go_build)
+            return self.exec(self.go_build)
 
         logger.debug(f"Unable to find any dependency file associated with {self.package.title}")
         return True

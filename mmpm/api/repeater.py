@@ -32,15 +32,14 @@ def create():
         attempt = 0
         max_retries = 250
 
+        logger.debug("Attempting to connect to MagicMirror SocketIO server. Using a maximum of 250 retries")
+
         while attempt < max_retries and not mm_client.connected:
             try:
                 mm_client.connect(env.MMPM_MAGICMIRROR_URI.get(), wait_timeout=10, wait=True)
-
                 logger.debug("Successfully connected to the MagicMirror SocketIO server")
                 break  # Connection successful, break out of the loop
-            except Exception as error:
-                logger.error(error)
-                logger.error(f"Connection failed on attempt ({attempt+1}/{max_retries}). Retrying.")
+            except Exception:
                 attempt += 1
                 sleep(1)
 

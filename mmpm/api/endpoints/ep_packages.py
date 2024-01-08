@@ -102,11 +102,13 @@ class Packages(Endpoint):
             failure = []
 
             for package in packages:
-                if MagicMirrorPackage(**package).remove():
-                    logger.debug(f"Removed {package['title']}")
+                pkg = MagicMirrorPackage(**package)
+
+                if pkg.remove():
+                    logger.debug(f"Removed {pkg.title}")
                     success.append(package)
                 else:  # honestly, this should never fail anyway
-                    logger.debug(f"Failed to remove {package['title']}")
+                    logger.debug(f"Failed to remove {pkg.title}")
                     failure.append(package)
 
             return self.success({"success": success, "failure": failure})
@@ -128,11 +130,13 @@ class Packages(Endpoint):
             failure = []
 
             for package in packages:
-                if MagicMirrorPackage(**package).upgrade():
-                    logger.debug(f"Upgraded {package['title']}")
+                pkg = MagicMirrorPackage(**package)
+
+                if pkg.upgrade():
+                    logger.debug(f"Upgraded {pkg.title}")
                     success.append(package)
                 else:
-                    logger.debug(f"Failed to upgrade {package['title']}")
+                    logger.debug(f"Failed to upgrade {pkg.title}")
                     failure.append(package)
 
             return self.success({"success": success, "failure": failure})
@@ -168,15 +172,17 @@ class Packages(Endpoint):
                 Response: A Flask Response object containing the status of each custom package removal attempt.
             """
 
-            packages = [MagicMirrorPackage(**pkg) for pkg in request.get_json()["packages"]]
+            packages = request.get_json()["packages"]
             success = []
             failure = []
 
             for package in packages:
-                if self.db.remove_mm_pkg(package.title):
-                    success.append(package.serialize(full=True))
+                pkg = MagicMirrorPackage(**package)
+
+                if self.db.remove_mm_pkg(pkg.title):
+                    success.append(package)
                 else:
-                    failure.append(package.serialize(full=True))
+                    failure.append(package)
 
             return self.success({"success": success, "failure": failure})
 

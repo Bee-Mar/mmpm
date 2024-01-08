@@ -31,10 +31,10 @@ export class BaseAPI {
   public get_(endpoint: string): Promise<APIResponse> {
     console.log(`Requesting data from ${endpoint}`);
 
-    return firstValueFrom(this.http.get<APIResponse>(this.route(endpoint), { headers: this.headers() }).pipe(retry(1), catchError(this.handle_error)));
+    return firstValueFrom(this.http.get<APIResponse>(this.route(endpoint), { headers: this.headers() }).pipe(retry(1), catchError(this.handleError)));
   }
 
-  public get_zip_archive(endpoint: string): Promise<ArrayBuffer> {
+  public getZipArchive(endpoint: string): Promise<ArrayBuffer> {
     return firstValueFrom(
       this.http
         .get(this.route(endpoint), {
@@ -44,14 +44,14 @@ export class BaseAPI {
           reportProgress: true,
           responseType: "arraybuffer",
         })
-        .pipe(retry(1), catchError(this.handle_error)),
+        .pipe(retry(1), catchError(this.handleError)),
     );
   }
 
-  public handle_error(error: any): Promise<any> {
+  public handleError(error: any): Promise<any> {
     const error_message = error.error instanceof ErrorEvent ? error.error.message : `Error Code: ${error.status}\nMessage: ${error.message}`;
 
     console.log(error_message);
-    throw error_message;
+    return Promise.reject(new Error(error_message));
   }
 }

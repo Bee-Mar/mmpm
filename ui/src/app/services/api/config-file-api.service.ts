@@ -15,7 +15,7 @@ export class ConfigFileAPI extends BaseAPI {
           headers: this.headers(),
           responseType: "text",
         })
-        .pipe(retry(1), catchError(this.handle_error)),
+        .pipe(retry(1), catchError(this.handleError)),
     );
   }
 
@@ -35,7 +35,7 @@ export class ConfigFileAPI extends BaseAPI {
             }),
           },
         )
-        .pipe(retry(1), catchError(this.handle_error)),
+        .pipe(retry(1), catchError(this.handleError)),
     );
   }
 }

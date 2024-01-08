@@ -15,7 +15,7 @@ export class MagicMirrorPackageAPI extends BaseAPI {
           return typeof response === "string" ? JSON.parse(response) : response;
         }),
         retry(1),
-        catchError(this.handle_error),
+        catchError(this.handleError),
       ),
     );
   }
@@ -27,7 +27,7 @@ export class MagicMirrorPackageAPI extends BaseAPI {
           return typeof response === "string" ? JSON.parse(response) : response;
         }),
         retry(1),
-        catchError(this.handle_error),
+        catchError(this.handleError),
       ),
     );
   }

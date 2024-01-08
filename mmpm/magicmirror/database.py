@@ -53,14 +53,14 @@ class MagicMirrorDatabase(Singleton):
         table_soup = soup.find_all("table")
         categories_soup = soup.find_all(attrs={"class": "markdown-body"})[0].find_all("h3")
 
-        categories = []
+        self.categories = []
 
         for category in categories_soup[2:]:
             if hasattr(category, "contents"):
                 if hasattr(category.contents, "contents"):
-                    categories.append(category.contents[-1].contents[0])
+                    self.categories.append(category.contents[-1].contents[0])
                 else:
-                    categories.append(category.contents[-1])
+                    self.categories.append(category.contents[-1])
 
         # the first index is a row that literally says 'Title' 'Author' 'Description'
         tr_soup: list = [table.find_all("tr")[1:] for table in table_soup]
@@ -73,7 +73,7 @@ class MagicMirrorDatabase(Singleton):
                     if not table_data or not table_data[0].text or table_data[0].text == "mmpm":
                         continue
 
-                    pkg = MagicMirrorPackage.from_raw_data(table_data, category=categories[index])
+                    pkg = MagicMirrorPackage.from_raw_data(table_data, category=self.categories[index])
                     packages.append(pkg)
 
                 except Exception as error:  # broad exception isn't best, but there's a lot that can happen here
@@ -357,7 +357,7 @@ class MagicMirrorDatabase(Singleton):
             category="Custom Packages",
         )
 
-        package.directory = Path(f'{package.repository.split("/")[-1].replace(".git", "")}-ext-mm-pkg')
+        package.directory = Path(package.repository.split("/")[-1].replace(".git", ""))
 
         try:
             ext_pkgs_file = paths.MMPM_CUSTOM_PACKAGES_FILE

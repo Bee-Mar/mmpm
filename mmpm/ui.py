@@ -27,35 +27,38 @@ class MMPMui(Singleton):
     """
 
     def __init__(self):
-        self.pm2_config_path = Path("/tmp/mmpm/ecosystem.json")
+        # make sure we have the right python environment
+        python = shutil.which("python")
+        namespace = "mmpm"
 
+        self.pm2_config_path = Path("/tmp/mmpm/ecosystem.json")
         self.pm2_ecosystem_config = {
             "apps": [
                 {
-                    "namespace": "mmpm",
-                    "name": "mmpm.api",
-                    "script": f"python3 -m gunicorn -k gevent -b 0.0.0.0:{urls.MMPM_API_SERVER_PORT} mmpm.wsgi:app",
+                    "namespace": namespace,
+                    "name": f"{namespace}.api",
+                    "script": f"{python} -m gunicorn -k gevent -b 0.0.0.0:{urls.MMPM_API_SERVER_PORT} mmpm.wsgi:app",
                     "version": version,
                     "watch": True,
                 },
                 {
-                    "namespace": "mmpm",
-                    "name": "mmpm.log-server",
-                    "script": f"python3 -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.log.server:create()' -b 0.0.0.0:{urls.MMPM_LOG_SERVER_PORT}",
+                    "namespace": namespace,
+                    "name": f"{namespace}.log-server",
+                    "script": f"{python} -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.log.server:create()' -b 0.0.0.0:{urls.MMPM_LOG_SERVER_PORT}",
                     "version": version,
                     "watch": True,
                 },
                 {
-                    "namespace": "mmpm",
-                    "name": "mmpm.repeater",
-                    "script": f"python3 -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.api.repeater:create()' -b 0.0.0.0:{urls.MMPM_REPEATER_SERVER_PORT}",
+                    "namespace": namespace,
+                    "name": f"{namespace}.repeater",
+                    "script": f"{python} -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.api.repeater:create()' -b 0.0.0.0:{urls.MMPM_REPEATER_SERVER_PORT}",
                     "version": version,
                     "watch": True,
                 },
                 {
-                    "namespace": "mmpm",
-                    "name": "mmpm.ui",
-                    "script": f"python3 -m http.server -d {pkg_resources.files('mmpm').resolve() / 'ui'} -b 0.0.0.0 {urls.MMPM_UI_PORT}",
+                    "namespace": namespace,
+                    "name": f"{namespace}.ui",
+                    "script": f"{python} -m http.server -d {pkg_resources.files('mmpm').resolve() / 'ui'} -b 0.0.0.0 {urls.MMPM_UI_PORT}",
                     "version": version,
                     "watch": True,
                 },

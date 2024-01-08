@@ -316,3 +316,11 @@
 ## Version 4.0.4
 
 - hotfix of calling get on env vars
+
+## Version 4.1.0
+
+- removed extra log messages to reduce log pollution
+- changed casing of function names in UI to conform to camelCasing
+- using appropriate interpreter based on environment in ecosystem.json
+- removed custom package directory extension to prevent naming issues in config.json
+- removed multi-threading options from gunicorn servers

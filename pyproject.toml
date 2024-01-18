@@ -1,6 +1,6 @@
 [project]
 name = "mmpm"
-version = "4.1.0"
+version = "4.1.1"
 description = "MMPM, the MagicMirror Package Manager CLI simplifies the installation, removal, and general maintenance of MagicMirror packages"
 authors = [
   { name = "Brandon Marlowe", email = "bpmarlowe-software@protonmail.com" },

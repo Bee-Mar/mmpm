@@ -8,8 +8,8 @@ else:
 
 import json
 import os
-import shutil
 from pathlib import Path
+from shutil import rmtree, which
 
 from mmpm.__version__ import version
 from mmpm.constants import urls
@@ -27,8 +27,9 @@ class MMPMui(Singleton):
     """
 
     def __init__(self):
-        # make sure we have the right python environment
-        python = shutil.which("python")
+        # fall back to just calling 'python3' if there's some weird path resolution issue
+        # this shouldn't happen, but better safe than sorry
+        python = which("python3") or "python3"
         namespace = "mmpm"
 
         self.pm2_config_path = Path("/tmp/mmpm/ecosystem.json")
@@ -140,7 +141,7 @@ class MMPMui(Singleton):
             True if the installation is successful, False otherwise.
         """
 
-        if not shutil.which("pm2"):
+        if not which("pm2"):
             logger.fatal("pm2 is not in your PATH. Please run `npm install -g pm2`, and run the UI installation again.")
             return False
 
@@ -174,7 +175,7 @@ class MMPMui(Singleton):
         Returns:
             True if the removal is successful, False otherwise.
         """
-        if not shutil.which("pm2"):
+        if not which("pm2"):
             logger.fatal("pm2 is not in your PATH. Please run `npm install -g pm2`, and run the UI installation again.")
             return False
 
@@ -185,5 +186,5 @@ class MMPMui(Singleton):
             logger.error(stderr)
             return False
 
-        shutil.rmtree(self.pm2_config_path.parent, ignore_errors=True)
+        rmtree(self.pm2_config_path.parent, ignore_errors=True)
         return True

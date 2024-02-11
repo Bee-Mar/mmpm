@@ -63,7 +63,7 @@ report = "coverage report"
 lint = "pylint mmpm"
 mypy = "mypy mmpm"
 build-ui = "bash -c 'cd ui && bun run build'"
-format = "bash -c 'isort . && black . --line-length=150'"
+format = "bash -c 'isort mmpm && black mmpm --line-length=150 && isort test && black test --line-length=150'"
 
 # quickstarts for dev testing
 up = "pm2 start dev/ecosystem.json"

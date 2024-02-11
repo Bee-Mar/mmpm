@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:015b75d7bbd040e2d73c5455f01b5294e089a9ce35a5425702f81417f62bb440"
+content_hash = "sha256:fe9841ec4ff614601c24f52046bedc9a25525de9bf1fa68b5996011473dac9e7"
 
 [[package]]
 name = "argcomplete"
@@ -120,33 +120,33 @@ files = [
 
 [[package]]
 name = "cachecontrol"
-version = "0.13.1"
+version = "0.14.0"
 requires_python = ">=3.7"
 summary = "httplib2 caching for requests"
 groups = ["dev"]
 dependencies = [
-    "msgpack>=0.5.2",
+    "msgpack<2.0.0,>=0.5.2",
     "requests>=2.16.0",
 ]
 files = [
-    {file = "cachecontrol-0.13.1-py3-none-any.whl", hash = "sha256:95dedbec849f46dda3137866dc28b9d133fc9af55f5b805ab1291833e4457aa4"},
-    {file = "cachecontrol-0.13.1.tar.gz", hash = "sha256:f012366b79d2243a6118309ce73151bf52a38d4a5dac8ea57f09bd29087e506b"},
+    {file = "cachecontrol-0.14.0-py3-none-any.whl", hash = "sha256:f5bf3f0620c38db2e5122c0726bdebb0d16869de966ea6a2befe92470b740ea0"},
+    {file = "cachecontrol-0.14.0.tar.gz", hash = "sha256:7db1195b41c81f8274a7bbd97c956f44e8348265a1bc7641c37dfebc39f0c938"},
 ]
 
 [[package]]
 name = "cachecontrol"
-version = "0.13.1"
+version = "0.14.0"
 extras = ["filecache"]
 requires_python = ">=3.7"
 summary = "httplib2 caching for requests"
 groups = ["dev"]
 dependencies = [
-    "cachecontrol==0.13.1",
+    "cachecontrol==0.14.0",
     "filelock>=3.8.0",
 ]
 files = [
-    {file = "cachecontrol-0.13.1-py3-none-any.whl", hash = "sha256:95dedbec849f46dda3137866dc28b9d133fc9af55f5b805ab1291833e4457aa4"},
-    {file = "cachecontrol-0.13.1.tar.gz", hash = "sha256:f012366b79d2243a6118309ce73151bf52a38d4a5dac8ea57f09bd29087e506b"},
+    {file = "cachecontrol-0.14.0-py3-none-any.whl", hash = "sha256:f5bf3f0620c38db2e5122c0726bdebb0d16869de966ea6a2befe92470b740ea0"},
+    {file = "cachecontrol-0.14.0.tar.gz", hash = "sha256:7db1195b41c81f8274a7bbd97c956f44e8348265a1bc7641c37dfebc39f0c938"},
 ]
 
 [[package]]
@@ -1062,7 +1062,7 @@ files = [
 
 [[package]]
 name = "pdm"
-version = "2.11.1"
+version = "2.12.3"
 requires_python = ">=3.8"
 summary = "A modern Python package and dependency manager supporting the latest PEP standards"
 groups = ["dev"]
@@ -1090,19 +1090,8 @@ dependencies = [
     "virtualenv>=20",
 ]
 files = [
-    {file = "pdm-2.11.1-py3-none-any.whl", hash = "sha256:6e18eab6f92ca7a31c68ea078d09d0a64b5f2aebf4f0e60ae81b1c5ca84a4189"},
-    {file = "pdm-2.11.1.tar.gz", hash = "sha256:b10bc4e5394856f1639ddc9bc754d9c26323ec5b828a135c6ed35f935b054b83"},
-]
-
-[[package]]
-name = "pip"
-version = "23.3.2"
-requires_python = ">=3.7"
-summary = "The PyPA recommended tool for installing Python packages."
-groups = ["default"]
-files = [
-    {file = "pip-23.3.2-py3-none-any.whl", hash = "sha256:5052d7889c1f9d05224cd41741acb7c5d6fa735ab34e339624a614eaaa7e7d76"},
-    {file = "pip-23.3.2.tar.gz", hash = "sha256:7fd9972f96db22c8077a1ee2691b172c8089b17a5652a44494a9ecb0d78f9149"},
+    {file = "pdm-2.12.3-py3-none-any.whl", hash = "sha256:27eddf71434906e39db3f448d35ea5ee1f4d0f557de39fc932205f7dfc82f902"},
+    {file = "pdm-2.12.3.tar.gz", hash = "sha256:53cdab727c1469fdc196efd8d7ff8404a3ca91ee43c0a5714736f2020d0a5ddf"},
 ]
 
 [[package]]
@@ -1237,13 +1226,13 @@ files = [
 
 [[package]]
 name = "python-dotenv"
-version = "1.0.0"
+version = "1.0.1"
 requires_python = ">=3.8"
 summary = "Read key-value pairs from a .env file and set them as environment variables"
 groups = ["dev"]
 files = [
-    {file = "python-dotenv-1.0.0.tar.gz", hash = "sha256:a8df96034aae6d2d50a4ebe8216326c61c3eb64836776504fcca410e5937a3ba"},
-    {file = "python_dotenv-1.0.0-py3-none-any.whl", hash = "sha256:f5971a9226b701070a4bf2c38c89e5a3f0d64de8debda981d1db98583009122a"},
+    {file = "python-dotenv-1.0.1.tar.gz", hash = "sha256:e324ee90a023d808f1959c46bcbc04446a10ced277783dc6ee09987c37ec10ca"},
+    {file = "python_dotenv-1.0.1-py3-none-any.whl", hash = "sha256:f7b63ef50f1b690dddf550d03497b66d609393b40b564ed0d674909a68ebf16a"},
 ]
 
 [[package]]
@@ -1491,8 +1480,8 @@ files = [
 
 [[package]]
 name = "unearth"
-version = "0.12.1"
-requires_python = ">=3.7"
+version = "0.14.0"
+requires_python = ">=3.8"
 summary = "A utility to fetch and download python packages"
 groups = ["dev"]
 dependencies = [
@@ -1500,8 +1489,8 @@ dependencies = [
     "requests>=2.25",
 ]
 files = [
-    {file = "unearth-0.12.1-py3-none-any.whl", hash = "sha256:a5a5c51ca44965cbe3618116bd592bb0bbe3705af5fe14e5792660d904aad7c8"},
-    {file = "unearth-0.12.1.tar.gz", hash = "sha256:4caad941b60f51e50fdc109866234d407910aef77f1233aa1b6b5d168c7427ee"},
+    {file = "unearth-0.14.0-py3-none-any.whl", hash = "sha256:a2b937ca22198043f5360192bce38708f11ddc5d4cdea973ee38583219b97d5d"},
+    {file = "unearth-0.14.0.tar.gz", hash = "sha256:f3cddfb94ac0f865fbcf964231556ef7183010379c00b01205517a50c78a186d"},
 ]
 
 [[package]]

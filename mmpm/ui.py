@@ -30,29 +30,31 @@ class MMPMui(Singleton):
         # fall back to just calling 'python3' if there's some weird path resolution issue
         # this shouldn't happen, but better safe than sorry
         python = which("python3") or "python3"
-        namespace = "mmpm"
+        gunicorn = which("gunicorn") or f"{python} -m gunicorn"
 
+        namespace = "mmpm"
         self.pm2_config_path = Path("/tmp/mmpm/ecosystem.json")
+
         self.pm2_ecosystem_config = {
             "apps": [
                 {
                     "namespace": namespace,
                     "name": f"{namespace}.api",
-                    "script": f"{python} -m gunicorn -k gevent -b 0.0.0.0:{urls.MMPM_API_SERVER_PORT} mmpm.wsgi:app",
+                    "script": f"{gunicorn} -k gevent -b 0.0.0.0:{urls.MMPM_API_SERVER_PORT} mmpm.wsgi:app",
                     "version": version,
                     "watch": True,
                 },
                 {
                     "namespace": namespace,
                     "name": f"{namespace}.log-server",
-                    "script": f"{python} -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.log.server:create()' -b 0.0.0.0:{urls.MMPM_LOG_SERVER_PORT}",
+                    "script": f"{gunicorn} -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.log.server:create()' -b 0.0.0.0:{urls.MMPM_LOG_SERVER_PORT}",
                     "version": version,
                     "watch": True,
                 },
                 {
                     "namespace": namespace,
                     "name": f"{namespace}.repeater",
-                    "script": f"{python} -m gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.api.repeater:create()' -b 0.0.0.0:{urls.MMPM_REPEATER_SERVER_PORT}",
+                    "script": f"{gunicorn} -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 'mmpm.api.repeater:create()' -b 0.0.0.0:{urls.MMPM_REPEATER_SERVER_PORT}",
                     "version": version,
                     "watch": True,
                 },

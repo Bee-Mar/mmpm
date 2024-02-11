@@ -30,10 +30,10 @@ class MMPMui(Singleton):
     def __init__(self):
         python = executable
         gunicorn = which("gunicorn") or f"{python} -m gunicorn"
-
         namespace = "mmpm"
+        
         self.pm2_config_path = Path("/tmp/mmpm/ecosystem.json")
-
+ 
         self.pm2_ecosystem_config = {
             "apps": [
                 {

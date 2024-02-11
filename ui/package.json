@@ -2,7 +2,7 @@
   "name": "MMPM-UI",
   "version": "0.0.0",
   "scripts": {
-    "ng": "ng",
+    "ng": "./node_modules/@angular/cli/bin/ng.js",
     "start": "./node_modules/@angular/cli/bin/ng.js serve",
     "serve": "./node_modules/@angular/cli/bin/ng.js serve",
     "serve-prod": "./node_modules/@angular/cli/bin/ng.js serve --configuration production",

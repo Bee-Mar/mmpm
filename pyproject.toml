@@ -1,6 +1,6 @@
 [project]
 name = "mmpm"
-version = "4.1.0"
+version = "4.1.1"
 description = "MMPM, the MagicMirror Package Manager CLI simplifies the installation, removal, and general maintenance of MagicMirror packages"
 authors = [
   { name = "Brandon Marlowe", email = "bpmarlowe-software@protonmail.com" },
@@ -20,7 +20,6 @@ dependencies = [
   "python-socketio[client]>=5.7.0",
   "requests>=2.28.0",
   "yaspin>=2.3.0",
-  "pip>=23.3.1",
   "gitpython>=3.1.40",
   "gevent-websocket>=0.10.1",
   "prompt-toolkit>=3.0.43",
@@ -64,7 +63,7 @@ report = "coverage report"
 lint = "pylint mmpm"
 mypy = "mypy mmpm"
 build-ui = "bash -c 'cd ui && bun run build'"
-format = "bash -c 'isort . && black . --line-length=150'"
+format = "bash -c 'isort mmpm && black mmpm --line-length=150 && isort test && black test --line-length=150'"
 
 # quickstarts for dev testing
 up = "pm2 start dev/ecosystem.json"

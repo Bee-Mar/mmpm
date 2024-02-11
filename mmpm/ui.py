@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 from shutil import rmtree, which
+from sys import executable
 
 from mmpm.__version__ import version
 from mmpm.constants import urls
@@ -27,9 +28,7 @@ class MMPMui(Singleton):
     """
 
     def __init__(self):
-        # fall back to just calling 'python3' if there's some weird path resolution issue
-        # this shouldn't happen, but better safe than sorry
-        python = which("python3") or "python3"
+        python = executable
         gunicorn = which("gunicorn") or f"{python} -m gunicorn"
 
         namespace = "mmpm"

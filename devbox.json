@@ -15,8 +15,9 @@
     ],
     "scripts": {
       "setup": [
-        "pdm install && source $VENV_DIR/bin/activate",
-        "cd ui && bun install;"
+        "pdm install",
+        "cd ui && bun install; cd ..",
+        "source $VENV_DIR/bin/activate"
       ]
     }
   }

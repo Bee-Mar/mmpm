@@ -8,7 +8,7 @@
     "nodejs@20.11.0"
   ],
   "env": {
-    "VENV_DIR": ".venv"
+    "VENV_DIR": "$PWD/.venv"
   },
   "shell": {
     "init_hook": [
@@ -17,10 +17,41 @@
     "scripts": {
       "setup": [
         "pdm install",
-        "cd ui && bun install; cd ..",
-        "source $VENV_DIR/bin/activate"
+        "cd ui && bun install"
       ],
-      "build": [
+      "test": [
+        "coverage run -m pytest test"
+      ],
+      "report": [
+        "coverage report"
+      ],
+      "lint": [
+        "pylint mmpm",
+        "cd ui && bun run lint"
+      ],
+      "mypy": [
+        "mypy mmpm"
+      ],
+      "format": [
+        "isort mmpm",
+        "isort test",
+        "black mmpm --line-length=150",
+        "black test --line-length=150",
+        "cd ui && bun run format"
+      ],
+      "start": [
+        "pm2 start dev/ecosystem.json"
+      ],
+      "stop": [
+        "pm2 stop dev/ecosystem.json"
+      ],
+      "remove": [
+        "pm2 delete dev/ecosystem.json"
+      ],
+      "logs": [
+        "pm2 logs mmpm"
+      ],
+      "deploy": [
         "cd ui && npm install --legacy-peer-deps && cd ..",
         "cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href / && cd ..",
         "pdm install",

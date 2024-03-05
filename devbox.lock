@@ -78,27 +78,6 @@
         }
       }
     },
-    "python310Packages.pip@23.2.1": {
-      "last_modified": "2023-12-13T22:54:10Z",
-      "plugin_version": "0.0.1",
-      "resolved": "github:NixOS/nixpkgs/fd04bea4cbf76f86f244b9e2549fca066db8ddff#python310Packages.pip",
-      "source": "devbox-search",
-      "version": "23.2.1",
-      "systems": {
-        "aarch64-darwin": {
-          "store_path": "/nix/store/vjyrxbxqsadvr9g6mzig6y406dhwcrqi-python3.10-pip-23.2.1"
-        },
-        "aarch64-linux": {
-          "store_path": "/nix/store/j8pxwv7vyjm8z2fqglijjvabbkmxbv9r-python3.10-pip-23.2.1"
-        },
-        "x86_64-darwin": {
-          "store_path": "/nix/store/7lyvqf8wl47wzgsqmlcz39ycmwxyg9zx-python3.10-pip-23.2.1"
-        },
-        "x86_64-linux": {
-          "store_path": "/nix/store/gdhvfi5zaqzpa5l3kk0spmv71r549slf-python3.10-pip-23.2.1"
-        }
-      }
-    },
     "python@3.10": {
       "last_modified": "2024-01-27T14:55:31Z",
       "plugin_version": "0.0.1",

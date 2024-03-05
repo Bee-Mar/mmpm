@@ -7,7 +7,7 @@
     "python@3.10"
   ],
   "env": {
-    "VENV_DIR": "$PWD/.venv"
+    "VENV_DIR": "$PWD/.venv
   },
   "shell": {
     "init_hook": [

@@ -80,6 +80,7 @@
     },
     "python-full@3.10.13": {
       "last_modified": "2024-03-08T13:51:52Z",
+      "plugin_version": "0.0.1",
       "resolved": "github:NixOS/nixpkgs/a343533bccc62400e8a9560423486a3b6c11a23b#python310Full",
       "source": "devbox-search",
       "version": "3.10.13",

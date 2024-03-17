@@ -4,7 +4,7 @@
     "nodejs@20.11.0",
     "pdm@2.12.3",
     "pm2@5.3.1",
-    "python@3.10"
+    "python-full@3.10.13"
   ],
   "env": {
     "VENV_DIR": "$PWD/.venv"

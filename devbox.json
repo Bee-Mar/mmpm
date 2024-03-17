@@ -1,23 +1,63 @@
 {
   "packages": [
-    "python@3.10",
     "bun@1.0.25",
-    "pm2@5.3.1",
+    "nodejs@20.11.0",
     "pdm@2.12.3",
-    "python310Packages.pip@23.2.1"
+    "pm2@5.3.1",
+    "python-full@3.10.13"
   ],
   "env": {
-    "VENV_DIR": ".venv"
+    "VENV_DIR": "$PWD/.venv"
   },
   "shell": {
     "init_hook": [
-      "[ -d $VENV_DIR ] && source $VENV_DIR/bin/activate"
+      "[ ! -d $VENV_DIR ] && echo 'Creating virtualenv ...' && python3 -m venv $VENV_DIR",
+      "source $VENV_DIR/bin/activate"
     ],
     "scripts": {
       "setup": [
         "pdm install",
-        "cd ui && bun install; cd ..",
-        "source $VENV_DIR/bin/activate"
+        "cd ui && bun install"
+      ],
+      "test": [
+        "coverage run -m pytest test"
+      ],
+      "report": [
+        "coverage report"
+      ],
+      "lint": [
+        "pylint mmpm",
+        "cd ui && bun run lint"
+      ],
+      "mypy": [
+        "mypy mmpm"
+      ],
+      "format": [
+        "isort mmpm",
+        "isort test",
+        "black mmpm --line-length=150",
+        "black test --line-length=150",
+        "cd ui && bun run format"
+      ],
+      "start": [
+        "pm2 start dev/ecosystem.json"
+      ],
+      "stop": [
+        "pm2 stop dev/ecosystem.json"
+      ],
+      "remove": [
+        "pm2 delete dev/ecosystem.json"
+      ],
+      "logs": [
+        "pm2 logs mmpm"
+      ],
+      "deploy": [
+        "cd ui && npm install --legacy-peer-deps && cd ..",
+        "cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href / && cd ..",
+        "pdm install",
+        "mkdir -p mmpm/ui",
+        "cp -r ui/build/* mmpm/ui",
+        "pdm build"
       ]
     }
   }

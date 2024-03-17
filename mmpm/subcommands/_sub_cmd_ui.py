@@ -2,6 +2,7 @@
 """ Command line options for 'db' subcommand """
 
 
+from shutil import which
 from time import sleep
 
 from mmpm.constants import urls
@@ -111,6 +112,10 @@ class Ui(SubCmd):
         )
 
     def exec(self, args, extra):
+        if not which("pm2"):
+            logger.fatal("pm2 is not in your PATH. Please run `npm install -g pm2`, and run the UI installation again.")
+            return
+
         if not self.database.is_initialized():
             self.database.load()
 

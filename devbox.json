@@ -4,7 +4,8 @@
     "nodejs@20.11.0",
     "pdm@2.12.3",
     "pm2@5.3.1",
-    "python-full@3.10.13"
+    "python-full@3.10.13",
+    "gcc13Stdenv.cc.cc.lib"
   ],
   "env": {
     "VENV_DIR": "$PWD/.venv"
@@ -43,13 +44,13 @@
         "cd ui && bun run format"
       ],
       "start": [
-        "pm2 start dev/ecosystem.json"
+        "pm2 start $PWD/dev/ecosystem.json"
       ],
       "stop": [
-        "pm2 stop dev/ecosystem.json"
+        "pm2 stop $PWD/dev/ecosystem.json"
       ],
       "remove": [
-        "pm2 delete dev/ecosystem.json"
+        "pm2 delete $PWD/dev/ecosystem.json"
       ],
       "logs": [
         "pm2 logs mmpm"

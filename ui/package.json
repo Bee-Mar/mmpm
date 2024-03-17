@@ -2,7 +2,7 @@
   "name": "MMPM-UI",
   "version": "0.0.0",
   "scripts": {
-    "ng": "ng",
+    "ng": "./node_modules/@angular/cli/bin/ng.js",
     "start": "./node_modules/@angular/cli/bin/ng.js serve",
     "serve": "./node_modules/@angular/cli/bin/ng.js serve",
     "serve-prod": "./node_modules/@angular/cli/bin/ng.js serve --configuration production",
@@ -36,7 +36,7 @@
     "zone.js": "~0.13.3"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^16.2.11",
+    "@angular-devkit/build-angular": "^16.2.10",
     "@angular-eslint/builder": "16.3.1",
     "@angular-eslint/eslint-plugin": "16.3.1",
     "@angular-eslint/eslint-plugin-template": "16.3.1",
@@ -45,9 +45,10 @@
     "@angular/cli": "^16.2.10",
     "@angular/compiler-cli": "^16.2.12",
     "@types/jasmine": "~3.10.0",
-    "@types/node": "^12.11.1",
+    "@types/node": "20.11.28",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
+    "ajv": "^8.12.0",
     "eslint": "^8.51.0",
     "jasmine-core": "~4.0.0",
     "karma": "~6.3.0",

@@ -324,3 +324,8 @@
 - using appropriate interpreter based on environment in ecosystem.json
 - removed custom package directory extension to prevent naming issues in config.json
 - removed multi-threading options from gunicorn servers
+
+## Version 4.1.1
+
+- Update `ui.py` to identify the correct location of gunicorn to resolve issues encountered when
+    installing through `pipx`

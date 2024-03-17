@@ -9,7 +9,7 @@ class TestMMPMui(unittest.TestCase):
     def setUp(self):
         self.mmpm_ui = MMPMui()
 
-    @patch("shutil.which")
+    @patch("mmpm.ui.which")
     @patch("mmpm.ui.MMPMui.create_pm2_config")
     @patch("mmpm.ui.MMPMui.start")
     def test_install_pm2_missing(self, mock_start, mock_create_config, mock_which):
@@ -19,7 +19,7 @@ class TestMMPMui(unittest.TestCase):
         mock_create_config.assert_not_called()
         mock_start.assert_not_called()
 
-    @patch("shutil.which")
+    @patch("mmpm.ui.which")
     @patch("mmpm.ui.MMPMui.create_pm2_config")
     @patch("mmpm.ui.MMPMui.start")
     def test_install_failure_start(self, mock_start, mock_create_config, mock_which):
@@ -30,7 +30,7 @@ class TestMMPMui(unittest.TestCase):
         mock_create_config.assert_called_once()
         mock_start.assert_called_once()
 
-    @patch("shutil.which")
+    @patch("mmpm.ui.which")
     @patch("mmpm.ui.MMPMui.create_pm2_config")
     @patch("mmpm.ui.MMPMui.start")
     def test_install_success(self, mock_start, mock_create_config, mock_which):
@@ -42,10 +42,10 @@ class TestMMPMui(unittest.TestCase):
         mock_start.assert_called_once()
 
     # Test remove method
-    @patch("shutil.which")
+    @patch("mmpm.ui.which")
     @patch("mmpm.ui.MMPMui.create_pm2_config")
     @patch("mmpm.ui.MMPMui.delete")
-    @patch("shutil.rmtree")
+    @patch("mmpm.ui.rmtree")
     def test_remove_pm2_missing(self, mock_rmtree, mock_delete, mock_create_config, mock_which):
         mock_which.return_value = None
         result = self.mmpm_ui.remove()
@@ -54,10 +54,10 @@ class TestMMPMui(unittest.TestCase):
         mock_delete.assert_not_called()
         mock_rmtree.assert_not_called()
 
-    @patch("shutil.which")
+    @patch("mmpm.ui.which")
     @patch("mmpm.ui.MMPMui.create_pm2_config")
     @patch("mmpm.ui.MMPMui.delete")
-    @patch("shutil.rmtree")
+    @patch("mmpm.ui.rmtree")
     def test_remove_success(self, mock_rmtree, mock_delete, mock_create_config, mock_which):
         mock_which.return_value = "/usr/bin/pm2"
         mock_delete.return_value = (0, "", "")  # Simulate success

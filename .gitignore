@@ -18,6 +18,7 @@ mmpm/static
 mmpm/templates
 gui/src/assets/monaco
 venv
+.venv
 .eggs
 .coverage
 notes.md
@@ -28,3 +29,4 @@ htmlcov
 mmpm/ui
 .pdm-python
 mmpm/ui
+.devbox

@@ -1,20 +1,20 @@
 {
   "lockfile_version": "1",
   "packages": {
-    "bun@1.0.25": {
-      "last_modified": "2024-01-27T14:55:31Z",
-      "resolved": "github:NixOS/nixpkgs/160b762eda6d139ac10ae081f8f78d640dd523eb#bun",
+    "bun@1.0.30": {
+      "last_modified": "2024-03-12T14:03:31Z",
+      "resolved": "github:NixOS/nixpkgs/7eeacecff44e05a9fd61b9e03836b66ecde8a525#bun",
       "source": "devbox-search",
-      "version": "1.0.25",
+      "version": "1.0.30",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/prhv1h8ycx2275wapl8i0wc7148h5hp0-bun-1.0.25"
+          "store_path": "/nix/store/90dmwb6gh4qxbgibbpvbyl1drpllc11k-bun-1.0.30"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/19gsifb10p8gkr49cf0dwl1nygr9p68s-bun-1.0.25"
+          "store_path": "/nix/store/pspan4bw8mw04dpzbawf0ca9by7hn90y-bun-1.0.30"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/75la2pf78a3dqr90f8f7znn6ppfhdw3h-bun-1.0.25"
+          "store_path": "/nix/store/zrmhfs5758g3fl6hd4c8wd0z22lay330-bun-1.0.30"
         }
       }
     },

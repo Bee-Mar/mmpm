@@ -329,3 +329,13 @@
 
 - Update `ui.py` to identify the correct location of gunicorn to resolve issues encountered when
     installing through `pipx`
+
+## Version 4.1.2
+
+- pulled in changes from dependabot
+
+
+## Version 4.1.3
+
+- updated urls from PR
+- Simple cleanup

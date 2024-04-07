@@ -42,7 +42,7 @@ class MagicMirror(Singleton):
         logger.debug("Checking to see if MagicMirror is up to date")
 
         chdir(magicmirror_root)
-        print(f"Retrieving: https://github.com/MichMich/MagicMirror [{color.n_cyan('MagicMirror')}]")
+        print(f"Retrieving: https://github.com/MagicMirrorOrg/MagicMirror [{color.n_cyan('MagicMirror')}]")
 
         try:
             can_upgrade = repo_up_to_date(magicmirror_root)
@@ -127,7 +127,7 @@ class MagicMirror(Singleton):
             os.chdir(root_path.parent)
 
             error_code, _, stderr = run_cmd(
-                ["git", "clone", "https://github.com/MichMich/MagicMirror"],
+                ["git", "clone", "https://github.com/MagicMirrorOrg/MagicMirror"],
                 progress=True,
                 message="Downloading MagicMirror",
             )

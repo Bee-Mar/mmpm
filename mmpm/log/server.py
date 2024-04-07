@@ -7,13 +7,11 @@ from gevent import monkey
 monkey.patch_all()
 
 import socketio
-
 from mmpm.log.factory import MMPMLogFactory
 
 logger = MMPMLogFactory.get_logger(__name__)
 
 
-# Function to create the SocketIO server
 def create():
     server = socketio.Server(cors_allowed_origins="*", async_mode="gevent")
 

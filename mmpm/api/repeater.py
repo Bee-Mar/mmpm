@@ -14,7 +14,6 @@ monkey.patch_all()
 from time import sleep
 
 import socketio
-
 from mmpm.env import MMPMEnv
 from mmpm.log.factory import MMPMLogFactory
 
@@ -80,7 +79,6 @@ def create():
     def error(sid):
         logger.debug(f"Client encountered error: {sid}")
 
-    # Event handler for receiving data from server2
     @mm_client.on("ACTIVE_MODULES", namespace="/MMM-mmpm")
     def active_modules(data):
         logger.debug(f"Received data from MagicMirror SocketIO Server: {data}")
@@ -89,7 +87,6 @@ def create():
             logger.debug(f"Repeating data to {client_id}")
             server.emit("modules", data=data, to=client_id)
 
-    # Event handler for receiving data from server2
     @mm_client.on("MODULES_TOGGLED", namespace="/MMM-mmpm")
     def modules_toggled(data):
         logger.debug(f"Received toggled modules from MagicMirror SocketIO Server: {data}")

@@ -8,10 +8,9 @@ MMPM_API_SERVER_PORT = 7891
 MMPM_LOG_SERVER_PORT = 6789
 MMPM_REPEATER_SERVER_PORT = 8907
 
-MMPM_REPO_URL = "https://github.com/Bee-Mar/mmpm.git"
-MMPM_FILE_URL = "https://raw.githubusercontent.com/Bee-Mar/mmpm/master/mmpm/mmpm.py"
 MMPM_WIKI_URL = "https://github.com/Bee-Mar/mmpm/wiki"
 
-MAGICMIRROR_WIKI_URL: str = "https://github.com/MagicMirrorOrg/MagicMirror/wiki"
+MAGICMIRROR_REPO_URL: str = "https://github.com/MagicMirrorOrg/MagicMirror"
+MAGICMIRROR_WIKI_URL: str = f"{MAGICMIRROR_REPO_URL}/wiki"
 MAGICMIRROR_DOCUMENTATION_URL: str = "https://docs.magicmirror.builders/"
-MAGICMIRROR_MODULES_URL: str = "https://github.com/MagicMirrorOrg/MagicMirror/wiki/3rd-party-modules"
+MAGICMIRROR_MODULES_URL: str = f"{MAGICMIRROR_REPO_URL}/wiki/3rd-party-modules"

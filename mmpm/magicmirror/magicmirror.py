@@ -5,7 +5,7 @@ import sys
 from os import chdir
 from pathlib import Path, PosixPath
 
-from mmpm.constants import color
+from mmpm.constants import color, urls
 from mmpm.env import MMPMEnv
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.singleton import Singleton
@@ -42,7 +42,7 @@ class MagicMirror(Singleton):
         logger.debug("Checking to see if MagicMirror is up to date")
 
         chdir(magicmirror_root)
-        print(f"Retrieving: https://github.com/MagicMirrorOrg/MagicMirror [{color.n_cyan('MagicMirror')}]")
+        print(f"Retrieving: {urls.MAGICMIRROR_REPO_URL} [{color.n_cyan('MagicMirror')}]")
 
         try:
             can_upgrade = repo_up_to_date(magicmirror_root)
@@ -127,7 +127,7 @@ class MagicMirror(Singleton):
             os.chdir(root_path.parent)
 
             error_code, _, stderr = run_cmd(
-                ["git", "clone", "https://github.com/MagicMirrorOrg/MagicMirror"],
+                ["git", "clone", urls.MAGICMIRROR_REPO_URL],
                 progress=True,
                 message="Downloading MagicMirror",
             )

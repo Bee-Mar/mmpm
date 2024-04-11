@@ -47,10 +47,10 @@
         "pm2 start $PWD/dev/ecosystem.json"
       ],
       "stop": [
-        "pm2 stop $PWD/dev/ecosystem.json"
+        "pm2 stop mmpm"
       ],
       "remove": [
-        "pm2 delete $PWD/dev/ecosystem.json"
+        "pm2 delete mmpm"
       ],
       "logs": [
         "pm2 logs mmpm"

@@ -76,3 +76,9 @@ Key Pages:
 - [UI Installation & Removal](https://github.com/Bee-Mar/mmpm/wiki/MMPM-UI-Installation-&-Removal)
 - [Environment Variables](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Environment-Variables) (**Extremely** important)
 - [Hide/Show MagicMirror Modules](https://github.com/Bee-Mar/mmpm/wiki/Status,-Hide,-Show-MagicMirror-Modules)
+
+## MMPM User Interface
+
+<p align="center">
+    <img src="https://raw.githubusercontent.com/Bee-Mar/mmpm/develop/assets/MMPM-UI-Homepage.png" alt="MagicMirror Package Manager">
+</p>

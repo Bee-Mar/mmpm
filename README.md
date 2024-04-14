@@ -32,6 +32,9 @@
 
 The MagicMirror Package Manager is featured as an alternative installation method on the [MagicMirror Documentation](https://docs.magicmirror.builders/getting-started/installation.html#alternative-installation-methods).
 
+<p align="center">
+    <img src="https://github.com/Bee-Mar/mmpm/blob/feature/ui-preview/assets/MMPM-UI-Homepage.png" alt="MagicMirror Package Manager">
+</p>
 
 ## Quick Installation Guide
 
@@ -77,8 +80,3 @@ Key Pages:
 - [Environment Variables](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Environment-Variables) (**Extremely** important)
 - [Hide/Show MagicMirror Modules](https://github.com/Bee-Mar/mmpm/wiki/Status,-Hide,-Show-MagicMirror-Modules)
 
-## MMPM User Interface
-
-<p align="center">
-    <img src="https://github.com/Bee-Mar/mmpm/blob/feature/ui-preview/assets/MMPM-UI-Homepage.png" alt="MagicMirror Package Manager">
-</p>

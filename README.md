@@ -80,5 +80,5 @@ Key Pages:
 ## MMPM User Interface
 
 <p align="center">
-    <img src="https://raw.githubusercontent.com/Bee-Mar/mmpm/develop/assets/MMPM-UI-Homepage.png" alt="MagicMirror Package Manager">
+    <img src="https://github.com/Bee-Mar/mmpm/blob/feature/ui-preview/assets/MMPM-UI-Homepage.png" alt="MagicMirror Package Manager">
 </p>

@@ -339,3 +339,8 @@
 
 - updated urls from PR
 - Simple cleanup
+
+## Version 4.1.4
+
+- corrected typo in `mmpm/magicmirror/magicmirror.py` instructing user to use outdated `mmpm log`
+    command; now directing them to use `mmpm logs`

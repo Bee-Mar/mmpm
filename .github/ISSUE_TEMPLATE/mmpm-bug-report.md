@@ -43,7 +43,7 @@ If applicable, add screenshots to help explain your problem.
 
 **MMPM Log Files**
 
-- Attach the file produced `Download MMPM log files` within the Control Center of the GUI or from the  `mmpm log --zip`
+- Attach the file produced `Download MMPM log files` within the Control Center of the GUI or from the  `mmpm logs --zip`
 
 **MagicMirror Config**
 

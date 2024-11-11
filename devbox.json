@@ -1,11 +1,11 @@
 {
   "packages": [
-    "bun@1.0.30",
-    "nodejs@20.11.0",
-    "pdm@2.12.3",
-    "pm2@5.3.1",
-    "python-full@3.10.13",
-    "gcc13Stdenv.cc.cc.lib"
+    "gcc13Stdenv.cc.cc.lib",
+    "pm2@5.4.2",
+    "bun@1.1.31",
+    "nodejs@22.10.0",
+    "python-full@3.12.6",
+    "pdm@2.18.2"
   ],
   "env": {
     "VENV_DIR": "$PWD/.venv",

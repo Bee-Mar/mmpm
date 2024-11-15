@@ -1,18 +1,13 @@
 #!/usr/bin/env python3
-import sys
-
-if sys.version_info < (3, 9):
-    import importlib_resources as pkg_resources
-else:
-    import importlib.resources as pkg_resources
-
+import importlib.resources as pkg_resources
 import json
 import os
+import sys
 from shutil import rmtree, which
 from sys import executable
 
 from mmpm.__version__ import version
-from mmpm.constants import urls, paths
+from mmpm.constants import paths, urls
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.singleton import Singleton
 from mmpm.utils import run_cmd

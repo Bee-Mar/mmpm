@@ -23,9 +23,9 @@ dependencies = [
   "gitpython>=3.1.40",
   "gevent-websocket>=0.10.1",
   "prompt-toolkit>=3.0.43",
-  "importlib_resources; python_version<'3.9'",
+  "importlib_resources",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 readme = "README.md"
 license = { text = "MIT" }
 keywords = [

@@ -2,7 +2,6 @@
 import importlib.resources as pkg_resources
 import json
 import os
-import sys
 from shutil import rmtree, which
 from sys import executable
 

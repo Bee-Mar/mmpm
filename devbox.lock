@@ -243,7 +243,7 @@
     },
     "python-full@3.12.6": {
       "last_modified": "2024-10-13T23:44:06Z",
-      "plugin_version": "0.0.4",
+      "plugin_version": "0.0.3",
       "resolved": "github:NixOS/nixpkgs/d4f247e89f6e10120f911e2e2d2254a050d0f732#python312Full",
       "source": "devbox-search",
       "version": "3.12.6",

@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 import sys
+from datetime import UTC
 from multiprocessing import cpu_count
 from pathlib import Path, PosixPath
 from re import sub
@@ -545,7 +546,7 @@ class RemotePackage:
         reset: int = github_api["rate"]["reset"]
         remaining: int = github_api["rate"]["remaining"]
 
-        reset_time = datetime.datetime.fromtimestamp(reset, datetime.UTC).strftime("%Y-%m-%d %H:%M:%S")
+        reset_time = datetime.datetime.fromtimestamp(reset, UTC).strftime("%Y-%m-%d %H:%M:%S")
 
         if not remaining:
             health["github"][

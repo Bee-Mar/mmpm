@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-import datetime
 import json
 import os
 import sys
+from datetime import datetime
 from multiprocessing import cpu_count
 from pathlib import Path, PosixPath
 from re import sub
@@ -11,7 +11,6 @@ from typing import Any, Callable, Dict, List, Tuple
 
 import requests
 from bs4 import NavigableString, Tag
-
 from mmpm.constants import color
 from mmpm.env import MMPMEnv
 from mmpm.log.factory import MMPMLogFactory
@@ -45,7 +44,7 @@ class MagicMirrorPackage:
         "is_upgradable",
     )
 
-    # pylint: disable=unused-argument
+    # pylint: disable=unused-argument,too-many-positional-arguments
     def __init__(
         self,
         title: str = NA,
@@ -100,6 +99,7 @@ class MagicMirrorPackage:
     def __ne__(self, other) -> bool:
         return not self.__eq__(other)
 
+    # pylint: disable=too-many-positional-arguments
     def display(
         self,
         detailed: bool = False,
@@ -546,7 +546,7 @@ class RemotePackage:
         reset: int = github_api["rate"]["reset"]
         remaining: int = github_api["rate"]["remaining"]
 
-        reset_time = datetime.datetime.utcfromtimestamp(reset).strftime("%Y-%m-%d %H:%M:%S")
+        reset_time = datetime.utcfromtimestamp(reset).strftime("%Y-%m-%d %H:%M:%S")
 
         if not remaining:
             health["github"][

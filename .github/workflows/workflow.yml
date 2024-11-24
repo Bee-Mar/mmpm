@@ -50,7 +50,7 @@ jobs:
           pdm install
           options=("version" "--help" "completion --help" "db --help" "guided-setup --help" "install --help" "list --help" "logs --help" "mm-ctl --help" "mm-pkg --help" "open --help" "remove --help" "search --help" "show --help" "ui --help" "update --help" "upgrade --help" "version --help")
 
-          for option in "${options[@]}"; do ${{ github.workspace }}/.venv/bin/mmpm "$option"; done
+          for option in "${options[@]}"; do ${{ github.workspace }}/.venv/bin/mmpm $option; done
 
   mmpm-ui:
     runs-on: ubuntu-latest

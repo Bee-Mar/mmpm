@@ -44,7 +44,7 @@ class MagicMirrorPackage:
         "is_upgradable",
     )
 
-    # pylint: disable=unused-argument
+    # pylint: disable=unused-argument,too-many-positional-arguments
     def __init__(
         self,
         title: str = NA,
@@ -99,6 +99,7 @@ class MagicMirrorPackage:
     def __ne__(self, other) -> bool:
         return not self.__eq__(other)
 
+    # pylint: disable=too-many-positional-arguments
     def display(
         self,
         detailed: bool = False,

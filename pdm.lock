@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:8a561a2fa06b9caa8902bd0007d405754788a81f065acd59b1989f48f067fc13"
+content_hash = "sha256:c7e31d27af3cccacf97e9d8ed992e7c280b1fc8a9cf7379fa4b3536d708a5d66"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -1377,16 +1377,6 @@ dependencies = [
 files = [
     {file = "python_socketio-5.11.4-py3-none-any.whl", hash = "sha256:42efaa3e3e0b166fc72a527488a13caaac2cefc76174252486503bd496284945"},
     {file = "python_socketio-5.11.4.tar.gz", hash = "sha256:8b0b8ff2964b2957c865835e936310190639c00310a47d77321a594d1665355e"},
-]
-
-[[package]]
-name = "pytz"
-version = "2024.2"
-summary = "World timezone definitions, modern and historical"
-groups = ["default"]
-files = [
-    {file = "pytz-2024.2-py2.py3-none-any.whl", hash = "sha256:31c7c1817eb7fae7ca4b8c7ee50c72f93aa2dd863de768e1ef4245d426aa0725"},
-    {file = "pytz-2024.2.tar.gz", hash = "sha256:2aa355083c50a0f93fa581709deac0c9ad65cca8a9e9beac660adcbd493c798a"},
 ]
 
 [[package]]

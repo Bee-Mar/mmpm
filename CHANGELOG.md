@@ -340,7 +340,10 @@
 - updated urls from PR
 - Simple cleanup
 
-## Version 4.1.4
+## Version 4.2.0
 
 - corrected typo in `mmpm/magicmirror/magicmirror.py` instructing user to use outdated `mmpm log`
     command; now directing them to use `mmpm logs`
+
+- Dropped support for  Python<=3.8
+- Update dependencies

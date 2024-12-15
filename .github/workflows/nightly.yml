@@ -9,5 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     container: karsten13/mmpm:latest
     steps:
-      - run: mmpm list --all
+      - run: |
+          - python3 -m pip install --user mmpm
+          - mmpm list --all
         name: "Test MMPM package download"

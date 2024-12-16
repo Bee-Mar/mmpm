@@ -10,6 +10,6 @@ jobs:
     container: karsten13/mmpm:latest
     steps:
       - run: |
-          - python3 -m pip install --user mmpm
-          - mmpm list --all
+          python3 -m pip install --user mmpm
+          mmpm list --all
         name: "Test MMPM package download"

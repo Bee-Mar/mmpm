@@ -5,11 +5,10 @@ on:
     - cron: "0 0 * * *" # midnight, every night
 
 jobs:
-  test:
+  test_package_download:
     runs-on: ubuntu-latest
     container: karsten13/mmpm:latest
     steps:
       - run: |
-          python3 -m pip install --user mmpm
           mmpm list --all
         name: "Test MMPM package download"

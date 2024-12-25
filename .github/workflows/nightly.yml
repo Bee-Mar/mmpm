@@ -7,8 +7,11 @@ on:
 jobs:
   test_package_download:
     runs-on: ubuntu-latest
-    container: karsten13/mmpm:latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - run: |
+          python -m pip install mmpm
           mmpm list --all
         name: "Test MMPM package download"

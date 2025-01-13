@@ -27,7 +27,7 @@ jobs:
         with:
           path: |
             ~/.cache/pip
-          key: ${{ runner.os }}-python-deps-${{ hashFiles('**/poetry.lock') }}
+          key: python-deps-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             python-deps-${{ hashFiles('**/poetry.lock') }}
       - name: Python Dependencies
@@ -65,7 +65,7 @@ jobs:
         with:
           path: |
             './ui/node_modules'
-          key: ${{ runner.os }}-angular-deps-${{ hashFiles('**/package-lock.json') }}
+          key: angular-deps-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             angular-deps-${{ hashFiles('**/package-lock.json') }}
 
@@ -74,7 +74,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/ui/build
-          key: ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
+          key: angular-build-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             angular-build-${{ hashFiles('**/package-lock.json') }}
 
@@ -108,7 +108,7 @@ jobs:
           path: |
             ~/.cache/pip
             ${{ github.workspace }}/.venv
-          key: ${{ runner.os }}-python-deps-${{ hashFiles('**/poetry.lock') }}
+          key: python-deps-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             python-deps-${{ hashFiles('**/poetry.lock') }}
 
@@ -117,7 +117,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/ui/build
-          key: ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
+          key: angular-build-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             angular-build-${{ hashFiles('**/package-lock.json') }}
 
@@ -134,7 +134,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/dist
-          key: ${{ runner.os }}-python-build-${{ hashFiles('**/poetry.lock') }}
+          key: python-build-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             python-build-${{ hashFiles('**/poetry.lock') }}
 

@@ -129,70 +129,6 @@
         }
       }
     },
-    "pdm@2.18.2": {
-      "last_modified": "2024-09-29T13:45:20Z",
-      "resolved": "github:NixOS/nixpkgs/7eee17a8a5868ecf596bbb8c8beb527253ea8f4d#pdm",
-      "source": "devbox-search",
-      "version": "2.18.2",
-      "systems": {
-        "aarch64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/zkm4nxf0qm0zlszg8as3c4828fryf32r-pdm-2.18.2",
-              "default": true
-            },
-            {
-              "name": "dist",
-              "path": "/nix/store/cnxv85c3qs3w7p4qcv36yp4mpmysvn83-pdm-2.18.2-dist"
-            }
-          ],
-          "store_path": "/nix/store/zkm4nxf0qm0zlszg8as3c4828fryf32r-pdm-2.18.2"
-        },
-        "aarch64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/cdsi576pkgpvcbd5ksqphq1axgg3gkvi-pdm-2.18.2",
-              "default": true
-            },
-            {
-              "name": "dist",
-              "path": "/nix/store/706cijccllz3wr132l4siph8nirp2qsg-pdm-2.18.2-dist"
-            }
-          ],
-          "store_path": "/nix/store/cdsi576pkgpvcbd5ksqphq1axgg3gkvi-pdm-2.18.2"
-        },
-        "x86_64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/wf3wpprjxdxqwq9kn65asc3skzn0v7pj-pdm-2.18.2",
-              "default": true
-            },
-            {
-              "name": "dist",
-              "path": "/nix/store/jybjz97pig3grnl6ci6qsawl5ipmivvq-pdm-2.18.2-dist"
-            }
-          ],
-          "store_path": "/nix/store/wf3wpprjxdxqwq9kn65asc3skzn0v7pj-pdm-2.18.2"
-        },
-        "x86_64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/jjsyzf1vkp8caapssqnpxmg6z030j7k0-pdm-2.18.2",
-              "default": true
-            },
-            {
-              "name": "dist",
-              "path": "/nix/store/02lv35cq28if46578kaixx9fd2rn9g4s-pdm-2.18.2-dist"
-            }
-          ],
-          "store_path": "/nix/store/jjsyzf1vkp8caapssqnpxmg6z030j7k0-pdm-2.18.2"
-        }
-      }
-    },
     "pm2@5.4.2": {
       "last_modified": "2024-11-03T14:18:04Z",
       "resolved": "github:NixOS/nixpkgs/4ae2e647537bcdbb82265469442713d066675275#pm2",
@@ -243,7 +179,7 @@
     },
     "python-full@3.12.6": {
       "last_modified": "2024-10-13T23:44:06Z",
-      "plugin_version": "0.0.3",
+      "plugin_version": "0.0.4",
       "resolved": "github:NixOS/nixpkgs/d4f247e89f6e10120f911e2e2d2254a050d0f732#python312Full",
       "source": "devbox-search",
       "version": "3.12.6",

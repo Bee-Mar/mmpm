@@ -14,7 +14,7 @@
     "init_hook": [
       "[ ! -d $VENV_DIR ] && echo 'Creating virtualenv ...' && python3 -m venv $VENV_DIR",
       "source $VENV_DIR/bin/activate",
-      "[[ ! $(command -v poetry) ]] && python -m pip install poetry=='2.0.1'"
+      "[[ ! $(command -v poetry) ]] && python -m pip install poetry=='2.0.1' && printf '\n\nRun `devbox run setup` to install dependencies\n'"
     ],
     "scripts": {
       "setup": [

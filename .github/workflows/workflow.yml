@@ -33,6 +33,7 @@ jobs:
             python-deps-${{ hashFiles('**/poetry.lock') }}
       - name: Python Dependencies
         run: |
+          ls -lah ${{ github.workspace }}/.venv
           python -m pip install poetry
           poetry install --no-interaction
       - name: Python Tests

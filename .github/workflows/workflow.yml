@@ -37,19 +37,24 @@ jobs:
             python-deps-${{ hashFiles('**/poetry.lock') }}
       - name: Python Dependencies
         run: |
+          source ${{ github.workspace }}/.venv/bin/activate
           python -m pip install poetry
           poetry install --no-interaction
       - name: Python Tests
         run: |
+          source ${{ github.workspace }}/.venv/bin/activate
           pylint mmpm
           mypy mmpm
           coverage run -m pytest test
           coverage report
       - name: Python Build
         run: |
+          source ${{ github.workspace }}/.venv/bin/activate
+          pylint mmpm
           poetry build
       - name: Install Test
         run: |
+          source ${{ github.workspace }}/.venv/bin/activate
           poetry install --no-interaction
           options=("version" "--help" "completion --help" "db --help" "guided-setup --help" "install --help" "list --help" "logs --help" "mm-ctl --help" "mm-pkg --help" "open --help" "remove --help" "search --help" "show --help" "ui --help" "update --help" "upgrade --help" "version --help")
 
@@ -128,6 +133,7 @@ jobs:
 
       - name: Package MMPM
         run: |
+          source ${{ github.workspace }}/.venv/bin/activate
           python -m pip install poetry
           poetry install --no-interaction
           mkdir -p ${{ github.workspace }}/mmpm/ui

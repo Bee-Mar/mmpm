@@ -27,13 +27,14 @@ jobs:
         with:
           path: |
             ~/.cache/pip
-            ${{ github.workspace }}/.venv
           key: python-deps-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             python-deps-${{ hashFiles('**/poetry.lock') }}
       - name: Python Dependencies
         run: |
-          ls -lah ${{ github.workspace }}/.venv
+          which python
+          python -c "import site; print(site.getsitepackages())"
+          ls -lah .
           python -m pip install poetry
           poetry install --no-interaction
       - name: Python Tests
@@ -109,8 +110,6 @@ jobs:
         with:
           path: |
             ~/.cache/pip
-            .venv
-            ${{ github.workspace }}/.venv
           key: python-deps-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             python-deps-${{ hashFiles('**/poetry.lock') }}

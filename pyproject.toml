@@ -16,6 +16,9 @@ keywords = [
   "MagicMirror magicmirror package-manager mmpm MMPM magicmirror-package-manager package manager magicmirror_package_manager",
 ]
 
+[tool.poetry.build]
+script = ".build.py"
+
 [project.urls]
 Homepage = "https://github.com/Bee-Mar/mmpm"
 Downloads = "https://github.com/Bee-Mar/mmpm/archive/4.2.1.tar.gz"
@@ -57,3 +60,7 @@ faker = "^33.3.1"
 coverage = "^7.6.10"
 black = "^24.10.0"
 isort = "^5.13.2"
+
+[tool.poetry]
+include = [{ path = "mmpm/ui/*", format = ["sdist", "wheel"] }]
+exclude = [".build.py"]

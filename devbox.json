@@ -2,9 +2,9 @@
   "packages": [
     "gcc13Stdenv.cc.cc.lib",
     "pm2@5.4.2",
-    "bun@1.1.31",
     "nodejs@22.10.0",
-    "python-full@3.12.6"
+    "python-full@3.12.6",
+    "bun@1.2.0"
   ],
   "env": {
     "VENV_DIR": "$PWD/.venv",
@@ -57,11 +57,13 @@
         "pm2 logs mmpm"
       ],
       "deploy": [
-        "cd ui && npm install --legacy-peer-deps && cd ..",
-        "cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href / && cd ..",
-        "poetry install",
+        "cd ui",
+        "bun install --legacy-peer-deps",
+        "./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href /",
+        "cd ..",
         "mkdir -p mmpm/ui",
         "cp -r ui/build/* mmpm/ui",
+        "poetry install --no-interaction",
         "poetry build"
       ]
     }

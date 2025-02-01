@@ -347,3 +347,8 @@
 
 - Dropped support for  Python<=3.8
 - Update dependencies
+
+## Version 4.2.1
+
+- moved to use of PDM package manager to Poetry and adjusted build scripts accordingly
+

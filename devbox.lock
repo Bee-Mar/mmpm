@@ -1,51 +1,51 @@
 {
   "lockfile_version": "1",
   "packages": {
-    "bun@1.1.31": {
-      "last_modified": "2024-11-03T14:18:04Z",
-      "resolved": "github:NixOS/nixpkgs/4ae2e647537bcdbb82265469442713d066675275#bun",
+    "bun@1.2.0": {
+      "last_modified": "2025-01-27T20:31:03Z",
+      "resolved": "github:NixOS/nixpkgs/f898cbfddfab52593da301a397a17d0af801bbc3#bun",
       "source": "devbox-search",
-      "version": "1.1.31",
+      "version": "1.2.0",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/gmvlpnhc673pjwai7q0ydvikif8r1gg5-bun-1.1.31",
+              "path": "/nix/store/xxfrmp6y0hpnbi0i4hiqlxs5q03z38ih-bun-1.2.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/gmvlpnhc673pjwai7q0ydvikif8r1gg5-bun-1.1.31"
+          "store_path": "/nix/store/xxfrmp6y0hpnbi0i4hiqlxs5q03z38ih-bun-1.2.0"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/4xbdp3yb549g0c50qjb2majdg3b484i1-bun-1.1.31",
+              "path": "/nix/store/q2vlfs8ndyn11r81g9d6xqsvimn7swhi-bun-1.2.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/4xbdp3yb549g0c50qjb2majdg3b484i1-bun-1.1.31"
+          "store_path": "/nix/store/q2vlfs8ndyn11r81g9d6xqsvimn7swhi-bun-1.2.0"
         },
         "x86_64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/rvf4znnp3zy53f6wc8wkccrz3n59l552-bun-1.1.31",
+              "path": "/nix/store/sa4jc9rnihflx9r27xgplsxz6mfwhgmi-bun-1.2.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/rvf4znnp3zy53f6wc8wkccrz3n59l552-bun-1.1.31"
+          "store_path": "/nix/store/sa4jc9rnihflx9r27xgplsxz6mfwhgmi-bun-1.2.0"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/gimbmhysr6l7fbzk25alznv0mphiy97a-bun-1.1.31",
+              "path": "/nix/store/738z8xcfqmxd60dc74n02bmc8awa0mrg-bun-1.2.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/gimbmhysr6l7fbzk25alznv0mphiy97a-bun-1.1.31"
+          "store_path": "/nix/store/738z8xcfqmxd60dc74n02bmc8awa0mrg-bun-1.2.0"
         }
       }
     },

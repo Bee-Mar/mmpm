@@ -27,14 +27,12 @@ jobs:
         with:
           path: |
             ~/.cache/pip
+            ~/.local
           key: python-deps-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             python-deps-${{ hashFiles('**/poetry.lock') }}
       - name: Python Dependencies
         run: |
-          which python
-          python -c "import site; print(site.getsitepackages())"
-          ls -lah .
           python -m pip install poetry
           poetry install --no-interaction
       - name: Python Tests
@@ -110,6 +108,7 @@ jobs:
         with:
           path: |
             ~/.cache/pip
+            ~/.local
           key: python-deps-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             python-deps-${{ hashFiles('**/poetry.lock') }}

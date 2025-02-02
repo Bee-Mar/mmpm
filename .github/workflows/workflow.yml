@@ -22,32 +22,40 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Create Virtualenv
+        run: |
+          python -m venv ${{ github.workspace }}/.venv
+          source ${{ github.workspace }}/.venv/bin/activate
       - name: Cache Python Dependencies
         uses: actions/cache@v3
         with:
-          python-version: ${{ matrix.python-version }}
           path: |
             ~/.cache/pip
             ${{ github.workspace }}/.venv
-          key: ${{ runner.os }}-python-deps-${{ hashFiles('**/pdm.lock') }}
+          key: python-deps-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-python-deps-${{ hashFiles('**/pdm.lock') }}
+            python-deps-${{ hashFiles('**/poetry.lock') }}
       - name: Python Dependencies
         run: |
-          python -m pip install pdm
-          pdm install
+          source ${{ github.workspace }}/.venv/bin/activate
+          python -m pip install poetry
+          poetry install --no-interaction
       - name: Python Tests
         run: |
-          pdm run lint
-          pdm run mypy
-          pdm run test
-          pdm run report
+          source ${{ github.workspace }}/.venv/bin/activate
+          pylint mmpm
+          mypy mmpm
+          coverage run -m pytest test
+          coverage report
       - name: Python Build
         run: |
-          pdm build
+          source ${{ github.workspace }}/.venv/bin/activate
+          pylint mmpm
+          poetry build
       - name: Install Test
         run: |
-          pdm install
+          source ${{ github.workspace }}/.venv/bin/activate
+          poetry install --no-interaction
           options=("version" "--help" "completion --help" "db --help" "guided-setup --help" "install --help" "list --help" "logs --help" "mm-ctl --help" "mm-pkg --help" "open --help" "remove --help" "search --help" "show --help" "ui --help" "update --help" "upgrade --help" "version --help")
 
           for option in "${options[@]}"; do ${{ github.workspace }}/.venv/bin/mmpm $option; done
@@ -67,18 +75,18 @@ jobs:
         with:
           path: |
             './ui/node_modules'
-          key: ${{ runner.os }}-angular-deps-${{ hashFiles('**/package-lock.json') }}
+          key: angular-deps-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-angular-deps-${{ hashFiles('**/package-lock.json') }}
+            angular-deps-${{ hashFiles('**/package-lock.json') }}
 
       - name: Cache Angular Build Artifacts
         uses: actions/cache@v3
         with:
           path: |
             ${{ github.workspace }}/ui/build
-          key: ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
+          key: angular-build-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
+            angular-build-${{ hashFiles('**/package-lock.json') }}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -110,35 +118,36 @@ jobs:
           path: |
             ~/.cache/pip
             ${{ github.workspace }}/.venv
-          key: ${{ runner.os }}-python-deps-${{ hashFiles('**/pdm.lock') }}
+          key: python-deps-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-python-deps-${{ hashFiles('**/pdm.lock') }}
+            python-deps-${{ hashFiles('**/poetry.lock') }}
 
       - name: Restore Angular Build Artifacts Cache
         uses: actions/cache@v3
         with:
           path: |
             ${{ github.workspace }}/ui/build
-          key: ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
+          key: angular-build-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-angular-build-${{ hashFiles('**/package-lock.json') }}
+            angular-build-${{ hashFiles('**/package-lock.json') }}
 
       - name: Package MMPM
         run: |
-          python -m pip install pdm
-          pdm install
+          source ${{ github.workspace }}/.venv/bin/activate
+          python -m pip install poetry
+          poetry install --no-interaction
           mkdir -p ${{ github.workspace }}/mmpm/ui
           cp -r ${{ github.workspace }}/ui/build/* ${{ github.workspace }}/mmpm/ui
-          pdm build
+          poetry build
 
       - name: Cache MMPM Artifacts
         uses: actions/cache@v3
         with:
           path: |
             ${{ github.workspace }}/dist
-          key: ${{ runner.os }}-python-build-${{ hashFiles('**/pdm.lock') }}
+          key: python-build-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-python-build-${{ hashFiles('**/pdm.lock') }}
+            python-build-${{ hashFiles('**/poetry.lock') }}
 
       - name: Publish to PyPi
         if: startsWith(github.ref, 'refs/tags/')
@@ -151,7 +160,7 @@ jobs:
 
       - name: Publish Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: python-package-distributions
           path: ${{ github.workspace }}/dist/

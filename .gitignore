@@ -27,6 +27,4 @@ TODO.md
 htmlcov
 .idea
 mmpm/ui
-.pdm-python
-mmpm/ui
 .devbox

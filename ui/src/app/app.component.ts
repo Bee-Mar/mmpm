@@ -1,10 +1,11 @@
-import { Component } from "@angular/core";
-import { getCookie, setCookie } from "./utils/utils";
+import {Component} from "@angular/core";
+import {getCookie, setCookie} from "./utils/utils";
 
 @Component({
   selector: "app-root",
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
+  standalone: false
 })
 export class AppComponent {
   public title = "MagicMirror Package Manager";

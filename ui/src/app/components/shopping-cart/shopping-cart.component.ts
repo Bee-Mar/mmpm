@@ -1,14 +1,15 @@
-import { MagicMirrorPackage } from "@/models/magicmirror-package";
-import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
-import { SharedStoreService } from "@/services/shared-store.service";
-import { Component, Input, Output, EventEmitter } from "@angular/core";
-import { ConfirmationService, MessageService } from "primeng/api";
+import {MagicMirrorPackage} from "@/models/magicmirror-package";
+import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
+import {SharedStoreService} from "@/services/shared-store.service";
+import {Component, Input, Output, EventEmitter} from "@angular/core";
+import {ConfirmationService, MessageService} from "primeng/api";
 
 @Component({
   selector: "app-shopping-cart",
   templateUrl: "./shopping-cart.component.html",
   styleUrls: ["./shopping-cart.component.scss"],
   providers: [MessageService, ConfirmationService],
+  standalone: false
 })
 export class ShoppingCartComponent {
   constructor(
@@ -67,11 +68,11 @@ export class ShoppingCartComponent {
       this.store.load();
 
       if (success.length) {
-        this.msg.add({ severity: "success", summary: "Remove Packages", detail: `Successfully removed: ${success.map((pkg) => pkg.title).join(", ")}` });
+        this.msg.add({severity: "success", summary: "Remove Packages", detail: `Successfully removed: ${success.map((pkg) => pkg.title).join(", ")}`});
       }
 
       if (failure.length) {
-        this.msg.add({ severity: "error", summary: "Remove Packages", detail: `Failed to remove: ${failure.map((pkg) => pkg.title).join(", ")}` });
+        this.msg.add({severity: "error", summary: "Remove Packages", detail: `Failed to remove: ${failure.map((pkg) => pkg.title).join(", ")}`});
       }
     }
 
@@ -83,7 +84,7 @@ export class ShoppingCartComponent {
       this.store.load();
 
       if (success.length) {
-        this.msg.add({ severity: "success", summary: "Install Packages", detail: `Successfully installed: ${success.map((pkg) => pkg.title).join(", ")}` });
+        this.msg.add({severity: "success", summary: "Install Packages", detail: `Successfully installed: ${success.map((pkg) => pkg.title).join(", ")}`});
       }
 
       if (failure.length) {

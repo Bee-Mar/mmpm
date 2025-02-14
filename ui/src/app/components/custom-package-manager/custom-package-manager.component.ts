@@ -1,17 +1,18 @@
-import { MagicMirrorPackage } from "@/models/magicmirror-package";
-import { APIResponse } from "@/services/api/base-api";
-import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
-import { SharedStoreService } from "@/services/shared-store.service";
-import { Component, OnInit, ViewChild, Input, Output, EventEmitter, OnDestroy } from "@angular/core";
-import { NgForm } from "@angular/forms";
-import { MessageService } from "primeng/api";
-import { Subscription } from "rxjs";
+import {MagicMirrorPackage} from "@/models/magicmirror-package";
+import {APIResponse} from "@/services/api/base-api";
+import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
+import {SharedStoreService} from "@/services/shared-store.service";
+import {Component, OnInit, ViewChild, Input, Output, EventEmitter, OnDestroy} from "@angular/core";
+import {NgForm} from "@angular/forms";
+import {MessageService} from "primeng/api";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: "app-custom-package-manager",
   templateUrl: "./custom-package-manager.component.html",
   styleUrls: ["./custom-package-manager.component.scss"],
   providers: [MessageService],
+  standalone: false
 })
 export class CustomPackageManagerComponent implements OnInit, OnDestroy {
   constructor(
@@ -104,9 +105,9 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
         this.store.load();
 
         if (response.code === 200) {
-          this.msg.add({ severity: "success", summary: "Add Custom Package", detail: `Successfully added ${this.customPackage.title} to database` });
+          this.msg.add({severity: "success", summary: "Add Custom Package", detail: `Successfully added ${this.customPackage.title} to database`});
         } else {
-          this.msg.add({ severity: "error", summary: "Add Custom Package", detail: response.message });
+          this.msg.add({severity: "error", summary: "Add Custom Package", detail: response.message});
         }
       })
       .catch((error) => {
@@ -129,7 +130,7 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
         const failure = response.message.failure as Array<MagicMirrorPackage>;
 
         if (success.length) {
-          this.msg.add({ severity: "success", summary: "Remove Custom Packages", detail: `Successfully removed custom packages: ${success.map((pkg) => pkg.title).join(", ")}` });
+          this.msg.add({severity: "success", summary: "Remove Custom Packages", detail: `Successfully removed custom packages: ${success.map((pkg) => pkg.title).join(", ")}`});
         }
 
         if (failure.length) {

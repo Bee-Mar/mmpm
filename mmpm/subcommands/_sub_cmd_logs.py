@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" Command line options for 'log' subcommand """
+"""Command line options for 'log' subcommand"""
 
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.subcommands.sub_cmd import SubCmd

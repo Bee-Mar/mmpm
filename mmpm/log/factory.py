@@ -4,11 +4,11 @@ import json
 import logging
 import logging.handlers
 import os
-import shutil
+import zipfile
+from pathlib import Path
 from threading import Lock
 
 import socketio
-
 from mmpm.__version__ import version
 from mmpm.constants import paths
 from mmpm.env import MMPMEnv
@@ -224,13 +224,23 @@ class MMPMLogFactory:
             None
         """
         today = datetime.datetime.now()
-
-        file_name: str = f"mmpm-logs-{today.year}-{today.month}-{today.day}"
+        file_name = Path(f"mmpm-logs-{today.year}-{today.month}-{today.day}.zip")
 
         try:
-            shutil.make_archive(file_name, "zip", paths.MMPM_LOG_DIR)
-        except Exception as error:
-            MMPMLogFactory.__logger.error(f"{error}")
+            with zipfile.ZipFile(file_name, mode="w") as archive:
+                os.chdir(paths.MMPM_LOG_DIR)
+
+                for file in os.listdir(os.getcwd()):
+                    archive.write(file)
+
+                if paths.PM2_LOG_DIR.exists():
+                    os.chdir(paths.PM2_LOG_DIR)
+
+                    for file in os.listdir(os.getcwd()):
+                        archive.write(file)
+
+        except (IOError, zipfile.BadZipFile, Exception) as error:
+            MMPMLogFactory.__logger.error(f"Failed to create archive of log files: {error}")
             return
 
-        MMPMLogFactory.__logger.info(f"Compressed MMPM log files to {os.getcwd()}/{file_name}.zip ")
+        MMPMLogFactory.__logger.info(f"Compressed MMPM log files to {os.getcwd()}/{file_name}")

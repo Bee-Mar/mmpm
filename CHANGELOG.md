@@ -355,3 +355,4 @@
 ## Version 4.2.1
 
 - updated version of angular to mitigate vulnerabilities
+- including pm2 logs in the `mmpm logs -z` subcommand

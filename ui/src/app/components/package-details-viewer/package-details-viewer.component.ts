@@ -1,15 +1,16 @@
-import { MagicMirrorPackage, RemotePackageDetails } from "@/models/magicmirror-package";
-import { Component, Input, Output, EventEmitter } from "@angular/core";
-import { MarketPlaceIcons } from "@/components/marketplace/marketplace-icons.model";
-import { APIResponse } from "@/services/api/base-api";
-import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
-import { MessageService } from "primeng/api";
+import {MagicMirrorPackage, RemotePackageDetails} from "@/models/magicmirror-package";
+import {Component, Input, Output, EventEmitter} from "@angular/core";
+import {MarketPlaceIcons} from "@/components/marketplace/marketplace-icons.model";
+import {APIResponse} from "@/services/api/base-api";
+import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
+import {MessageService} from "primeng/api";
 
 @Component({
   selector: "app-package-details-viewer",
   templateUrl: "./package-details-viewer.component.html",
   styleUrls: ["./package-details-viewer.component.scss"],
   providers: [MessageService],
+  standalone: false
 })
 export class PackageDetailsViewerComponent {
   constructor(
@@ -61,7 +62,7 @@ export class PackageDetailsViewerComponent {
           console.log(`Retrieved remote details for ${this.selectedPackage?.title}`);
           this.loading = false;
         } else {
-          this.msg.add({ severity: "error", summary: "Package Details", detail: response.message });
+          this.msg.add({severity: "error", summary: "Package Details", detail: response.message});
         }
       })
       .catch((error) => {

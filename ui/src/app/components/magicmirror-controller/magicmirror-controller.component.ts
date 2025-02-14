@@ -1,19 +1,20 @@
-import { Component, HostListener, OnDestroy, OnInit } from "@angular/core";
-import { io } from "socket.io-client";
-import { MMPMEnv } from "@/models/mmpm-env";
-import { MagicMirrorModule } from "@/models/magicmirror-module";
-import { MessageService, ConfirmationService, MenuItem } from "primeng/api";
-import { APIResponse } from "@/services/api/base-api";
-import { MagicMirrorAPI } from "@/services/api/magicmirror-api.service";
-import { MagicMirrorControllerAPI } from "@/services/api/magicmirror-controller-api.service";
-import { SharedStoreService } from "@/services/shared-store.service";
-import { Subscription } from "rxjs";
+import {Component, HostListener, OnDestroy, OnInit} from "@angular/core";
+import {io} from "socket.io-client";
+import {MMPMEnv} from "@/models/mmpm-env";
+import {MagicMirrorModule} from "@/models/magicmirror-module";
+import {MessageService, ConfirmationService, MenuItem} from "primeng/api";
+import {APIResponse} from "@/services/api/base-api";
+import {MagicMirrorAPI} from "@/services/api/magicmirror-api.service";
+import {MagicMirrorControllerAPI} from "@/services/api/magicmirror-controller-api.service";
+import {SharedStoreService} from "@/services/shared-store.service";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: "app-magicmirror-controller",
   templateUrl: "./magicmirror-controller.component.html",
   styleUrls: ["./magicmirror-controller.component.scss"],
   providers: [MessageService, ConfirmationService],
+  standalone: false
 })
 export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   constructor(
@@ -134,17 +135,17 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
     if (mmModule.hidden) {
       this.mmControllerApi.postShow(mmModule).then((response: APIResponse) => {
         if (response.code !== 200) {
-          this.msg.add({ severity: "error", summary: "Show Modules", detail: response.message });
+          this.msg.add({severity: "error", summary: "Show Modules", detail: response.message});
         } else {
-          this.msg.add({ severity: "success", summary: "Show Modules" });
+          this.msg.add({severity: "success", summary: "Show Modules"});
         }
       });
     } else {
       this.mmControllerApi.postHide(mmModule).then((response: APIResponse) => {
         if (response.code !== 200) {
-          this.msg.add({ severity: "error", summary: "Hid Modules", detail: response.message });
+          this.msg.add({severity: "error", summary: "Hid Modules", detail: response.message});
         } else {
-          this.msg.add({ severity: "success", summary: "Hid Modules" });
+          this.msg.add({severity: "success", summary: "Hid Modules"});
         }
       });
     }
@@ -159,9 +160,9 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
           this.initSocket();
         }, 3000);
 
-        this.msg.add({ severity: "success", summary: "Start MagicMirror", detail: "Successfully started MagicMirror" });
+        this.msg.add({severity: "success", summary: "Start MagicMirror", detail: "Successfully started MagicMirror"});
       } else {
-        this.msg.add({ severity: "error", summary: "Start MagicMirror", detail: response.message });
+        this.msg.add({severity: "error", summary: "Start MagicMirror", detail: response.message});
       }
     });
   }
@@ -173,9 +174,9 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
 
     this.mmControllerApi.getStop().then((response: APIResponse) => {
       if (response.code === 200) {
-        this.msg.add({ severity: "success", summary: "Stop MagicMirror", detail: "Successfully stopped MagicMirror" });
+        this.msg.add({severity: "success", summary: "Stop MagicMirror", detail: "Successfully stopped MagicMirror"});
       } else {
-        this.msg.add({ severity: "error", summary: "Stop MagicMirror", detail: response.message });
+        this.msg.add({severity: "error", summary: "Stop MagicMirror", detail: response.message});
       }
     });
   }
@@ -191,9 +192,9 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
           this.initSocket();
         }, 3000);
 
-        this.msg.add({ severity: "success", summary: "Restart MagicMirror", detail: "Successfully restarted MagicMirror" });
+        this.msg.add({severity: "success", summary: "Restart MagicMirror", detail: "Successfully restarted MagicMirror"});
       } else {
-        this.msg.add({ severity: "error", summary: "Restart MagicMirror", detail: response.message });
+        this.msg.add({severity: "error", summary: "Restart MagicMirror", detail: response.message});
       }
     });
   }
@@ -201,9 +202,9 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   public onInstall(): void {
     this.mmApi.getInstall().then((response: APIResponse) => {
       if (response.code === 200) {
-        this.msg.add({ severity: "success", summary: "Install MagicMirror", detail: "Successfully installed MagicMirror" });
+        this.msg.add({severity: "success", summary: "Install MagicMirror", detail: "Successfully installed MagicMirror"});
       } else {
-        this.msg.add({ severity: "error", summary: "Install MagicMirror", detail: response.message });
+        this.msg.add({severity: "error", summary: "Install MagicMirror", detail: response.message});
       }
     });
   }
@@ -211,9 +212,9 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   public onRemove(): void {
     this.mmApi.getRemove().then((response: APIResponse) => {
       if (response.code === 200) {
-        this.msg.add({ severity: "success", summary: "Remove MagicMirror", detail: "Successfully removed MagicMirror" });
+        this.msg.add({severity: "success", summary: "Remove MagicMirror", detail: "Successfully removed MagicMirror"});
       } else {
-        this.msg.add({ severity: "error", summary: "Remove MagicMirror", detail: response.message });
+        this.msg.add({severity: "error", summary: "Remove MagicMirror", detail: response.message});
       }
     });
   }
@@ -221,7 +222,7 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   public initSocket(): void {
     console.log("Initializing socket");
 
-    this.socket = io(`${window.location.hostname}:8907`, { reconnection: true });
+    this.socket = io(`${window.location.hostname}:8907`, {reconnection: true});
 
     this.socket.on("connect", () => {
       console.log("Connected to MMPM Socket.IO Repeater");

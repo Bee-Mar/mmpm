@@ -352,3 +352,6 @@
 
 - moved to use of PDM package manager to Poetry and adjusted build scripts accordingly
 
+## Version 4.2.1
+
+- updated version of angular to mitigate vulnerabilities

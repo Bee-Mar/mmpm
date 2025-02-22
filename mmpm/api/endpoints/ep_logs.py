@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from datetime import datetime
 from os import chdir
 from shutil import make_archive

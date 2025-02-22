@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-""" Command line options for 'version' subcommand """
+"""Command line options for 'version' subcommand"""
 
 from mmpm.__version__ import version
 from mmpm.log.factory import MMPMLogFactory

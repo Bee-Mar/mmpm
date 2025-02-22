@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-""" Command line options for 'search' subcommand """
+"""Command line options for 'search' subcommand"""
+
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd

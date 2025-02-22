@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from colorama import Fore, Style
 
 RESET = Style.RESET_ALL  # resets back to the original color of the terminal text

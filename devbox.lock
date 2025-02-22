@@ -51,18 +51,7 @@
     },
     "gcc13Stdenv.cc.cc.lib": {
       "resolved": "github:NixOS/nixpkgs/75a52265bda7fd25e06e3a67dee3f0354e73243c#gcc13Stdenv.cc.cc.lib",
-      "source": "nixpkg",
-      "systems": {
-        "x86_64-linux": {
-          "outputs": [
-            {
-              "name": "lib",
-              "path": "/nix/store/a2wqdxzjd68qaki5gx2a28f9p8pny6fh-gcc-13.2.0-lib",
-              "default": true
-            }
-          ]
-        }
-      }
+      "source": "nixpkg"
     },
     "nodejs@22.10.0": {
       "last_modified": "2024-11-03T14:18:04Z",

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from argparse import Namespace, _SubParsersAction
 from typing import List
 

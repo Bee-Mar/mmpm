@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """ Command line options for 'open' subcommand """
 from os import getenv, system
 from pathlib import PosixPath

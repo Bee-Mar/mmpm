@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import json
 import os
 import sys
@@ -140,7 +139,7 @@ class MagicMirrorPackage:
 
             if remote:
                 for key, value in RemotePackage(self).serialize().items():
-                    print(f"  {key.replace('_',' ').capitalize()}: {value}")
+                    print(f"  {key.replace('_', ' ').capitalize()}: {value}")
 
             print(fill(f"  Description: {self.description}\n", width=80), "\n")
 
@@ -549,9 +548,9 @@ class RemotePackage:
         reset_time = datetime.utcfromtimestamp(reset).strftime("%Y-%m-%d %H:%M:%S")
 
         if not remaining:
-            health["github"][
-                "error"
-            ] = f"Unable to use `--verbose` option. No GitHub API requests remaining. Request count will reset at {reset_time}"
+            health["github"]["error"] = (
+                f"Unable to use `--verbose` option. No GitHub API requests remaining. Request count will reset at {reset_time}"
+            )
         elif remaining < 10:
             health["github"]["warning"] = f"{remaining} GitHub API requests remaining. Request count will reset at {reset_time}"
 

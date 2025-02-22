@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-""" Command line options for 'mm-pkg' subcommand """
+"""Command line options for 'mm-pkg' subcommand"""
+
 from mmpm.constants import color
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.database import MagicMirrorDatabase

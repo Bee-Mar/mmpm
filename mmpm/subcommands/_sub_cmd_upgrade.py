@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-""" Command line options for 'upgrade' subcommand """
+"""Command line options for 'upgrade' subcommand"""
+
 import json
 from typing import List
 

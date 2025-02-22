@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import json
 import os
 import socket
@@ -108,7 +107,7 @@ def run_cmd(command: List[str], progress=True, background=False, message: str = 
 
         return 0, "", ""
 
-    logger.debug(f'Executing command `{" ".join(command)}`')
+    logger.debug(f"Executing command `{' '.join(command)}`")
 
     with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as process:
         if progress:

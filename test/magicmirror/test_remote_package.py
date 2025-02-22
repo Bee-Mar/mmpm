@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import datetime
 import json
 import unittest
@@ -7,7 +5,6 @@ from unittest.mock import MagicMock, patch
 
 import requests
 from faker import Faker
-
 from mmpm.magicmirror.package import MagicMirrorPackage, RemotePackage
 
 fake = Faker()
@@ -49,15 +46,14 @@ class TestRemotePackage(unittest.TestCase):
         forks_count = fake.pyint()
 
         # Mocking the response for GitHub API
-        mock_response.text = json.dumps(
-            {
-                "stargazers_count": stars,
-                "open_issues": open_issues,
-                "created_at": "2020-01-01T00:00:00Z",
-                "updated_at": "2020-12-31T23:59:59Z",
-                "forks_count": forks_count,
-            }
-        )
+        mock_response.text = json.dumps({
+            "stargazers_count": stars,
+            "open_issues": open_issues,
+            "created_at": "2020-01-01T00:00:00Z",
+            "updated_at": "2020-12-31T23:59:59Z",
+            "forks_count": forks_count,
+        })
+
         mock_safe_get_request.return_value = mock_response
 
         details = remote_package.serialize()

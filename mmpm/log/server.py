@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 An incredibly simplistic SocketIO server used for repeating logs from the MMPM CLI to the UI.
 """

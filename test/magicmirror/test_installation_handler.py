@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import unittest
 from multiprocessing import cpu_count
 from pathlib import Path

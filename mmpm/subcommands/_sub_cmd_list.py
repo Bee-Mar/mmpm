@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-""" Command line options for 'list' subcommand """
+"""Command line options for 'list' subcommand"""
+
 from mmpm.constants import color
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.database import MagicMirrorDatabase
@@ -116,10 +116,10 @@ class List(SubCmd):
                 print(color.n_green(MagicMirrorPackage(**package).title), f"[{pkg_label}]")
 
             if upgradable["mmpm"]:
-                print(f'{color.n_green("mmpm")} [{app_label}]')
+                print(f"{color.n_green('mmpm')} [{app_label}]")
 
             if upgradable["MagicMirror"]:
-                print(f'{color.n_green("MagicMirror")} [{app_label}]')
+                print(f"{color.n_green('MagicMirror')} [{app_label}]")
 
             if upgrades_available:
                 print("Run `mmpm upgrade` to upgrade packages/applications")

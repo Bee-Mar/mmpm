@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-""" Command line options for 'guided-setup' subcommand """
+"""Command line options for 'guided-setup' subcommand"""
+
 import json
 from os import getenv
 from pathlib import Path

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from mmpm.utils import get_host_ip
 
 HOST = f"{get_host_ip()}"

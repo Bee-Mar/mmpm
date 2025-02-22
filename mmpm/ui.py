@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import importlib.resources as pkg_resources
 import json
 import os
@@ -62,8 +61,8 @@ class MMPMui(Singleton):
 
     def create_pm2_config(self):
         """
-        Creates the PM2 configuration file for MMPM if it does not already exist. This configuration
-        file is used to manage the MMPM UI processes.
+        Creates or overwrites the PM2 configuration file for MMPM. This
+        configuration file is used to manage the MMPM UI processes.
 
         Parameters:
             None
@@ -72,11 +71,8 @@ class MMPMui(Singleton):
             None
         """
 
-        if self.pm2_config_path.exists():
-            logger.debug(f"{self.pm2_config_path} exists. Nothing to do.")
-            return
-
         logger.debug(f"Creating {self.pm2_config_path} file")
+
         self.pm2_config_path.parent.mkdir(exist_ok=True)
         self.pm2_config_path.touch(exist_ok=True)
 

@@ -62,7 +62,7 @@
         "./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href /",
         "cd ..",
         "mkdir -p mmpm/ui",
-        "cp -r ui/build/* mmpm/ui",
+        "cp -r ui/build/browser/* mmpm/ui",
         "poetry install --no-interaction",
         "poetry build"
       ]

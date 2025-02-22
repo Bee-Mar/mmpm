@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import json
 from os.path import getmtime
 from pathlib import Path

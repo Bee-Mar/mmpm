@@ -1,14 +1,12 @@
-#!/usr/bin/env python3
 from gevent import monkey
 
 monkey.patch_all()
 
 import json
 
+import mmpm.api.endpoints
 from flask import Flask, Response
 from flask_cors import CORS
-
-import mmpm.api.endpoints
 from mmpm.api.endpoints.index import Index
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.subcommands.loader import Loader

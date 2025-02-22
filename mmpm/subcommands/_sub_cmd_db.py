@@ -1,15 +1,14 @@
-#!/usr/bin/env python3
-""" Command line options for 'db' subcommand """
-import json
+"""Command line options for 'db' subcommand"""
 
-from pygments import highlight
-from pygments.formatters.terminal import TerminalFormatter
-from pygments.lexers.data import JsonLexer
+import json
 
 from mmpm.constants import color
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.subcommands.sub_cmd import SubCmd
+from pygments import highlight
+from pygments.formatters.terminal import TerminalFormatter
+from pygments.lexers.data import JsonLexer
 
 logger = MMPMLogFactory.get_logger(__name__)
 

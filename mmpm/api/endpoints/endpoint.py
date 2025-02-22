@@ -1,8 +1,6 @@
-#!/usr/bin/env python3
 from typing import Any
 
 from flask import Response, jsonify
-
 from mmpm.log.factory import MMPMLogFactory
 
 logger = MMPMLogFactory.get_logger(__name__)

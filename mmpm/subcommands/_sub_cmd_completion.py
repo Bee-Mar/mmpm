@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-""" Command line options for 'completion' subcommand """
+"""Command line options for 'completion' subcommand"""
+
 from typing import Dict
 
 from mmpm.log.factory import MMPMLogFactory

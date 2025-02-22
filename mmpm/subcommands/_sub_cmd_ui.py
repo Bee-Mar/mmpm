@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-""" Command line options for 'db' subcommand """
-
+"""Command line options for 'db' subcommand"""
 
 from shutil import which
 from time import sleep

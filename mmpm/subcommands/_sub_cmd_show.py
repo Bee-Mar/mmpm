@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-""" Command line options for 'show' subcommand """
+"""Command line options for 'show' subcommand"""
 
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.database import MagicMirrorDatabase

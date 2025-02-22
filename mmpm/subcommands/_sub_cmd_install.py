@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-""" Command line options for 'install' subcommand """
+"""Command line options for 'install' subcommand"""
+
 from typing import List
 
 from mmpm.constants import color

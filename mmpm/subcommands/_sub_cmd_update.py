@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """ Command line options for 'update' subcommand """
 
 import mmpm.utils

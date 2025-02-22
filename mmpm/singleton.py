@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-
 class __SingletonMeta(type):
     """
     This metaclass ensures that derived classes only create a single instance.

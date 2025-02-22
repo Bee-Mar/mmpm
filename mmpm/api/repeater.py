@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 This socketio server/client repeats the information collected by the MMM-mmpm module back to the UI. MagicMirror
 has network settings which prevent the UI from directly interacting with MMM-mmpm if you open up the UI on a computer

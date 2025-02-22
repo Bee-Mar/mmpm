@@ -2,6 +2,7 @@
 from pathlib import Path
 
 HOME_DIR = Path.home()
+PM2_LOG_DIR = HOME_DIR / ".pm2" / "logs"
 MMPM_CONFIG_DIR = HOME_DIR / ".config" / "mmpm"
 MMPM_LOG_DIR = MMPM_CONFIG_DIR / "log"
 MMPM_CLI_LOG_FILE = MMPM_LOG_DIR / "mmpm-cli.log"

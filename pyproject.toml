@@ -16,8 +16,8 @@ keywords = [
   "MagicMirror magicmirror package-manager mmpm MMPM magicmirror-package-manager package manager magicmirror_package_manager",
 ]
 
-#[tool.poetry.build]
-#script = ".build.py"
+[tool.poetry.build]
+script = ".build.py"
 
 [project.urls]
 Homepage = "https://github.com/Bee-Mar/mmpm"

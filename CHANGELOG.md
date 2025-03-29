@@ -352,7 +352,8 @@
 
 - moved to use of PDM package manager to Poetry and adjusted build scripts accordingly
 
-## Version 4.2.1
+## Version 4.2.2
 
 - updated version of angular to mitigate vulnerabilities
 - including pm2 logs in the `mmpm logs -z` subcommand
+- removed unnecessary print calls made in the package display method

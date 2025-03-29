@@ -128,22 +128,22 @@ class MagicMirrorPackage:
             return
 
         max_width = 100
-        indentation = {"initial_indent": "\t", "subsequent_indent": "\t"}
+        default_fill = lambda message: fill(message, width=max_width, initial_indent="\t", subsequent_indent="\t") + "\n"
 
         text = color.n_green(self.title) + (" [installed]" if self.is_installed else "") + "\n"
 
         if detailed:
             modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
 
-            text += fill(f"Directory: {modules_dir / self.directory}", width=max_width, **indentation) + "\n"
-            text += fill(f"Category: {self.category}", width=max_width, **indentation) + "\n"
-            text += fill(f"Author: {self.author}", width=max_width, **indentation) + "\n"
-            text += fill(f"Repository: {self.repository}", width=max_width, **indentation) + "\n"
-            text += fill(f"Installed: {'true' if self.is_installed else 'false'}", width=max_width, **indentation) + "\n"
+            text += default_fill(f"Directory: {modules_dir / self.directory}")
+            text += default_fill(f"Category: {self.category}")
+            text += default_fill(f"Author: {self.author}")
+            text += default_fill(f"Repository: {self.repository}")
+            text += default_fill(f"Installed: {'true' if self.is_installed else 'false'}")
 
             if remote:
                 for key, value in RemotePackage(self).serialize().items():
-                    text += fill(f"{key.replace('_', ' ').capitalize()}: {value}", width=max_width, **indentation) + "\n"
+                    text += default_fill(f"{key.replace('_', ' ').capitalize()}: {value}")
 
             text += fill(f"Description: {self.description}", width=max_width, initial_indent="\t", subsequent_indent="\t\t     ") + "\n"
         else:

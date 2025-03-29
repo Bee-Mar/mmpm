@@ -127,26 +127,29 @@ class MagicMirrorPackage:
             print(f"{self.title} [installed]" if self.is_installed and not hide_installed_indicator else self.title)
             return
 
-        print(
-            color.n_green(self.title) + (" [installed]" if self.is_installed else ""),
-            end="",
-        )
+        max_width = 100
+        indentation = {"initial_indent": "\t", "subsequent_indent": "\t"}
+
+        text = color.n_green(self.title) + (" [installed]" if self.is_installed else "") + "\n"
 
         if detailed:
             modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
-            print(f"\n  Directory: {modules_dir / self.directory}")
-            print(f"  Category: {self.category}\n  Repository: {self.repository}\n  Author: {self.author}")
+
+            text += fill(f"Directory: {modules_dir / self.directory}", width=max_width, **indentation) + "\n"
+            text += fill(f"Category: {self.category}", width=max_width, **indentation) + "\n"
+            text += fill(f"Author: {self.author}", width=max_width, **indentation) + "\n"
+            text += fill(f"Repository: {self.repository}", width=max_width, **indentation) + "\n"
+            text += fill(f"Installed: {'true' if self.is_installed else 'false'}", width=max_width, **indentation) + "\n"
 
             if remote:
                 for key, value in RemotePackage(self).serialize().items():
-                    print(f"  {key.replace('_', ' ').capitalize()}: {value}")
+                    text += fill(f"{key.replace('_', ' ').capitalize()}: {value}", width=max_width, **indentation) + "\n"
 
-            print(fill(f"  Description: {self.description}\n", width=80), "\n")
-
+            text += fill(f"Description: {self.description}", width=max_width, initial_indent="\t", subsequent_indent="\t\t     ") + "\n"
         else:
-            print(f" \n\t{self.repository}")
+            text += f"{fill(self.description, width=100, initial_indent='\t', subsequent_indent='\t')}"
 
-        print()
+        print(f"{text}\n")
 
     def serialize(self, full: bool = False) -> Dict[str, Any]:
         """

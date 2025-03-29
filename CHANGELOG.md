@@ -355,3 +355,4 @@
 
 - updated version of angular to mitigate vulnerabilities
 - including pm2 logs in the `mmpm logs -z` subcommand
+- removed unnecessary print calls made in the package display method

@@ -12,7 +12,6 @@ from mmpm.utils import run_cmd
 
 logger = MMPMLogFactory.get_logger(__name__)
 
-
 class MMPMui(Singleton):
     """
     Class responsible for managing the MMPM user interface. It provides methods to control and monitor

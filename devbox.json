@@ -1,6 +1,6 @@
 {
   "packages": [
-    "gcc13Stdenv.cc.cc.lib",
+    //"gcc13Stdenv.cc.cc.lib",
     "pm2@5.4.2",
     "python-full@3.12.6",
     "bun@1.2.4",

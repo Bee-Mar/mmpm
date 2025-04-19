@@ -1,6 +1,6 @@
 [project]
 name = "mmpm"
-version = "4.2.2"
+version = "4.2.3"
 description = "MMPM, the MagicMirror Package Manager CLI simplifies the installation, removal, and general maintenance of MagicMirror packages"
 
 authors = [
@@ -16,8 +16,9 @@ keywords = [
   "MagicMirror magicmirror package-manager mmpm MMPM magicmirror-package-manager package manager magicmirror_package_manager",
 ]
 
-[tool.poetry.build]
-script = ".build.py"
+#[tool.poetry.build]
+#script = ".build.py"
+#generate-setup-file = false
 
 [project.urls]
 Homepage = "https://github.com/Bee-Mar/mmpm"
@@ -63,4 +64,3 @@ isort = "^5.13.2"
 
 [tool.poetry]
 include = [{ path = "mmpm/ui/*", format = ["sdist", "wheel"] }]
-exclude = [".build.py"]

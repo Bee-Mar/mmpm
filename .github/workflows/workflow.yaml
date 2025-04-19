@@ -1,5 +1,4 @@
 name: MMPM Build Pipeline
-
 on:
   push:
     branches:

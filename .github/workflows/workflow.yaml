@@ -136,8 +136,11 @@ jobs:
           python -m pip install poetry
           poetry install --no-interaction
           mkdir -p ${{ github.workspace }}/mmpm/ui
+          echo "---- Contents: ui ----"
           ls -lah ${{ github.workspace }}/ui/build/browser/* # just a sanity check since angular changed the structure
           cp -r ${{ github.workspace }}/ui/build/browser/* ${{ github.workspace }}/mmpm/ui
+          echo "---- Contents: mmpm/ui ----"
+          ls -lah ${{ github.workspace }}/mmpm/ui # just a sanity check since angular changed the structure
           poetry build
 
       - name: Cache MMPM Artifacts

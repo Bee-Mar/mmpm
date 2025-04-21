@@ -147,7 +147,7 @@ class MagicMirrorPackage:
 
             text += fill(f"Description: {self.description}", width=max_width, initial_indent="\t", subsequent_indent="\t\t     ") + "\n"
         else:
-            text += f"{fill(self.description, width=100, initial_indent='\t', subsequent_indent='\t')}"
+            text += fill(self.description, width=100, initial_indent='\t', subsequent_indent='\t') + "\n"
 
         print(f"{text}\n")
 

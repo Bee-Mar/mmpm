@@ -364,3 +364,7 @@
 ## Version 4.2.4
 
 - typo in package.py
+
+## Version 4.2.5
+
+- include assets recursively

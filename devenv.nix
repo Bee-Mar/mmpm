@@ -106,10 +106,19 @@
     py-typing = {
       enable = true;
       name = "python:typing";
-      description = "Python type checking stag";
+      description = "Python type checking stage";
       types = ["python"];
       stages = ["pre-push"];
       entry = "${pkgs.uv}/bin/uv run mypy mmpm";
+    };
+
+    py-test = {
+      enable = true;
+      name = "python:test";
+      description = "Python testing stage";
+      types = ["python"];
+      stages = ["pre-push"];
+      entry = "${pkgs.uv}/bin/uv run pytest";
     };
 
     py-sort-imports = {

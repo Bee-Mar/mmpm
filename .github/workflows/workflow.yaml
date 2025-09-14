@@ -50,7 +50,7 @@ jobs:
       - name: Python Tests
         run: |
           uv sync --locked --all-groups
-          uv run pylint mmpm tests
+          uv run ruff check mmpm tests
           uv run mypy mmpm tests
           uv run coverage run -m pytest
           uv run coverage report
@@ -58,7 +58,7 @@ jobs:
       - name: Python Build
         run: |
           uv sync --locked --all-groups
-          uv run pylint mmpm tests
+          uv run ruff check mmpm tests
           uv build
 
       - name: Install Test

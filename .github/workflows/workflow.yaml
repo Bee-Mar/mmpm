@@ -17,7 +17,6 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
@@ -35,22 +34,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
 
-      #- name: Cache Python Dependencies
-      #  uses: actions/cache@v3
-      #  with:
-      #    path: |
-      #      ~/.cache/uv
-      #    key: python-deps-${{ hashFiles('**/uv.lock') }}
-      #    restore-keys: |
-      #      python-deps-${{ hashFiles('**/uv.lock') }}
-
       - name: Python Dependencies
         run: |
           uv sync --locked --all-groups
 
       - name: Python Tests
         run: |
-          uv sync --locked --all-groups
           uv run mypy mmpm
           uv run ruff check mmpm tests
           uv run coverage run -m pytest
@@ -64,7 +53,6 @@ jobs:
 
       - name: Install Test
         run: |
-          uv sync --locked --all-groups
           options=("version" "--help" "completion --help" "db --help" "guided-setup --help" "install --help" "list --help" "logs --help" "mm-ctl --help" "mm-pkg --help" "open --help" "remove --help" "search --help" "show --help" "ui --help" "update --help" "upgrade --help" "version --help")
 
           for option in "${options[@]}"; do ${{ github.workspace }}/.venv/bin/mmpm $option; done

@@ -7,7 +7,7 @@ authors = [
   { name = "Brandon Marlowe", email = "bpmarlowe-software@protonmail.com" },
 ]
 
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 readme = "README.md"
 license = { text = "MIT" }
@@ -34,7 +34,7 @@ dependencies = [
   "importlib-resources<7.0.0,>=6.5.2",
   "jinja2<4.0.0,>=3.1.5",
   "requests<3.0.0,>=2.32.3",
-  "yaspin<4.0.0,>=3.1.0; python_version ~= \"3.9\"",
+  "yaspin<4.0.0,>=3.1.0",
 ]
 
 [tool.ruff]

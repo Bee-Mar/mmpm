@@ -1,4 +1,5 @@
 from flask import Blueprint, Response, jsonify
+
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.log.factory import MMPMLogFactory

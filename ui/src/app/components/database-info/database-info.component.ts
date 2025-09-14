@@ -1,20 +1,27 @@
-import {Component, Input, OnDestroy, OnInit, Output, EventEmitter} from "@angular/core";
-import {DatabaseInfo} from "@/models/database-info";
-import {Subscription} from "rxjs";
-import {APIResponse, BaseAPI} from "@/services/api/base-api";
-import {SharedStoreService} from "@/services/shared-store.service";
-import {MagicMirrorPackage} from "@/models/magicmirror-package";
-import {UpgradableDetails} from "@/models/upgradable-details";
-import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
-import {MagicMirrorAPI} from "@/services/api/magicmirror-api.service";
-import {ConfirmationService, MessageService} from "primeng/api";
+import {
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  EventEmitter,
+} from '@angular/core';
+import { DatabaseInfo } from '@/models/database-info';
+import { Subscription } from 'rxjs';
+import { APIResponse, BaseAPI } from '@/services/api/base-api';
+import { SharedStoreService } from '@/services/shared-store.service';
+import { MagicMirrorPackage } from '@/models/magicmirror-package';
+import { UpgradableDetails } from '@/models/upgradable-details';
+import { MagicMirrorPackageAPI } from '@/services/api/magicmirror-package-api.service';
+import { MagicMirrorAPI } from '@/services/api/magicmirror-api.service';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 @Component({
-  selector: "app-database-info",
-  templateUrl: "./database-info.component.html",
-  styleUrls: ["./database-info.component.scss"],
+  selector: 'app-database-info',
+  templateUrl: './database-info.component.html',
+  styleUrls: ['./database-info.component.scss'],
   providers: [MessageService, ConfirmationService],
-  standalone: false
+  standalone: false,
 })
 export class DatabaseInfoComponent implements OnInit, OnDestroy {
   constructor(
@@ -35,7 +42,7 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
   @Output()
   public loadingChange = new EventEmitter<boolean>(false);
 
-  public version = "";
+  public version = '';
   public dbInfo: DatabaseInfo;
   public upgradesAvailable = false;
   public displayDbInfoDialog = false;
@@ -46,22 +53,22 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
 
   public databaseOptions = [
     {
-      label: "Update",
-      icon: "fa-solid fa-arrows-rotate",
+      label: 'Update',
+      icon: 'fa-solid fa-arrows-rotate',
       command: () => {
         this.onUpdate();
       },
     },
     {
-      label: "Upgrades",
-      icon: "fa-solid fa-arrow-up-from-bracket",
+      label: 'Upgrades',
+      icon: 'fa-solid fa-arrow-up-from-bracket',
       command: () => {
         this.displayDbUpgradeDialog = true;
       },
     },
     {
-      label: "Info",
-      icon: "fa-solid fa-circle-info",
+      label: 'Info',
+      icon: 'fa-solid fa-circle-info',
       command: () => {
         this.displayDbInfoDialog = true;
       },
@@ -69,33 +76,42 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
   ];
 
   public ngOnInit(): void {
-    this.baseApi.get_("mmpm/version").then((response: APIResponse) => {
+    this.baseApi.get_('mmpm/version').then((response: APIResponse) => {
       this.version = response.message;
     });
 
-    this.dbInfoSubscription = this.store.dbInfo.subscribe((info: DatabaseInfo) => {
-      this.dbInfo = info;
-    });
+    this.dbInfoSubscription = this.store.dbInfo.subscribe(
+      (info: DatabaseInfo) => {
+        this.dbInfo = info;
+      },
+    );
 
-    this.upgradableSubscription = this.store.upgradable.subscribe((upgradable: UpgradableDetails) => {
-      this.upgradableItems = [];
-      this.upgradesAvailable = Boolean(upgradable && (upgradable.mmpm || upgradable.MagicMirror || upgradable.packages.length));
+    this.upgradableSubscription = this.store.upgradable.subscribe(
+      (upgradable: UpgradableDetails) => {
+        this.upgradableItems = [];
+        this.upgradesAvailable = Boolean(
+          upgradable &&
+            (upgradable.mmpm ||
+              upgradable.MagicMirror ||
+              upgradable.packages.length),
+        );
 
-      this.upgradableItems.push(...upgradable.packages);
+        this.upgradableItems.push(...upgradable.packages);
 
-      if (upgradable.mmpm) {
-        this.upgradableItems.push(this.dummyPackage("MMPM"));
-      }
+        if (upgradable.mmpm) {
+          this.upgradableItems.push(this.dummyPackage('MMPM'));
+        }
 
-      if (upgradable.MagicMirror) {
-        this.upgradableItems.push(this.dummyPackage("MagicMirror"));
-      }
+        if (upgradable.MagicMirror) {
+          this.upgradableItems.push(this.dummyPackage('MagicMirror'));
+        }
 
-      // update the title of the menu item based on the number of available upgrades
-      if (this.upgradableItems.length) {
-        this.databaseOptions[1].label = `Upgrades (${this.upgradableItems.length})`;
-      }
-    });
+        // update the title of the menu item based on the number of available upgrades
+        if (this.upgradableItems.length) {
+          this.databaseOptions[1].label = `Upgrades (${this.upgradableItems.length})`;
+        }
+      },
+    );
   }
 
   public ngOnDestroy(): void {
@@ -106,29 +122,41 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
   private onUpdate(): void {
     this.loadingChange.emit(true);
 
-    this.baseApi.get_("db/update").then((response: APIResponse) => {
+    this.baseApi.get_('db/update').then((response: APIResponse) => {
       if (response.code === 200) {
         this.store.load();
         this.loadingChange.emit(false);
 
-        this.msg.add({severity: "success", summary: "Update", detail: "Completed check for available updates"});
+        this.msg.add({
+          severity: 'success',
+          summary: 'Update',
+          detail: 'Completed check for available updates',
+        });
       } else {
-        this.msg.add({severity: "error", summary: "Update", detail: response.message});
+        this.msg.add({
+          severity: 'error',
+          summary: 'Update',
+          detail: response.message,
+        });
       }
     });
   }
 
   public onUpgrade() {
-    let message = "Are you sure you want to upgrade the selected packages?";
+    let message = 'Are you sure you want to upgrade the selected packages?';
 
-    if (this.selectedUpgrades.findIndex((pkg: MagicMirrorPackage) => pkg.title === "MMPM") !== -1) {
+    if (
+      this.selectedUpgrades.findIndex(
+        (pkg: MagicMirrorPackage) => pkg.title === 'MMPM',
+      ) !== -1
+    ) {
       message += `  <strong>NOTE</strong>: After upgrading MMPM, execute <code>mmpm ui reinstall -y</code>`;
     }
 
     this.confirmation.confirm({
       message: message,
-      header: "Confirmation",
-      icon: "pi pi-exclamation-triangle",
+      header: 'Confirmation',
+      icon: 'pi pi-exclamation-triangle',
       accept: () => {
         this.upgrade();
       },
@@ -139,26 +167,53 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
   }
 
   async upgrade() {
-    const packages = this.selectedUpgrades.filter((pkg: MagicMirrorPackage) => pkg.title !== "MMPM" && pkg.title !== "MagicMirror");
+    const packages = this.selectedUpgrades.filter(
+      (pkg: MagicMirrorPackage) =>
+        pkg.title !== 'MMPM' && pkg.title !== 'MagicMirror',
+    );
     this.loadingChange.emit(true);
 
-    if (this.selectedUpgrades.findIndex((pkg: MagicMirrorPackage) => pkg.title === "MMPM") !== -1) {
-      this.baseApi.get_("mmpm/upgrade").then((response: APIResponse) => {
+    if (
+      this.selectedUpgrades.findIndex(
+        (pkg: MagicMirrorPackage) => pkg.title === 'MMPM',
+      ) !== -1
+    ) {
+      this.baseApi.get_('mmpm/upgrade').then((response: APIResponse) => {
         if (response.code === 200) {
-          this.msg.add({severity: "success", summary: "Upgrade", detail: "MMPM has been upgraded"});
+          this.msg.add({
+            severity: 'success',
+            summary: 'Upgrade',
+            detail: 'MMPM has been upgraded',
+          });
         } else {
-          this.msg.add({severity: "error", summary: "Upgrade", detail: response.message});
+          this.msg.add({
+            severity: 'error',
+            summary: 'Upgrade',
+            detail: response.message,
+          });
         }
       });
     }
 
-    if (this.selectedUpgrades.findIndex((pkg: MagicMirrorPackage) => pkg.title === "MagicMirror") !== -1) {
+    if (
+      this.selectedUpgrades.findIndex(
+        (pkg: MagicMirrorPackage) => pkg.title === 'MagicMirror',
+      ) !== -1
+    ) {
       const response = await this.mmApi.getUpgrade();
 
       if (response.code === 200) {
-        this.msg.add({severity: "success", summary: "Upgrade", detail: "MagicMirror has been upgraded"});
+        this.msg.add({
+          severity: 'success',
+          summary: 'Upgrade',
+          detail: 'MagicMirror has been upgraded',
+        });
       } else {
-        this.msg.add({severity: "error", summary: "Upgrade", detail: response.message});
+        this.msg.add({
+          severity: 'error',
+          summary: 'Upgrade',
+          detail: response.message,
+        });
       }
     }
 
@@ -168,20 +223,36 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
       const response = await this.mmPkgApi.postUpgradePackages(packages);
 
       if (response.code === 200) {
-        this.msg.add({severity: "success", summary: "Upgrade", detail: `${packages.length} packages have been upgraded`});
+        this.msg.add({
+          severity: 'success',
+          summary: 'Upgrade',
+          detail: `${packages.length} packages have been upgraded`,
+        });
       } else {
-        this.msg.add({severity: "error", summary: "Upgrade", detail: response.message});
+        this.msg.add({
+          severity: 'error',
+          summary: 'Upgrade',
+          detail: response.message,
+        });
       }
     }
 
     // the update endpoint will write out which packages have updates, and this needs
     // to get updated again following the actual upgrades
-    const response = await this.baseApi.get_("db/update");
+    const response = await this.baseApi.get_('db/update');
 
     if (response.code === 200) {
-      this.msg.add({severity: "success", summary: "Upgrade", detail: "Database updated to reflect changes"});
+      this.msg.add({
+        severity: 'success',
+        summary: 'Upgrade',
+        detail: 'Database updated to reflect changes',
+      });
     } else {
-      this.msg.add({severity: "error", summary: "Upgrade", detail: response.message});
+      this.msg.add({
+        severity: 'error',
+        summary: 'Upgrade',
+        detail: response.message,
+      });
     }
 
     this.store.load();
@@ -191,19 +262,19 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
   private dummyPackage(title: string): MagicMirrorPackage {
     return {
       title: title,
-      repository: "",
-      author: "",
-      description: "",
-      directory: "",
+      repository: '',
+      author: '',
+      description: '',
+      directory: '',
       is_installed: false,
       is_upgradable: false,
-      category: "Custom Packages",
+      category: 'Custom Packages',
       remote_details: {
         stars: 0,
         forks: 0,
         issues: 0,
-        created: "",
-        last_updated: "",
+        created: '',
+        last_updated: '',
       },
     };
   }

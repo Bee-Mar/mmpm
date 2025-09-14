@@ -1,6 +1,6 @@
-import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { Injectable } from "@angular/core";
-import { catchError, firstValueFrom, retry } from "rxjs";
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { catchError, firstValueFrom, retry } from 'rxjs';
 
 export interface APIResponse {
   code: number;
@@ -12,14 +12,14 @@ export interface APIResponse {
  * this BaseAPI isn't a singleton, but it is right now
  */
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root',
 })
 export class BaseAPI {
   constructor(protected http: HttpClient) {}
 
   public headers(options: object = {}): HttpHeaders {
     return new HttpHeaders({
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...options,
     });
   }
@@ -31,7 +31,11 @@ export class BaseAPI {
   public get_(endpoint: string): Promise<APIResponse> {
     console.log(`Requesting data from ${endpoint}`);
 
-    return firstValueFrom(this.http.get<APIResponse>(this.route(endpoint), { headers: this.headers() }).pipe(retry(1), catchError(this.handleError)));
+    return firstValueFrom(
+      this.http
+        .get<APIResponse>(this.route(endpoint), { headers: this.headers() })
+        .pipe(retry(1), catchError(this.handleError)),
+    );
   }
 
   public getZipArchive(endpoint: string): Promise<ArrayBuffer> {
@@ -39,17 +43,20 @@ export class BaseAPI {
       this.http
         .get(this.route(endpoint), {
           headers: this.headers({
-            "Content-Type": "application/zip",
+            'Content-Type': 'application/zip',
           }),
           reportProgress: true,
-          responseType: "arraybuffer",
+          responseType: 'arraybuffer',
         })
         .pipe(retry(1), catchError(this.handleError)),
     );
   }
 
   public handleError(error: any): Promise<any> {
-    const error_message = error.error instanceof ErrorEvent ? error.error.message : `Error Code: ${error.status}\nMessage: ${error.message}`;
+    const error_message =
+      error.error instanceof ErrorEvent
+        ? error.error.message
+        : `Error Code: ${error.status}\nMessage: ${error.message}`;
 
     console.log(error_message);
     return Promise.reject(new Error(error_message));

@@ -1,4 +1,4 @@
-""" Command line options for 'update' subcommand """
+"""Command line options for 'update' subcommand"""
 
 import mmpm.utils
 from mmpm.log.factory import MMPMLogFactory

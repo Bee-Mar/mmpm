@@ -28,13 +28,6 @@ class TestInstallationHandler(unittest.TestCase):
 
     @patch("pathlib.Path.exists")
     def test_deps_file_exists(self, mock_exists):
-        mock_exists.return_value = False
-        file_name = "garbage"
-        result = self.handler.exists(file_name)
-        self.assertFalse(result)
-
-    @patch("pathlib.Path.exists")
-    def test_deps_file_exists(self, mock_exists):
         mock_exists.return_value = True
         file_name = "package.json"
         result = self.handler.exists(file_name)

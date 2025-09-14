@@ -1,41 +1,87 @@
 <p-toast></p-toast>
 <p-menu #menu [model]="customPackageOptions" [popup]="true"></p-menu>
-<p-button (click)="menu.toggle($event)" icon="fa-solid fa-cube" label="Custom Packages" severity="primary"></p-button>
+<p-button
+  (click)="menu.toggle($event)"
+  icon="fa-solid fa-cube"
+  label="Custom Packages"
+  severity="primary"
+></p-button>
 
 <p-dialog header="Add Custom Package" [(visible)]="displayCustomPkgAddDialog">
-  <p-overlayPanel #op [style]="{ 'max-width': '450px', 'word-wrap': 'break-word', 'overflow-wrap': 'break-word' }">
+  <p-overlayPanel
+    #op
+    [style]="{
+      'max-width': '450px',
+      'word-wrap': 'break-word',
+      'overflow-wrap': 'break-word',
+    }"
+  >
     <span
-      >Adds a custom package source to your local database, which can then be installed/removed using MMPM. This is useful in testing/development of MagicMirror modules not listed
-      in the 3rd Party Modules.</span
+      >Adds a custom package source to your local database, which can then be
+      installed/removed using MMPM. This is useful in testing/development of
+      MagicMirror modules not listed in the 3rd Party Modules.</span
     >
   </p-overlayPanel>
 
-  <p-button (click)="op.toggle($event)" icon="fa-solid fa-circle-info" severity="info"></p-button>
+  <p-button
+    (click)="op.toggle($event)"
+    icon="fa-solid fa-circle-info"
+    severity="info"
+  ></p-button>
 
   <p-card>
     <form #customPackageForm="ngForm">
       <div class="p-inputgroup" style="margin-bottom: 2em">
         <span class="p-inputgroup-addon" style="width: 10em">Title</span>
-        <input name="title" pInputText [(ngModel)]="customPackage.title" required />
+        <input
+          name="title"
+          pInputText
+          [(ngModel)]="customPackage.title"
+          required
+        />
       </div>
       <div class="p-inputgroup" style="margin-bottom: 2em">
         <span class="p-inputgroup-addon" style="width: 10em">Author</span>
-        <input name="author" pInputText [(ngModel)]="customPackage.author" required />
+        <input
+          name="author"
+          pInputText
+          [(ngModel)]="customPackage.author"
+          required
+        />
       </div>
       <div class="p-inputgroup" style="margin-bottom: 2em">
         <span class="p-inputgroup-addon" style="width: 10em">Repository</span>
-        <input name="repository" type="text" pInputText [(ngModel)]="customPackage.repository" required />
+        <input
+          name="repository"
+          type="text"
+          pInputText
+          [(ngModel)]="customPackage.repository"
+          required
+        />
       </div>
       <div class="p-inputgroup" style="margin-bottom: 2em">
         <span class="p-inputgroup-addon" style="width: 10em">Description</span>
-        <input name="description" type="text" pInputText [(ngModel)]="customPackage.description" required />
+        <input
+          name="description"
+          type="text"
+          pInputText
+          [(ngModel)]="customPackage.description"
+          required
+        />
       </div>
     </form>
 
     <div class="confirm-button">
       <p-button
         label="Add"
-        [disabled]="!(customPackage.title && customPackage.repository && customPackage.author && customPackage.description)"
+        [disabled]="
+          !(
+            customPackage.title &&
+            customPackage.repository &&
+            customPackage.author &&
+            customPackage.description
+          )
+        "
         (click)="onAddMmPkg()"
         icon="fa-solid fa-check"
         severity="success"
@@ -45,9 +91,16 @@
   </p-card>
 </p-dialog>
 
-<p-dialog [(visible)]="displayCustomPkgRemoveDialog" (onHide)="reset()" header="Remove Custom Packages" [style]="{ width: '30rem', 'max-width': '700px' }">
+<p-dialog
+  [(visible)]="displayCustomPkgRemoveDialog"
+  (onHide)="reset()"
+  header="Remove Custom Packages"
+  [style]="{ width: '30rem', 'max-width': '700px' }"
+>
   <p-card>
-    <div *ngIf="customPackages && customPackages?.length; else noCustomPackages">
+    <div
+      *ngIf="customPackages && customPackages?.length; else noCustomPackages"
+    >
       <p-listbox
         [options]="customPackages"
         [(ngModel)]="selectedCustomPackages"

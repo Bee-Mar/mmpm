@@ -1,12 +1,25 @@
 <p-toolbar>
   <ng-template pTemplate="start">
-    <p-button label="Download" icon="fa-solid fa-download" [style.marginRight]="'1em'" (onClick)="onDownload()"></p-button>
+    <p-button
+      label="Download"
+      icon="fa-solid fa-download"
+      [style.marginRight]="'1em'"
+      (onClick)="onDownload()"
+    ></p-button>
     <span class="text-primary font-semibold text-xl">
       <p-avatar
-        [icon]="socket?.connected ? 'fa-solid fa-signal' : 'fa-solid fa-triangle-exclamation'"
+        [icon]="
+          socket?.connected
+            ? 'fa-solid fa-signal'
+            : 'fa-solid fa-triangle-exclamation'
+        "
         styleClass="mr-2"
-        [pTooltip]="socket?.connected ? 'LogServer: connected' : 'LogServer: disconnected'"
-        [style]="{ 'background-color': socket?.connected ? '#009933' : '#e05252' }"
+        [pTooltip]="
+          socket?.connected ? 'LogServer: connected' : 'LogServer: disconnected'
+        "
+        [style]="{
+          'background-color': socket?.connected ? '#009933' : '#e05252',
+        }"
       ></p-avatar>
     </span>
   </ng-template>
@@ -30,4 +43,10 @@
   </ng-template>
 </p-toolbar>
 
-<ngx-monaco-editor [style]="{ 'min-height': '66vh' }" [options]="options" (onInit)="onEditorInit($event)" [(ngModel)]="logs"> </ngx-monaco-editor>
+<ngx-monaco-editor
+  [style]="{ 'min-height': '66vh' }"
+  [options]="options"
+  (onInit)="onEditorInit($event)"
+  [(ngModel)]="logs"
+>
+</ngx-monaco-editor>

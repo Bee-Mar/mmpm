@@ -1,6 +1,6 @@
 [project]
 name = "mmpm"
-version = "4.2.5"
+version = "4.2.6"
 description = "MMPM, the MagicMirror Package Manager CLI simplifies the installation, removal, and general maintenance of MagicMirror packages"
 
 authors = [
@@ -16,47 +16,68 @@ keywords = [
   "MagicMirror magicmirror package-manager mmpm MMPM magicmirror-package-manager package manager magicmirror_package_manager",
 ]
 
+dependencies = [
+  "argcomplete<4.0.0,>=3.5.3",
+  "argparse<2.0.0,>=1.4.0",
+  "beautifulsoup4<5.0.0,>=4.12.3",
+  "colorama<1.0.0,>=0.4.6",
+  "flask<4.0.0,>=3.1.0",
+  "flask-cors<6.0.0,>=5.0.0",
+  "flask-socketio<6.0.0,>=5.5.1",
+  "gevent<25.0.0,>=24.11.1",
+  "gevent-websocket<1.0.0,>=0.10.1",
+  "gitpython<4.0.0,>=3.1.44",
+  "gunicorn<24.0.0,>=23.0.0",
+  "prompt-toolkit<4.0.0,>=3.0.48",
+  "pygments<3.0.0,>=2.19.1",
+  "python-socketio[client]<6.0.0,>=5.12.1",
+  "importlib-resources<7.0.0,>=6.5.2",
+  "jinja2<4.0.0,>=3.1.5",
+  "requests<3.0.0,>=2.32.3",
+  "yaspin<4.0.0,>=3.1.0; python_version ~= \"3.9\"",
+]
+
+[tool.ruff]
+line-length = 150
+
+[tool.ruff.format]
+preview = true
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I"]
+ignore = ["E501", "E731", "E402"]
+fixable = ["ALL"]
+
+# Exclude certain directories or files from linting
+exclude = [".git", "__pycache__", "venv"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+artifacts = ["mmpm/ui/**"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["mmpm"]
+
+[tool.hatch.build.targets.sdist]
+packages = ["mmpm"]
+
 [project.urls]
 Homepage = "https://github.com/Bee-Mar/mmpm"
-Downloads = "https://github.com/Bee-Mar/mmpm/archive/4.2.1.tar.gz"
+Downloads = "https://github.com/Bee-Mar/mmpm/archive/4.2.6.tar.gz"
 
 [project.scripts]
 mmpm = "mmpm.entrypoint:main"
 
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.dependencies]
-argcomplete = "^3.5.3"
-argparse = "^1.4.0"
-beautifulsoup4 = "^4.12.3"
-colorama = "^0.4.6"
-flask = "^3.1.0"
-flask-cors = "^5.0.0"
-flask-socketio = "^5.5.1"
-gevent = "^24.11.1"
-gevent-websocket = "^0.10.1"
-gitpython = "^3.1.44"
-gunicorn = "^23.0.0"
-prompt-toolkit = "^3.0.48"
-pygments = "^2.19.1"
-python-socketio = { extras = ["client"], version = "^5.12.1" }
-importlib-resources = "^6.5.2"
-jinja2 = "^3.1.5"
-requests = "^2.32.3"
-yaspin = { version = "^3.1.0", python = ">=3.9,<4.0" }
-
-[tool.poetry.group.dev.dependencies]
-mypy = "^1.14.1"
-pylint = "^3.3.3"
-codecov = "^2.1.13"
-types-requests = "^2.32.0.20241016"
-pytest = "^8.3.4"
-faker = "^33.3.1"
-coverage = "^7.6.10"
-black = "^24.10.0"
-isort = "^5.13.2"
-
-[tool.poetry]
-include = [{ path = "mmpm/ui/**/*", format = ["sdist", "wheel"] }]
+[dependency-groups]
+dev = [
+  "mypy<2.0.0,>=1.14.1",
+  "codecov<3.0.0,>=2.1.13",
+  "types-requests<3.0.0.0,>=2.32.0.20241016",
+  "pytest<9.0.0,>=8.3.4",
+  "faker<34.0.0,>=33.3.1",
+  "coverage<8.0.0,>=7.6.10",
+  "ruff>=0.13.0",
+]

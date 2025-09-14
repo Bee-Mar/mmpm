@@ -6,6 +6,7 @@ solution later on, but for now this is what works. Otherwise, users would need t
 source code, and let's face it, practically nobody is going to want to do that. The other option is to make a PR to MagicMirror
 but I'm sure it won't get accepted for security purposes.
 """
+
 from gevent import monkey
 
 monkey.patch_all()
@@ -13,6 +14,7 @@ monkey.patch_all()
 from time import sleep
 
 import socketio
+
 from mmpm.env import MMPMEnv
 from mmpm.log.factory import MMPMLogFactory
 

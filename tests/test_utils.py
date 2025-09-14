@@ -1,11 +1,6 @@
 import json
-import os
 import unittest
-from pathlib import Path, PosixPath
-from shutil import rmtree
-from subprocess import DEVNULL
-from unittest.mock import MagicMock, mock_open, patch
-from uuid import uuid4
+from unittest.mock import MagicMock, patch
 
 import requests
 from faker import Faker

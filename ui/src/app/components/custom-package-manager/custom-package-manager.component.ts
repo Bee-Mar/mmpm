@@ -1,18 +1,26 @@
-import {MagicMirrorPackage} from "@/models/magicmirror-package";
-import {APIResponse} from "@/services/api/base-api";
-import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
-import {SharedStoreService} from "@/services/shared-store.service";
-import {Component, OnInit, ViewChild, Input, Output, EventEmitter, OnDestroy} from "@angular/core";
-import {NgForm} from "@angular/forms";
-import {MessageService} from "primeng/api";
-import {Subscription} from "rxjs";
+import { MagicMirrorPackage } from '@/models/magicmirror-package';
+import { APIResponse } from '@/services/api/base-api';
+import { MagicMirrorPackageAPI } from '@/services/api/magicmirror-package-api.service';
+import { SharedStoreService } from '@/services/shared-store.service';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  Input,
+  Output,
+  EventEmitter,
+  OnDestroy,
+} from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { MessageService } from 'primeng/api';
+import { Subscription } from 'rxjs';
 
 @Component({
-  selector: "app-custom-package-manager",
-  templateUrl: "./custom-package-manager.component.html",
-  styleUrls: ["./custom-package-manager.component.scss"],
+  selector: 'app-custom-package-manager',
+  templateUrl: './custom-package-manager.component.html',
+  styleUrls: ['./custom-package-manager.component.scss'],
   providers: [MessageService],
-  standalone: false
+  standalone: false,
 })
 export class CustomPackageManagerComponent implements OnInit, OnDestroy {
   constructor(
@@ -23,7 +31,7 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
 
   private packagesSubscription: Subscription = new Subscription();
 
-  @ViewChild("customPackageForm")
+  @ViewChild('customPackageForm')
   public customPackageForm: NgForm;
 
   @Input()
@@ -40,8 +48,8 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
 
   public customPackageOptions = [
     {
-      label: "Add",
-      icon: "fa-solid fa-plus",
+      label: 'Add',
+      icon: 'fa-solid fa-plus',
       command: () => {
         this.customPackage = this.clearCustomPackage();
 
@@ -53,8 +61,8 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
       },
     },
     {
-      label: "Remove",
-      icon: "fa-solid fa-eraser",
+      label: 'Remove',
+      icon: 'fa-solid fa-eraser',
       command: () => {
         if (this.displayCustomPkgAddDialog) {
           this.displayCustomPkgAddDialog = false;
@@ -66,9 +74,13 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
   ];
 
   public ngOnInit(): void {
-    this.packagesSubscription = this.store.packages.subscribe((packages: Array<MagicMirrorPackage>) => {
-      this.customPackages = packages.filter((pkg: MagicMirrorPackage) => pkg.category === "Custom Packages");
-    });
+    this.packagesSubscription = this.store.packages.subscribe(
+      (packages: Array<MagicMirrorPackage>) => {
+        this.customPackages = packages.filter(
+          (pkg: MagicMirrorPackage) => pkg.category === 'Custom Packages',
+        );
+      },
+    );
   }
 
   public ngOnDestroy(): void {
@@ -77,20 +89,20 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
 
   private clearCustomPackage(): MagicMirrorPackage {
     return {
-      title: "",
-      repository: "",
-      author: "",
-      description: "",
-      directory: "",
+      title: '',
+      repository: '',
+      author: '',
+      description: '',
+      directory: '',
       is_installed: false,
       is_upgradable: false,
-      category: "Custom Packages",
+      category: 'Custom Packages',
       remote_details: {
         stars: 0,
         forks: 0,
         issues: 0,
-        created: "",
-        last_updated: "",
+        created: '',
+        last_updated: '',
       },
     };
   }
@@ -105,9 +117,17 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
         this.store.load();
 
         if (response.code === 200) {
-          this.msg.add({severity: "success", summary: "Add Custom Package", detail: `Successfully added ${this.customPackage.title} to database`});
+          this.msg.add({
+            severity: 'success',
+            summary: 'Add Custom Package',
+            detail: `Successfully added ${this.customPackage.title} to database`,
+          });
         } else {
-          this.msg.add({severity: "error", summary: "Add Custom Package", detail: response.message});
+          this.msg.add({
+            severity: 'error',
+            summary: 'Add Custom Package',
+            detail: response.message,
+          });
         }
       })
       .catch((error) => {
@@ -130,14 +150,18 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
         const failure = response.message.failure as Array<MagicMirrorPackage>;
 
         if (success.length) {
-          this.msg.add({severity: "success", summary: "Remove Custom Packages", detail: `Successfully removed custom packages: ${success.map((pkg) => pkg.title).join(", ")}`});
+          this.msg.add({
+            severity: 'success',
+            summary: 'Remove Custom Packages',
+            detail: `Successfully removed custom packages: ${success.map((pkg) => pkg.title).join(', ')}`,
+          });
         }
 
         if (failure.length) {
           this.msg.add({
-            severity: "error",
-            summary: "Remove Custom Packages",
-            detail: `Failed to remove custom packages: ${failure.map((pkg) => pkg.title).join(", ")}. See logs for details.`,
+            severity: 'error',
+            summary: 'Remove Custom Packages',
+            detail: `Failed to remove custom packages: ${failure.map((pkg) => pkg.title).join(', ')}. See logs for details.`,
           });
         }
       })

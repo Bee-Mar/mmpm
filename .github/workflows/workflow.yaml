@@ -16,45 +16,51 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version:
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Create Virtualenv
-        run: |
-          python -m venv ${{ github.workspace }}/.venv
-          source ${{ github.workspace }}/.venv/bin/activate
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: 0.7.21
+          python-version: ${{ matrix.python-version }}
       - name: Cache Python Dependencies
         uses: actions/cache@v3
         with:
           path: |
             ~/.cache/pip
             ${{ github.workspace }}/.venv
-          key: python-deps-${{ hashFiles('**/poetry.lock') }}
+          key: python-deps-${{ hashFiles('**/uv.lock') }}
           restore-keys: |
-            python-deps-${{ hashFiles('**/poetry.lock') }}
+            python-deps-${{ hashFiles('**/uv.lock') }}
       - name: Python Dependencies
         run: |
           source ${{ github.workspace }}/.venv/bin/activate
-          python -m pip install poetry
-          poetry install --no-interaction
+          python -m pip install uv
+          uv sync
       - name: Python Tests
         run: |
           source ${{ github.workspace }}/.venv/bin/activate
           pylint mmpm
           mypy mmpm
-          coverage run -m pytest test
+          coverage run -m pytest tests
           coverage report
       - name: Python Build
         run: |
           source ${{ github.workspace }}/.venv/bin/activate
           pylint mmpm
-          poetry build
+          uv build
       - name: Install Test
         run: |
           source ${{ github.workspace }}/.venv/bin/activate
-          poetry install --no-interaction
+          uv sync
           options=("version" "--help" "completion --help" "db --help" "guided-setup --help" "install --help" "list --help" "logs --help" "mm-ctl --help" "mm-pkg --help" "open --help" "remove --help" "search --help" "show --help" "ui --help" "update --help" "upgrade --help" "version --help")
 
           for option in "${options[@]}"; do ${{ github.workspace }}/.venv/bin/mmpm $option; done
@@ -63,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: ["20", "22", "24"]
+        node-version: ["18.x", "20.x", "22"]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -117,9 +123,9 @@ jobs:
           path: |
             ~/.cache/pip
             ${{ github.workspace }}/.venv
-          key: python-deps-${{ hashFiles('**/poetry.lock') }}
+          key: python-deps-${{ hashFiles('**/uv.lock') }}
           restore-keys: |
-            python-deps-${{ hashFiles('**/poetry.lock') }}
+            python-deps-${{ hashFiles('**/uv.lock') }}
 
       - name: Restore Angular Build Artifacts Cache
         uses: actions/cache@v3
@@ -133,8 +139,8 @@ jobs:
       - name: Package MMPM
         run: |
           source ${{ github.workspace }}/.venv/bin/activate
-          python -m pip install poetry
-          poetry install --no-interaction
+          python -m pip install uv
+          uv sync
           mkdir -p ${{ github.workspace }}/mmpm/ui
           echo "---- Contents: ui ----"
           ls -lah ${{ github.workspace }}/ui/build/browser/* # just a sanity check since angular changed the structure
@@ -146,16 +152,16 @@ jobs:
           ls -lah ${{ github.workspace }}/mmpm/ui/media
           echo "---- Contents: mmpm/ui/assets ----"
           ls -lah ${{ github.workspace }}/mmpm/ui/assets
-          poetry build
+          uv build
 
       - name: Cache MMPM Artifacts
         uses: actions/cache@v3
         with:
           path: |
             ${{ github.workspace }}/dist
-          key: python-build-${{ hashFiles('**/poetry.lock') }}
+          key: python-build-${{ hashFiles('**/uv.lock') }}
           restore-keys: |
-            python-build-${{ hashFiles('**/poetry.lock') }}
+            python-build-${{ hashFiles('**/uv.lock') }}
 
       - name: Publish to PyPi
         if: startsWith(github.ref, 'refs/tags/')

@@ -22,15 +22,18 @@ jobs:
           - "3.11"
           - "3.12"
           - "3.13"
+          - "3.14"
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:
-          version: 0.7.21
+          version: 0.8.17
           python-version: ${{ matrix.python-version }}
+
       - name: Cache Python Dependencies
         uses: actions/cache@v3
         with:
@@ -40,27 +43,27 @@ jobs:
           key: python-deps-${{ hashFiles('**/uv.lock') }}
           restore-keys: |
             python-deps-${{ hashFiles('**/uv.lock') }}
+
       - name: Python Dependencies
         run: |
-          source ${{ github.workspace }}/.venv/bin/activate
-          python -m pip install uv
-          uv sync
+          uv sync --locked --all-groups
+
       - name: Python Tests
         run: |
-          source ${{ github.workspace }}/.venv/bin/activate
-          pylint mmpm
-          mypy mmpm
-          coverage run -m pytest tests
-          coverage report
+          uv sync --locked --all-groups
+          uv run pylint mmpm tests
+          uv run mypy mmpm tests
+          uv run coverage run -m pytest
+          uv run coverage report
+
       - name: Python Build
         run: |
-          source ${{ github.workspace }}/.venv/bin/activate
-          pylint mmpm
+          uv run pylint mmpm tests
           uv build
+
       - name: Install Test
         run: |
-          source ${{ github.workspace }}/.venv/bin/activate
-          uv sync
+          uv sync --locked --all-groups
           options=("version" "--help" "completion --help" "db --help" "guided-setup --help" "install --help" "list --help" "logs --help" "mm-ctl --help" "mm-pkg --help" "open --help" "remove --help" "search --help" "show --help" "ui --help" "update --help" "upgrade --help" "version --help")
 
           for option in "${options[@]}"; do ${{ github.workspace }}/.venv/bin/mmpm $option; done

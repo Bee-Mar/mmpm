@@ -128,20 +128,23 @@ jobs:
 
       - name: Package MMPM
         run: |
-          source ${{ github.workspace }}/.venv/bin/activate
-          python -m pip install uv
-          uv sync
+          uv sync --locked --no-dev
           mkdir -p ${{ github.workspace }}/mmpm/ui
+
           echo "---- Contents: ui ----"
           ls -lah ${{ github.workspace }}/ui/build/browser/* # just a sanity check since angular changed the structure
           cp -r ${{ github.workspace }}/ui/build/browser/* ${{ github.workspace }}/mmpm/ui
+
           # sanity checks since angular changed the output structure
           echo "---- Contents: mmpm/ui ----"
           ls -lah ${{ github.workspace }}/mmpm/ui
+
           echo "---- Contents: mmpm/ui/media ----"
           ls -lah ${{ github.workspace }}/mmpm/ui/media
+
           echo "---- Contents: mmpm/ui/assets ----"
           ls -lah ${{ github.workspace }}/mmpm/ui/assets
+
           uv build
 
       - name: Cache MMPM Artifacts

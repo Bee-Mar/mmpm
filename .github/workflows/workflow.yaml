@@ -38,8 +38,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/.cache/pip
-            ${{ github.workspace }}/.venv
+            ~/.cache/uv
           key: python-deps-${{ hashFiles('**/uv.lock') }}
           restore-keys: |
             python-deps-${{ hashFiles('**/uv.lock') }}
@@ -58,6 +57,7 @@ jobs:
 
       - name: Python Build
         run: |
+          uv sync --locked --all-groups
           uv run pylint mmpm tests
           uv build
 

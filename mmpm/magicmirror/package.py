@@ -287,11 +287,12 @@ class MagicMirrorPackage:
         Returns:
             MagicMirrorPackage: An instance of MagicMirrorPackage created from the provided data.
         """
-        title_info = raw_data[0].contents[0].contents[0]
+        # type hinting is getting this wrong
+        title_info = raw_data[0].contents[0].contents[0]  # type: ignore
         package_title: str = __sanitize__(title_info) if title_info else NA
 
         anchor_tag = raw_data[0].find_all("a")[0]
-        repo = str(anchor_tag["href"]) if anchor_tag.has_attr("href") else NA
+        repo = str(anchor_tag["href"]) if anchor_tag.has_attr("href") else NA  # type: ignore
 
         # some people get fancy and embed anchor tags
         author_info = raw_data[1].contents
@@ -301,7 +302,7 @@ class MagicMirrorPackage:
             if isinstance(info, NavigableString):
                 package_author += f"{info.strip()} "
             elif isinstance(info, Tag):
-                package_author += f"{info.contents[0].strip()} "
+                package_author += f"{info.contents[0].strip()} "  # type: ignore
 
         description_info = raw_data[2].contents
         package_description: str = "" if description_info else NA
@@ -310,9 +311,10 @@ class MagicMirrorPackage:
         for info in description_info:
             if isinstance(info, Tag):
                 for content in info:
-                    package_description += content.string
+                    # this is a NavigableString, not PageElement; mypy is getting this wrong
+                    package_description += content.string  # type: ignore
             else:
-                package_description += info.string
+                package_description += info.string  # type: ignore
 
         return MagicMirrorPackage(
             title=package_title,

@@ -103,6 +103,15 @@
       entry = "${pkgs.uv}/bin/uv run ruff format mmpm tests";
     };
 
+    py-typing = {
+      enable = true;
+      name = "python:typing";
+      description = "Python type checking stag";
+      types = ["python"];
+      stages = ["pre-push"];
+      entry = "${pkgs.uv}/bin/uv run mypy mmpm";
+    };
+
     py-sort-imports = {
       enable = true;
       name = "python:isort";

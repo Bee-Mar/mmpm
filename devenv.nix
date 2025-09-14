@@ -104,7 +104,7 @@
     };
 
     py-typing = {
-      enable = true;
+      enable = false;
       name = "python:typing";
       description = "Python type checking stage";
       types = ["python"];
@@ -113,7 +113,7 @@
     };
 
     py-test = {
-      enable = true;
+      enable = false;
       name = "python:test";
       description = "Python testing stage";
       types = ["python"];

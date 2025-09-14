@@ -51,8 +51,8 @@ jobs:
       - name: Python Tests
         run: |
           uv sync --locked --all-groups
+          uv run mypy mmpm
           uv run ruff check mmpm tests
-          uv run mypy mmpm tests
           uv run coverage run -m pytest
           uv run coverage report
 

@@ -1,7 +1,6 @@
 import unittest
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import mock_open, patch
 
-from mmpm.env import MMPMEnv
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.package import MagicMirrorPackage
 

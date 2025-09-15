@@ -6,6 +6,7 @@ from typing import Any, Dict, List
 
 import requests
 from bs4 import BeautifulSoup
+
 from mmpm.constants import color, paths, urls
 from mmpm.env import MMPMEnv
 from mmpm.log.factory import MMPMLogFactory
@@ -47,21 +48,21 @@ class MagicMirrorDatabase(Singleton):
         except requests.exceptions.RequestException:
             logger.fatal("Unable to retrieve MagicMirror modules.")
 
-        soup = BeautifulSoup(response.text, "html.parser")
+        soup = BeautifulSoup(response.text, "html.parser")  # type: ignore
         table_soup = soup.find_all("table")
-        categories_soup = soup.find_all(attrs={"class": "markdown-body"})[0].find_all("h3")
+        categories_soup = soup.find_all(attrs={"class": "markdown-body"})[0].find_all("h3")  # type: ignore
 
         self.categories = []
 
         for category in categories_soup[2:]:
             if hasattr(category, "contents"):
-                if hasattr(category.contents, "contents"):
-                    self.categories.append(category.contents[-1].contents[0])
+                if hasattr(category.contents, "contents"):  # type: ignore
+                    self.categories.append(category.contents[-1].contents[0])  # type: ignore
                 else:
-                    self.categories.append(category.contents[-1])
+                    self.categories.append(category.contents[-1])  # type: ignore
 
         # the first index is a row that literally says 'Title' 'Author' 'Description'
-        tr_soup: list = [table.find_all("tr")[1:] for table in table_soup]
+        tr_soup: list = [table.find_all("tr")[1:] for table in table_soup]  # type: ignore
 
         for index, row in enumerate(tr_soup):
             for entry in row:

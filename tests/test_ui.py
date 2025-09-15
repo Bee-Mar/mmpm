@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import patch
 
 from mmpm.ui import MMPMui  # Replace 'mmpm.ui' with the name of your module
 

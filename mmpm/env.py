@@ -138,7 +138,7 @@ class MMPMEnv(Singleton):
                 setattr(self, key, EnvVar(name=key, default=value, mtime=mtime))
 
     def get(self) -> dict:
-        current_env = {}
+        current_env: dict = {}
 
         with open(paths.MMPM_ENV_FILE, "r", encoding="utf-8") as env:
             current_env = json.load(env)

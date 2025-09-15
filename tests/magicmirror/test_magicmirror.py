@@ -1,10 +1,10 @@
 import shutil
 import unittest
-from pathlib import Path, PosixPath
-from test.helpers import MockedMMPMEnv
-from unittest.mock import MagicMock, patch
+from pathlib import PosixPath
+from unittest.mock import patch
 
 from mmpm.magicmirror.magicmirror import MagicMirror
+from tests.helpers import MockedMMPMEnv
 
 
 class MagicMirrorTestCase(unittest.TestCase):

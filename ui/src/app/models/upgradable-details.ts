@@ -1,4 +1,4 @@
-import { MagicMirrorPackage } from "./magicmirror-package";
+import { MagicMirrorPackage } from './magicmirror-package';
 
 export interface UpgradableDetails {
   mmpm: boolean;

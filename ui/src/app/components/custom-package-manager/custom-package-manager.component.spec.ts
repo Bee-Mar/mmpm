@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CustomPackageManagerComponent } from "./custom-package-manager.component";
+import { CustomPackageManagerComponent } from './custom-package-manager.component';
 
-describe("CustomPackageManagerComponent", () => {
+describe('CustomPackageManagerComponent', () => {
   let component: CustomPackageManagerComponent;
   let fixture: ComponentFixture<CustomPackageManagerComponent>;
 
@@ -15,7 +15,7 @@ describe("CustomPackageManagerComponent", () => {
     fixture.detectChanges();
   });
 
-  it("should create", () => {
+  it('should create', () => {
     expect(component).toBeTruthy();
   });
 });

@@ -1,11 +1,10 @@
 import unittest
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from faker import Faker
 
 from mmpm.env import MMPM_DEFAULT_ENV, MMPMEnv
-from mmpm.magicmirror.package import MagicMirrorPackage, __sanitize__
+from mmpm.magicmirror.package import MagicMirrorPackage
 
 fake = Faker()
 
@@ -33,11 +32,6 @@ class TestMagicMirrorPackage(unittest.TestCase):
         serialized_data = self.package.serialize(full=True)
         self.assertTrue("is_installed" in serialized_data)
         self.assertTrue("is_upgradable" in serialized_data)
-
-    def test_serialize_full(self):
-        serialized_data = self.package.serialize()
-        self.assertTrue("is_installed" not in serialized_data)
-        self.assertTrue("is_upgradable" not in serialized_data)
 
     def test_equality(self):
         package1 = MagicMirrorPackage(

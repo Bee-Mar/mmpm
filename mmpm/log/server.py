@@ -1,11 +1,13 @@
 """
 An incredibly simplistic SocketIO server used for repeating logs from the MMPM CLI to the UI.
 """
+
 from gevent import monkey
 
 monkey.patch_all()
 
 import socketio
+
 from mmpm.log.factory import MMPMLogFactory
 
 logger = MMPMLogFactory.get_logger(__name__)

@@ -1,10 +1,9 @@
-import datetime
 import json
 import unittest
 from unittest.mock import MagicMock, patch
 
-import requests
 from faker import Faker
+
 from mmpm.magicmirror.package import MagicMirrorPackage, RemotePackage
 
 fake = Faker()

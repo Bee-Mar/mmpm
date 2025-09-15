@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ConfigEditorComponent } from "./config-editor.component";
+import { ConfigEditorComponent } from './config-editor.component';
 
-describe("ConfigEditorComponent", () => {
+describe('ConfigEditorComponent', () => {
   let component: ConfigEditorComponent;
   let fixture: ComponentFixture<ConfigEditorComponent>;
 
@@ -15,7 +15,7 @@ describe("ConfigEditorComponent", () => {
     fixture.detectChanges();
   });
 
-  it("should create", () => {
+  it('should create', () => {
     expect(component).toBeTruthy();
   });
 });

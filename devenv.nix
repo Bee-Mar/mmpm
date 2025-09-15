@@ -1,17 +1,20 @@
 { pkgs, lib, config, inputs, ... }:
-
 {
+  # https://devenv.sh/basics/
   cachix.enable = false;
 
-  # https://devenv.sh/basics/
-  env.GREET = "devenv";
+  env = {
+    UV_PYTHON = "3.13";
+  };
 
   # https://devenv.sh/packages/
   packages = with pkgs; [
-    pm2
+    uv
+
     bun
     nodejs_22
-    uv
+
+    pm2
   ];
 
   # https://devenv.sh/languages/
@@ -28,17 +31,17 @@
     '';
 
   enterShell = ''
-    export VENV_DIR=$DEVENV_ROOT/.venv
+    export VIRTUAL_ENV="$DEVENV_ROOT/.venv"
 
-    [ ! -d $VENV_DIR ] && echo 'Creating virtualenv ...' && uv venv --python 3.12
-    source $VENV_DIR/bin/activate
+    [ ! -d $VIRTUAL_ENV ] && echo 'Creating virtualenv ...' && uv venv
+
+    source $VIRTUAL_ENV/bin/activate
     uv sync
 
     bun --cwd=$DEVENV_ROOT/ui install
   '';
 
   tasks = {
-
     "py:report".exec = "uv run coverage report";
     "py:test".exec   = "uv run coverage run -m pytest";
     "py:typing".exec = "uv run mypy mmpm";

@@ -52,6 +52,16 @@
     "ui:start".exec = "bun --cwd=$DEVENV_ROOT/ui run start";
     "ui:lint".exec  = "bun --cwd=$DEVENV_ROOT/ui run lint";
 
+    "mmpm:cleanup" = {
+      exec = ''
+        pm2 stop mmpm
+        pm2 delete mmpm
+        echo "Server stopped, cleaning up..."
+      '';
+
+      after = [ "devenv:processes:mmpm" ];
+    };
+
     "mmpm:format".exec = ''
         uv run ruff format mmpm tests
         uv run ruff check --select I --fix mmpm tests

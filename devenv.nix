@@ -10,25 +10,14 @@
   # https://devenv.sh/packages/
   packages = with pkgs; [
     uv
-
     bun
-    nodejs_22
-
     pm2
   ];
 
   # https://devenv.sh/languages/
-  # languages.rust.enable = true;
-
   # https://devenv.sh/services/
-  # services.postgres.enable = true;
-
   # https://devenv.sh/scripts/
-
   # https://devenv.sh/processes/
-  processes.mmpm.exec = ''
-      ${pkgs.pm2}/bin/pm2 start $DEVENV_ROOT/dev/ecosystem.json
-    '';
 
   enterShell = ''
     export VIRTUAL_ENV="$DEVENV_ROOT/.venv"
@@ -51,16 +40,6 @@
     "ui:build".exec = "bun --cwd=$DEVENV_ROOT/ui run build";
     "ui:start".exec = "bun --cwd=$DEVENV_ROOT/ui run start";
     "ui:lint".exec  = "bun --cwd=$DEVENV_ROOT/ui run lint";
-
-    "mmpm:cleanup" = {
-      exec = ''
-        pm2 stop mmpm
-        pm2 delete mmpm
-        echo "Server stopped, cleaning up..."
-      '';
-
-      after = [ "devenv:processes:mmpm" ];
-    };
 
     "mmpm:format".exec = ''
         uv run ruff format mmpm tests
@@ -85,7 +64,7 @@
 
     "mmpm:start".exec = "pm2 start $DEVENV_ROOT/dev/ecosystem.json";
     "mmpm:stop".exec  = "pm2 stop mmpm";
-    "mmpm:rm".exec    = "pm2 remove mmpm";
+    "mmpm:rm".exec    = "pm2 delete mmpm";
     "mmpm:logs".exec  = "pm2 logs mmpm";
 
     "mmpm:deploy".exec = ''

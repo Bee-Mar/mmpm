@@ -37,6 +37,14 @@ dependencies = [
   "yaspin<4.0.0,>=3.1.0",
 ]
 
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+follow_imports_for_stubs = false
+strict_optional = false
+warn_no_return = false
+
 [tool.ruff]
 line-length = 150
 

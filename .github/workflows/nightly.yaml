@@ -26,4 +26,13 @@ jobs:
       - name: "Test MMPM download"
         run: |
           uv pip install mmpm
-          uv run mmpm list --all
+          uv run mmpm list --all > database.dump
+
+          exit_code=0
+
+          if grep -q "breaking change on the MagicMirror 3rd Party Modules wiki" database.dump; then
+              exit_code=1
+          fi
+
+          rm database.dump
+          exit $exit_code

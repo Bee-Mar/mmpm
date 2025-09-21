@@ -77,7 +77,7 @@ class MagicMirrorDatabase(Singleton):
 
                 except Exception as error:  # broad exception isn't best, but there's a lot that can happen here
                     logger.error(
-                        "There may have been a breaking change in the layout of the MagicMirror 3rd Party module wiki page. Please create an issue on the MMPM's GitHub repository."
+                        "This is most likely due to a breaking change on the MagicMirror 3rd Party Modules wiki. Please create an issue at https://github.com/bee-mar/mmpm/issues."
                     )
                     logger.error(f"{error}")
                     continue

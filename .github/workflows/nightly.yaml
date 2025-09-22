@@ -16,17 +16,12 @@ jobs:
           - "3.13"
           - "3.14"
     steps:
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-        with:
-          version: 0.8.19
-          python-version: ${{ matrix.python-version }}
-          enable-cache: true
-
       - name: "Test MMPM download"
         run: |
-          uv pip install mmpm
-          uv run mmpm list --all > database.dump
+          python -m pip install mmpm
+
+          mmpm list --all # just to see the stdout...doing it twice is a bit wasteful, but it's fine
+          mmpm list --all > database.dump
 
           exit_code=0
 

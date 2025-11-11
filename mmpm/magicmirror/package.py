@@ -13,8 +13,6 @@ from textwrap import fill
 from typing import Any, Callable, Dict, List, Tuple
 
 import requests
-from bs4 import Tag
-from bs4.element import NavigableString
 
 from mmpm.constants import color
 from mmpm.env import MMPMEnv
@@ -281,53 +279,47 @@ class MagicMirrorPackage:
         return True
 
     @classmethod
-    def from_raw_data(cls, raw_data: List[Tag], category=NA):
-        """
-        Creates a MagicMirrorPackage instance from raw HTML data.
+    def from_json(cls, data: Dict[str, Any]):
+        """Create a MagicMirrorPackage from a JSON dict coming from the modules.magicmirror.builders index.
+
+        Expected JSON structure from https://modules.magicmirror.builders/data/modules.json:
+        {
+          "name": "MMM-ModuleName",
+          "category": "Category Name",
+          "url": "https://github.com/user/repo",
+          "id": "user/repo",
+          "maintainer": "username",
+          "description": "Module description",
+          ...
+        }
 
         Parameters:
-            raw_data (List[Tag]): A list of BeautifulSoup Tag objects representing HTML elements.
-            category (str): The category of the package.
+            data (Dict[str, Any]): The JSON dictionary for a single module
 
         Returns:
-            MagicMirrorPackage: An instance of MagicMirrorPackage created from the provided data.
+            MagicMirrorPackage: A new instance with data from the JSON
         """
-        # type hinting is getting this wrong
-        title_info = raw_data[0].contents[0].contents[0]  # type: ignore
-        package_title: str = __sanitize__(title_info) if title_info else NA
+        # Extract fields from the JSON (using the actual field names from modules.json)
+        title = data.get("name") or NA
+        author = data.get("maintainer") or NA
+        repository = data.get("url") or NA
+        description = data.get("description") or NA
+        category = data.get("category") or NA
 
-        anchor_tag = raw_data[0].find_all("a")[0]
-        repo = str(anchor_tag["href"]) if anchor_tag.has_attr("href") else NA  # type: ignore
-
-        # some people get fancy and embed anchor tags
-        author_info = raw_data[1].contents
-        package_author = str() if author_info else NA
-
-        for info in author_info:
-            if isinstance(info, NavigableString):
-                package_author += f"{info.strip()} "
-            elif isinstance(info, Tag):
-                package_author += f"{info.contents[0].strip()} "  # type: ignore
-
-        description_info = raw_data[2].contents
-        package_description: str = "" if description_info else NA
-
-        # some people embed other html elements in here, so they need to be parsed out
-        for info in description_info:
-            if isinstance(info, Tag):
-                for content in info:
-                    # this is a NavigableString, not PageElement; mypy is getting this wrong
-                    package_description += content.string  # type: ignore
-            else:
-                package_description += info.string  # type: ignore
+        # Derive directory name from the repository URL or id
+        directory = ""
+        if isinstance(repository, str) and repository and repository != NA:
+            directory = repository.split("/")[-1].replace(".git", "")
+        elif isinstance(data.get("id"), str) and data.get("id"):
+            directory = str(data.get("id")).split("/")[-1]
 
         return MagicMirrorPackage(
-            title=package_title,
-            author=package_author,
-            description=package_description,
-            repository=repo,
+            title=title,
+            author=author,
+            repository=repository,
+            description=description,
             category=category,
-            directory=repo.split("/")[-1].replace(".git", ""),
+            directory=directory,
         )
 
 

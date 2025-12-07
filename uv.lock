@@ -665,7 +665,7 @@ wheels = [
 
 [[package]]
 name = "mmpm"
-version = "4.2.6"
+version = "4.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "argcomplete" },

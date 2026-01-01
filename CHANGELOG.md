@@ -368,3 +368,9 @@
 ## Version 4.2.5
 
 - include assets recursively
+
+## Version 4.3.0
+
+- Replace wiki scraping with official JSON modules index (`modules.magicmirror.builders`)
+- Remove `beautifulsoup4` dependency
+- Improve test coverage with mocked HTTP requests

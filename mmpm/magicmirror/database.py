@@ -5,7 +5,6 @@ from pathlib import Path, PosixPath
 from typing import Any, Dict, List
 
 import requests
-from bs4 import BeautifulSoup
 
 from mmpm.constants import color, paths, urls
 from mmpm.env import MMPMEnv
@@ -32,55 +31,57 @@ class MagicMirrorDatabase(Singleton):
 
     def __download_packages__(self) -> List[MagicMirrorPackage]:
         """
-        Scrapes the MagicMirror 3rd Party Wiki for all packages listed by community members.
+        Retrieves the MagicMirror 3rd party modules from the official modules JSON index
+        and converts them into MagicMirrorPackage objects.
 
         Parameters:
             None
 
         Returns:
-            packages: List[MagicMirrorPackage] A list of MagicMirrorPackage objects extracted from the 3rd party wiki.
+            packages: List[MagicMirrorPackage] A list of MagicMirrorPackage objects extracted from the JSON index.
         """
-
         packages: List[MagicMirrorPackage] = []
 
         try:
             response = requests.get(urls.MAGICMIRROR_MODULES_URL, timeout=10)
-        except requests.exceptions.RequestException:
-            logger.fatal("Unable to retrieve MagicMirror modules.")
+            response.raise_for_status()
+        except requests.exceptions.RequestException as exc:
+            logger.fatal(
+                f"Unable to retrieve MagicMirror modules from {urls.MAGICMIRROR_MODULES_URL}: {exc}")
+            return packages
 
-        soup = BeautifulSoup(response.text, "html.parser")  # type: ignore
-        table_soup = soup.find_all("table")
-        categories_soup = soup.find_all(attrs={"class": "markdown-body"})[0].find_all("h3")  # type: ignore
+        try:
+            data = response.json()
+        except json.JSONDecodeError as exc:
+            logger.error(
+                f"Failed to parse modules JSON from {urls.MAGICMIRROR_MODULES_URL}: {exc}")
+            return packages
 
-        self.categories = []
+        if not isinstance(data, dict) or "modules" not in data:
+            logger.error(
+                f"Unexpected JSON structure from {urls.MAGICMIRROR_MODULES_URL}")
+            return packages
 
-        for category in categories_soup[2:]:
-            if hasattr(category, "contents"):
-                if hasattr(category.contents, "contents"):  # type: ignore
-                    self.categories.append(category.contents[-1].contents[0])  # type: ignore
-                else:
-                    self.categories.append(category.contents[-1])  # type: ignore
+        modules_list = data.get("modules", [])
+        if not isinstance(modules_list, list):
+            logger.error(
+                f"Expected 'modules' to be a list in JSON from {urls.MAGICMIRROR_MODULES_URL}")
+            return packages
 
-        # the first index is a row that literally says 'Title' 'Author' 'Description'
-        tr_soup: list = [table.find_all("tr")[1:] for table in table_soup]  # type: ignore
+        discovered_categories: List[str] = []
 
-        for index, row in enumerate(tr_soup):
-            for entry in row:
-                try:
-                    table_data: list = entry.find_all("td")
+        for entry in modules_list:
+            if not isinstance(entry, dict):
+                continue
 
-                    if not table_data or not table_data[0].text or table_data[0].text == "mmpm":
-                        continue
+            pkg = MagicMirrorPackage.from_json(entry)
+            packages.append(pkg)
 
-                    pkg = MagicMirrorPackage.from_raw_data(table_data, category=self.categories[index])
-                    packages.append(pkg)
+            if pkg.category:
+                discovered_categories.append(pkg.category)
 
-                except Exception as error:  # broad exception isn't best, but there's a lot that can happen here
-                    logger.error(
-                        "This is most likely due to a breaking change on the MagicMirror 3rd Party Modules wiki. Please create an issue at https://github.com/bee-mar/mmpm/issues."
-                    )
-                    logger.error(f"{error}")
-                    continue
+        # Finalize categories from the collected packages
+        self.categories = sorted(list({c for c in discovered_categories if c}))
 
         return packages
 
@@ -223,7 +224,7 @@ class MagicMirrorDatabase(Singleton):
     def load(self, update: bool = False) -> bool:
         """
         Loads the MagicMirror packages from the database. Optionally forces an update
-        of the database from the 3rd party wiki.
+        of the database from the 3rd party modules.json.
 
         Parameters:
             update (bool): Flag to force database update.

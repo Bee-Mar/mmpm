@@ -19,21 +19,14 @@
       <div class="detail">
         <strong>Repository:</strong>
         <span>
-          <a [href]="selectedPackage.repository" target="_blank">{{
-            selectedPackage.repository
-          }}</a>
+          <a [href]="selectedPackage.repository" target="_blank">{{ selectedPackage.repository }}</a>
         </span>
       </div>
       <div class="detail">
         <strong>Category:</strong>
         <span
           >{{ selectedPackage.category }}
-          <i
-            [class]="
-              icons[selectedPackage.category].logo || 'fa fa-question-circle'
-            "
-            [style.color]="icons[selectedPackage.category].color || 'black'"
-          ></i>
+          <i [class]="icons[selectedPackage.category].logo || 'fa fa-question-circle'" [style.color]="icons[selectedPackage.category].color || 'black'"></i>
         </span>
       </div>
       <div class="detail">
@@ -43,25 +36,27 @@
       <div class="detail">
         <strong>Installed:</strong>
         <span>
-          <i
-            class="pi pi-{{
-              selectedPackage.is_installed ? 'check' : 'times'
-            }}-circle"
-            [style.color]="selectedPackage.is_installed ? '#009933' : '#e05252'"
-          ></i>
+          <i class="pi pi-{{ selectedPackage.is_installed ? 'check' : 'times' }}-circle" [style.color]="selectedPackage.is_installed ? '#009933' : '#e05252'"></i>
         </span>
       </div>
       <div class="detail">
         <strong>Updates Available:</strong>
         <span>
-          <i
-            class="pi pi-{{
-              selectedPackage.is_upgradable ? 'check' : 'times'
-            }}-circle"
-            [style.color]="
-              selectedPackage.is_upgradable ? '#009933' : '#e05252'
-            "
-          ></i>
+          <i class="pi pi-{{ selectedPackage.is_upgradable ? 'check' : 'times' }}-circle" [style.color]="selectedPackage.is_upgradable ? '#009933' : '#e05252'"></i>
+        </span>
+      </div>
+      <div class="detail">
+        <strong>Last Updated:</strong>
+        <span
+          >{{ selectedPackage.last_updated }}
+          <i class="fa-solid fa-calendar-days" [style.color]="'white'"></i>
+        </span>
+      </div>
+      <div class="detail">
+        <strong>Stars:</strong>
+        <span
+          >{{ selectedPackage.stars }}
+          <i class="fa-solid fa-star" [style.color]="'gold'"></i>
         </span>
       </div>
     </div>
@@ -71,17 +66,7 @@
       <p-progressSpinner></p-progressSpinner>
     </div>
     <ng-template #detailsBlock>
-      <div
-        *ngIf="selectedPackage?.remote_details; else errorBlock"
-        class="package-details-grid"
-      >
-        <div class="detail">
-          <strong>Stars:</strong>
-          <span
-            >{{ selectedPackage.remote_details.stars }}
-            <i class="fa-solid fa-star" [style.color]="'gold'"></i>
-          </span>
-        </div>
+      <div *ngIf="selectedPackage?.remote_details; else errorBlock" class="package-details-grid">
         <div class="detail">
           <strong>Open Issues:</strong>
           <span
@@ -97,13 +82,6 @@
           </span>
         </div>
         <div class="detail">
-          <strong>Last Updated:</strong>
-          <span
-            >{{ selectedPackage.remote_details.last_updated }}
-            <i class="fa-solid fa-calendar-days" [style.color]="'white'"></i>
-          </span>
-        </div>
-        <div class="detail">
           <strong>Forks:</strong>
           <span
             >{{ selectedPackage.remote_details.forks }}
@@ -113,9 +91,7 @@
       </div>
     </ng-template>
     <ng-template #errorBlock>
-      <div class="package-details-grid">
-        Unable to retrieve details from remote.
-      </div>
+      <div class="package-details-grid">Unable to retrieve details from remote.</div>
     </ng-template>
   </p-panel>
 </p-dialog>

@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { PackageDetailsViewerComponent } from './package-details-viewer.component';
+import { PackageDetailsViewerComponent } from "./package-details-viewer.component";
 
-describe('PackageDetailsViewerComponent', () => {
+describe("PackageDetailsViewerComponent", () => {
   let component: PackageDetailsViewerComponent;
   let fixture: ComponentFixture<PackageDetailsViewerComponent>;
 
@@ -15,7 +15,7 @@ describe('PackageDetailsViewerComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

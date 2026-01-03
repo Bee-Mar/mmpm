@@ -374,3 +374,4 @@
 - Replace wiki scraping with official JSON modules index (`modules.magicmirror.builders`)
 - Remove `beautifulsoup4` dependency
 - Improve test coverage with mocked HTTP requests
+- Move `stars` and `last_updated` fields from remote details to the base package fields

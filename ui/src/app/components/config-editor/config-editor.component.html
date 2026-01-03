@@ -13,19 +13,11 @@
 
       <p-toast></p-toast>
       <p-menu #menu [model]="fileOptions" [popup]="true"></p-menu>
-      <p-button
-        (click)="menu.toggle($event)"
-        icon="fa-solid fa-file"
-        label="Files"
-        severity="primary"
-      ></p-button>
+      <p-button (click)="menu.toggle($event)" icon="fa-solid fa-file" label="Files" severity="primary"></p-button>
     </ng-template>
     <ng-template pTemplate="center">
       <span class="text-primary font-semibold text-xl">
-        <i
-          class="fa-solid fa-code"
-          [style]="{ color: 'white', 'margin-right': '1em' }"
-        ></i>
+        <i class="fa-solid fa-code" [style]="{ color: 'white', 'margin-right': '1em' }"></i>
         <code>{{ file }}</code>
       </span>
     </ng-template>
@@ -47,12 +39,6 @@
       </span>
     </ng-template>
   </p-toolbar>
-  <ngx-monaco-editor
-    (keydown)="handleKeyDown($event)"
-    [style]="{ 'min-height': '66vh' }"
-    [options]="options"
-    (onInit)="onEditorInit($event)"
-    [(ngModel)]="state[file].current"
-  >
+  <ngx-monaco-editor (keydown)="handleKeyDown($event)" [style]="{ 'min-height': '66vh' }" [options]="options" (onInit)="onEditorInit($event)" [(ngModel)]="state[file].current">
   </ngx-monaco-editor>
 </div>

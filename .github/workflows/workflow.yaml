@@ -57,6 +57,23 @@ jobs:
 
           for option in "${options[@]}"; do ${{ github.workspace }}/.venv/bin/mmpm $option; done
 
+      - name: "Test MMPM download"
+        run: |
+          python -m pip install mmpm
+          mmpm_exc="${{ github.workspace }}/.venv/bin/mmpm"
+
+          mmpm list --all # just to see the stdout...doing it twice is a bit wasteful, but it's fine
+          mmpm list --all > database.dump
+
+          exit_code=0
+
+          if grep -q "breaking change on the MagicMirror 3rd Party Modules wiki" database.dump; then
+              exit_code=1
+          fi
+
+          rm database.dump
+          exit $exit_code
+
   mmpm-ui:
     runs-on: ubuntu-latest
     strategy:

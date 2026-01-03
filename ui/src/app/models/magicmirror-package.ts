@@ -8,12 +8,12 @@ export interface MagicMirrorPackage {
   is_installed: boolean;
   is_upgradable: boolean;
   remote_details: RemotePackageDetails;
+  stars: number;
+  last_updated: string;
 }
 
 export interface RemotePackageDetails {
-  stars: number;
   issues: number;
   created: string;
-  last_updated: string;
   forks: number;
 }

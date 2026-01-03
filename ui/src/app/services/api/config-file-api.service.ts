@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
-import { APIResponse, BaseAPI } from './base-api';
-import { catchError, firstValueFrom, retry } from 'rxjs';
+import { Injectable } from "@angular/core";
+import { APIResponse, BaseAPI } from "./base-api";
+import { catchError, firstValueFrom, retry } from "rxjs";
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class ConfigFileAPI extends BaseAPI {
   public getConfigFile(filename: string): Promise<string> {
@@ -13,16 +13,13 @@ export class ConfigFileAPI extends BaseAPI {
       this.http
         .get(this.route(`configs/retrieve/${filename}`), {
           headers: this.headers(),
-          responseType: 'text',
+          responseType: "text",
         })
         .pipe(retry(1), catchError(this.handleError)),
     );
   }
 
-  public postConfigFile(
-    filename: string,
-    contents: string,
-  ): Promise<APIResponse> {
+  public postConfigFile(filename: string, contents: string): Promise<APIResponse> {
     console.log(`Updating ${filename}`);
 
     return firstValueFrom(
@@ -34,7 +31,7 @@ export class ConfigFileAPI extends BaseAPI {
           },
           {
             headers: this.headers({
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             }),
           },
         )

@@ -20,10 +20,7 @@
   </div>
 
   <ng-template #showModules>
-    <div
-      *ngFor="let module of modules"
-      style="display: block; margin-bottom: 1em"
-    >
+    <div *ngFor="let module of modules" style="display: block; margin-bottom: 1em">
       <p-toggleButton
         [(ngModel)]="module.hidden"
         onLabel="{{ module.name }} ({{ module.key }})"
@@ -39,19 +36,7 @@
 </p-dialog>
 
 <p-dialog header="MagicMirror Controller Help" [(visible)]="openHelpDialog">
-  <div
-    style="
-      display: grid;
-      grid-template-columns: max-content;
-      justify-content: center;
-      grid-gap: 10px;
-      margin: 0 auto;
-      text-align: left;
-    "
-  >
-    <span *ngFor="let menuItem of menuItems" style="margin-bottom: 1em">
-      <i class="{{ menuItem.icon }}" style="margin-right: 1em"></i
-      >{{ menuItem.tooltip }}
-    </span>
+  <div style="display: grid; grid-template-columns: max-content; justify-content: center; grid-gap: 10px; margin: 0 auto; text-align: left">
+    <span *ngFor="let menuItem of menuItems" style="margin-bottom: 1em"> <i class="{{ menuItem.icon }}" style="margin-right: 1em"></i>{{ menuItem.tooltip }} </span>
   </div>
 </p-dialog>

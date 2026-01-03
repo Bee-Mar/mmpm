@@ -45,6 +45,8 @@ class MagicMirrorPackage:
         "is_installed",
         "env",
         "is_upgradable",
+        "stars",
+        "last_updated",
     )
 
     # pylint: disable=unused-argument,too-many-positional-arguments
@@ -57,6 +59,8 @@ class MagicMirrorPackage:
         category: str = NA,
         directory: str = "",
         is_installed: bool = False,
+        stars: int = 0,
+        last_updated: str = NA,
         **kwargs,
     ) -> None:
         """
@@ -83,6 +87,8 @@ class MagicMirrorPackage:
         self.category = category.strip()
         self.is_installed = is_installed
         self.is_upgradable = False
+        self.stars = stars
+        self.last_updated = last_updated
 
     def __str__(self) -> str:
         return str(self.serialize())
@@ -144,6 +150,8 @@ class MagicMirrorPackage:
             text += default_fill(f"Author: {self.author}")
             text += default_fill(f"Repository: {self.repository}")
             text += default_fill(f"Installed: {'true' if self.is_installed else 'false'}")
+            text += default_fill(f"Stars: {self.stars}")
+            text += default_fill(f"Last Updated: {self.last_updated}")
 
             if remote:
                 for key, value in RemotePackage(self).serialize().items():
@@ -173,6 +181,8 @@ class MagicMirrorPackage:
             "repository": self.repository,
             "description": self.description,
             "directory": self.directory.name,
+            "stars": self.stars,
+            "last_updated": self.last_updated,
         }
 
         if full:
@@ -290,6 +300,8 @@ class MagicMirrorPackage:
           "id": "user/repo",
           "maintainer": "username",
           "description": "Module description",
+          "stars": <count>,
+          "lastCommit": "YYYY-MM-DDTHH:mm:ss+00:00",
           ...
         }
 
@@ -305,9 +317,19 @@ class MagicMirrorPackage:
         repository = data.get("url") or NA
         description = data.get("description") or NA
         category = data.get("category") or NA
+        stars = data.get("stars") or 0
+        last_commit = data.get("lastCommit") or NA
+
+        if last_commit != NA:
+            time_format = "%Y-%m-%dT%H:%M:%S%z"
+            date = datetime.strptime(last_commit, time_format)
+            last_updated = f"{date.year}-{date.month}-{date.day}"
+        else:
+            last_updated = last_commit
 
         # Derive directory name from the repository URL or id
         directory = ""
+
         if isinstance(repository, str) and repository and repository != NA:
             directory = repository.split("/")[-1].replace(".git", "")
         elif isinstance(data.get("id"), str) and data.get("id"):
@@ -320,6 +342,8 @@ class MagicMirrorPackage:
             description=description,
             category=category,
             directory=directory,
+            last_updated=last_updated,
+            stars=stars,
         )
 
 
@@ -587,7 +611,7 @@ class RemotePackage:
         Parameters: None
 
         Returns:
-            dict: A dictionary containing details such as stars, forks, issue counts, and creation and last updated dates of the repository.
+            dict: A dictionary containing details such as forks, issue counts, and creation and last updated dates of the repository.
         """
         spliced: List[str] = self.package.repository.split("/")
         user: str = spliced[-2]
@@ -635,21 +659,18 @@ class RemotePackage:
             url (str): The constructed URL of the API used to retrieve additional info.
 
         Returns:
-            dict: A dictionary with stars, forks, issue counts, and creation and last updated dates.
+            dict: A dictionary with forks, issue counts, and creation and last updated dates.
         """
-        stars = safe_get_request(f"{url}/watchers")
         forks = safe_get_request(f"{url}/forks")
         issues = safe_get_request(f"{url}/issues")
 
         return (
             {
-                "stars": int(json.loads(stars.text)["pagelen"]) if stars else "N/A",
                 "issues": int(json.loads(issues.text)["pagelen"]) if issues else "N/A",
                 "created": data["created_on"].split("T")[0] if data else "N/A",
-                "last_updated": data["updated_on"].split("T")[0] if data else "N/A",
                 "forks": int(json.loads(forks.text)["pagelen"]) if forks else "N/A",
             }
-            if data and stars
+            if data
             else {}
         )
 
@@ -662,16 +683,14 @@ class RemotePackage:
             url (str): The constructed URL of the API used to retrieve additional info.
 
         Returns:
-            dict: A dictionary with stars, forks, issue counts, and creation and last updated dates.
+            dict: A dictionary with forks, issue counts, and creation and last updated dates.
         """
         issues = safe_get_request(f"{url}/issues")
 
         return (
             {
-                "stars": data["star_count"] if data else "N/A",
                 "issues": len(json.loads(issues.text)) if issues else "N/A",
                 "created": data["created_at"].split("T")[0] if data else "N/A",
-                "last_updated": data["last_activity_at"].split("T")[0] if data else "N/A",
                 "forks": data["forks_count"] if data else "N/A",
             }
             if data
@@ -686,14 +705,12 @@ class RemotePackage:
             data (dict): JSON data from the API request.
 
         Returns:
-            dict: A dictionary with stars, forks, issue counts, and creation and last updated dates.
+            dict: A dictionary with forks, issue counts, and creation and last updated dates.
         """
         return (
             {
-                "stars": data["stargazers_count"] if data else "N/A",
                 "issues": data["open_issues"] if data else "N/A",
                 "created": data["created_at"].split("T")[0] if data else "N/A",
-                "last_updated": data["updated_at"].split("T")[0] if data else "N/A",
                 "forks": data["forks_count"] if data else "N/A",
             }
             if data

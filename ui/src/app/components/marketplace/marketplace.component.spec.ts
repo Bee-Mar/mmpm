@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { MarketPlaceComponent } from './marketplace.component';
+import { MarketPlaceComponent } from "./marketplace.component";
 
-describe('MarketPlaceComponent', () => {
+describe("MarketPlaceComponent", () => {
   let component: MarketPlaceComponent;
   let fixture: ComponentFixture<MarketPlaceComponent>;
 
@@ -18,7 +18,7 @@ describe('MarketPlaceComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

@@ -46,26 +46,22 @@ class MagicMirrorDatabase(Singleton):
             response = requests.get(urls.MAGICMIRROR_MODULES_URL, timeout=10)
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
-            logger.fatal(
-                f"Unable to retrieve MagicMirror modules from {urls.MAGICMIRROR_MODULES_URL}: {exc}")
+            logger.fatal(f"Unable to retrieve MagicMirror modules from {urls.MAGICMIRROR_MODULES_URL}: {exc}")
             return packages
 
         try:
             data = response.json()
         except json.JSONDecodeError as exc:
-            logger.error(
-                f"Failed to parse modules JSON from {urls.MAGICMIRROR_MODULES_URL}: {exc}")
+            logger.error(f"Failed to parse modules JSON from {urls.MAGICMIRROR_MODULES_URL}: {exc}")
             return packages
 
         if not isinstance(data, dict) or "modules" not in data:
-            logger.error(
-                f"Unexpected JSON structure from {urls.MAGICMIRROR_MODULES_URL}")
+            logger.error(f"Unexpected JSON structure from {urls.MAGICMIRROR_MODULES_URL}")
             return packages
 
         modules_list = data.get("modules", [])
         if not isinstance(modules_list, list):
-            logger.error(
-                f"Expected 'modules' to be a list in JSON from {urls.MAGICMIRROR_MODULES_URL}")
+            logger.error(f"Expected 'modules' to be a list in JSON from {urls.MAGICMIRROR_MODULES_URL}")
             return packages
 
         discovered_categories: List[str] = []

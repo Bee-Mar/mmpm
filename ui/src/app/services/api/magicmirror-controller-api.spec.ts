@@ -1,8 +1,8 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed } from "@angular/core/testing";
 
-import { MagicMirrorAPI } from './magicmirror-api.service';
+import { MagicMirrorAPI } from "./magicmirror-api.service";
 
-describe('MagicMirrorAPI', () => {
+describe("MagicMirrorAPI", () => {
   let service: MagicMirrorAPI;
 
   beforeEach(() => {
@@ -10,7 +10,7 @@ describe('MagicMirrorAPI', () => {
     service = TestBed.inject(MagicMirrorAPI);
   });
 
-  it('should be created', () => {
+  it("should be created", () => {
     expect(service).toBeTruthy();
   });
 });

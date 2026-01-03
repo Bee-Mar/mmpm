@@ -1,10 +1,10 @@
-import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
-import { EditorComponent } from 'ngx-monaco-editor-v2';
-import { getCookie, setCookie } from '@/utils/utils';
-import { ConfigFileAPI } from '@/services/api/config-file-api.service';
-import { MessageService } from 'primeng/api';
-import { APIResponse } from '@/services/api/base-api';
-import { SharedStoreService } from '@/services/shared-store.service';
+import { Component, HostListener, OnInit, ViewChild } from "@angular/core";
+import { EditorComponent } from "ngx-monaco-editor-v2";
+import { getCookie, setCookie } from "@/utils/utils";
+import { ConfigFileAPI } from "@/services/api/config-file-api.service";
+import { MessageService } from "primeng/api";
+import { APIResponse } from "@/services/api/base-api";
+import { SharedStoreService } from "@/services/shared-store.service";
 
 interface FileContentsState {
   current: string;
@@ -13,9 +13,9 @@ interface FileContentsState {
 }
 
 @Component({
-  selector: 'app-config-editor',
-  templateUrl: './config-editor.component.html',
-  styleUrls: ['./config-editor.component.scss'],
+  selector: "app-config-editor",
+  templateUrl: "./config-editor.component.html",
+  styleUrls: ["./config-editor.component.scss"],
   providers: [MessageService],
   standalone: false,
 })
@@ -29,54 +29,54 @@ export class ConfigEditorComponent implements OnInit {
   @ViewChild(EditorComponent, { static: false })
   public editor: EditorComponent;
 
-  public file = getCookie('mmpm-config-editor-selected-file', 'config.js');
-  public fontSize = Number(getCookie('mmpm-config-editor-font-size', '12'));
+  public file = getCookie("mmpm-config-editor-selected-file", "config.js");
+  public fontSize = Number(getCookie("mmpm-config-editor-font-size", "12"));
 
   public state: { [key: string]: FileContentsState } = {
-    'config.js': {
-      current: '',
-      saved: '',
-      language: 'javascript',
+    "config.js": {
+      current: "",
+      saved: "",
+      language: "javascript",
     },
-    'mmpm-env.json': {
-      current: '',
-      saved: '',
-      language: 'json',
+    "mmpm-env.json": {
+      current: "",
+      saved: "",
+      language: "json",
     },
-    'custom.css': {
-      current: '',
-      saved: '',
-      language: 'css',
+    "custom.css": {
+      current: "",
+      saved: "",
+      language: "css",
     },
   };
 
   public fileOptions = [
     {
-      label: 'config.js',
-      icon: 'fa-solid fa-code',
+      label: "config.js",
+      icon: "fa-solid fa-code",
       command: () => {
-        this.onSelectFile('config.js');
+        this.onSelectFile("config.js");
       },
     },
     {
-      label: 'mmpm-env.json',
-      icon: 'fa-solid fa-code',
+      label: "mmpm-env.json",
+      icon: "fa-solid fa-code",
       command: () => {
-        this.onSelectFile('mmpm-env.json');
+        this.onSelectFile("mmpm-env.json");
       },
     },
     {
-      label: 'custom.css',
-      icon: 'fa-solid fa-code',
+      label: "custom.css",
+      icon: "fa-solid fa-code",
       command: () => {
-        this.onSelectFile('custom.css');
+        this.onSelectFile("custom.css");
       },
     },
   ];
 
   public options = {
-    language: 'javascript',
-    theme: 'vs-dark',
+    language: "javascript",
+    theme: "vs-dark",
     scrollBeyondLastLine: false,
     fontSize: this.fontSize,
     minimap: {
@@ -86,7 +86,7 @@ export class ConfigEditorComponent implements OnInit {
       useShadows: true,
       verticalHasArrows: false,
       horizontalHasArrows: false,
-      vertical: 'visible',
+      vertical: "visible",
       verticalScrollbarSize: 12,
       horizontalScrollbarSize: 12,
       arrowSize: 30,
@@ -94,7 +94,7 @@ export class ConfigEditorComponent implements OnInit {
     automaticLayout: true,
   };
 
-  @HostListener('window:beforeunload', ['$event'])
+  @HostListener("window:beforeunload", ["$event"])
   public beforeUnload($event: BeforeUnloadEvent) {
     if (this.state[this.file].current !== this.state[this.file].saved) {
       $event.returnValue = `You have unsaved changes made to ${this.file}. Are you sure you want to exit?`;
@@ -102,7 +102,7 @@ export class ConfigEditorComponent implements OnInit {
   }
 
   public handleKeyDown(event: KeyboardEvent): void {
-    if (event.ctrlKey && event.key === 's') {
+    if (event.ctrlKey && event.key === "s") {
       event.preventDefault();
 
       if (this.state[this.file].current !== this.state[this.file].saved) {
@@ -122,7 +122,7 @@ export class ConfigEditorComponent implements OnInit {
   public onSelectFile(file: string): void {
     this.file = file;
 
-    setCookie('mmpm-config-editor-selected-file', this.file);
+    setCookie("mmpm-config-editor-selected-file", this.file);
 
     if (!this.state[file].current) {
       this.configFileApi.getConfigFile(this.file).then((contents: string) => {
@@ -141,30 +141,28 @@ export class ConfigEditorComponent implements OnInit {
   }
 
   public onSaveFile(): void {
-    this.configFileApi
-      .postConfigFile(this.file, this.state[this.file].current)
-      .then((response: APIResponse) => {
-        if (response.code === 200) {
-          this.state[this.file].saved = this.state[this.file].current;
-          this.store.load();
-          this.msg.add({
-            severity: 'success',
-            summary: 'Save File',
-            detail: `Saved ${this.file}`,
-          });
-        } else {
-          console.log(response.message);
-          this.msg.add({
-            severity: 'error',
-            summary: 'Save File',
-            detail: response.message,
-          });
-        }
-      });
+    this.configFileApi.postConfigFile(this.file, this.state[this.file].current).then((response: APIResponse) => {
+      if (response.code === 200) {
+        this.state[this.file].saved = this.state[this.file].current;
+        this.store.load();
+        this.msg.add({
+          severity: "success",
+          summary: "Save File",
+          detail: `Saved ${this.file}`,
+        });
+      } else {
+        console.log(response.message);
+        this.msg.add({
+          severity: "error",
+          summary: "Save File",
+          detail: response.message,
+        });
+      }
+    });
   }
 
   public onFontSizeChange(): void {
-    setCookie('mmpm-config-editor-font-size', String(this.fontSize));
+    setCookie("mmpm-config-editor-font-size", String(this.fontSize));
     this.options = Object.assign({}, this.options, { fontSize: this.fontSize });
   }
 }

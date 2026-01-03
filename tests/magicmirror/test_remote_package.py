@@ -40,16 +40,13 @@ class TestRemotePackage(unittest.TestCase):
         package.repository = "https://github.com/user/repo.git"
         remote_package = RemotePackage(package)
 
-        stars = fake.pyint()
         open_issues = fake.pyint()
         forks_count = fake.pyint()
 
         # Mocking the response for GitHub API
         mock_response.text = json.dumps({
-            "stargazers_count": stars,
             "open_issues": open_issues,
             "created_at": "2020-01-01T00:00:00Z",
-            "updated_at": "2020-12-31T23:59:59Z",
             "forks_count": forks_count,
         })
 
@@ -60,10 +57,8 @@ class TestRemotePackage(unittest.TestCase):
         self.assertEqual(
             details,
             {
-                "stars": stars,
                 "issues": open_issues,
                 "created": "2020-01-01",
-                "last_updated": "2020-12-31",
                 "forks": forks_count,
             },
         )
@@ -84,10 +79,8 @@ class TestRemotePackage(unittest.TestCase):
         self.assertEqual(
             details,
             {
-                "stars": 5,
                 "issues": 5,
                 "created": "2020-01-01",
-                "last_updated": "2020-12-31",
                 "forks": 5,
             },
         )

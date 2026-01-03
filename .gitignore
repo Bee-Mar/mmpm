@@ -27,11 +27,6 @@ TODO.md
 htmlcov
 .idea
 mmpm/ui
-.devbox
-
-# Devenv
-.devenv*
-devenv.local.nix
 
 # direnv
 .direnv

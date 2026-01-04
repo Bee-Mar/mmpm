@@ -154,8 +154,35 @@
             uv build
           '';
 
-          # TODO: maybe use uv2nix, not sure yet if I even want to package this for Nix
-          #default = { };
+          #default = pkgs.stdenv.mkDerivation rec {
+          #pname = "mmpm";
+          #version = "4.2.5";
+          #pyproject = true;
+
+          #src = pkgs.fetchPypi {
+          #inherit pname version;
+          #sha256 = "sha256-46vh/1haf6pl73/wGA8a2mstCrmFyh5TVDF2Pw8a7SQ=";
+          #};
+
+          #env = with pkgs; {
+          #SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+          #};
+
+          #nativeBuildInputs = with pkgs; [
+          #python313Packages.pip
+          #];
+
+          #buildInputs = with pkgs; [
+          #pm2
+          #python313
+          #];
+
+          #buildPhase = ''
+          #ls ${src}
+          #cp -r ${src} $out
+          #${pkgs.python313}/bin/pip install --no-deps --prefix=$out ${src}
+          #'';
+          #};
         }
       );
 

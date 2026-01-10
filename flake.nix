@@ -116,11 +116,11 @@
         {
           start = pkgs.writeShellScriptBin "start" ''pm2 start dev/ecosystem.json '';
           stop = pkgs.writeShellScriptBin "stop" ''pm2 stop mmpm '';
-          rm = pkgs.writeShellScriptBin "rm" ''pm2 delete mmpm '';
+          remove = pkgs.writeShellScriptBin "remove" ''pm2 delete mmpm '';
           logs = pkgs.writeShellScriptBin "logs" ''pm2 logs mmpm '';
 
-          pytest = pkgs.writeShellScriptBin "pytest" ''uv run coverage run -m pytest '';
-          pytyping = pkgs.writeShellScriptBin "pytyping" ''uv run mypy mmpm '';
+          unit-tests = pkgs.writeShellScriptBin "unit-tests" ''uv run coverage run -m pytest '';
+          static-analysis = pkgs.writeShellScriptBin "static-analysis" ''uv run mypy mmpm '';
 
           format = pkgs.writeShellScriptBin "format" ''
             uv run ruff format mmpm tests
@@ -153,36 +153,6 @@
             uv sync
             uv build
           '';
-
-          #default = pkgs.stdenv.mkDerivation rec {
-          #pname = "mmpm";
-          #version = "4.2.5";
-          #pyproject = true;
-
-          #src = pkgs.fetchPypi {
-          #inherit pname version;
-          #sha256 = "sha256-46vh/1haf6pl73/wGA8a2mstCrmFyh5TVDF2Pw8a7SQ=";
-          #};
-
-          #env = with pkgs; {
-          #SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-          #};
-
-          #nativeBuildInputs = with pkgs; [
-          #python313Packages.pip
-          #];
-
-          #buildInputs = with pkgs; [
-          #pm2
-          #python313
-          #];
-
-          #buildPhase = ''
-          #ls ${src}
-          #cp -r ${src} $out
-          #${pkgs.python313}/bin/pip install --no-deps --prefix=$out ${src}
-          #'';
-          #};
         }
       );
 
@@ -190,6 +160,20 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
+
+          scripts = with self.packages.${system}; [
+            start
+            stop
+            remove
+            logs
+            unit-tests
+            static-analysis
+            format
+            lint
+            setup
+            lock
+            deploy
+          ];
         in
         {
 
@@ -200,11 +184,14 @@
               VIRTUAL_ENV = ".venv";
             };
 
-            packages = with pkgs; [
-              uv
-              bun
-              pm2
-            ];
+            packages =
+              with pkgs;
+              [
+                uv
+                bun
+                pm2
+              ]
+              ++ scripts;
 
             shellHook = ''
               ${self.checks.${system}.pre-commit-check.shellHook}

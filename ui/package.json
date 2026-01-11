@@ -12,7 +12,7 @@
     "lint": "./node_modules/@angular/cli/bin/ng.js lint",
     "test": "./node_modules/@angular/cli/bin/ng.js test",
     "format": "for file in src/app; do ./node_modules/prettier/bin/prettier.cjs --write $file; done",
-    "postinstall": "bun2nix -o bun.nix"
+    "postinstall": "[ $(command -v bun) ] && bun2nix -o bun.nix"
   },
   "private": true,
   "dependencies": {

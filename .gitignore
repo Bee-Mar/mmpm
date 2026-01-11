@@ -32,8 +32,12 @@ mmpm/ui
 # direnv
 .direnv
 
+# devenv
+.devenv*
+
 # pre-commit
 .pre-commit-config.yaml
 
 # nix
 result
+

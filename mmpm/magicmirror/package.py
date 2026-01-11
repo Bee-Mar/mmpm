@@ -321,9 +321,10 @@ class MagicMirrorPackage:
         last_commit = data.get("lastCommit") or NA
 
         if last_commit != NA:
-            time_format = "%Y-%m-%dT%H:%M:%S%z"
-            date = datetime.strptime(last_commit, time_format)
-            last_updated = f"{date.year}-{date.month}-{date.day}"
+            last_updated = last_commit.split("T")[0]
+            # time_format = "%Y-%m-%dT%H:%M:%S%z"
+            # date = datetime.strptime(last_commit, time_format)
+            # last_updated = f"{date.year}-{date.month}-{date.day}"
         else:
             last_updated = last_commit
 

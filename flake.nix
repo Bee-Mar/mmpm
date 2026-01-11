@@ -43,7 +43,8 @@
     }:
     let
       forEachSystem = nixpkgs.lib.genAttrs (import systems);
-      projectVersion = "4.2.5";
+      version = "4.3.0";
+      name = "mmpm";
     in
     {
 
@@ -56,6 +57,7 @@
           pkgs = import nixpkgs {
             inherit system;
             overlays = [ bun2nix.overlays.default ];
+
           };
         in
         {
@@ -131,43 +133,11 @@
             overlays = [ bun2nix.overlays.default ];
           };
 
-          lib = pkgs.lib;
-
-          projectName = "mmpm";
-          python = pkgs.python313;
-
-          # ---- uv2nix (Python backend) ------------------------------------
-
-          workspace = uv2nix.lib.workspace.loadWorkspace {
-            workspaceRoot = ./.;
-          };
-
-          pyOverlay = workspace.mkPyprojectOverlay {
-            sourcePreference = "wheel";
-          };
-
-          pythonSet = (pkgs.callPackage pyproject-nix.build.packages { inherit python; }).overrideScope (
-            lib.composeManyExtensions [
-              pyproject-build-systems.overlays.default
-              pyOverlay
-            ]
-          );
-
-          cli = (
-            pythonSet.${projectName}.overrideAttrs (old: {
-              # If you already have postInstall or similar phase
-              postInstall = (old.postInstall or "") + ''
-                mkdir -p $out/${python.sitePackages}/mmpm/ui
-                cp -r ${ui}/ui/* $out/${python.sitePackages}/mmpm/ui/
-              '';
-            })
-          );
-
           # ---- bun2nix (UI) ------------------------------------------------
 
           ui = pkgs.stdenv.mkDerivation {
             pname = "mmpm-ui";
-            version = projectVersion;
+            version = version;
 
             src = ./ui;
 
@@ -187,6 +157,49 @@
               mkdir -p $out/ui
               cp -r build/browser/* $out/ui
             '';
+          };
+
+          inherit (pkgs.callPackages pyproject-nix.build.util { }) mkApplication;
+
+          lib = pkgs.lib;
+
+          projectName = name;
+          python = pkgs.python313;
+
+          # ---- uv2nix (Python backend) ------------------------------------
+
+          workspace = uv2nix.lib.workspace.loadWorkspace {
+            workspaceRoot = ./.;
+          };
+
+          pyOverlay = workspace.mkPyprojectOverlay {
+            sourcePreference = "wheel";
+          };
+
+          pythonSet = (pkgs.callPackage pyproject-nix.build.packages { inherit python; }).overrideScope (
+            lib.composeManyExtensions [
+              pyproject-build-systems.overlays.default
+              pyOverlay
+            ]
+          );
+
+          pythonPackage = (
+            pythonSet.${projectName}.overrideAttrs (old: {
+              buildInputs = [
+                ui
+              ];
+
+              postInstall = (old.postInstall or "") + ''
+                mkdir -p $out/${python.sitePackages}/mmpm/ui
+                cp -r ${ui}/ui/* $out/${python.sitePackages}/mmpm/ui/
+              '';
+
+            })
+          );
+
+          cli = mkApplication {
+            venv = pythonSet.mkVirtualEnv "mmpm-venv-${version}" workspace.deps.default;
+            package = pythonPackage;
           };
 
           # ---- Utility scripts --------------------------------------------
@@ -276,7 +289,6 @@
           default = pkgs.mkShell {
             env = {
               UV_PYTHON = "3.13";
-              SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
               VIRTUAL_ENV = ".venv";
             };
 
@@ -286,11 +298,14 @@
                 uv
                 bun
                 pm2
+                cacert
               ]
               ++ scripts;
 
             shellHook = ''
               ${self.checks.${system}.pre-commit-check.shellHook}
+
+              export SSL_CERT_FILE="${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
 
               [ ! -d $VIRTUAL_ENV ] && echo "Creating virtualenv ..." && uv venv
 

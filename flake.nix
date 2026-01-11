@@ -153,7 +153,15 @@
             ]
           );
 
-          cli = pythonSet.${projectName};
+          cli = (
+            pythonSet.${projectName}.overrideAttrs (old: {
+              # If you already have postInstall or similar phase
+              postInstall = (old.postInstall or "") + ''
+                mkdir -p $out/${python.sitePackages}/mmpm/ui
+                cp -r ${ui}/ui/* $out/${python.sitePackages}/mmpm/ui/
+              '';
+            })
+          );
 
           # ---- bun2nix (UI) ------------------------------------------------
 
@@ -180,29 +188,6 @@
               cp -r build/browser/* $out/ui
             '';
           };
-
-          # ---- Final combined package -------------------------------------
-
-          final = pkgs.runCommand "mmpm" { python = python; } ''
-                        set -euo pipefail
-
-                        mkdir -p "$out"
-
-                        # Copy the Python package AND dereference symlinks
-                        cp -r ${cli}/* "$out/"
-
-            #sitepkgs="$out/lib/${python.libPrefix}/site-packages"
-
-                        # Ensure mmpm is now a real directory
-            #if [ -L "$sitepkgs/mmpm" ]; then
-            #echo "ERROR: mmpm is still a symlink"
-            #exit 1
-            #fi
-
-                        # Inject UI exactly like deploy script
-            #mkdir -p "$sitepkgs/mmpm/ui"
-            #cp -r ${ui}/* "$sitepkgs/mmpm/ui/"
-          '';
 
           # ---- Utility scripts --------------------------------------------
 
@@ -263,7 +248,7 @@
             deploy
             ;
 
-          default = final;
+          default = cli;
         }
       );
 

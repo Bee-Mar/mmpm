@@ -7,10 +7,12 @@
     "serve": "./node_modules/@angular/cli/bin/ng.js serve",
     "serve-prod": "./node_modules/@angular/cli/bin/ng.js serve --configuration production",
     "build": "./node_modules/@angular/cli/bin/ng.js build",
+    "build-prod": "./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href /",
     "watch": "./node_modules/@angular/cli/bin/ng.js build --watch --configuration development",
     "lint": "./node_modules/@angular/cli/bin/ng.js lint",
     "test": "./node_modules/@angular/cli/bin/ng.js test",
-    "format": "for file in src/app; do ./node_modules/prettier/bin/prettier.cjs --write $file; done"
+    "format": "for file in src/app; do ./node_modules/prettier/bin/prettier.cjs --write $file; done",
+    "postinstall": "bun2nix -o bun.nix"
   },
   "private": true,
   "dependencies": {
@@ -50,6 +52,7 @@
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
     "ajv": "^8.17.1",
+    "bun2nix": "^2.0.6",
     "eslint": "^8.57.1",
     "jasmine-core": "~4.0.1",
     "karma": "~6.3.20",

@@ -27,9 +27,13 @@ TODO.md
 htmlcov
 .idea
 mmpm/ui
+!mmpm/ui/.gitkeep
 
 # direnv
 .direnv
 
 # pre-commit
 .pre-commit-config.yaml
+
+# nix
+result

@@ -1,10 +1,33 @@
 {
-  description = "A very basic flake";
+  description = "MMPM: MagicMirror Package Manager";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     systems.url = "github:nix-systems/default";
     git-hooks.url = "github:cachix/git-hooks.nix";
+
+    pyproject-nix = {
+      url = "github:pyproject-nix/pyproject.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    uv2nix = {
+      url = "github:pyproject-nix/uv2nix";
+      inputs.pyproject-nix.follows = "pyproject-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    pyproject-build-systems = {
+      url = "github:pyproject-nix/build-system-pkgs";
+      inputs.pyproject-nix.follows = "pyproject-nix";
+      inputs.uv2nix.follows = "uv2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    bun2nix = {
+      url = "github:nix-community/bun2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -13,15 +36,27 @@
       nixpkgs,
       systems,
       git-hooks,
+      uv2nix,
+      bun2nix,
+      pyproject-nix,
+      pyproject-build-systems,
     }:
     let
       forEachSystem = nixpkgs.lib.genAttrs (import systems);
+      projectVersion = "4.2.5";
     in
     {
+
+      # --------------------------------------------------------------------
+      # CHECKS (pre-commit)
+      # --------------------------------------------------------------------
       checks = forEachSystem (
         system:
         let
-          pkgs = nixpkgs.legacyPackages.${system};
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ bun2nix.overlays.default ];
+          };
         in
         {
           pre-commit-check = git-hooks.lib.${system}.run {
@@ -31,34 +66,14 @@
               py-format-src = {
                 enable = true;
                 name = "python:format";
-                description = "Python formatting stage";
                 types = [ "python" ];
                 stages = [ "pre-commit" ];
                 entry = "${uv}/bin/uv run ruff format mmpm tests";
               };
 
-              py-typing = {
-                enable = false;
-                name = "python:typing";
-                description = "Python type checking stage";
-                types = [ "python" ];
-                stages = [ "pre-push" ];
-                entry = "${uv}/bin/uv run mypy mmpm";
-              };
-
-              py-test = {
-                enable = false;
-                name = "python:test";
-                description = "Python testing stage";
-                types = [ "python" ];
-                stages = [ "pre-push" ];
-                entry = "${uv}/bin/uv run pytest";
-              };
-
               py-sort-imports = {
                 enable = true;
                 name = "python:isort";
-                description = "Python formatting stage";
                 types = [ "python" ];
                 stages = [ "pre-commit" ];
                 entry = "${uv}/bin/uv run ruff check --select I --fix mmpm tests";
@@ -67,7 +82,6 @@
               py-lint = {
                 enable = true;
                 name = "python:lint";
-                description = "Python linting stage";
                 types = [ "python" ];
                 stages = [ "pre-commit" ];
                 entry = "${uv}/bin/uv run ruff check --fix mmpm tests";
@@ -76,7 +90,6 @@
               ui-format = {
                 enable = true;
                 name = "ui:format";
-                description = "UI linting stage";
                 types = [
                   "javascript"
                   "ts"
@@ -91,7 +104,6 @@
                 enable = true;
                 pass_filenames = true;
                 name = "ui:lint";
-                description = "UI linting stage";
                 types = [
                   "javascript"
                   "ts"
@@ -108,19 +120,99 @@
         }
       );
 
+      # --------------------------------------------------------------------
+      # PACKAGES
+      # --------------------------------------------------------------------
       packages = forEachSystem (
         system:
         let
-          pkgs = nixpkgs.legacyPackages.${system};
-        in
-        {
-          start = pkgs.writeShellScriptBin "start" ''pm2 start dev/ecosystem.json '';
-          stop = pkgs.writeShellScriptBin "stop" ''pm2 stop mmpm '';
-          remove = pkgs.writeShellScriptBin "remove" ''pm2 delete mmpm '';
-          logs = pkgs.writeShellScriptBin "logs" ''pm2 logs mmpm '';
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ bun2nix.overlays.default ];
+          };
 
-          unit-tests = pkgs.writeShellScriptBin "unit-tests" ''uv run coverage run -m pytest '';
-          static-analysis = pkgs.writeShellScriptBin "static-analysis" ''uv run mypy mmpm '';
+          lib = pkgs.lib;
+
+          projectName = "mmpm";
+          python = pkgs.python313;
+
+          # ---- uv2nix (Python backend) ------------------------------------
+
+          workspace = uv2nix.lib.workspace.loadWorkspace {
+            workspaceRoot = ./.;
+          };
+
+          pyOverlay = workspace.mkPyprojectOverlay {
+            sourcePreference = "wheel";
+          };
+
+          pythonSet = (pkgs.callPackage pyproject-nix.build.packages { inherit python; }).overrideScope (
+            lib.composeManyExtensions [
+              pyproject-build-systems.overlays.default
+              pyOverlay
+            ]
+          );
+
+          cli = pythonSet.${projectName};
+
+          # ---- bun2nix (UI) ------------------------------------------------
+
+          ui = pkgs.stdenv.mkDerivation {
+            pname = "mmpm-ui";
+            version = projectVersion;
+
+            src = ./ui;
+
+            nativeBuildInputs = [
+              pkgs.bun2nix.hook
+            ];
+
+            bunDeps = pkgs.bun2nix.fetchBunDeps {
+              bunNix = ./ui/bun.nix;
+            };
+
+            buildPhase = ''
+              bun run build-prod
+            '';
+
+            installPhase = ''
+              mkdir -p $out/ui
+              cp -r build/browser/* $out/ui
+            '';
+          };
+
+          # ---- Final combined package -------------------------------------
+
+          final = pkgs.runCommand "mmpm" { python = python; } ''
+                        set -euo pipefail
+
+                        mkdir -p "$out"
+
+                        # Copy the Python package AND dereference symlinks
+                        cp -r ${cli}/* "$out/"
+
+            #sitepkgs="$out/lib/${python.libPrefix}/site-packages"
+
+                        # Ensure mmpm is now a real directory
+            #if [ -L "$sitepkgs/mmpm" ]; then
+            #echo "ERROR: mmpm is still a symlink"
+            #exit 1
+            #fi
+
+                        # Inject UI exactly like deploy script
+            #mkdir -p "$sitepkgs/mmpm/ui"
+            #cp -r ${ui}/* "$sitepkgs/mmpm/ui/"
+          '';
+
+          # ---- Utility scripts --------------------------------------------
+
+          start = pkgs.writeShellScriptBin "start" ''pm2 start dev/ecosystem.json'';
+          stop = pkgs.writeShellScriptBin "stop" ''pm2 stop mmpm'';
+          remove = pkgs.writeShellScriptBin "remove" ''pm2 delete mmpm'';
+          logs = pkgs.writeShellScriptBin "logs" ''pm2 logs mmpm'';
+
+          unit-tests = pkgs.writeShellScriptBin "unit-tests" ''uv run coverage run -m pytest'';
+          static-analysis = pkgs.writeShellScriptBin "static-analysis" ''uv run mypy mmpm'';
 
           format = pkgs.writeShellScriptBin "format" ''
             uv run ruff format mmpm tests
@@ -145,22 +237,42 @@
 
           deploy = pkgs.writeShellScriptBin "deploy" ''
             cd ui
-            bun install --legacy-peer-deps
-            ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href /
+            bun run build-prod
             cd ..
             mkdir -p mmpm/ui
             cp -r ui/build/browser/* mmpm/ui
             uv sync
             uv build
           '';
+
+        in
+        {
+          inherit
+            cli
+            ui
+            start
+            stop
+            remove
+            logs
+            unit-tests
+            static-analysis
+            format
+            lint
+            setup
+            lock
+            deploy
+            ;
+
+          default = final;
         }
       );
+
+      # ------------------------------------------------
 
       devShells = forEachSystem (
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-
           scripts = with self.packages.${system}; [
             start
             stop
@@ -176,11 +288,10 @@
           ];
         in
         {
-
           default = pkgs.mkShell {
-            env = with pkgs; {
+            env = {
               UV_PYTHON = "3.13";
-              SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+              SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
               VIRTUAL_ENV = ".venv";
             };
 
@@ -196,14 +307,12 @@
             shellHook = ''
               ${self.checks.${system}.pre-commit-check.shellHook}
 
-              [ ! -d $VIRTUAL_ENV ] && echo 'Creating virtualenv ...' && uv venv
+              [ ! -d $VIRTUAL_ENV ] && echo "Creating virtualenv ..." && uv venv
 
               source $VIRTUAL_ENV/bin/activate
               uv sync
-
               bun --cwd=ui install
             '';
-
           };
         }
       );

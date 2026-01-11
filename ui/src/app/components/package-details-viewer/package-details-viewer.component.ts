@@ -1,10 +1,9 @@
-import { MagicMirrorPackage, RemotePackageDetails } from "@/models/magicmirror-package";
-import { Component, Input, Output, EventEmitter } from "@angular/core";
-import { MarketPlaceIcons } from "@/components/marketplace/marketplace-icons.model";
-import { APIResponse } from "@/services/api/base-api";
-import { MagicMirrorPackageAPI } from "@/services/api/magicmirror-package-api.service";
-import { MessageService } from "primeng/api";
-import assert from "assert";
+import {MagicMirrorPackage, RemotePackageDetails} from "@/models/magicmirror-package";
+import {Component, Input, Output, EventEmitter} from "@angular/core";
+import {MarketPlaceIcons} from "@/components/marketplace/marketplace-icons.model";
+import {APIResponse} from "@/services/api/base-api";
+import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
+import {MessageService} from "primeng/api";
 
 @Component({
   selector: "app-package-details-viewer",

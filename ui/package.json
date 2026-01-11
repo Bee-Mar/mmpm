@@ -11,7 +11,8 @@
     "watch": "./node_modules/@angular/cli/bin/ng.js build --watch --configuration development",
     "lint": "./node_modules/@angular/cli/bin/ng.js lint",
     "test": "./node_modules/@angular/cli/bin/ng.js test",
-    "format": "for file in src/app; do ./node_modules/prettier/bin/prettier.cjs --write $file; done"
+    "format": "for file in src/app; do ./node_modules/prettier/bin/prettier.cjs --write $file; done",
+    "postinstall": "[ -x $(command -v b2n) ] && b2n # custom script in the Nix flake"
   },
   "private": true,
   "dependencies": {

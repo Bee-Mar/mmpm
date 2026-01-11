@@ -48,9 +48,7 @@
     in
     {
 
-      # --------------------------------------------------------------------
-      # CHECKS (pre-commit)
-      # --------------------------------------------------------------------
+      # ---- Git Hooks
       checks = forEachSystem (
         system:
         let
@@ -102,18 +100,6 @@
                 entry = "${bun}/bin/bun --cwd=ui run format";
               };
 
-              ui-bun2nix = {
-                enable = true;
-                name = "ui:bun2nix";
-                stages = [ "pre-commit" ];
-                types = [
-                  "javascript"
-                  "ts"
-                  "json"
-                ];
-                entry = "${self.packages.${system}.b2n}/bin/b2n";
-              };
-
               ui-lint = {
                 enable = true;
                 pass_filenames = true;
@@ -132,9 +118,7 @@
         }
       );
 
-      # --------------------------------------------------------------------
-      # PACKAGES
-      # --------------------------------------------------------------------
+      # ---- Packages
       packages = forEachSystem (
         system:
         let
@@ -143,7 +127,7 @@
             overlays = [ bun2nix.overlays.default ];
           };
 
-          # ---- bun2nix (UI) ------------------------------------------------
+          # ---- User Interface
 
           ui = pkgs.stdenv.mkDerivation {
             pname = "mmpm-ui";
@@ -176,7 +160,7 @@
           projectName = name;
           python = pkgs.python313;
 
-          # ---- uv2nix (Python backend) ------------------------------------
+          # ---- MMPM CLI
 
           workspace = uv2nix.lib.workspace.loadWorkspace {
             workspaceRoot = ./.;
@@ -212,8 +196,7 @@
             package = pythonPackage;
           };
 
-          # ---- Utility scripts --------------------------------------------
-
+          # ---- Utility Scripts
           start = pkgs.writeShellScriptBin "start" ''pm2 start dev/ecosystem.json'';
           stop = pkgs.writeShellScriptBin "stop" ''pm2 stop mmpm'';
           remove = pkgs.writeShellScriptBin "remove" ''pm2 delete mmpm'';
@@ -254,9 +237,7 @@
           '';
 
           b2n = pkgs.writeShellScriptBin "b2n" ''
-            cd ui
             ${bun2nix.packages.${system}.default}/bin/bun2nix -o bun.nix
-            exit 0
           '';
 
         in
@@ -282,8 +263,7 @@
         }
       );
 
-      # ------------------------------------------------
-
+      # ---- Dev Shell
       devShells = forEachSystem (
         system:
         let
@@ -331,7 +311,6 @@
               source $VIRTUAL_ENV/bin/activate
               uv sync
               bun --cwd=ui install
-              b2n
             '';
           };
         }

@@ -102,6 +102,18 @@
                 entry = "${bun}/bin/bun --cwd=ui run format";
               };
 
+              ui-bun2nix = {
+                enable = true;
+                name = "ui:bun2nix";
+                stages = [ "pre-commit" ];
+                types = [
+                  "javascript"
+                  "ts"
+                  "json"
+                ];
+                entry = "${self.packages.${system}.b2n}/bin/b2n";
+              };
+
               ui-lint = {
                 enable = true;
                 pass_filenames = true;
@@ -109,8 +121,6 @@
                 types = [
                   "javascript"
                   "ts"
-                  "jsx"
-                  "tsx"
                 ];
                 stages = [ "pre-commit" ];
                 entry = "${bun}/bin/bun --cwd=ui run lint";
@@ -243,6 +253,12 @@
             uv build
           '';
 
+          b2n = pkgs.writeShellScriptBin "b2n" ''
+            cd ui
+            ${bun2nix.packages.${system}.default}/bin/bun2nix -o bun.nix
+            exit 0
+          '';
+
         in
         {
           inherit
@@ -259,6 +275,7 @@
             setup
             lock
             deploy
+            b2n
             ;
 
           default = cli;
@@ -283,6 +300,7 @@
             setup
             lock
             deploy
+            b2n
           ];
         in
         {
@@ -313,8 +331,7 @@
               source $VIRTUAL_ENV/bin/activate
               uv sync
               bun --cwd=ui install
-
-              cd ui && bun2nix -o bun.nix && cd ~-
+              b2n
             '';
           };
         }

@@ -11,8 +11,7 @@
     "watch": "./node_modules/@angular/cli/bin/ng.js build --watch --configuration development",
     "lint": "./node_modules/@angular/cli/bin/ng.js lint",
     "test": "./node_modules/@angular/cli/bin/ng.js test",
-    "format": "for file in src/app; do ./node_modules/prettier/bin/prettier.cjs --write $file; done",
-    "postinstall": "if [ -x $(command -v bun2nix) ]; then bun2nix -o bun.nix; fi"
+    "format": "for file in src/app; do ./node_modules/prettier/bin/prettier.cjs --write $file; done"
   },
   "private": true,
   "dependencies": {

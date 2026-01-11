@@ -7,10 +7,12 @@
     "serve": "./node_modules/@angular/cli/bin/ng.js serve",
     "serve-prod": "./node_modules/@angular/cli/bin/ng.js serve --configuration production",
     "build": "./node_modules/@angular/cli/bin/ng.js build",
+    "build-prod": "./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href /",
     "watch": "./node_modules/@angular/cli/bin/ng.js build --watch --configuration development",
     "lint": "./node_modules/@angular/cli/bin/ng.js lint",
     "test": "./node_modules/@angular/cli/bin/ng.js test",
-    "format": "for file in src/app; do ./node_modules/prettier/bin/prettier.cjs --write $file; done"
+    "format": "for file in src/app; do ./node_modules/prettier/bin/prettier.cjs --write $file; done",
+    "postinstall": "[ -x $(command -v b2n) ] && b2n || exit 0 # custom script in the Nix flake"
   },
   "private": true,
   "dependencies": {

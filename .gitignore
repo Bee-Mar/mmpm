@@ -27,14 +27,13 @@ TODO.md
 htmlcov
 .idea
 mmpm/ui
-.devbox
-
-# Devenv
-.devenv*
-devenv.local.nix
+!mmpm/ui/.gitkeep
 
 # direnv
 .direnv
 
 # pre-commit
 .pre-commit-config.yaml
+
+# nix
+result

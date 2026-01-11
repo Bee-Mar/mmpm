@@ -12,7 +12,7 @@
     "lint": "./node_modules/@angular/cli/bin/ng.js lint",
     "test": "./node_modules/@angular/cli/bin/ng.js test",
     "format": "for file in src/app; do ./node_modules/prettier/bin/prettier.cjs --write $file; done",
-    "postinstall": "if [ -x $(command -v bun) ]; then bun2nix -o bun.nix; fi"
+    "postinstall": "if [ -x $(command -v bun2nix) ]; then bun2nix -o bun.nix; fi"
   },
   "private": true,
   "dependencies": {
@@ -52,7 +52,6 @@
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
     "ajv": "^8.17.1",
-    "bun2nix": "^2.0.6",
     "eslint": "^8.57.1",
     "jasmine-core": "~4.0.1",
     "karma": "~6.3.20",

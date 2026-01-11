@@ -299,6 +299,7 @@
                 bun
                 pm2
                 cacert
+                bun2nix.packages.${system}.default
               ]
               ++ scripts;
 
@@ -312,6 +313,8 @@
               source $VIRTUAL_ENV/bin/activate
               uv sync
               bun --cwd=ui install
+
+              cd ui && bun2nix -o bun.nix && cd ~-
             '';
           };
         }

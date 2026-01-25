@@ -170,30 +170,38 @@
             sourcePreference = "wheel";
           };
 
-          pythonSet = (pkgs.callPackage pyproject-nix.build.packages { inherit python; }).overrideScope (
-            lib.composeManyExtensions [
-              pyproject-build-systems.overlays.default
-              pyOverlay
-            ]
-          );
-
-          pythonPackage = (
-            pythonSet.${projectName}.overrideAttrs (old: {
-              buildInputs = [
-                ui
+          mmpmOverlay = self: prev: {
+            ${projectName} = prev.${projectName}.overrideAttrs (old: {
+              propagatedBuildInputs = (old.propagatedBuildInputs or [ ]) ++ [
+                pkgs.pm2
               ];
 
+              # Ensure ui is available in the scope
+              buildInputs = (old.buildInputs or [ ]) ++ [ ui ];
+
+              # Match deploy script; place files into the package source in site-packages
+              # Use python.sitePackages to ensure path accuracy
               postInstall = (old.postInstall or "") + ''
                 mkdir -p $out/${python.sitePackages}/mmpm/ui
                 cp -r ${ui}/ui/* $out/${python.sitePackages}/mmpm/ui/
               '';
+            });
+          };
 
-            })
+          # apply the overlay to the pythonSet
+          pythonSet = (pkgs.callPackage pyproject-nix.build.packages { inherit python; }).overrideScope (
+            lib.composeManyExtensions [
+              pyproject-build-systems.overlays.default
+              pyOverlay
+              mmpmOverlay # inject UI like the `deploy` output
+            ]
           );
 
+          # Create the application using the modified pythonSet
           cli = mkApplication {
+            # workspace.deps.default resolves 'mmpm' to the overridden version
             venv = pythonSet.mkVirtualEnv "mmpm-venv-${version}" workspace.deps.default;
-            package = pythonPackage;
+            package = pythonSet.${projectName};
           };
 
           # ---- Utility Scripts

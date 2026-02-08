@@ -13,6 +13,25 @@ from mmpm.utils import repo_up_to_date, run_cmd
 logger = MMPMLogFactory.get_logger(__name__)
 
 
+class MagicMirrorConfigs(Singleton):
+    def __init__(self) -> None:
+        self.env = MMPMEnv()
+
+    @property
+    def config_js(self) -> Path:
+        return self.env.MMPM_MAGICMIRROR_ROOT.get() / "config" / "config.js"
+
+    @property
+    def custom_css(self) -> Path:
+        mm_root: Path = self.env.MMPM_MAGICMIRROR_ROOT.get()
+        css = mm_root / "config" / "custom.css"
+        return css if css.exists() else mm_root / "css" / "custom.css"
+
+    @property
+    def config_js_sample(self) -> Path:
+        return self.env.MMPM_MAGICMIRROR_ROOT.get() / "config" / "config.js.sample"
+
+
 class MagicMirror(Singleton):
     """
     A class for managing the MagicMirror application including update, upgrade, install,

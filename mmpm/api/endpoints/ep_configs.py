@@ -1,4 +1,4 @@
-from pathlib import PosixPath
+from pathlib import Path
 from shutil import copyfile
 from typing import Dict
 
@@ -9,6 +9,7 @@ from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.constants import paths
 from mmpm.env import MMPMEnv
 from mmpm.log.factory import MMPMLogFactory
+from mmpm.magicmirror.magicmirror import MagicMirrorConfigs
 
 logger = MMPMLogFactory.get_logger(__name__)
 
@@ -24,11 +25,12 @@ class Configs(Endpoint):
         self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
         self.handler = None
         self.env = MMPMEnv()
-        self.files: Dict[str, PosixPath] = {
+        self.mm_files = MagicMirrorConfigs()
+        self.files: Dict[str, Path] = {
             "mmpm-env.json": paths.MMPM_ENV_FILE,
-            "config.js": self.env.MMPM_MAGICMIRROR_ROOT.get() / "config" / "config.js",
-            "custom.css": self.env.MMPM_MAGICMIRROR_ROOT.get() / "css" / "custom.css",
-            "config.js.sample": self.env.MMPM_MAGICMIRROR_ROOT.get() / "config" / "config.js.sample",
+            "config.js": self.mm_files.config_js,
+            "custom.css": self.mm_files.custom_css,
+            "config.js.sample": self.mm_files.config_js_sample,
         }
 
         @self.blueprint.route("/retrieve/<filename>", methods=[http.GET])
@@ -47,11 +49,9 @@ class Configs(Endpoint):
 
             file = self.files.get(filename)
 
-            if filename == "config.js" and (not file.exists() or not bool(file.stat().st_size)):
-                sample = self.files.get("config.js.sample")
-
-                if sample.exists():
-                    copyfile(sample, file)
+            if filename == self.mm_files.config_js.name and (not file.exists() or not bool(file.stat().st_size)):
+                if self.mm_files.config_js_sample.exists():
+                    copyfile(self.mm_files.config_js_sample, file)
                     logger.debug("The config.js hasn't been initialized yet, but found the sample file. Copying config.js.sample to config.js")
 
             if not file.exists():

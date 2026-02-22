@@ -17,6 +17,19 @@ class MagicMirrorConfigs(Singleton):
     def __init__(self) -> None:
         self.env = MMPMEnv()
 
+    def get(self, name: str) -> Path:
+        match name:
+            case self.config_js.name:
+                return self.config_js
+            case self.config_js_sample.name:
+                return self.config_js_sample
+            case self.custom_css.name:
+                return self.custom_css
+            case self.custom_css_sample.name:
+                return self.custom_css_sample
+            case _:
+                raise KeyError(f"File named {name} doesn't exist within MagicMirrorConfigs")
+
     @property
     def config_js(self) -> Path:
         return self.env.MMPM_MAGICMIRROR_ROOT.get() / "config" / "config.js"
@@ -24,8 +37,14 @@ class MagicMirrorConfigs(Singleton):
     @property
     def custom_css(self) -> Path:
         mm_root: Path = self.env.MMPM_MAGICMIRROR_ROOT.get()
-        css = mm_root / "config" / "custom.css"
-        return css if css.exists() else mm_root / "css" / "custom.css"
+        legacy_css = mm_root / "config" / "custom.css"
+        return legacy_css if legacy_css.exists() else mm_root / "css" / "custom.css"
+
+    @property
+    def custom_css_sample(self) -> Path:
+        mm_root: Path = self.env.MMPM_MAGICMIRROR_ROOT.get()
+        legacy_css_sample = mm_root / "config" / "custom.css.sample"
+        return legacy_css_sample if legacy_css_sample.exists() else mm_root / "css" / "custom.css.sample"
 
     @property
     def config_js_sample(self) -> Path:

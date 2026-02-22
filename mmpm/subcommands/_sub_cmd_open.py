@@ -33,7 +33,7 @@ class Open(SubCmd):
         self.usage = f"{self.app_name} {self.name} [--<option>]"
         self.env = MMPMEnv()
         self.ui = MMPMui()
-        self.mm_files = MagicMirrorConfigs()
+        self.mm_configs = MagicMirrorConfigs()
 
     def edit(self, file: Path) -> None:
         """
@@ -124,8 +124,8 @@ class Open(SubCmd):
         if extra:
             logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")
         elif args.config:
-            config_js = self.mm_files.config_js
-            config_js_sample = self.mm_files.config_js_sample
+            config_js = self.mm_configs.config_js
+            config_js_sample = self.mm_configs.config_js_sample
 
             if not config_js.stat().st_size and config_js_sample.exists():
                 copyfile(config_js_sample, config_js)
@@ -133,7 +133,7 @@ class Open(SubCmd):
             self.edit(config_js)
 
         elif args.custom_css:
-            self.edit(self.mm_files.custom_css)
+            self.edit(self.mm_configs.custom_css)
         elif args.magicmirror:
             run_cmd(["xdg-open", self.env.MMPM_MAGICMIRROR_URI.get()], background=True)
         elif args.ui:

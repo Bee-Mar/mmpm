@@ -1,10 +1,59 @@
 import shutil
 import unittest
-from pathlib import PosixPath
+from pathlib import Path, PosixPath
 from unittest.mock import patch
 
-from mmpm.magicmirror.magicmirror import MagicMirror
+from mmpm.magicmirror.magicmirror import MagicMirror, MagicMirrorConfigs
 from tests.helpers import MockedMMPMEnv
+
+
+class MagicMirrorConfigsTestCase(unittest.TestCase):
+    @patch("mmpm.magicmirror.magicmirror.MMPMEnv")
+    def test_config_js(self, mock_env):
+        mock_env.return_value.MMPM_MAGICMIRROR_ROOT.get.return_value = Path("/tmp/MagicMirror")
+        configs = MagicMirrorConfigs()
+        self.assertEqual(configs.config_js, Path("/tmp/MagicMirror") / "config" / "config.js")
+
+    @patch("mmpm.magicmirror.magicmirror.MMPMEnv")
+    def test_config_js_sample(self, mock_env):
+        mock_env.return_value.MMPM_MAGICMIRROR_ROOT.get.return_value = Path("/tmp/MagicMirror")
+        configs = MagicMirrorConfigs()
+        self.assertEqual(configs.config_js_sample, Path("/tmp/MagicMirror") / "config" / "config.js.sample")
+
+    @patch("mmpm.magicmirror.magicmirror.MMPMEnv")
+    def test_custom_css(self, mock_env):
+        mock_env.return_value.MMPM_MAGICMIRROR_ROOT.get.return_value = Path("/tmp/MagicMirror")
+        configs = MagicMirrorConfigs()
+
+        # patch the exists method to return True in the case of the legacy path existing
+        with patch.object(Path, "exists", return_value=True):
+            self.assertEqual(configs.custom_css, Path("/tmp/MagicMirror") / "config" / "custom.css")
+
+        # patch the exists method to return False in the case of the legacy path not existing
+        with patch.object(Path, "exists", return_value=False):
+            self.assertEqual(configs.custom_css, Path("/tmp/MagicMirror") / "css" / "custom.css")
+
+    @patch("mmpm.magicmirror.magicmirror.MMPMEnv")
+    def test_custom_css_sample(self, mock_env):
+        mock_env.return_value.MMPM_MAGICMIRROR_ROOT.get.return_value = Path("/tmp/MagicMirror")
+
+        # patch the exists method to return True in the case of the legacy path existing
+        with patch.object(Path, "exists", return_value=True):
+            configs = MagicMirrorConfigs()
+            self.assertEqual(configs.custom_css_sample, Path("/tmp/MagicMirror") / "config" / "custom.css.sample")
+
+        # patch the exists method to return False in the case of the legacy path not existing
+        with patch.object(Path, "exists", return_value=False):
+            configs = MagicMirrorConfigs()
+            self.assertEqual(configs.custom_css_sample, Path("/tmp/MagicMirror") / "css" / "custom.css.sample")
+
+    def test_get(self):
+        configs = MagicMirrorConfigs()
+
+        self.assertEqual(configs.get(configs.custom_css.name), configs.custom_css)
+        self.assertEqual(configs.get(configs.custom_css_sample.name), configs.custom_css_sample)
+        self.assertEqual(configs.get(configs.config_js.name), configs.config_js)
+        self.assertEqual(configs.get(configs.config_js_sample.name), configs.config_js_sample)
 
 
 class MagicMirrorTestCase(unittest.TestCase):

@@ -3,6 +3,7 @@ import shutil
 import sys
 from os import chdir
 from pathlib import Path, PosixPath
+from typing import Optional
 
 from mmpm.constants import color, urls
 from mmpm.env import MMPMEnv
@@ -11,6 +12,46 @@ from mmpm.singleton import Singleton
 from mmpm.utils import repo_up_to_date, run_cmd
 
 logger = MMPMLogFactory.get_logger(__name__)
+
+
+class MagicMirrorConfigs(Singleton):
+    def __init__(self) -> None:
+        self.env = MMPMEnv()
+
+    def get(self, name: str) -> Optional[Path]:
+        if name == self.config_js.name:
+            return self.config_js
+        elif name == self.config_js_sample.name:
+            return self.config_js_sample
+        elif name == self.custom_css.name:
+            return self.custom_css
+        elif name == self.custom_css_sample.name:
+            return self.custom_css_sample
+
+        logger.error(f"File named {name} doesn't exist within MagicMirrorConfigs")
+        return None
+
+    @property
+    def config_js(self) -> Path:
+        root: Path = self.env.MMPM_MAGICMIRROR_ROOT.get()
+        return root / "config" / "config.js"
+
+    @property
+    def custom_css(self) -> Path:
+        root: Path = self.env.MMPM_MAGICMIRROR_ROOT.get()
+        legacy_css = root / "config" / "custom.css"
+        return legacy_css if legacy_css.exists() else Path(root / "css" / "custom.css")
+
+    @property
+    def custom_css_sample(self) -> Path:
+        root: Path = self.env.MMPM_MAGICMIRROR_ROOT.get()
+        legacy_css_sample = root / "config" / "custom.css.sample"
+        return legacy_css_sample if legacy_css_sample.exists() else root / "css" / "custom.css.sample"
+
+    @property
+    def config_js_sample(self) -> Path:
+        root: Path = self.env.MMPM_MAGICMIRROR_ROOT.get()
+        return root / "config" / "config.js.sample"
 
 
 class MagicMirror(Singleton):

@@ -1,12 +1,13 @@
 """Command line options for 'open' subcommand"""
 
 from os import getenv, system
-from pathlib import PosixPath
+from pathlib import Path
 from shutil import copyfile
 
 from mmpm.constants import paths, urls
 from mmpm.env import MMPMEnv
 from mmpm.log.factory import MMPMLogFactory
+from mmpm.magicmirror.magicmirror import MagicMirrorConfigs
 from mmpm.subcommands.sub_cmd import SubCmd
 from mmpm.ui import MMPMui
 from mmpm.utils import run_cmd
@@ -32,8 +33,9 @@ class Open(SubCmd):
         self.usage = f"{self.app_name} {self.name} [--<option>]"
         self.env = MMPMEnv()
         self.ui = MMPMui()
+        self.mm_configs = MagicMirrorConfigs()
 
-    def edit(self, file: PosixPath) -> None:
+    def edit(self, file: Path) -> None:
         """
         Checks if the requested file exists, and if not, the file is created.
         Then, opens the file for editing using the system's default editor.
@@ -122,9 +124,8 @@ class Open(SubCmd):
         if extra:
             logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")
         elif args.config:
-            root = self.env.MMPM_MAGICMIRROR_ROOT.get() / "config"
-            config_js = root / "config.js"
-            config_js_sample = root / "config.js.sample"
+            config_js = self.mm_configs.config_js
+            config_js_sample = self.mm_configs.config_js_sample
 
             if not config_js.stat().st_size and config_js_sample.exists():
                 copyfile(config_js_sample, config_js)
@@ -132,7 +133,7 @@ class Open(SubCmd):
             self.edit(config_js)
 
         elif args.custom_css:
-            self.edit(self.env.MMPM_MAGICMIRROR_ROOT.get() / "css" / "custom.css")
+            self.edit(self.mm_configs.custom_css)
         elif args.magicmirror:
             run_cmd(["xdg-open", self.env.MMPM_MAGICMIRROR_URI.get()], background=True)
         elif args.ui:

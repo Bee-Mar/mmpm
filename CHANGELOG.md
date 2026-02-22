@@ -375,3 +375,7 @@
 - Remove `beautifulsoup4` dependency
 - Improve test coverage with mocked HTTP requests
 - Move `stars` and `last_updated` fields from remote details to the base package fields
+
+## Version 4.4.0
+
+- Add backwards compatibility for `custom.css` and `custom.css.sample` files based on upcoming release of MagicMirror

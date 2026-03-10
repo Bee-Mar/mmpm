@@ -40,10 +40,10 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^19.2.19",
-    "@angular-eslint/builder": "16.3.1",
+    "@angular-eslint/builder": "21.3.0",
     "@angular-eslint/eslint-plugin": "16.3.1",
     "@angular-eslint/eslint-plugin-template": "16.3.1",
-    "@angular-eslint/schematics": "16.3.1",
+    "@angular-eslint/schematics": "21.3.0",
     "@angular-eslint/template-parser": "16.3.1",
     "@angular/cli": "^19.2.19",
     "@angular/compiler-cli": "^19.2.17",

@@ -65,9 +65,9 @@
     url = "https://registry.npmjs.org/@angular-eslint/utils/-/utils-16.3.1.tgz";
     hash = "sha512-tEBcce0rG+DmcPO8jhRffUFDioGw3G4cUAE15XlRctY1J3QzOBH9HdUOTDt0mMjBgpWCzh0YVT1Moh2bPXU9Xg==";
   };
-  "@angular/animations@19.2.20" = fetchurl {
-    url = "https://registry.npmjs.org/@angular/animations/-/animations-19.2.20.tgz";
-    hash = "sha512-TQ4OCazTRAge45FIp3bzO/chImObmasPzprgEzKSDckjGbshAWlYXeCe3U8YaGNaWnkzByyIRNV4P4aHe63M0w==";
+  "@angular/animations@19.2.21" = fetchurl {
+    url = "https://registry.npmjs.org/@angular/animations/-/animations-19.2.21.tgz";
+    hash = "sha512-hZqLVGHauUCgw4rULF/IcjUcR+BpI3+7B/TVyvNEqvRplJg5e6LJJ9YKp3G+GyoAsGXNnFdLtENR2T6kQI7s9g==";
   };
   "@angular/build@19.2.24" = fetchurl {
     url = "https://registry.npmjs.org/@angular/build/-/build-19.2.24.tgz";
@@ -77,37 +77,37 @@
     url = "https://registry.npmjs.org/@angular/cli/-/cli-19.2.24.tgz";
     hash = "sha512-HjU4r/Va9w868fKVeUNOgkHBVDQc2VFHWxj0I3WekGhYN3dlfTVNn0/3dNutkBBuCxxTb9Xl6E6wf6KrlA9wcQ==";
   };
-  "@angular/common@19.2.20" = fetchurl {
-    url = "https://registry.npmjs.org/@angular/common/-/common-19.2.20.tgz";
-    hash = "sha512-1M3W3FjUUbVKXDMs+yQpBhnkD/pCe0Jn79rPE5W+EGWWxFoLSyGX+fhnRO5m4c9k66p3nvYrikWQ0ZzMv3M5tw==";
+  "@angular/common@19.2.21" = fetchurl {
+    url = "https://registry.npmjs.org/@angular/common/-/common-19.2.21.tgz";
+    hash = "sha512-L+X0AOc+8SN+1ys1/nzOlkdwB7FUz6ts3MKdWW6wIPSIB6LcDth+QcJzx+XbwZ+zfPFEQkKsRWjo/eF82JePcg==";
   };
-  "@angular/compiler-cli@19.2.20" = fetchurl {
-    url = "https://registry.npmjs.org/@angular/compiler-cli/-/compiler-cli-19.2.20.tgz";
-    hash = "sha512-tYYQk8AUz2sEkVl0a3uebduDUXPuKiGEKl2Jryrbn0xh9i1EsxoCjt1VvHnGnksGp3mz4DQihFVEnte0KeVQ5g==";
+  "@angular/compiler-cli@19.2.21" = fetchurl {
+    url = "https://registry.npmjs.org/@angular/compiler-cli/-/compiler-cli-19.2.21.tgz";
+    hash = "sha512-eAs+krq6McyuoySyC0tbYuY+rtovdtmyNUAgxGANPYJMdkTYHcHdF0HVbbaxUpFDvRC6rV9NDpZUazgykLZoYA==";
   };
-  "@angular/compiler@19.2.20" = fetchurl {
-    url = "https://registry.npmjs.org/@angular/compiler/-/compiler-19.2.20.tgz";
-    hash = "sha512-LvjE8W58EACgTFaAoqmNe7FRsbvoQ0GvCB/rmm6AEMWx/0W/JBvWkQTrOQlwpoeYOHcMZRGdmPcZoUDwU3JySQ==";
+  "@angular/compiler@19.2.21" = fetchurl {
+    url = "https://registry.npmjs.org/@angular/compiler/-/compiler-19.2.21.tgz";
+    hash = "sha512-lLWXzeLPk+4kkXKpy/h0OAie3V2YImpDrzluufJ0xR8OlCffJNpanfBjm7R4tOZB7i0ONIxhsD67Z0oRhEECCQ==";
   };
-  "@angular/core@19.2.20" = fetchurl {
-    url = "https://registry.npmjs.org/@angular/core/-/core-19.2.20.tgz";
-    hash = "sha512-pxzQh8ouqfE57lJlXjIzXFuRETwkfMVwS+NFCfv2yh01Qtx+vymO8ZClcJMgLPfBYinhBYX+hrRYVSa1nzlkRQ==";
+  "@angular/core@19.2.21" = fetchurl {
+    url = "https://registry.npmjs.org/@angular/core/-/core-19.2.21.tgz";
+    hash = "sha512-jdOEwkvUyF7VdJMURXkSB1yQy595wt1lSfSgUux9tZftA7UwamCsMdidUsKqRbdaI9M3r+RdIM7qrDAWwqzz+A==";
   };
-  "@angular/forms@19.2.20" = fetchurl {
-    url = "https://registry.npmjs.org/@angular/forms/-/forms-19.2.20.tgz";
-    hash = "sha512-agi7InbMzop1jrud6L7SlNwnZk3iNolORcFIwBQMvKxLkcJ+ttbSYuM0KAw56IundWHf4dL9GP4cSygm4kUeFA==";
+  "@angular/forms@19.2.21" = fetchurl {
+    url = "https://registry.npmjs.org/@angular/forms/-/forms-19.2.21.tgz";
+    hash = "sha512-2r5V8JyInrmpLhBDKCmF2ELWUXxEVxyIm5wDqD7RxWnuGtEr08QlJmiuyqM58xWFmcaSx7s2c62OdCqAAUSQGg==";
   };
-  "@angular/platform-browser-dynamic@19.2.20" = fetchurl {
-    url = "https://registry.npmjs.org/@angular/platform-browser-dynamic/-/platform-browser-dynamic-19.2.20.tgz";
-    hash = "sha512-bNuykQy/MrDeARqvDPf6bqx+m1Qqanep7FhDy9QYWxfqz7D++/phqT9l8Ubj88juFCSDfR5ktUWdpnDz3/BCfA==";
+  "@angular/platform-browser-dynamic@19.2.21" = fetchurl {
+    url = "https://registry.npmjs.org/@angular/platform-browser-dynamic/-/platform-browser-dynamic-19.2.21.tgz";
+    hash = "sha512-+jOSCdZ3sPiPS28Cu/82aYmJFo3HfEIPyRCEwcStzKiASzbqNsdQzn3lIoZCKsD6qdP4uPU7m/KelJNOKDzfDQ==";
   };
-  "@angular/platform-browser@19.2.20" = fetchurl {
-    url = "https://registry.npmjs.org/@angular/platform-browser/-/platform-browser-19.2.20.tgz";
-    hash = "sha512-O9ZoQKILPC1T2c64OASS75XlOLBxY81m5AAgsBKhwiFWq+V28RsO0cnwpi1YSh/z4ryH8Fe7IUFz8jGrsJi3hQ==";
+  "@angular/platform-browser@19.2.21" = fetchurl {
+    url = "https://registry.npmjs.org/@angular/platform-browser/-/platform-browser-19.2.21.tgz";
+    hash = "sha512-v5KhTTK9FWaYmo6auXftQx1ll+9kbDhD44v68CFaIgDQG82ZihWatcdeKmPrA6dmoRXzyyNWIVSk1cNRCPKZRg==";
   };
-  "@angular/router@19.2.20" = fetchurl {
-    url = "https://registry.npmjs.org/@angular/router/-/router-19.2.20.tgz";
-    hash = "sha512-y0fyKycxJHr82kxXKE50Vac5hPn5Kx3gw9CfqyEuwJ9VQzEixDljU+chrQK4Wods14jJn9Tt2ncNPGH1rLya3Q==";
+  "@angular/router@19.2.21" = fetchurl {
+    url = "https://registry.npmjs.org/@angular/router/-/router-19.2.21.tgz";
+    hash = "sha512-ktGPSjzWvSWMPtE8FyH9PTRZm0Qcjy+XOjAvGuj+Wdx4VBhdmEl4qa08Idd7MkWJH0n0LyPCupJdmcH0bsF1FA==";
   };
   "@babel/code-frame@7.27.1" = fetchurl {
     url = "https://registry.npmjs.org/@babel/code-frame/-/code-frame-7.27.1.tgz";
@@ -3457,9 +3457,9 @@
     url = "https://registry.npmjs.org/prelude-ls/-/prelude-ls-1.2.1.tgz";
     hash = "sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==";
   };
-  "prettier@3.8.2" = fetchurl {
-    url = "https://registry.npmjs.org/prettier/-/prettier-3.8.2.tgz";
-    hash = "sha512-8c3mgTe0ASwWAJK+78dpviD+A8EqhndQPUBpNUIPt6+xWlIigCwfN01lWr9MAede4uqXGTEKeQWTvzb3vjia0Q==";
+  "prettier@3.8.3" = fetchurl {
+    url = "https://registry.npmjs.org/prettier/-/prettier-3.8.3.tgz";
+    hash = "sha512-7igPTM53cGHMW8xWuVTydi2KO233VFiTNyF5hLJqpilHfmn8C8gPf+PS7dUT64YcXFbiMGZxS9pCSxL/Dxm/Jw==";
   };
   "primeicons@6.0.1" = fetchurl {
     url = "https://registry.npmjs.org/primeicons/-/primeicons-6.0.1.tgz";

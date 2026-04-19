@@ -29,6 +29,8 @@ module.exports = tseslint.config(
           style: "kebab-case",
         },
       ],
+      // NgModule architecture — standalone migration is a separate task
+      "@angular-eslint/prefer-standalone": "off",
     },
   },
   {

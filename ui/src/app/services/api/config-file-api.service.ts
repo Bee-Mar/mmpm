@@ -24,7 +24,7 @@ export class ConfigFileAPI extends BaseAPI {
 
     return firstValueFrom(
       this.http
-        .post<string>(
+        .post<APIResponse>(
           this.route(`configs/update/${filename}`),
           {
             contents,

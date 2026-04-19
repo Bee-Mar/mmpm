@@ -1,17 +1,20 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
-import { MagicMirrorPackage } from "@/models/magicmirror-package";
-import { SharedStoreService } from "@/services/shared-store.service";
-import { Subscription } from "rxjs";
-import { MarketPlaceIcons, DefaultMarketPlaceIcon } from "./marketplace-icons.model";
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { MagicMirrorPackage } from '@/models/magicmirror-package';
+import { SharedStoreService } from '@/services/shared-store.service';
+import { Subscription } from 'rxjs';
+import {
+  MarketPlaceIcons,
+  DefaultMarketPlaceIcon,
+} from './marketplace-icons.model';
 
 @Component({
-  selector: "app-marketplace",
-  templateUrl: "./marketplace.component.html",
-  styleUrls: ["./marketplace.component.scss"],
+  selector: 'app-marketplace',
+  templateUrl: './marketplace.component.html',
+  styleUrls: ['./marketplace.component.scss'],
   standalone: false,
 })
 export class MarketPlaceComponent implements OnInit, OnDestroy {
-  constructor(private store: SharedStoreService) {}
+  private store = inject(SharedStoreService);
 
   private packagesSubscription: Subscription = new Subscription();
 
@@ -27,20 +30,24 @@ export class MarketPlaceComponent implements OnInit, OnDestroy {
   public readonly installedOptions = [true, false];
 
   public ngOnInit(): void {
-    this.packagesSubscription = this.store.packages.subscribe((packages: Array<MagicMirrorPackage>) => {
-      this.packages = packages;
+    this.packagesSubscription = this.store.packages.subscribe(
+      (packages: Array<MagicMirrorPackage>) => {
+        this.packages = packages;
 
-      this.categories = this.packages.map((pkg) => pkg.category).filter((category, index, self) => self.indexOf(category) === index);
+        this.categories = this.packages
+          .map((pkg) => pkg.category)
+          .filter((category, index, self) => self.indexOf(category) === index);
 
-      // add a default icon for any category that isn't recognized
-      this.packages.forEach((pkg: MagicMirrorPackage) => {
-        if (pkg.category && !this.icons[pkg.category]) {
-          this.icons[pkg.category] = { ...DefaultMarketPlaceIcon };
-        }
-      });
+        // add a default icon for any category that isn't recognized
+        this.packages.forEach((pkg: MagicMirrorPackage) => {
+          if (pkg.category && !this.icons[pkg.category]) {
+            this.icons[pkg.category] = { ...DefaultMarketPlaceIcon };
+          }
+        });
 
-      this.loading = false;
-    });
+        this.loading = false;
+      },
+    );
   }
 
   public ngOnDestroy(): void {

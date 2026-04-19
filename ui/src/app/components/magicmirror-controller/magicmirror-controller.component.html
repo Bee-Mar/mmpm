@@ -13,30 +13,46 @@
 </div>
 
 <p-dialog header="MagicMirror Modules" [(visible)]="openModuleVisibilityDialog">
-  <div *ngIf="modules.length === 0; else showModules">
-    Unable to retrieve modules. Is MagicMirror running, and is
-    <a href="https://github.com/bee-mar/mmm-mmpm" target="_blank">MMM-mmpm</a>
-    installed?
-  </div>
-
-  <ng-template #showModules>
-    <div *ngFor="let module of modules" style="display: block; margin-bottom: 1em">
-      <p-toggleButton
-        [(ngModel)]="module.hidden"
-        onLabel="{{ module.name }} ({{ module.key }})"
-        offLabel="{{ module.name }} ({{ module.key }})"
-        onIcon="pi pi-check"
-        offIcon="pi pi-times"
-        [style]="{ width: '20em' }"
-        (onChange)="onModuleVisibilityChange(module)"
-      >
-      </p-toggleButton>
+  @if (modules.length === 0) {
+    <div>
+      Unable to retrieve modules. Is MagicMirror running, and is
+      <a href="https://github.com/bee-mar/mmm-mmpm" target="_blank">MMM-mmpm</a>
+      installed?
     </div>
-  </ng-template>
+  } @else {
+    @for (module of modules; track module) {
+      <div style="display: block; margin-bottom: 1em">
+        <p-toggleButton
+          [(ngModel)]="module.hidden"
+          onLabel="{{ module.name }} ({{ module.key }})"
+          offLabel="{{ module.name }} ({{ module.key }})"
+          onIcon="pi pi-check"
+          offIcon="pi pi-times"
+          [style]="{ width: '20em' }"
+          (onChange)="onModuleVisibilityChange(module)"
+        >
+        </p-toggleButton>
+      </div>
+    }
+  }
 </p-dialog>
 
 <p-dialog header="MagicMirror Controller Help" [(visible)]="openHelpDialog">
-  <div style="display: grid; grid-template-columns: max-content; justify-content: center; grid-gap: 10px; margin: 0 auto; text-align: left">
-    <span *ngFor="let menuItem of menuItems" style="margin-bottom: 1em"> <i class="{{ menuItem.icon }}" style="margin-right: 1em"></i>{{ menuItem.tooltip }} </span>
+  <div
+    style="
+      display: grid;
+      grid-template-columns: max-content;
+      justify-content: center;
+      grid-gap: 10px;
+      margin: 0 auto;
+      text-align: left;
+    "
+  >
+    @for (menuItem of menuItems; track menuItem) {
+      <span style="margin-bottom: 1em">
+        <i class="{{ menuItem.icon }}" style="margin-right: 1em"></i
+        >{{ menuItem.tooltip }}
+      </span>
+    }
   </div>
 </p-dialog>

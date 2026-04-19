@@ -20,14 +20,8 @@
     "importHelpers": true,
     "target": "ES2022",
     "module": "es2020",
-    "lib": [
-      "es2020",
-      "dom"
-    ],
     "paths": {
-      "@/*": [
-        "src/app/*"
-      ]
+      "@/*": ["src/app/*"]
     },
     "useDefineForClassFields": false
   },

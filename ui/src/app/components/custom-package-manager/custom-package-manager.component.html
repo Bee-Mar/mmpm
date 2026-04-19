@@ -8,7 +8,7 @@
 ></p-button>
 
 <p-dialog header="Add Custom Package" [(visible)]="displayCustomPkgAddDialog">
-  <p-overlayPanel
+  <p-popover
     #op
     [style]="{
       'max-width': '450px',
@@ -21,7 +21,7 @@
       installed/removed using MMPM. This is useful in testing/development of
       MagicMirror modules not listed in the 3rd Party Modules.</span
     >
-  </p-overlayPanel>
+  </p-popover>
 
   <p-button
     (click)="op.toggle($event)"

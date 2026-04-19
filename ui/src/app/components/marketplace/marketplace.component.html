@@ -67,8 +67,8 @@
             Installed
             <p-columnFilter field="is_installed" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
               <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                <p-dropdown [options]="installedOptions" [(ngModel)]="selectedInstalled" placeholder="Is Installed?" (onChange)="filter($event.value, 'is_installed')">
-                </p-dropdown>
+                <p-select [options]="installedOptions" [(ngModel)]="selectedInstalled" placeholder="Is Installed?" (onChange)="filter($event.value, 'is_installed')">
+                </p-select>
               </ng-template>
             </p-columnFilter>
             <p-sortIcon field="is_installed"></p-sortIcon>

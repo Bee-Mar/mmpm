@@ -316,7 +316,7 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
     return modules;
   }
 
-  @HostListener("window:beforeunload", ["$event"])
+  @HostListener("window:beforeunload")
   public beforeUnload() {
     this.socket.disconnect();
     this.socket.close();

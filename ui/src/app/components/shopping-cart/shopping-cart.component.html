@@ -9,7 +9,7 @@
 
 <p-confirmDialog [style]="{ width: '50vw' }"></p-confirmDialog>
 
-<p-overlayPanel #op>
+<p-popover #op>
   @if (selectedPackages && selectedPackages?.length) {
     <div class="package-details-grid">
       <p-scroller
@@ -57,6 +57,6 @@
   } @else {
     <div>No packages selected.</div>
   }
-</p-overlayPanel>
+</p-popover>
 
 <p-toast></p-toast>

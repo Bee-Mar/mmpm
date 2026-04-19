@@ -13,20 +13,23 @@
   </div>
 </div>
 
-<p-tabView [scrollable]="true" [(activeIndex)]="index" (onChange)="onTabChange($event.index)">
-  <!-- <p-tabPanel header="MagicMirror Controller" rightIcon="fa-solid fa-gamepad"> </p-tabPanel> -->
-
-  <p-tabPanel header="Marketplace" rightIcon="fa-solid fa-shop">
-    <app-marketplace></app-marketplace>
-  </p-tabPanel>
-
-  <p-tabPanel header="Config Editor" rightIcon="fa-solid fa-pen-to-square">
-    <app-config-editor></app-config-editor>
-  </p-tabPanel>
-
-  <p-tabPanel header="Logs" rightIcon="fa fa-message">
-    <app-log-stream-viewer></app-log-stream-viewer>
-  </p-tabPanel>
-</p-tabView>
+<p-tabs [value]="index" (valueChange)="onTabChange($event)">
+  <p-tablist>
+    <p-tab [value]="0"><i class="fa-solid fa-shop"></i> Marketplace</p-tab>
+    <p-tab [value]="1"><i class="fa-solid fa-pen-to-square"></i> Config Editor</p-tab>
+    <p-tab [value]="2"><i class="fa fa-message"></i> Logs</p-tab>
+  </p-tablist>
+  <p-tabpanels>
+    <p-tabpanel [value]="0">
+      <app-marketplace></app-marketplace>
+    </p-tabpanel>
+    <p-tabpanel [value]="1">
+      <app-config-editor></app-config-editor>
+    </p-tabpanel>
+    <p-tabpanel [value]="2">
+      <app-log-stream-viewer></app-log-stream-viewer>
+    </p-tabpanel>
+  </p-tabpanels>
+</p-tabs>
 
 <router-outlet></router-outlet>

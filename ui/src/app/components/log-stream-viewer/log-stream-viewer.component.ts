@@ -95,7 +95,7 @@ export class LogStreamViewerComponent implements OnInit, OnDestroy {
     });
   }
 
-  @HostListener("window:beforeunload", ["$event"])
+  @HostListener("window:beforeunload")
   public beforeUnload() {
     this.socket.close();
   }

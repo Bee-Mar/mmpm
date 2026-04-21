@@ -113,6 +113,7 @@
   border-bottom: 1px solid var(--line-soft);
   background: var(--bg-1);
   z-index: 3;
+  position: relative;
 
   .status-pill {
     display: inline-flex;
@@ -139,19 +140,26 @@
     &.stopped .led { background: var(--fg-4); }
   }
 
-  .wordmark {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-family: var(--ui);
-    font-size: 12px;
-    color: var(--fg-1);
-    text-transform: uppercase;
-    letter-spacing: 0.01em;
+  .logo {
+    // SVG canvas is 1024×768; content lives at x≈108–910, y≈320–440 (802×120).
+    // Scale so content height = 36px → scale = 36/120 = 0.3.
+    // Rendered img: 307×230px. Crop by clipping the wrapper and offsetting the img.
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 240px;
+    height: 36px;
+    overflow: hidden;
+    pointer-events: none;
 
-    span:first-child { font-weight: 700; letter-spacing: 0.03em; color: var(--fg-0); }
-    span:nth-child(3) { font-weight: 400; color: var(--fg-4); letter-spacing: 0.08em; font-size: 10.5px; }
-    .bullet { color: var(--fg-4); }
+    img {
+      position: absolute;
+      height: 230px;
+      width: auto;
+      top: -96px;
+      left: -32px;
+    }
   }
 
   .spacer { flex: 1; }

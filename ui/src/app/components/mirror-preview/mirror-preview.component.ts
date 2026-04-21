@@ -409,6 +409,7 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
     if (name) this.removeFromLayout(name);
     this.libraryDragOver = false;
     this.draggingName = null;
+    this.dragOverRegion = null;
     this.saveLayout();
   }
 

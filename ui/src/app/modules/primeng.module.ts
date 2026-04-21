@@ -25,6 +25,7 @@ import { CardModule } from "primeng/card";
 import { SpeedDialModule } from "primeng/speeddial";
 import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { ToggleButtonModule } from "primeng/togglebutton";
+import { ContextMenuModule } from "primeng/contextmenu";
 
 const PrimeNg = [
   TableModule,
@@ -53,6 +54,7 @@ const PrimeNg = [
   SpeedDialModule,
   ConfirmDialogModule,
   ToggleButtonModule,
+  ContextMenuModule,
 ];
 
 @NgModule({

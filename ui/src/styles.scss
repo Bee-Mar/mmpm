@@ -40,7 +40,7 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
 
 body {
   font-family: var(--ui);
-  font-size: 13px;
+  font-size: 15px;
   color: var(--fg-1);
   background: var(--bg-0);
   -webkit-font-smoothing: antialiased;
@@ -61,7 +61,7 @@ a:hover { text-decoration: underline; }
   border: 1px solid var(--line);
   background: var(--bg-2);
   color: var(--fg-1);
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 500;
   transition: background 120ms, border-color 120ms;
   white-space: nowrap;
@@ -87,7 +87,7 @@ a:hover { text-decoration: underline; }
     &:hover { background: oklch(from var(--danger) l c h / 0.1); }
   }
 
-  &.sm { padding: 4px 8px; font-size: 11px; }
+  &.sm { padding: 4px 8px; font-size: 12.5px; }
   &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
 
@@ -111,7 +111,7 @@ a:hover { text-decoration: underline; }
     background: var(--accent);
     color: var(--bg-0);
     border-radius: 999px;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 700;
     display: flex;
     align-items: center;
@@ -132,14 +132,14 @@ a:hover { text-decoration: underline; }
   .page-title {
     h1 {
       margin: 0;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 700;
       color: var(--fg-0);
       letter-spacing: -0.01em;
     }
     .sub {
       font-family: var(--mono);
-      font-size: 10.5px;
+      font-size: 12px;
       color: var(--fg-4);
       letter-spacing: 0.02em;
     }
@@ -157,7 +157,7 @@ a:hover { text-decoration: underline; }
 
   button {
     padding: 5px 10px;
-    font-size: 11px;
+    font-size: 12.5px;
     font-weight: 600;
     letter-spacing: 0.05em;
     color: var(--fg-3);
@@ -180,7 +180,7 @@ a:hover { text-decoration: underline; }
   border: 1px solid var(--line-soft);
   border-radius: 6px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12.5px;
   color: var(--fg-3);
 
   .dot {
@@ -197,7 +197,7 @@ a:hover { text-decoration: underline; }
   align-items: center;
   padding: 1px 6px;
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
   font-family: var(--mono);
@@ -233,7 +233,7 @@ a:hover { text-decoration: underline; }
 /* ── Section title ── */
 .section-title {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.1em;
   color: var(--fg-4);
@@ -248,11 +248,11 @@ a:hover { text-decoration: underline; }
   column-gap: 14px;
   row-gap: 5px;
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
 
   dt {
     font-family: var(--mono);
-    font-size: 10px;
+    font-size: 11px;
     color: var(--fg-4);
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -283,14 +283,14 @@ a:hover { text-decoration: underline; }
 
     .n {
       font-family: var(--mono);
-      font-size: 18px;
+      font-size: 21px;
       font-weight: 600;
       color: var(--fg-0);
     }
 
     .l {
       font-family: var(--mono);
-      font-size: 9px;
+      font-size: 10px;
       letter-spacing: 0.1em;
       color: var(--fg-4);
       text-transform: uppercase;
@@ -310,9 +310,9 @@ a:hover { text-decoration: underline; }
   text-align: center;
   gap: 8px;
 
-  .glyph { font-size: 24px; opacity: 0.5; }
-  .title { font-size: 13px; font-weight: 600; color: var(--fg-3); }
-  .hint  { font-size: 12px; color: var(--fg-4); max-width: 280px; line-height: 1.5; }
+  .glyph { font-size: 28px; opacity: 0.5; }
+  .title { font-size: 15px; font-weight: 600; color: var(--fg-3); }
+  .hint  { font-size: 13.5px; color: var(--fg-4); max-width: 280px; line-height: 1.5; }
 }
 
 /* ── PrimeNG global overrides ── */
@@ -330,7 +330,7 @@ a:hover { text-decoration: underline; }
     padding: 14px 18px !important;
     color: var(--fg-0) !important;
     font-family: var(--mono) !important;
-    font-size: 12px !important;
+    font-size: 13.5px !important;
     letter-spacing: 0.06em !important;
   }
 
@@ -352,7 +352,7 @@ a:hover { text-decoration: underline; }
   border: 1px solid var(--line) !important;
   border-radius: var(--radius-sm) !important;
   color: var(--fg-0) !important;
-  font-size: 12.5px !important;
+  font-size: 14px !important;
   padding: 7px 10px !important;
 
   &:focus {

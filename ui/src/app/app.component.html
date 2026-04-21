@@ -15,6 +15,11 @@
       <span class="tip">Marketplace</span>
     </button>
 
+    <button class="nav-btn" [class.active]="activeTab === 'mirror'" (click)="setTab('mirror')" title="Mirror Preview">
+      <i class="fa-solid fa-tv"></i>
+      <span class="tip">Mirror Preview</span>
+    </button>
+
     <button class="nav-btn" [class.active]="activeTab === 'config'" (click)="setTab('config')" title="Config Editor">
       <i class="fa-solid fa-code"></i>
       <span class="tip">Config Editor</span>
@@ -73,6 +78,10 @@
           [(selectedPackages)]="selectedPackages"
           (selectedPackageChange)="onPackageSelected($event)">
         </app-marketplace>
+      }
+
+      @if (activeTab === 'mirror') {
+        <app-mirror-preview></app-mirror-preview>
       }
 
       @if (activeTab === 'config') {

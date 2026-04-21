@@ -11,16 +11,19 @@
   gap: 10px;
 
   .pkg-icon {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: var(--radius-sm);
-    background: var(--bg-3);
-    border: 1px solid var(--line-soft);
     display: grid;
     place-items: center;
-    color: var(--accent);
-    font-size: 16px;
+    font-size: 20px;
     flex-shrink: 0;
+
+    .tile-letter {
+      font-family: var(--ui);
+      font-size: 15px;
+      font-weight: 700;
+    }
   }
 
   .pkg-info {
@@ -35,7 +38,6 @@
     }
 
     .pkg-author {
-      font-family: var(--mono);
       font-size: 12px;
       color: var(--fg-4);
       margin-top: 2px;
@@ -64,4 +66,11 @@
   padding-top: 4px;
 
   .btn { justify-content: center; }
+
+  .btn.primary {
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 2px 16px oklch(0.87 0.07 75 / 0.28);
+  }
 }

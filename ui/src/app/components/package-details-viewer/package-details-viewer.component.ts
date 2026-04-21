@@ -3,6 +3,7 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { APIResponse } from '@/services/api/base-api';
 import { MagicMirrorPackageAPI } from '@/services/api/magicmirror-package-api.service';
 import { MessageService } from 'primeng/api';
+import { getModuleIcon, ModuleIcon } from '@/utils/module-icon';
 
 @Component({
   selector: 'app-package-details-viewer',
@@ -57,5 +58,9 @@ export class PackageDetailsViewerComponent {
     if (this.selectedPackage?.repository) {
       window.open(this.selectedPackage.repository, '_blank');
     }
+  }
+
+  public get moduleIcon(): ModuleIcon | null {
+    return this.selectedPackage ? getModuleIcon(this.selectedPackage) : null;
   }
 }

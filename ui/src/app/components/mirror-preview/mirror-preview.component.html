@@ -22,6 +22,7 @@
           <div
             class="mm-region"
             [class.drag-over]="dragOverRegion === region.key"
+            [class.flash]="flashRegion === region.key"
             [attr.data-region]="region.key"
             [style.grid-area]="region.gridArea"
             (dragover)="onDragOver($event, region.key)"

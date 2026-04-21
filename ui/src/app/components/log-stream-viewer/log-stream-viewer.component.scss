@@ -28,6 +28,11 @@
   }
 }
 
+.logs-empty {
+  flex: 1;
+  animation: tab-enter 220ms ease both;
+}
+
 .editor-wrap {
   flex: 1;
   min-height: 0;

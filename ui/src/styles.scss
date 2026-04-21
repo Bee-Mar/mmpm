@@ -38,6 +38,11 @@
 *, *::before, *::after { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; overflow: hidden; }
 
+@keyframes tab-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 body {
   font-family: var(--ui);
   font-size: 15px;
@@ -69,10 +74,15 @@ a:hover { text-decoration: underline; }
   &:hover { background: var(--bg-3); border-color: var(--line); }
 
   &.primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--bg-0);
-    &:hover { background: var(--accent-hi); border-color: var(--accent-hi); }
+    background: linear-gradient(150deg, oklch(0.91 0.08 78), oklch(0.79 0.11 60));
+    border-color: transparent;
+    color: oklch(0.12 0.005 260);
+    font-weight: 600;
+    box-shadow: 0 1px 8px oklch(0.87 0.07 75 / 0.22);
+    &:hover {
+      background: linear-gradient(150deg, oklch(0.94 0.07 78), oklch(0.83 0.10 60));
+      box-shadow: 0 2px 14px oklch(0.87 0.07 75 / 0.32);
+    }
   }
 
   &.ghost {

@@ -1,9 +1,15 @@
 @if (selectedPackage) {
   <div class="details-panel">
     <div class="details-head">
-      <div class="pkg-icon">
-        <i class="fa-solid fa-box"></i>
-      </div>
+      @if (moduleIcon) {
+        <div class="pkg-icon" [style.background]="moduleIcon.bg">
+          @if (moduleIcon.icon) {
+            <i [class]="moduleIcon.icon" [style.color]="moduleIcon.fg"></i>
+          } @else {
+            <span class="tile-letter" [style.color]="moduleIcon.fg">{{ moduleIcon.letter }}</span>
+          }
+        </div>
+      }
       <div class="pkg-info">
         <h2>{{ selectedPackage.title }}</h2>
         <div class="pkg-author">by {{ selectedPackage.author }}</div>

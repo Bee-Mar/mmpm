@@ -196,6 +196,8 @@
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
+
+  > * { animation: tab-enter 180ms ease both; }
 }
 
 .tab-content {

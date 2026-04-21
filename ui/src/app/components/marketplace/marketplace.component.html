@@ -53,20 +53,31 @@
     </div>
   } @else if (filteredPackages.length === 0) {
     <div class="empty-state">
-      <i class="fa-solid fa-magnifying-glass glyph"></i>
-      <div class="title">No packages match</div>
-      <div class="hint">Try widening your filters or clearing the search.</div>
+      <i class="fa-solid fa-filter-circle-xmark glyph"></i>
+      <div class="title">Nothing found</div>
+      <div class="hint">{{ packages.length }} packages indexed — try broadening your search or picking a different category.</div>
     </div>
   } @else if (viewMode === 'cards') {
     <div class="cards">
       @for (pkg of filteredPackages; track pkg.repository) {
+        @let mi = getModuleIcon(pkg);
         <div class="pkg-card" [class.selected]="isSelected(pkg)" (click)="openDetails(pkg)" (keydown.enter)="openDetails(pkg)" role="button" tabindex="0">
           <div class="card-top">
             <div class="card-meta">
-              <button class="pkg-check" [class.on]="isSelected(pkg)"
-                (click)="$event.stopPropagation(); toggleSelect(pkg)">
-                @if (isSelected(pkg)) { <i class="fa-solid fa-check" style="font-size: 8px"></i> }
-              </button>
+              <div class="pkg-icon-tile" [style.background]="mi.bg">
+                <button class="pkg-check" [class.on]="isSelected(pkg)"
+                  (click)="$event.stopPropagation(); toggleSelect(pkg)"
+                  [title]="isSelected(pkg) ? 'Remove from queue' : 'Add to queue'">
+                  @if (isSelected(pkg)) {
+                    <i class="fa-solid fa-check" style="font-size: 8px"></i>
+                  }
+                </button>
+                @if (mi.icon) {
+                  <i [class]="mi.icon" [style.color]="mi.fg"></i>
+                } @else {
+                  <span class="tile-letter" [style.color]="mi.fg">{{ mi.letter }}</span>
+                }
+              </div>
               <div class="card-name">
                 <h3>{{ pkg.title }}</h3>
                 <div class="author">{{ pkg.author }}</div>
@@ -107,6 +118,7 @@
       </thead>
       <tbody>
         @for (pkg of filteredPackages; track pkg.repository) {
+          @let mi = getModuleIcon(pkg);
           <tr [class.selected]="isSelected(pkg)" (click)="openDetails(pkg)">
             <td (click)="$event.stopPropagation()">
               <button class="pkg-check" [class.on]="isSelected(pkg)" (click)="toggleSelect(pkg)">
@@ -115,6 +127,13 @@
             </td>
             <td>
               <div class="title-cell">
+                <div class="pkg-icon-tile sm" [style.background]="mi.bg">
+                  @if (mi.icon) {
+                    <i [class]="mi.icon" [style.color]="mi.fg"></i>
+                  } @else {
+                    <span class="tile-letter" [style.color]="mi.fg">{{ mi.letter }}</span>
+                  }
+                </div>
                 {{ pkg.title }}
                 @if (pkg.category === 'Custom Packages') {
                   <span class="badge custom">CUSTOM</span>

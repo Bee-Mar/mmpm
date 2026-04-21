@@ -64,6 +64,8 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
   public dragOverRegion: string | null = null;
   public draggingName: string | null = null;
   public libraryDragOver = false;
+  public flashRegion: string | null = null;
+  private flashTimer: ReturnType<typeof setTimeout> | null = null;
 
   // All module names ever seen in config.js (built-ins + MMPM packages)
   private knownModuleNames = new Set<string>();
@@ -122,6 +124,7 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this.sub.unsubscribe();
+    if (this.flashTimer) clearTimeout(this.flashTimer);
   }
 
   // ── Config.js parser ──────────────────────────────────────────────────────
@@ -363,10 +366,19 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
   public onDrop(e: DragEvent, toRegion: string): void {
     e.preventDefault();
     const name = e.dataTransfer!.getData('text/plain');
-    if (name) this.moveToRegion(name, toRegion);
+    if (name) {
+      this.moveToRegion(name, toRegion);
+      this.triggerFlash(toRegion);
+    }
     this.dragOverRegion = null;
     this.draggingName = null;
     this.saveLayout();
+  }
+
+  private triggerFlash(region: string): void {
+    if (this.flashTimer) clearTimeout(this.flashTimer);
+    this.flashRegion = region;
+    this.flashTimer = setTimeout(() => { this.flashRegion = null; }, 480);
   }
 
   public onLibraryDragOver(e: DragEvent): void {

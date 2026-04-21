@@ -17,10 +17,18 @@
   </div>
 </div>
 
-<div class="editor-wrap">
-  <ngx-monaco-editor
-    [options]="options"
-    (onInit)="onEditorInit($event)"
-    [(ngModel)]="logs">
-  </ngx-monaco-editor>
-</div>
+@if (!logs && !socket?.connected) {
+  <div class="empty-state logs-empty">
+    <i class="fa-solid fa-terminal glyph"></i>
+    <div class="title">Waiting for log stream</div>
+    <div class="hint">Logs will appear here once the API connects. Start or restart MMPM if nothing arrives.</div>
+  </div>
+} @else {
+  <div class="editor-wrap">
+    <ngx-monaco-editor
+      [options]="options"
+      (onInit)="onEditorInit($event)"
+      [(ngModel)]="logs">
+    </ngx-monaco-editor>
+  </div>
+}

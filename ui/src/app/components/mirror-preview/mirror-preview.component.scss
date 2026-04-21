@@ -44,6 +44,37 @@
   padding: 10px;
 }
 
+// ── Region drag animations ────────────────────────────────────────────────
+
+@keyframes region-beckon {
+  0%, 100% {
+    background: oklch(0.87 0.07 75 / 0.05);
+    box-shadow: 0 0 10px oklch(0.87 0.07 75 / 0.18);
+  }
+  50% {
+    background: oklch(0.87 0.07 75 / 0.13);
+    box-shadow: 0 0 26px oklch(0.87 0.07 75 / 0.42);
+  }
+}
+
+@keyframes region-shimmer {
+  0%   { background-position: -150% 0; }
+  100% { background-position: 250% 0; }
+}
+
+@keyframes region-flash {
+  0% {
+    background: oklch(0.87 0.07 75 / 0.30);
+    box-shadow: 0 0 32px oklch(0.87 0.07 75 / 0.55);
+  }
+  100% {
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+// ── Region ────────────────────────────────────────────────────────────────
+
 .mm-region {
   border: 1px dashed oklch(0.35 0.008 260 / 0.7);
   border-radius: 3px;
@@ -53,20 +84,45 @@
   padding: 10px;
   gap: 8px;
   position: relative;
-  transition: border-color 100ms, background 100ms;
+  transition: border-color 150ms;
 
+  // Breathing glow while a module is dragged over this region
   &.drag-over {
     border-color: var(--accent);
-    background: oklch(0.75 0.12 215 / 0.08);
+    border-style: solid;
+    animation: region-beckon 650ms ease-in-out infinite;
 
+    // Shimmer sweep
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+        108deg,
+        transparent 20%,
+        oklch(0.87 0.07 75 / 0.20) 50%,
+        transparent 80%
+      );
+      background-size: 300% 100%;
+      animation: region-shimmer 1.2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    // Inner accent ring
     &::after {
       content: '';
       position: absolute;
       inset: 0;
-      border-radius: 3px;
-      box-shadow: inset 0 0 0 1px var(--accent);
+      border-radius: inherit;
+      box-shadow: inset 0 0 0 1px oklch(0.87 0.07 75 / 0.6);
       pointer-events: none;
     }
+  }
+
+  // One-shot burst when a module is successfully dropped
+  &.flash {
+    animation: region-flash 480ms ease-out both;
   }
 
   .region-label {
@@ -107,7 +163,11 @@
 
   &:hover { border-color: var(--accent); }
   &:active { cursor: grabbing; }
-  &.dragging { opacity: 0.35; }
+  &.dragging {
+    opacity: 0.35;
+    transform: scale(0.94);
+    transition: transform 80ms ease, opacity 80ms ease;
+  }
 
   &.disabled {
     opacity: 0.4;

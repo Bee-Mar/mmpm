@@ -1,11 +1,21 @@
 @if (view === null) {
   <!-- Trigger mode: lives in marketplace toolbar -->
   <div class="db-btn-wrap">
-    <button class="btn" (click)="showMenu = !showMenu">
-      <i class="fa-solid fa-database"></i>
-      Database
-      @if (upgradableItems.length > 0) { <span class="badge update">{{ upgradableItems.length }}</span> }
-      <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 2px"></i>
+    <button class="btn" (click)="!updating && (showMenu = !showMenu)" [disabled]="updating" [class.btn-done]="updateDone">
+      @if (updating) {
+        <i class="fa-solid fa-arrows-rotate fa-spin"></i>
+        Updating…
+      } @else if (updateDone) {
+        <i class="fa-solid fa-check" style="color: var(--signal)"></i>
+        Database
+        @if (upgradableItems.length > 0) { <span class="badge update">{{ upgradableItems.length }}</span> }
+        <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 2px"></i>
+      } @else {
+        <i class="fa-solid fa-database"></i>
+        Database
+        @if (upgradableItems.length > 0) { <span class="badge update">{{ upgradableItems.length }}</span> }
+        <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 2px"></i>
+      }
     </button>
 
     @if (showMenu) {

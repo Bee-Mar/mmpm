@@ -46,9 +46,12 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
   public dbInfo: DatabaseInfo | undefined;
   public showMenu = false;
   public upgradesAvailable = false;
+  public updating = false;
+  public updateDone = false;
   public upgradableItems = new Array<MagicMirrorPackage>();
   public selectedPackages = new Array<MagicMirrorPackage>();
   public selectedUpgrades = new Array<MagicMirrorPackage>();
+  private updateDoneTimer: ReturnType<typeof setTimeout> | null = null;
 
 
   public ngOnInit(): void {
@@ -89,28 +92,39 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
   public ngOnDestroy(): void {
     this.dbInfoSubscription.unsubscribe();
     this.upgradableSubscription.unsubscribe();
+    if (this.updateDoneTimer) clearTimeout(this.updateDoneTimer);
   }
 
   public onUpdate(): void {
+    this.updating = true;
+    this.updateDone = false;
     this.loadingChange.emit(true);
 
     this.baseApi.get_('db/update').then((response: APIResponse) => {
+      this.updating = false;
+      this.loadingChange.emit(false);
+
       if (response.code === 200) {
         this.store.load();
-        this.loadingChange.emit(false);
+        this.updateDone = true;
+        if (this.updateDoneTimer) clearTimeout(this.updateDoneTimer);
+        this.updateDoneTimer = setTimeout(() => { this.updateDone = false; }, 2500);
 
         this.msg.add({
           severity: 'success',
-          summary: 'Update',
-          detail: 'Completed check for available updates',
+          summary: 'Database',
+          detail: 'Database updated successfully',
         });
       } else {
         this.msg.add({
           severity: 'error',
-          summary: 'Update',
+          summary: 'Database',
           detail: response.message,
         });
       }
+    }).catch(() => {
+      this.updating = false;
+      this.loadingChange.emit(false);
     });
   }
 

@@ -16,12 +16,21 @@
 
     <div class="section-title">QUEUED · INSTALL</div>
     @for (pkg of installs; track pkg.repository) {
-      <div class="cart-item">
+      @let status = opStatus.get(pkgKey(pkg));
+      <div class="cart-item" [class.op-working]="status === 'working'" [class.op-done]="status === 'done'" [class.op-failed]="status === 'failed'">
         <div class="cart-item-info">
           <div class="cart-item-name">{{ pkg.title }}</div>
           <div class="cart-item-author">{{ pkg.author }}</div>
         </div>
-        <span class="badge installed">INSTALL</span>
+        @if (status === 'working') {
+          <i class="fa-solid fa-spinner fa-spin op-icon"></i>
+        } @else if (status === 'done') {
+          <i class="fa-solid fa-check op-icon op-icon-done"></i>
+        } @else if (status === 'failed') {
+          <i class="fa-solid fa-xmark op-icon op-icon-fail"></i>
+        } @else {
+          <span class="badge installed">INSTALL</span>
+        }
       </div>
     }
     @if (installs.length === 0) {
@@ -30,12 +39,21 @@
 
     <div class="section-title" style="margin-top: 12px">QUEUED · REMOVE</div>
     @for (pkg of removals; track pkg.repository) {
-      <div class="cart-item">
+      @let status = opStatus.get(pkgKey(pkg));
+      <div class="cart-item" [class.op-working]="status === 'working'" [class.op-done]="status === 'done'" [class.op-failed]="status === 'failed'">
         <div class="cart-item-info">
           <div class="cart-item-name">{{ pkg.title }}</div>
           <div class="cart-item-author">{{ pkg.author }}</div>
         </div>
-        <span class="badge update">REMOVE</span>
+        @if (status === 'working') {
+          <i class="fa-solid fa-spinner fa-spin op-icon"></i>
+        } @else if (status === 'done') {
+          <i class="fa-solid fa-check op-icon op-icon-done"></i>
+        } @else if (status === 'failed') {
+          <i class="fa-solid fa-xmark op-icon op-icon-fail"></i>
+        } @else {
+          <span class="badge update">REMOVE</span>
+        }
       </div>
     }
     @if (removals.length === 0) {
@@ -45,11 +63,16 @@
   }
 
   <div class="cart-footer">
-    <button class="btn primary" [disabled]="selectedPackages.length === 0" (click)="onCheckout()">
-      <i class="fa-solid fa-play"></i>
-      Execute ({{ selectedPackages.length }})
+    <button class="btn primary" [disabled]="selectedPackages.length === 0 || isRunning" (click)="onCheckout()">
+      @if (isRunning) {
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        Running…
+      } @else {
+        <i class="fa-solid fa-play"></i>
+        Execute ({{ selectedPackages.length }})
+      }
     </button>
-    <button class="btn ghost" [disabled]="selectedPackages.length === 0" (click)="selectedPackagesChange.emit([])">
+    <button class="btn ghost" [disabled]="selectedPackages.length === 0 || isRunning" (click)="selectedPackagesChange.emit([])">
       Clear queue
     </button>
   </div>

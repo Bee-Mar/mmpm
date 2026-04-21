@@ -69,7 +69,7 @@
 
       @if (activeTab === 'marketplace') {
         <app-marketplace
-          [viewMode]="viewMode"
+          [(viewMode)]="viewMode"
           [(selectedPackages)]="selectedPackages"
           (selectedPackageChange)="onPackageSelected($event)"
           (openPanel)="setDockPanel($event)">

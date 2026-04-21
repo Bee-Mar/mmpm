@@ -15,6 +15,7 @@ export class MarketPlaceComponent implements OnInit, OnDestroy {
   private packagesSubscription: Subscription = new Subscription();
 
   @Input() viewMode: 'cards' | 'table' = 'cards';
+  @Output() viewModeChange = new EventEmitter<'cards' | 'table'>();
   @Input() selectedPackages: MagicMirrorPackage[] = [];
   @Output() selectedPackagesChange = new EventEmitter<MagicMirrorPackage[]>();
   @Output() selectedPackageChange = new EventEmitter<MagicMirrorPackage | null>();

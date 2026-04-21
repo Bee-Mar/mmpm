@@ -5,8 +5,8 @@
   </div>
   <div class="spacer"></div>
   <div class="segmented">
-    <button [class.active]="viewMode === 'cards'" (click)="viewMode = 'cards'">CARDS</button>
-    <button [class.active]="viewMode === 'table'" (click)="viewMode = 'table'">TABLE</button>
+    <button [class.active]="viewMode === 'cards'" (click)="viewModeChange.emit('cards')">CARDS</button>
+    <button [class.active]="viewMode === 'table'" (click)="viewModeChange.emit('table')">TABLE</button>
   </div>
   <app-custom-package-manager (openPanel)="openPanel.emit($event)"></app-custom-package-manager>
   <app-database-info (openPanel)="openPanel.emit($event)"></app-database-info>

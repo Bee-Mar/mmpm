@@ -10,7 +10,7 @@ import { MagicMirrorPackage } from "@/models/magicmirror-package";
 export class AppComponent implements AfterViewInit {
   public activeTab: string = localStorage.getItem("mmpm.tab") || "marketplace";
   public dockTab: string = "cart";
-  public viewMode: "cards" | "table" = (localStorage.getItem("mmpm.view") as "cards" | "table") || "cards";
+  public viewMode: "cards" | "table" = (AppComponent.getCookie("mmpm.view") as "cards" | "table") || "cards";
   public mmStatus: string = "unknown";
   public showControllerPopover: boolean = false;
   public loading: boolean = false;
@@ -36,7 +36,12 @@ export class AppComponent implements AfterViewInit {
 
   public setViewMode(mode: "cards" | "table"): void {
     this.viewMode = mode;
-    localStorage.setItem("mmpm.view", mode);
+    document.cookie = `mmpm.view=${mode}; path=/; max-age=31536000; SameSite=Lax`;
+  }
+
+  private static getCookie(name: string): string {
+    const match = document.cookie.split('; ').find(row => row.startsWith(name + '='));
+    return match ? match.split('=')[1] : '';
   }
 
   public onPackageSelected(pkg: MagicMirrorPackage | null): void {

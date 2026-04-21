@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, AfterViewInit } from "@angular/core";
 import { MagicMirrorPackage } from "@/models/magicmirror-package";
 
 @Component({
@@ -7,7 +7,7 @@ import { MagicMirrorPackage } from "@/models/magicmirror-package";
   styleUrls: ["./app.component.scss"],
   standalone: false,
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   public activeTab: string = localStorage.getItem("mmpm.tab") || "marketplace";
   public dockTab: string = "cart";
   public viewMode: "cards" | "table" = (localStorage.getItem("mmpm.view") as "cards" | "table") || "cards";
@@ -17,6 +17,14 @@ export class AppComponent {
 
   public selectedPackages: MagicMirrorPackage[] = [];
   public selectedPackage: MagicMirrorPackage | null = null;
+
+  public ngAfterViewInit(): void {
+    const splash = document.getElementById('mmpm-splash');
+    if (splash) {
+      splash.classList.add('splash-out');
+      setTimeout(() => splash.remove(), 520);
+    }
+  }
 
   public setTab(tab: string): void {
     this.activeTab = tab;

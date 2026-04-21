@@ -21,7 +21,7 @@ export class AppComponent implements AfterViewInit {
   public ngAfterViewInit(): void {
     const splash = document.getElementById('mmpm-splash');
     if (!splash) return;
-    const elapsed = Date.now() - ((window as Record<string, number>)['__splashStart'] ?? 0);
+    const elapsed = Date.now() - ((window as unknown as Record<string, number>)['__splashStart'] ?? 0);
     const remaining = Math.max(0, 3000 - elapsed);
     setTimeout(() => {
       splash.classList.add('splash-out');

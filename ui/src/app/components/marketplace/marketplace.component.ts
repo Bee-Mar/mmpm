@@ -17,10 +17,10 @@ export class MarketPlaceComponent implements OnInit, OnDestroy {
   @Input() viewMode: 'cards' | 'table' = 'cards';
   @Input() selectedPackages: MagicMirrorPackage[] = [];
   @Output() selectedPackagesChange = new EventEmitter<MagicMirrorPackage[]>();
+  @Output() selectedPackageChange = new EventEmitter<MagicMirrorPackage | null>();
+  @Output() openPanel = new EventEmitter<string>();
 
   public loading: boolean = true;
-
-  @Output() selectedPackageChange = new EventEmitter<MagicMirrorPackage | null>();
 
   public packages: MagicMirrorPackage[] = [];
   public categories: string[] = [];

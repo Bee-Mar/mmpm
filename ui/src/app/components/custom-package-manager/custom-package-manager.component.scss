@@ -1,5 +1,26 @@
 :host { position: relative; display: inline-flex; }
 
+.panel-body {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 0;
+  width: 100%;
+}
+
+.panel-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.panel-empty {
+  font-size: 13px;
+  color: var(--fg-3);
+  padding: 10px 0;
+}
+
 .custom-btn-wrap {
   position: relative;
   display: inline-flex;

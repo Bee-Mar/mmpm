@@ -1,72 +1,83 @@
-<div class="custom-btn-wrap">
-  <button class="btn" (click)="showMenu = !showMenu">
-    <i class="fa-solid fa-cube"></i>
-    Custom Package
-    <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 2px"></i>
-  </button>
+@if (view === null) {
+  <!-- Trigger mode: lives in marketplace toolbar -->
+  <div class="custom-btn-wrap">
+    <button class="btn" (click)="showMenu = !showMenu">
+      <i class="fa-solid fa-cube"></i>
+      Custom Package
+      <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 2px"></i>
+    </button>
 
-  @if (showMenu) {
-    <div class="drop-menu" (click)="showMenu = false" (keydown.escape)="showMenu = false" role="menu" tabindex="-1">
-      <button class="menu-item" (click)="customPackage = clearCustomPackage(); displayCustomPkgAddDialog = true">
-        <i class="fa-solid fa-plus"></i> Add custom package
-      </button>
-      <button class="menu-item" (click)="displayCustomPkgRemoveDialog = true">
-        <i class="fa-solid fa-eraser"></i> Remove custom package
-      </button>
-    </div>
-  }
-</div>
+    @if (showMenu) {
+      <div class="drop-menu" (click)="showMenu = false" (keydown.escape)="showMenu = false" role="menu" tabindex="-1">
+        <button class="menu-item" (click)="openPanel.emit('add-package')">
+          <i class="fa-solid fa-plus"></i> Add custom package
+        </button>
+        <button class="menu-item" (click)="openPanel.emit('remove-package')">
+          <i class="fa-solid fa-eraser"></i> Remove custom package
+        </button>
+      </div>
+    }
+  </div>
+}
 
-<p-dialog header="Add Custom Package" [(visible)]="displayCustomPkgAddDialog"
-  [style]="{ width: '420px' }">
-  <form #customPackageForm="ngForm">
-    <div class="form-field">
-      <label for="cpm-title">TITLE</label>
-      <input id="cpm-title" type="text" name="title" pInputText [(ngModel)]="customPackage.title" required placeholder="MMM-MyModule" />
-    </div>
-    <div class="form-field">
-      <label for="cpm-author">AUTHOR</label>
-      <input id="cpm-author" type="text" name="author" pInputText [(ngModel)]="customPackage.author" placeholder="your-handle" />
-    </div>
-    <div class="form-field">
-      <label for="cpm-repo">REPOSITORY URL</label>
-      <input id="cpm-repo" type="text" name="repository" pInputText [(ngModel)]="customPackage.repository" required placeholder="https://github.com/you/MMM-MyModule" />
-    </div>
-    <div class="form-field">
-      <label for="cpm-desc">DESCRIPTION</label>
-      <input id="cpm-desc" type="text" name="description" pInputText [(ngModel)]="customPackage.description" placeholder="What does this module do?" />
-    </div>
-    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px">
-      <button class="btn ghost" (click)="displayCustomPkgAddDialog = false">Cancel</button>
-      <button class="btn primary"
-        [disabled]="!(customPackage.title && customPackage.repository)"
-        (click)="onAddMmPkg()">
-        <i class="fa-solid fa-floppy-disk"></i> Add to database
-      </button>
-    </div>
-  </form>
-</p-dialog>
+@if (view === 'add') {
+  <!-- Panel mode: lives in the dock -->
+  <div class="panel-body">
+    <form #customPackageForm="ngForm">
+      <div class="form-field">
+        <label for="cpm-title">TITLE</label>
+        <input id="cpm-title" type="text" name="title" pInputText [(ngModel)]="customPackage.title" required placeholder="MMM-MyModule" />
+      </div>
+      <div class="form-field">
+        <label for="cpm-author">AUTHOR</label>
+        <input id="cpm-author" type="text" name="author" pInputText [(ngModel)]="customPackage.author" placeholder="your-handle" />
+      </div>
+      <div class="form-field">
+        <label for="cpm-repo">REPOSITORY URL</label>
+        <input id="cpm-repo" type="text" name="repository" pInputText [(ngModel)]="customPackage.repository" required placeholder="https://github.com/you/MMM-MyModule" />
+      </div>
+      <div class="form-field">
+        <label for="cpm-desc">DESCRIPTION</label>
+        <input id="cpm-desc" type="text" name="description" pInputText [(ngModel)]="customPackage.description" placeholder="What does this module do?" />
+      </div>
+      <div class="panel-actions">
+        <button class="btn ghost" (click)="panelClosed.emit()">Cancel</button>
+        <button class="btn primary"
+          [disabled]="!(customPackage.title && customPackage.repository)"
+          (click)="onAddMmPkg()">
+          <i class="fa-solid fa-floppy-disk"></i> Add to database
+        </button>
+      </div>
+    </form>
+  </div>
+}
 
-<p-dialog header="Remove Custom Packages" [(visible)]="displayCustomPkgRemoveDialog"
-  (onHide)="reset()" [style]="{ width: '400px' }">
-  @if (customPackages.length) {
-    <p-listbox
-      [options]="customPackages"
-      [(ngModel)]="selectedCustomPackages"
-      optionLabel="title"
-      [multiple]="true"
-      [checkbox]="true"
-      [metaKeySelection]="false"
-      [listStyle]="{ 'max-height': '220px' }">
-    </p-listbox>
-    <div style="display: flex; justify-content: flex-end; margin-top: 12px">
-      <button class="btn danger" [disabled]="!selectedCustomPackages.length" (click)="onRemoveMmPkg()">
-        <i class="fa-solid fa-trash"></i> Remove selected
-      </button>
-    </div>
-  } @else {
-    <div style="color: var(--fg-3); padding: 10px 0">No custom packages found.</div>
-  }
-</p-dialog>
+@if (view === 'remove') {
+  <!-- Panel mode: lives in the dock -->
+  <div class="panel-body">
+    @if (customPackages.length) {
+      <p-listbox
+        [options]="customPackages"
+        [(ngModel)]="selectedCustomPackages"
+        optionLabel="title"
+        [multiple]="true"
+        [checkbox]="true"
+        [metaKeySelection]="false"
+        [listStyle]="{ 'max-height': '240px' }">
+      </p-listbox>
+      <div class="panel-actions">
+        <button class="btn ghost" (click)="panelClosed.emit()">Cancel</button>
+        <button class="btn danger" [disabled]="!selectedCustomPackages.length" (click)="onRemoveMmPkg()">
+          <i class="fa-solid fa-trash"></i> Remove selected
+        </button>
+      </div>
+    } @else {
+      <div class="panel-empty">No custom packages found.</div>
+      <div class="panel-actions">
+        <button class="btn ghost" (click)="panelClosed.emit()">Close</button>
+      </div>
+    }
+  </div>
+}
 
 <p-toast></p-toast>

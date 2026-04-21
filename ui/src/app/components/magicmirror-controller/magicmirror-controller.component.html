@@ -34,9 +34,10 @@
   </div>
 }
 
-<p-dialog header="MagicMirror Modules" [(visible)]="openModuleVisibilityDialog">
+<p-drawer header="MagicMirror Modules" [(visible)]="openModuleVisibilityDialog"
+  position="right" [style]="{ width: '420px' }">
   @if (modules.length === 0) {
-    <div>
+    <div style="color: var(--fg-3); padding: 10px 0">
       Unable to retrieve modules. Is MagicMirror running, and is
       <a href="https://github.com/bee-mar/mmm-mmpm" target="_blank">MMM-mmpm</a> installed?
     </div>
@@ -55,7 +56,7 @@
       </div>
     }
   }
-</p-dialog>
+</p-drawer>
 
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>

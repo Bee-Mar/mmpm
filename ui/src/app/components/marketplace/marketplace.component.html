@@ -8,8 +8,8 @@
     <button [class.active]="viewMode === 'cards'" (click)="viewMode = 'cards'">CARDS</button>
     <button [class.active]="viewMode === 'table'" (click)="viewMode = 'table'">TABLE</button>
   </div>
-  <app-custom-package-manager></app-custom-package-manager>
-  <app-database-info></app-database-info>
+  <app-custom-package-manager (openPanel)="openPanel.emit($event)"></app-custom-package-manager>
+  <app-database-info (openPanel)="openPanel.emit($event)"></app-database-info>
 </div>
 
 <div class="toolbar">

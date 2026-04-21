@@ -1,68 +1,82 @@
-<div class="db-btn-wrap">
-  <button class="btn" (click)="showMenu = !showMenu">
-    <i class="fa-solid fa-database"></i>
-    Database
-    @if (upgradableItems.length > 0) { <span class="badge update">{{ upgradableItems.length }}</span> }
-    <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 2px"></i>
-  </button>
+@if (view === null) {
+  <!-- Trigger mode: lives in marketplace toolbar -->
+  <div class="db-btn-wrap">
+    <button class="btn" (click)="showMenu = !showMenu">
+      <i class="fa-solid fa-database"></i>
+      Database
+      @if (upgradableItems.length > 0) { <span class="badge update">{{ upgradableItems.length }}</span> }
+      <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 2px"></i>
+    </button>
 
-  @if (showMenu) {
-    <div class="drop-menu" (click)="showMenu = false" (keydown.escape)="showMenu = false" role="menu" tabindex="-1">
-      <button class="menu-item" (click)="onUpdate()">
-        <i class="fa-solid fa-arrows-rotate"></i> Update database
-      </button>
-      <button class="menu-item" (click)="displayDbUpgradeDialog = true">
-        <i class="fa-solid fa-arrow-up-from-bracket"></i>
-        Upgrades
-        @if (upgradableItems.length > 0) { ({{ upgradableItems.length }}) }
-      </button>
-      <div class="menu-sep"></div>
-      <button class="menu-item" (click)="displayDbInfoDialog = true">
-        <i class="fa-solid fa-circle-info"></i> Database info
-      </button>
+    @if (showMenu) {
+      <div class="drop-menu" (click)="showMenu = false" (keydown.escape)="showMenu = false" role="menu" tabindex="-1">
+        <button class="menu-item" (click)="onUpdate()">
+          <i class="fa-solid fa-arrows-rotate"></i> Update database
+        </button>
+        <button class="menu-item" (click)="openPanel.emit('db-upgrades')">
+          <i class="fa-solid fa-arrow-up-from-bracket"></i>
+          Upgrades
+          @if (upgradableItems.length > 0) { ({{ upgradableItems.length }}) }
+        </button>
+        <div class="menu-sep"></div>
+        <button class="menu-item" (click)="openPanel.emit('db-info')">
+          <i class="fa-solid fa-circle-info"></i> Database info
+        </button>
+      </div>
+    }
+  </div>
+}
+
+@if (view === 'info') {
+  <!-- Panel mode: lives in the dock -->
+  <div class="panel-body">
+    <dl class="kv">
+      <dt>Version</dt><dd>{{ version }}</dd>
+      <dt>Last updated</dt><dd>{{ dbInfo?.last_update }}</dd>
+      <dt>Packages</dt><dd>{{ dbInfo?.packages }}</dd>
+      <dt>Categories</dt><dd>{{ dbInfo?.categories }}</dd>
+      <dt>Upgrades</dt>
+      <dd>
+        @if (upgradesAvailable) {
+          <span style="color: var(--warn)">{{ upgradableItems.length }} available</span>
+        } @else {
+          <span style="color: var(--fg-4)">up-to-date</span>
+        }
+      </dd>
+    </dl>
+    <div class="panel-actions">
+      <button class="btn ghost" (click)="panelClosed.emit()">Close</button>
     </div>
-  }
-</div>
+  </div>
+}
 
-<p-dialog header="Database Info" [(visible)]="displayDbInfoDialog"
-  [style]="{ width: '400px' }">
-  <dl class="kv" style="margin-bottom: 8px">
-    <dt>Version</dt><dd>{{ version }}</dd>
-    <dt>Last updated</dt><dd>{{ dbInfo?.last_update }}</dd>
-    <dt>Packages</dt><dd>{{ dbInfo?.packages }}</dd>
-    <dt>Categories</dt><dd>{{ dbInfo?.categories }}</dd>
-    <dt>Upgrades</dt>
-    <dd>
-      @if (upgradesAvailable) {
-        <span style="color: var(--warn)">{{ upgradableItems.length }} available</span>
-      } @else {
-        <span style="color: var(--fg-4)">up-to-date</span>
-      }
-    </dd>
-  </dl>
-</p-dialog>
-
-<p-dialog header="Available Upgrades" [(visible)]="displayDbUpgradeDialog"
-  [style]="{ width: '400px' }">
-  @if (upgradesAvailable) {
-    <p-listbox
-      [options]="upgradableItems"
-      [(ngModel)]="selectedUpgrades"
-      optionLabel="title"
-      [multiple]="true"
-      [checkbox]="true"
-      [metaKeySelection]="false"
-      [listStyle]="{ 'max-height': '220px' }">
-    </p-listbox>
-    <div style="margin-top: 12px; display: flex; justify-content: flex-end">
-      <button class="btn primary" [disabled]="!selectedUpgrades.length" (click)="onUpgrade()">
-        <i class="fa-solid fa-check"></i> Upgrade selected
-      </button>
-    </div>
-  } @else {
-    <div style="color: var(--fg-3); padding: 10px 0">Everything is up to date.</div>
-  }
-</p-dialog>
+@if (view === 'upgrades') {
+  <!-- Panel mode: lives in the dock -->
+  <div class="panel-body">
+    @if (upgradesAvailable) {
+      <p-listbox
+        [options]="upgradableItems"
+        [(ngModel)]="selectedUpgrades"
+        optionLabel="title"
+        [multiple]="true"
+        [checkbox]="true"
+        [metaKeySelection]="false"
+        [listStyle]="{ 'max-height': '240px' }">
+      </p-listbox>
+      <div class="panel-actions">
+        <button class="btn ghost" (click)="panelClosed.emit()">Cancel</button>
+        <button class="btn primary" [disabled]="!selectedUpgrades.length" (click)="onUpgrade()">
+          <i class="fa-solid fa-check"></i> Upgrade selected
+        </button>
+      </div>
+    } @else {
+      <div class="panel-empty">Everything is up to date.</div>
+      <div class="panel-actions">
+        <button class="btn ghost" (click)="panelClosed.emit()">Close</button>
+      </div>
+    }
+  </div>
+}
 
 <p-confirmDialog></p-confirmDialog>
 <p-toast></p-toast>

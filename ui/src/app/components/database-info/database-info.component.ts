@@ -35,45 +35,21 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
   private dbInfoSubscription: Subscription = new Subscription();
   private upgradableSubscription: Subscription = new Subscription();
 
-  @Input()
-  public loading: boolean;
+  @Input() public loading: boolean;
+  @Input() public view: 'info' | 'upgrades' | null = null;
 
-  @Output()
-  public loadingChange = new EventEmitter<boolean>(false);
+  @Output() public loadingChange = new EventEmitter<boolean>(false);
+  @Output() public openPanel = new EventEmitter<string>();
+  @Output() public panelClosed = new EventEmitter<void>();
 
   public version = '';
   public dbInfo: DatabaseInfo | undefined;
   public showMenu = false;
   public upgradesAvailable = false;
-  public displayDbInfoDialog = false;
-  public displayDbUpgradeDialog = false;
   public upgradableItems = new Array<MagicMirrorPackage>();
   public selectedPackages = new Array<MagicMirrorPackage>();
   public selectedUpgrades = new Array<MagicMirrorPackage>();
 
-  public databaseOptions = [
-    {
-      label: 'Update',
-      icon: 'fa-solid fa-arrows-rotate',
-      command: () => {
-        this.onUpdate();
-      },
-    },
-    {
-      label: 'Upgrades',
-      icon: 'fa-solid fa-arrow-up-from-bracket',
-      command: () => {
-        this.displayDbUpgradeDialog = true;
-      },
-    },
-    {
-      label: 'Info',
-      icon: 'fa-solid fa-circle-info',
-      command: () => {
-        this.displayDbInfoDialog = true;
-      },
-    },
-  ];
 
   public ngOnInit(): void {
     this.baseApi.get_('mmpm/version').then((response: APIResponse) => {
@@ -106,10 +82,6 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
           this.upgradableItems.push(this.dummyPackage('MagicMirror'));
         }
 
-        // update the title of the menu item based on the number of available upgrades
-        if (this.upgradableItems.length) {
-          this.databaseOptions[1].label = `Upgrades (${this.upgradableItems.length})`;
-        }
       },
     );
   }

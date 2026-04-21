@@ -5,6 +5,7 @@ import { ConfigFileAPI } from '@/services/api/config-file-api.service';
 import { MessageService, MenuItem } from 'primeng/api';
 import { ContextMenu } from 'primeng/contextmenu';
 import { Subscription } from 'rxjs';
+import { getModuleIcon, ModuleIcon } from '@/utils/module-icon';
 
 interface Region {
   key: string;
@@ -306,6 +307,16 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
 
   public isDisabled(name: string): boolean {
     return this.disabledNames.has(name);
+  }
+
+  public getModuleIcon(entry: LibraryEntry): ModuleIcon {
+    const pkg = this.pkgByDir.get(entry.name.toLowerCase());
+    return getModuleIcon({ title: entry.title, directory: entry.name, category: pkg?.category });
+  }
+
+  public getModuleIconForName(name: string): ModuleIcon {
+    const pkg = this.pkgByDir.get(name.toLowerCase());
+    return getModuleIcon({ title: this.displayTitle(name), directory: name, category: pkg?.category });
   }
 
   // ── Context menu ──────────────────────────────────────────────────────────

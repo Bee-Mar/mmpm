@@ -33,45 +33,18 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
   @ViewChild('customPackageForm')
   public customPackageForm: NgForm;
 
-  @Input()
-  public loading: boolean;
+  @Input() public loading: boolean;
+  @Input() public view: 'add' | 'remove' | null = null;
 
-  @Output()
-  public loadingChange = new EventEmitter<boolean>(false);
+  @Output() public loadingChange = new EventEmitter<boolean>(false);
+  @Output() public openPanel = new EventEmitter<string>();
+  @Output() public panelClosed = new EventEmitter<void>();
 
   public showMenu = false;
-  public displayCustomPkgAddDialog = false;
-  public displayCustomPkgRemoveDialog = false;
   public selectedCustomPackages = new Array<MagicMirrorPackage>();
   public customPackages = new Array<MagicMirrorPackage>();
   public customPackage: MagicMirrorPackage = this.clearCustomPackage();
 
-  public customPackageOptions = [
-    {
-      label: 'Add',
-      icon: 'fa-solid fa-plus',
-      command: () => {
-        this.customPackage = this.clearCustomPackage();
-
-        if (this.displayCustomPkgRemoveDialog) {
-          this.displayCustomPkgRemoveDialog = false;
-        }
-
-        this.displayCustomPkgAddDialog = true;
-      },
-    },
-    {
-      label: 'Remove',
-      icon: 'fa-solid fa-eraser',
-      command: () => {
-        if (this.displayCustomPkgAddDialog) {
-          this.displayCustomPkgAddDialog = false;
-        }
-
-        this.displayCustomPkgRemoveDialog = true;
-      },
-    },
-  ];
 
   public ngOnInit(): void {
     this.packagesSubscription = this.store.packages.subscribe(
@@ -115,6 +88,7 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
       .then((response: APIResponse) => {
         this.reset();
         this.store.load();
+        this.panelClosed.emit();
 
         if (response.code === 200) {
           this.msg.add({
@@ -145,6 +119,7 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
       .then((response: APIResponse) => {
         this.reset();
         this.store.load();
+        this.panelClosed.emit();
 
         const success = response.message.success as Array<MagicMirrorPackage>;
         const failure = response.message.failure as Array<MagicMirrorPackage>;

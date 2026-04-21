@@ -38,4 +38,18 @@ export class AppComponent {
   public onToggleCart(): void {
     this.dockTab = this.dockTab === "cart" ? "details" : "cart";
   }
+
+  public setDockPanel(panel: string): void {
+    this.dockTab = panel;
+  }
+
+  public get dockPanelTitle(): string {
+    const titles: Record<string, string> = {
+      'add-package': 'Add Custom Package',
+      'remove-package': 'Remove Custom Packages',
+      'db-info': 'Database Info',
+      'db-upgrades': 'Available Upgrades',
+    };
+    return titles[this.dockTab] ?? '';
+  }
 }

@@ -76,7 +76,8 @@
         <app-marketplace
           [viewMode]="viewMode"
           [(selectedPackages)]="selectedPackages"
-          (selectedPackageChange)="onPackageSelected($event)">
+          (selectedPackageChange)="onPackageSelected($event)"
+          (openPanel)="setDockPanel($event)">
         </app-marketplace>
       }
 
@@ -110,23 +111,33 @@
 
     </div>
 
-    <!-- Right dock -->
+    <!-- Right dock (hidden during Mirror Preview) -->
+    @if (activeTab !== 'mirror') {
     <div class="dock">
-      <div class="dock-tabs">
-        <button class="dock-tab" [class.active]="dockTab === 'cart'" (click)="dockTab = 'cart'">
-          <i class="fa-solid fa-cart-shopping"></i>
-          Cart
-          @if (selectedPackages.length > 0) {
-            <span class="n">{{ selectedPackages.length }}</span>
-          }
-        </button>
-        @if (selectedPackage) {
-          <button class="dock-tab" [class.active]="dockTab === 'details'" (click)="dockTab = 'details'">
-            <i class="fa-solid fa-circle-info"></i>
-            Details
+      @if (!dockPanelTitle) {
+        <div class="dock-tabs">
+          <button class="dock-tab" [class.active]="dockTab === 'cart'" (click)="dockTab = 'cart'">
+            <i class="fa-solid fa-cart-shopping"></i>
+            Cart
+            @if (selectedPackages.length > 0) {
+              <span class="n">{{ selectedPackages.length }}</span>
+            }
           </button>
-        }
-      </div>
+          @if (selectedPackage) {
+            <button class="dock-tab" [class.active]="dockTab === 'details'" (click)="dockTab = 'details'">
+              <i class="fa-solid fa-circle-info"></i>
+              Details
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="dock-panel-head">
+          <button class="dock-back" (click)="dockTab = 'cart'" title="Back">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <span class="dock-panel-title">{{ dockPanelTitle }}</span>
+        </div>
+      }
 
       <div class="dock-body">
         @if (dockTab === 'details' && selectedPackage) {
@@ -143,8 +154,37 @@
             [(loading)]="loading">
           </app-shopping-cart>
         }
+
+        @if (dockTab === 'add-package') {
+          <app-custom-package-manager
+            [view]="'add'"
+            (panelClosed)="dockTab = 'cart'">
+          </app-custom-package-manager>
+        }
+
+        @if (dockTab === 'remove-package') {
+          <app-custom-package-manager
+            [view]="'remove'"
+            (panelClosed)="dockTab = 'cart'">
+          </app-custom-package-manager>
+        }
+
+        @if (dockTab === 'db-info') {
+          <app-database-info
+            [view]="'info'"
+            (panelClosed)="dockTab = 'cart'">
+          </app-database-info>
+        }
+
+        @if (dockTab === 'db-upgrades') {
+          <app-database-info
+            [view]="'upgrades'"
+            (panelClosed)="dockTab = 'cart'">
+          </app-database-info>
+        }
       </div>
     </div>
+    } <!-- end @if activeTab !== 'mirror' -->
   </div>
 </div>
 

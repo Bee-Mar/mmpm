@@ -12,8 +12,8 @@
   --fg-0: oklch(0.98 0.004 80);
   --fg-1: oklch(0.90 0.006 80);
   --fg-2: oklch(0.72 0.010 80);
-  --fg-3: oklch(0.55 0.013 80);
-  --fg-4: oklch(0.40 0.015 80);
+  --fg-3: oklch(0.62 0.011 80);
+  --fg-4: oklch(0.52 0.013 80);
 
   --accent:    oklch(0.87 0.07 75);
   --accent-hi: oklch(0.92 0.07 75);
@@ -33,6 +33,21 @@
   --header-h: 52px;
   --rail-w:   60px;
   --dock-w:   340px;
+}
+
+html[data-theme="light"] {
+  --bg-0: oklch(0.97 0.005 80);
+  --bg-1: oklch(0.93 0.006 80);
+  --bg-2: oklch(0.89 0.007 80);
+  --bg-3: oklch(0.84 0.008 80);
+  --line: oklch(0.55 0.010 80 / 0.30);
+  --line-soft: oklch(0.55 0.010 80 / 0.14);
+
+  --fg-0: oklch(0.15 0.012 80);
+  --fg-1: oklch(0.25 0.010 80);
+  --fg-2: oklch(0.38 0.010 80);
+  --fg-3: oklch(0.50 0.012 80);
+  --fg-4: oklch(0.55 0.011 80);
 }
 
 *, *::before, *::after { box-sizing: border-box; }

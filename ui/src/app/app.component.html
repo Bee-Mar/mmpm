@@ -31,6 +31,15 @@
     </button>
 
     <div class="spacer"></div>
+
+    <button class="nav-btn theme-btn" (click)="toggleTheme()" [title]="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
+      @if (theme === 'dark') {
+        <i class="fa-solid fa-sun"></i>
+      } @else {
+        <i class="fa-solid fa-moon"></i>
+      }
+      <span class="tip">{{ theme === 'dark' ? 'Light mode' : 'Dark mode' }}</span>
+    </button>
   </nav>
 
   <!-- Top header -->

@@ -39,6 +39,7 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
   @Output()
   public loadingChange = new EventEmitter<boolean>(false);
 
+  public showMenu = false;
   public displayCustomPkgAddDialog = false;
   public displayCustomPkgRemoveDialog = false;
   public selectedCustomPackages = new Array<MagicMirrorPackage>();
@@ -86,7 +87,7 @@ export class CustomPackageManagerComponent implements OnInit, OnDestroy {
     this.packagesSubscription.unsubscribe();
   }
 
-  private clearCustomPackage(): MagicMirrorPackage {
+  public clearCustomPackage(): MagicMirrorPackage {
     return {
       title: '',
       repository: '',

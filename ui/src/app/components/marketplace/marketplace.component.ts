@@ -1,11 +1,7 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, inject } from '@angular/core';
 import { MagicMirrorPackage } from '@/models/magicmirror-package';
 import { SharedStoreService } from '@/services/shared-store.service';
 import { Subscription } from 'rxjs';
-import {
-  MarketPlaceIcons,
-  DefaultMarketPlaceIcon,
-} from './marketplace-icons.model';
 
 @Component({
   selector: 'app-marketplace',
@@ -15,39 +11,72 @@ import {
 })
 export class MarketPlaceComponent implements OnInit, OnDestroy {
   private store = inject(SharedStoreService);
-
   private packagesSubscription: Subscription = new Subscription();
 
-  public icons = MarketPlaceIcons;
-  public packages = new Array<MagicMirrorPackage>();
-  public categories = new Array<string>();
-  public selectedPackages = new Array<MagicMirrorPackage>();
-  public loading = true;
-  public selectedInstalled: boolean | null = null;
-  public selectedPackage: MagicMirrorPackage | null = null;
-  public displayDetailsDialog = false;
-  public selectedCategories = new Array<string>();
-  public readonly installedOptions = [true, false];
+  @Input() viewMode: 'cards' | 'table' = 'cards';
+  @Input() selectedPackages: MagicMirrorPackage[] = [];
+  @Output() selectedPackagesChange = new EventEmitter<MagicMirrorPackage[]>();
+
+  public loading: boolean = true;
+
+  @Output() selectedPackageChange = new EventEmitter<MagicMirrorPackage | null>();
+
+  public packages: MagicMirrorPackage[] = [];
+  public categories: string[] = [];
+  public selectedCategory: string = 'all';
+  public searchQuery: string = '';
+
+  public get filteredPackages(): MagicMirrorPackage[] {
+    return this.packages.filter(pkg => {
+      const matchesCategory = this.selectedCategory === 'all' || pkg.category === this.selectedCategory;
+      if (!matchesCategory) return false;
+      if (!this.searchQuery) return true;
+      const q = this.searchQuery.toLowerCase();
+      return pkg.title.toLowerCase().includes(q)
+        || pkg.author.toLowerCase().includes(q)
+        || pkg.description.toLowerCase().includes(q);
+    });
+  }
+
+  public get installedCount(): number {
+    return this.packages.filter(p => p.is_installed).length;
+  }
+
+  public get upgradableCount(): number {
+    return this.packages.filter(p => p.is_upgradable).length;
+  }
+
+  public categoryCount(cat: string): number {
+    return this.packages.filter(p => p.category === cat).length;
+  }
+
+  public isSelected(pkg: MagicMirrorPackage): boolean {
+    return this.selectedPackages.some(p => p.title === pkg.title && p.repository === pkg.repository);
+  }
+
+  public toggleSelect(pkg: MagicMirrorPackage): void {
+    const next = this.isSelected(pkg)
+      ? this.selectedPackages.filter(p => !(p.title === pkg.title && p.repository === pkg.repository))
+      : [...this.selectedPackages, pkg];
+    this.selectedPackagesChange.emit(next);
+  }
+
+  public openDetails(pkg: MagicMirrorPackage): void {
+    this.selectedPackageChange.emit(pkg);
+  }
 
   public ngOnInit(): void {
-    this.packagesSubscription = this.store.packages.subscribe(
-      (packages: Array<MagicMirrorPackage>) => {
-        this.packages = packages;
+    this.packagesSubscription = this.store.packages.subscribe((packages: MagicMirrorPackage[]) => {
+      this.packages = packages;
 
-        this.categories = this.packages
-          .map((pkg) => pkg.category)
-          .filter((category, index, self) => self.indexOf(category) === index);
+      this.categories = ['all', ...packages
+        .map(pkg => pkg.category)
+        .filter((cat, idx, self) => cat && self.indexOf(cat) === idx)
+        .sort()
+      ];
 
-        // add a default icon for any category that isn't recognized
-        this.packages.forEach((pkg: MagicMirrorPackage) => {
-          if (pkg.category && !this.icons[pkg.category]) {
-            this.icons[pkg.category] = { ...DefaultMarketPlaceIcon };
-          }
-        });
-
-        this.loading = false;
-      },
-    );
+      this.loading = false;
+    });
   }
 
   public ngOnDestroy(): void {

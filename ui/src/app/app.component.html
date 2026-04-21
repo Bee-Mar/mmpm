@@ -1,35 +1,145 @@
-<div class="logo-container">
-  <a href="https://github.com/bee-mar/mmpm" target="_blank">
-    <img src="/assets/MagicMirror-Package-Manager.png" alt="MagicMirror Package Manager Logo" style="padding: 30px" />
-  </a>
-  <div style="float: right">
-    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank">
-      <img src="/assets/paypal.svg" style="height: 35px; width: 35px; margin-top: 3em; margin-right: 1em" alt="Donate with PayPal" pTooltip="Donate" tooltipPosition="left" />
-    </a>
-  </div>
+<div class="app-bg"></div>
 
-  <div style="float: left; margin-left: 1em; margin-top: 1.5em">
-    <app-magicmirror-controller></app-magicmirror-controller>
+<div class="app">
+  <!-- Left rail navigation -->
+  <nav class="rail">
+    <div class="brand-mini" title="MMPM">
+      <i class="fa-solid fa-layer-group"></i>
+    </div>
+
+    <button class="nav-btn" [class.active]="activeTab === 'marketplace'" (click)="setTab('marketplace')" title="Marketplace">
+      <i class="fa-solid fa-shop"></i>
+      @if (selectedPackages.length > 0) {
+        <span class="dot"></span>
+      }
+      <span class="tip">Marketplace</span>
+    </button>
+
+    <button class="nav-btn" [class.active]="activeTab === 'config'" (click)="setTab('config')" title="Config Editor">
+      <i class="fa-solid fa-code"></i>
+      <span class="tip">Config Editor</span>
+    </button>
+
+    <button class="nav-btn" [class.active]="activeTab === 'logs'" (click)="setTab('logs')" title="Server Logs">
+      <i class="fa-solid fa-terminal"></i>
+      <span class="tip">Server Logs</span>
+    </button>
+
+    <div class="spacer"></div>
+
+    <button class="nav-btn" title="Help">
+      <i class="fa-solid fa-circle-question"></i>
+      <span class="tip">Keyboard shortcuts</span>
+    </button>
+  </nav>
+
+  <!-- Top header -->
+  <header class="header">
+    <app-magicmirror-controller
+      [(showPopover)]="showControllerPopover"
+      (statusChange)="mmStatus = $event">
+    </app-magicmirror-controller>
+
+    <div class="status-pill" [class.running]="mmStatus === 'running'" [class.stopped]="mmStatus === 'stopped'">
+      <span class="led"></span>
+      <span>MM · {{ mmStatus.toUpperCase() }}</span>
+    </div>
+
+    <div class="wordmark">
+      <span>MAGICMIRROR</span>
+      <span class="bullet">·</span>
+      <span>PACKAGE MANAGER</span>
+    </div>
+
+    <div class="spacer"></div>
+
+    <button class="icon-btn" (click)="dockTab = dockTab === 'cart' ? 'details' : 'cart'" title="Cart">
+      <i class="fa-solid fa-cart-shopping"></i>
+      @if (selectedPackages.length > 0) {
+        <span class="badge">{{ selectedPackages.length }}</span>
+      }
+    </button>
+
+    <a class="donate-btn" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank" title="Donate">
+      <i class="fa-brands fa-paypal"></i>
+    </a>
+  </header>
+
+  <!-- Main content + right dock -->
+  <div class="main">
+    <div class="content">
+
+      @if (activeTab === 'marketplace') {
+        <app-marketplace
+          [viewMode]="viewMode"
+          [(selectedPackages)]="selectedPackages"
+          (selectedPackageChange)="onPackageSelected($event)">
+        </app-marketplace>
+      }
+
+      @if (activeTab === 'config') {
+        <div class="page-head">
+          <div class="page-title">
+            <h1>Config Editor</h1>
+            <span class="sub">// ~/MagicMirror/config</span>
+          </div>
+        </div>
+        <div class="tab-content">
+          <app-config-editor></app-config-editor>
+        </div>
+      }
+
+      @if (activeTab === 'logs') {
+        <div class="page-head">
+          <div class="page-title">
+            <h1>Server Logs</h1>
+            <span class="sub">// streaming from mmpm-api</span>
+          </div>
+        </div>
+        <div class="tab-content">
+          <app-log-stream-viewer></app-log-stream-viewer>
+        </div>
+      }
+
+    </div>
+
+    <!-- Right dock -->
+    <div class="dock">
+      <div class="dock-tabs">
+        <button class="dock-tab" [class.active]="dockTab === 'cart'" (click)="dockTab = 'cart'">
+          <i class="fa-solid fa-cart-shopping"></i>
+          Cart
+          @if (selectedPackages.length > 0) {
+            <span class="n">{{ selectedPackages.length }}</span>
+          }
+        </button>
+        @if (selectedPackage) {
+          <button class="dock-tab" [class.active]="dockTab === 'details'" (click)="dockTab = 'details'">
+            <i class="fa-solid fa-circle-info"></i>
+            Details
+          </button>
+        }
+      </div>
+
+      <div class="dock-body">
+        @if (dockTab === 'details' && selectedPackage) {
+          <app-package-details-viewer
+            [selectedPackage]="selectedPackage"
+            [(selectedPackages)]="selectedPackages"
+            (closePanel)="selectedPackage = null; dockTab = 'cart'">
+          </app-package-details-viewer>
+        }
+
+        @if (dockTab === 'cart' || (dockTab === 'details' && !selectedPackage)) {
+          <app-shopping-cart
+            [(selectedPackages)]="selectedPackages"
+            [(loading)]="loading">
+          </app-shopping-cart>
+        }
+      </div>
+    </div>
   </div>
 </div>
 
-<p-tabs [value]="index" (valueChange)="onTabChange($event)">
-  <p-tablist>
-    <p-tab [value]="0"><i class="fa-solid fa-shop"></i> Marketplace</p-tab>
-    <p-tab [value]="1"><i class="fa-solid fa-pen-to-square"></i> Config Editor</p-tab>
-    <p-tab [value]="2"><i class="fa fa-message"></i> Logs</p-tab>
-  </p-tablist>
-  <p-tabpanels>
-    <p-tabpanel [value]="0">
-      <app-marketplace></app-marketplace>
-    </p-tabpanel>
-    <p-tabpanel [value]="1">
-      <app-config-editor></app-config-editor>
-    </p-tabpanel>
-    <p-tabpanel [value]="2">
-      <app-log-stream-viewer></app-log-stream-viewer>
-    </p-tabpanel>
-  </p-tabpanels>
-</p-tabs>
 
 <router-outlet></router-outlet>

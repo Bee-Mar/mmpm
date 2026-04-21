@@ -3,6 +3,9 @@ import {
   HostListener,
   OnDestroy,
   OnInit,
+  Input,
+  Output,
+  EventEmitter,
   inject,
 } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
@@ -28,6 +31,10 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   private mmApi = inject(MagicMirrorAPI);
   private confirmation = inject(ConfirmationService);
   private store = inject(SharedStoreService);
+
+  @Input() showPopover: boolean = false;
+  @Output() showPopoverChange = new EventEmitter<boolean>();
+  @Output() statusChange = new EventEmitter<string>();
 
   public env: MMPMEnv;
   public openHelpDialog = false;
@@ -285,6 +292,7 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
 
     this.socket.on('connect', () => {
       console.log('Connected to MMPM Socket.IO Repeater');
+      this.statusChange.emit('running');
       this.socket?.emit('request_modules');
     });
 
@@ -295,6 +303,7 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
 
     this.socket.on('disconnect', (error) => {
       this.modules = [];
+      this.statusChange.emit('stopped');
       console.log(error);
     });
 

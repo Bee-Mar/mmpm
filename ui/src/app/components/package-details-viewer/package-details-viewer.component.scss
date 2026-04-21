@@ -1,21 +1,67 @@
-.package-details-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-gap: 10px;
-  align-items: center;
-}
-
-.detail {
-  padding: 5px 0;
-}
-
-.detail strong {
-  margin-right: 5px;
-}
-
-.spinner-container {
+.details-panel {
+  padding: 16px;
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.details-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  .pkg-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-3);
+    border: 1px solid var(--line-soft);
+    display: grid;
+    place-items: center;
+    color: var(--accent);
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .pkg-info {
+    flex: 1;
+    min-width: 0;
+
+    h2 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--fg-0);
+    }
+
+    .pkg-author {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--fg-4);
+      margin-top: 2px;
+    }
+  }
+}
+
+.details-desc {
+  font-size: 12.5px;
+  color: var(--fg-2);
+  line-height: 1.55;
+}
+
+.details-remote-btn {
+  width: 100%;
   justify-content: center;
-  align-items: center;
-  height: 100%;
+  padding: 8px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.details-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+
+  .btn { justify-content: center; }
 }

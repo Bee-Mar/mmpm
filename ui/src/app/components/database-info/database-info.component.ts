@@ -42,7 +42,8 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
   public loadingChange = new EventEmitter<boolean>(false);
 
   public version = '';
-  public dbInfo: DatabaseInfo;
+  public dbInfo: DatabaseInfo | undefined;
+  public showMenu = false;
   public upgradesAvailable = false;
   public displayDbInfoDialog = false;
   public displayDbUpgradeDialog = false;
@@ -118,7 +119,7 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
     this.upgradableSubscription.unsubscribe();
   }
 
-  private onUpdate(): void {
+  public onUpdate(): void {
     this.loadingChange.emit(true);
 
     this.baseApi.get_('db/update').then((response: APIResponse) => {

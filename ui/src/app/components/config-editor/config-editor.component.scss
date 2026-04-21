@@ -1,0 +1,69 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line-soft);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+
+  .spacer { flex: 1; }
+
+  .font-label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--fg-4);
+    letter-spacing: 0.06em;
+  }
+
+  .font-size-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.file-tabs {
+  display: flex;
+  gap: 2px;
+
+  .file-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 11.5px;
+    color: var(--fg-3);
+    background: transparent;
+    border: 1px solid transparent;
+    transition: all 120ms;
+    position: relative;
+
+    &:hover { color: var(--fg-1); background: var(--bg-2); }
+    &.active { color: var(--fg-0); background: var(--bg-2); border-color: var(--line-soft); }
+
+    .dirty-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--warn);
+    }
+  }
+}
+
+.editor-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+
+  ngx-monaco-editor, .editor-container {
+    height: 100% !important;
+  }
+}

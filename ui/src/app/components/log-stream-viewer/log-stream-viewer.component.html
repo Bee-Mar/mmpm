@@ -1,35 +1,26 @@
-<p-toolbar>
-  <ng-template pTemplate="start">
-    <p-button label="Download" icon="fa-solid fa-download" [style.marginRight]="'1em'" (onClick)="onDownload()"></p-button>
-    <span class="text-primary font-semibold text-xl">
-      <p-avatar
-        [icon]="socket?.connected ? 'fa-solid fa-signal' : 'fa-solid fa-triangle-exclamation'"
-        styleClass="mr-2"
-        [pTooltip]="socket?.connected ? 'LogServer: connected' : 'LogServer: disconnected'"
-        [style]="{
-          'background-color': socket?.connected ? '#009933' : '#e05252',
-        }"
-      ></p-avatar>
-    </span>
-  </ng-template>
-  <ng-template pTemplate="center"> </ng-template>
-  <ng-template pTemplate="end">
-    <span style="margin-right: 1em">
-      <p-inputNumber
-        [(ngModel)]="fontSize"
-        (ngModelChange)="onFontSizeChange()"
-        [showButtons]="true"
-        suffix=" px"
-        spinnerMode="vertical"
-        inputId="vertical"
-        decrementButtonClass="p-button-secondary"
-        incrementButtonClass="p-button-secondary"
-        [min]="8"
-        [max]="36"
-      >
-      </p-inputNumber>
-    </span>
-  </ng-template>
-</p-toolbar>
+<div class="logs-toolbar">
+  <button class="btn" (click)="onDownload()">
+    <i class="fa-solid fa-download"></i> Download
+  </button>
+  <div class="chip">
+    <span class="dot" [style.background]="socket?.connected ? 'var(--signal)' : 'var(--danger)'"></span>
+    {{ socket?.connected ? 'LIVE' : 'DISCONNECTED' }}
+  </div>
+  <div class="spacer"></div>
+  <div class="font-size-ctrl">
+    <span class="font-label">Size</span>
+    <div class="segmented">
+      <button [class.active]="fontSize === 10" (click)="fontSize = 10; onFontSizeChange()">10</button>
+      <button [class.active]="fontSize === 12" (click)="fontSize = 12; onFontSizeChange()">12</button>
+      <button [class.active]="fontSize === 14" (click)="fontSize = 14; onFontSizeChange()">14</button>
+    </div>
+  </div>
+</div>
 
-<ngx-monaco-editor [style]="{ 'min-height': '66vh' }" [options]="options" (onInit)="onEditorInit($event)" [(ngModel)]="logs"> </ngx-monaco-editor>
+<div class="editor-wrap">
+  <ngx-monaco-editor
+    [options]="options"
+    (onInit)="onEditorInit($event)"
+    [(ngModel)]="logs">
+  </ngx-monaco-editor>
+</div>

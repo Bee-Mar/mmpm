@@ -1,23 +1,44 @@
-<div class="speeddial-circle-demo">
-  <p-toast></p-toast>
-  <p-confirmDialog [style]="{ width: '50vw' }"></p-confirmDialog>
-  <p-speedDial
-    pTooltip="MagicMirror Controller"
-    tooltipPosition="right"
-    [model]="menuItems"
-    showIcon="fa-solid fa-gamepad"
-    [radius]="120"
-    direction="right"
-    buttonClassName="p-button-success"
-  ></p-speedDial>
-</div>
+<button class="icon-btn" (click)="showPopoverChange.emit(!showPopover)" title="MagicMirror Controls">
+  <i class="fa-solid fa-microchip"></i>
+</button>
+
+@if (showPopover) {
+  <div class="ctrl-popover">
+    <div class="ctrl-header">
+      <span>// MIRROR CONTROL</span>
+      <button class="btn ghost sm" (click)="showPopoverChange.emit(false)" style="padding: 2px">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="ctrl-actions">
+      <button class="btn" (click)="openModuleVisibilityDialog = true; showPopoverChange.emit(false)">
+        <i class="fa-solid fa-eye"></i> Toggle Modules
+      </button>
+      <button class="btn primary" (click)="onStart(); showPopoverChange.emit(false)">
+        <i class="fa-solid fa-play"></i> Start
+      </button>
+      <button class="btn" (click)="onRestart(); showPopoverChange.emit(false)">
+        <i class="fa-solid fa-arrows-rotate"></i> Restart
+      </button>
+      <button class="btn" (click)="onStop(); showPopoverChange.emit(false)">
+        <i class="fa-solid fa-stop"></i> Stop
+      </button>
+      <button class="btn ghost" (click)="onInstall()">
+        <i class="fa-solid fa-download"></i> Install MM
+      </button>
+      <button class="btn ghost danger" (click)="onRemove()">
+        <i class="fa-solid fa-trash"></i> Remove MM
+      </button>
+    </div>
+  </div>
+}
 
 <p-dialog header="MagicMirror Modules" [(visible)]="openModuleVisibilityDialog">
   @if (modules.length === 0) {
     <div>
       Unable to retrieve modules. Is MagicMirror running, and is
-      <a href="https://github.com/bee-mar/mmm-mmpm" target="_blank">MMM-mmpm</a>
-      installed?
+      <a href="https://github.com/bee-mar/mmm-mmpm" target="_blank">MMM-mmpm</a> installed?
     </div>
   } @else {
     @for (module of modules; track module) {
@@ -29,30 +50,12 @@
           onIcon="pi pi-check"
           offIcon="pi pi-times"
           [style]="{ width: '20em' }"
-          (onChange)="onModuleVisibilityChange(module)"
-        >
+          (onChange)="onModuleVisibilityChange(module)">
         </p-toggleButton>
       </div>
     }
   }
 </p-dialog>
 
-<p-dialog header="MagicMirror Controller Help" [(visible)]="openHelpDialog">
-  <div
-    style="
-      display: grid;
-      grid-template-columns: max-content;
-      justify-content: center;
-      grid-gap: 10px;
-      margin: 0 auto;
-      text-align: left;
-    "
-  >
-    @for (menuItem of menuItems; track menuItem) {
-      <span style="margin-bottom: 1em">
-        <i class="{{ menuItem.icon }}" style="margin-right: 1em"></i
-        >{{ menuItem.tooltip }}
-      </span>
-    }
-  </div>
-</p-dialog>
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>

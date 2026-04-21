@@ -54,6 +54,10 @@ export class ConfigEditorComponent implements OnInit {
     },
   };
 
+  public get fileNames(): string[] {
+    return Object.keys(this.state);
+  }
+
   public fileOptions = [
     {
       label: 'config.js',

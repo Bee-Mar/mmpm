@@ -29,6 +29,14 @@ export class ShoppingCartComponent {
   @Output()
   public loadingChange = new EventEmitter<boolean>(false);
 
+  public get installs(): MagicMirrorPackage[] {
+    return this.selectedPackages.filter(p => !p.is_installed);
+  }
+
+  public get removals(): MagicMirrorPackage[] {
+    return this.selectedPackages.filter(p => p.is_installed);
+  }
+
   public onCheckout(): void {
     this.confirmation.confirm({
       message: 'Are you sure you want to install/remove the selected packages?',

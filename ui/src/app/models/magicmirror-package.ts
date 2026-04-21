@@ -10,6 +10,7 @@ export interface MagicMirrorPackage {
   remote_details: RemotePackageDetails;
   stars: number;
   last_updated: string;
+  license?: string;
 }
 
 export interface RemotePackageDetails {

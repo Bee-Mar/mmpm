@@ -1,3 +1,369 @@
-/* You can add global styles to this file, and also import other style files */
 @import "primeicons/primeicons.css";
 @import "@fortawesome/fontawesome-free/css/all.css";
+
+:root {
+  --bg-0: oklch(0.15 0.012 320);
+  --bg-1: oklch(0.19 0.013 320);
+  --bg-2: oklch(0.23 0.014 320);
+  --bg-3: oklch(0.28 0.015 320);
+  --line: oklch(0.40 0.015 320 / 0.45);
+  --line-soft: oklch(0.40 0.015 320 / 0.18);
+
+  --fg-0: oklch(0.98 0.004 80);
+  --fg-1: oklch(0.90 0.006 80);
+  --fg-2: oklch(0.72 0.010 80);
+  --fg-3: oklch(0.55 0.013 80);
+  --fg-4: oklch(0.40 0.015 80);
+
+  --accent:    oklch(0.87 0.07 75);
+  --accent-hi: oklch(0.92 0.07 75);
+  --accent-lo: oklch(0.75 0.09 70);
+  --accent-2:  oklch(0.72 0.07 200);
+  --signal:    oklch(0.78 0.12 160);
+  --warn:      oklch(0.83 0.11 75);
+  --danger:    oklch(0.68 0.14 22);
+
+  --radius:    12px;
+  --radius-sm: 8px;
+  --radius-lg: 18px;
+
+  --ui:   "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --header-h: 52px;
+  --rail-w:   60px;
+  --dock-w:   340px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; overflow: hidden; }
+
+body {
+  font-family: var(--ui);
+  font-size: 13px;
+  color: var(--fg-1);
+  background: var(--bg-0);
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+input, textarea, select { font: inherit; color: inherit; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Shared button styles ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  color: var(--fg-1);
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 120ms, border-color 120ms;
+  white-space: nowrap;
+
+  &:hover { background: var(--bg-3); border-color: var(--line); }
+
+  &.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg-0);
+    &:hover { background: var(--accent-hi); border-color: var(--accent-hi); }
+  }
+
+  &.ghost {
+    background: transparent;
+    border-color: transparent;
+    &:hover { background: var(--bg-2); }
+  }
+
+  &.danger {
+    color: var(--danger);
+    border-color: var(--danger);
+    &:hover { background: oklch(from var(--danger) l c h / 0.1); }
+  }
+
+  &.sm { padding: 4px 8px; font-size: 11px; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: var(--radius-sm);
+  color: var(--fg-3);
+  position: relative;
+  transition: color 120ms, background 120ms;
+  cursor: pointer;
+
+  &:hover { color: var(--fg-1); background: var(--bg-2); }
+
+  .badge {
+    position: absolute;
+    top: 2px; right: 2px;
+    min-width: 14px; height: 14px;
+    background: var(--accent);
+    color: var(--bg-0);
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+  }
+}
+
+/* ── Page head ── */
+.page-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--line-soft);
+  flex-shrink: 0;
+
+  .page-title {
+    h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--fg-0);
+      letter-spacing: -0.01em;
+    }
+    .sub {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--fg-4);
+      letter-spacing: 0.02em;
+    }
+  }
+
+  .spacer { flex: 1; }
+}
+
+/* ── Segmented control ── */
+.segmented {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+
+  button {
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--fg-3);
+    border-right: 1px solid var(--line);
+    transition: all 120ms;
+
+    &:last-child { border-right: 0; }
+    &:hover { background: var(--bg-2); color: var(--fg-1); }
+    &.active { background: var(--bg-3); color: var(--fg-0); }
+  }
+}
+
+/* ── Chip ── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: var(--bg-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--fg-3);
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 999px;
+    background: var(--fg-4);
+    flex-shrink: 0;
+  }
+}
+
+/* ── Badges ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-family: var(--mono);
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  color: var(--fg-2);
+
+  &.installed { background: oklch(0.78 0.12 160 / 0.12); border-color: oklch(0.78 0.12 160 / 0.3); color: var(--signal); }
+  &.update    { background: oklch(0.83 0.11 75 / 0.12);  border-color: oklch(0.83 0.11 75 / 0.3);  color: var(--warn); }
+  &.custom    { background: oklch(0.72 0.07 200 / 0.12); border-color: oklch(0.72 0.07 200 / 0.3); color: var(--accent-2); }
+}
+
+/* ── Pkg check ── */
+.pkg-check {
+  width: 18px; height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--line);
+  background: var(--bg-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 120ms;
+  color: var(--bg-0);
+  cursor: pointer;
+
+  &.on {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+}
+
+/* ── Section title ── */
+.section-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--fg-4);
+  text-transform: uppercase;
+  padding: 10px 0 6px;
+}
+
+/* ── KV list ── */
+.kv {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 14px;
+  row-gap: 5px;
+  margin: 0;
+  font-size: 12px;
+
+  dt {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--fg-4);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    align-self: center;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--fg-1);
+    word-break: break-all;
+
+    a { color: var(--accent); }
+  }
+}
+
+/* ── Stats row ── */
+.stats {
+  display: flex;
+  gap: 10px;
+
+  .stat {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
+    background: var(--bg-2);
+    text-align: center;
+
+    .n {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--fg-0);
+    }
+
+    .l {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      color: var(--fg-4);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+  }
+}
+
+/* ── Empty state ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--fg-4);
+  text-align: center;
+  gap: 8px;
+
+  .glyph { font-size: 24px; opacity: 0.5; }
+  .title { font-size: 13px; font-weight: 600; color: var(--fg-3); }
+  .hint  { font-size: 12px; color: var(--fg-4); max-width: 280px; line-height: 1.5; }
+}
+
+/* ── PrimeNG global overrides ── */
+.p-toast { z-index: 9999 !important; }
+
+.p-dialog {
+  background: var(--bg-1) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-lg) !important;
+  color: var(--fg-1) !important;
+
+  .p-dialog-header {
+    background: var(--bg-1) !important;
+    border-bottom: 1px solid var(--line-soft) !important;
+    padding: 14px 18px !important;
+    color: var(--fg-0) !important;
+    font-family: var(--mono) !important;
+    font-size: 12px !important;
+    letter-spacing: 0.06em !important;
+  }
+
+  .p-dialog-content {
+    background: var(--bg-1) !important;
+    color: var(--fg-1) !important;
+    padding: 16px 18px !important;
+  }
+
+  .p-dialog-footer {
+    background: var(--bg-1) !important;
+    border-top: 1px solid var(--line-soft) !important;
+    padding: 12px 18px !important;
+  }
+}
+
+.p-inputtext, .p-textarea {
+  background: var(--bg-2) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--fg-0) !important;
+  font-size: 12.5px !important;
+  padding: 7px 10px !important;
+
+  &:focus {
+    border-color: var(--accent) !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
+.p-select, .p-multiselect {
+  background: var(--bg-2) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-sm) !important;
+}

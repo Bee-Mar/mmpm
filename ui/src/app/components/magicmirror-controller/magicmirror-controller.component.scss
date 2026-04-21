@@ -1,0 +1,42 @@
+:host {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ctrl-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 220px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  z-index: 50;
+  overflow: hidden;
+
+  .ctrl-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line-soft);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--fg-3);
+    letter-spacing: 0.06em;
+  }
+
+  .ctrl-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+
+    .btn {
+      width: 100%;
+      justify-content: flex-start;
+      font-size: 12px;
+    }
+  }
+}

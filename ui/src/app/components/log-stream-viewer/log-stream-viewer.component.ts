@@ -23,7 +23,7 @@ export class LogStreamViewerComponent implements OnInit, OnDestroy {
   @ViewChild(EditorComponent, { static: false })
   public editor: EditorComponent;
 
-  public socket: Socket;
+  public socket: Socket | undefined;
   public logs = '';
   public fontSize = Number(getCookie('mmpm-log-stream-font-size', '12'));
 
@@ -69,7 +69,7 @@ export class LogStreamViewerComponent implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    if (this.socket.connected) {
+    if (this.socket?.connected) {
       this.socket.disconnect();
     }
   }
@@ -106,6 +106,6 @@ export class LogStreamViewerComponent implements OnInit, OnDestroy {
 
   @HostListener('window:beforeunload')
   public beforeUnload() {
-    this.socket.close();
+    this.socket?.close();
   }
 }

@@ -1,22 +1,38 @@
-.package-details-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-gap: 10px;
-  align-items: center;
+:host { position: relative; display: inline-flex; }
+
+.db-btn-wrap {
+  position: relative;
+  display: inline-flex;
 }
 
-.detail {
-  padding: 5px 0;
-}
+.drop-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  z-index: 50;
+  min-width: 200px;
+  overflow: hidden;
 
-.detail strong {
-  margin-right: 5px;
-}
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    color: var(--fg-1);
+    text-align: left;
+    transition: background 100ms;
 
-.confirm-button {
-  display: flex;
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  width: 100%; /* Take full width of the parent container */
-  margin-bottom: 1em;
+    &:hover { background: var(--bg-3); }
+  }
+
+  .menu-sep {
+    height: 1px;
+    background: var(--line-soft);
+    margin: 3px 0;
+  }
 }

@@ -1,130 +1,72 @@
-<p-toast></p-toast>
-<p-menu #menu [model]="customPackageOptions" [popup]="true"></p-menu>
-<p-button
-  (click)="menu.toggle($event)"
-  icon="fa-solid fa-cube"
-  label="Custom Packages"
-  severity="primary"
-></p-button>
+<div class="custom-btn-wrap">
+  <button class="btn" (click)="showMenu = !showMenu">
+    <i class="fa-solid fa-cube"></i>
+    Custom Package
+    <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 2px"></i>
+  </button>
 
-<p-dialog header="Add Custom Package" [(visible)]="displayCustomPkgAddDialog">
-  <p-popover
-    #op
-    [style]="{
-      'max-width': '450px',
-      'word-wrap': 'break-word',
-      'overflow-wrap': 'break-word',
-    }"
-  >
-    <span
-      >Adds a custom package source to your local database, which can then be
-      installed/removed using MMPM. This is useful in testing/development of
-      MagicMirror modules not listed in the 3rd Party Modules.</span
-    >
-  </p-popover>
-
-  <p-button
-    (click)="op.toggle($event)"
-    icon="fa-solid fa-circle-info"
-    severity="info"
-  ></p-button>
-
-  <p-card>
-    <form #customPackageForm="ngForm">
-      <div class="p-inputgroup" style="margin-bottom: 2em">
-        <span class="p-inputgroup-addon" style="width: 10em">Title</span>
-        <input
-          name="title"
-          pInputText
-          [(ngModel)]="customPackage.title"
-          required
-        />
-      </div>
-      <div class="p-inputgroup" style="margin-bottom: 2em">
-        <span class="p-inputgroup-addon" style="width: 10em">Author</span>
-        <input
-          name="author"
-          pInputText
-          [(ngModel)]="customPackage.author"
-          required
-        />
-      </div>
-      <div class="p-inputgroup" style="margin-bottom: 2em">
-        <span class="p-inputgroup-addon" style="width: 10em">Repository</span>
-        <input
-          name="repository"
-          type="text"
-          pInputText
-          [(ngModel)]="customPackage.repository"
-          required
-        />
-      </div>
-      <div class="p-inputgroup" style="margin-bottom: 2em">
-        <span class="p-inputgroup-addon" style="width: 10em">Description</span>
-        <input
-          name="description"
-          type="text"
-          pInputText
-          [(ngModel)]="customPackage.description"
-          required
-        />
-      </div>
-    </form>
-
-    <div class="confirm-button">
-      <p-button
-        label="Add"
-        [disabled]="
-          !(
-            customPackage.title &&
-            customPackage.repository &&
-            customPackage.author &&
-            customPackage.description
-          )
-        "
-        (click)="onAddMmPkg()"
-        icon="fa-solid fa-check"
-        severity="success"
-        [style.marginTop]="'2em'"
-      ></p-button>
+  @if (showMenu) {
+    <div class="drop-menu" (click)="showMenu = false" (keydown.escape)="showMenu = false" role="menu" tabindex="-1">
+      <button class="menu-item" (click)="customPackage = clearCustomPackage(); displayCustomPkgAddDialog = true">
+        <i class="fa-solid fa-plus"></i> Add custom package
+      </button>
+      <button class="menu-item" (click)="displayCustomPkgRemoveDialog = true">
+        <i class="fa-solid fa-eraser"></i> Remove custom package
+      </button>
     </div>
-  </p-card>
+  }
+</div>
+
+<p-dialog header="Add Custom Package" [(visible)]="displayCustomPkgAddDialog"
+  [style]="{ width: '420px' }">
+  <form #customPackageForm="ngForm">
+    <div class="form-field">
+      <label for="cpm-title">TITLE</label>
+      <input id="cpm-title" type="text" name="title" pInputText [(ngModel)]="customPackage.title" required placeholder="MMM-MyModule" />
+    </div>
+    <div class="form-field">
+      <label for="cpm-author">AUTHOR</label>
+      <input id="cpm-author" type="text" name="author" pInputText [(ngModel)]="customPackage.author" placeholder="your-handle" />
+    </div>
+    <div class="form-field">
+      <label for="cpm-repo">REPOSITORY URL</label>
+      <input id="cpm-repo" type="text" name="repository" pInputText [(ngModel)]="customPackage.repository" required placeholder="https://github.com/you/MMM-MyModule" />
+    </div>
+    <div class="form-field">
+      <label for="cpm-desc">DESCRIPTION</label>
+      <input id="cpm-desc" type="text" name="description" pInputText [(ngModel)]="customPackage.description" placeholder="What does this module do?" />
+    </div>
+    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px">
+      <button class="btn ghost" (click)="displayCustomPkgAddDialog = false">Cancel</button>
+      <button class="btn primary"
+        [disabled]="!(customPackage.title && customPackage.repository)"
+        (click)="onAddMmPkg()">
+        <i class="fa-solid fa-floppy-disk"></i> Add to database
+      </button>
+    </div>
+  </form>
 </p-dialog>
 
-<p-dialog
-  [(visible)]="displayCustomPkgRemoveDialog"
-  (onHide)="reset()"
-  header="Remove Custom Packages"
-  [style]="{ width: '30rem', 'max-width': '700px' }"
->
-  <p-card>
-    @if (customPackages && customPackages?.length) {
-      <div>
-        <p-listbox
-          [options]="customPackages"
-          [(ngModel)]="selectedCustomPackages"
-          [selectAll]="false"
-          optionLabel="title"
-          [style]="{ width: '25rem', margin: '0 auto' }"
-          [multiple]="true"
-          [checkbox]="true"
-          [showToggleAll]="false"
-          [metaKeySelection]="false"
-          [listStyle]="{ 'max-height': '220px' }"
-        ></p-listbox>
-        <div class="confirm-button">
-          <p-button
-            [style.marginTop]="'4em'"
-            label="Remove"
-            [disabled]="!selectedCustomPackages.length"
-            (click)="onRemoveMmPkg()"
-            icon="fa-solid fa-trash"
-            severity="danger"
-          ></p-button>
-        </div>
-      </div>
-    } @else {
-      <div>No custom packages found in database.</div>
-    }
-  </p-card>
+<p-dialog header="Remove Custom Packages" [(visible)]="displayCustomPkgRemoveDialog"
+  (onHide)="reset()" [style]="{ width: '400px' }">
+  @if (customPackages.length) {
+    <p-listbox
+      [options]="customPackages"
+      [(ngModel)]="selectedCustomPackages"
+      optionLabel="title"
+      [multiple]="true"
+      [checkbox]="true"
+      [metaKeySelection]="false"
+      [listStyle]="{ 'max-height': '220px' }">
+    </p-listbox>
+    <div style="display: flex; justify-content: flex-end; margin-top: 12px">
+      <button class="btn danger" [disabled]="!selectedCustomPackages.length" (click)="onRemoveMmPkg()">
+        <i class="fa-solid fa-trash"></i> Remove selected
+      </button>
+    </div>
+  } @else {
+    <div style="color: var(--fg-3); padding: 10px 0">No custom packages found.</div>
+  }
 </p-dialog>
+
+<p-toast></p-toast>

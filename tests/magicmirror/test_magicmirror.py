@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path, PosixPath
 from unittest.mock import patch
 
+from mmpm.constants.paths import MMPM_CONFIG_DIR
 from mmpm.magicmirror.magicmirror import MagicMirror, MagicMirrorConfigs
 from tests.helpers import MockedMMPMEnv
 
@@ -16,9 +17,8 @@ class MagicMirrorConfigsTestCase(unittest.TestCase):
 
     @patch("mmpm.magicmirror.magicmirror.MMPMEnv")
     def test_config_js_sample(self, mock_env):
-        mock_env.return_value.MMPM_MAGICMIRROR_ROOT.get.return_value = Path("/tmp/MagicMirror")
         configs = MagicMirrorConfigs()
-        self.assertEqual(configs.config_js_sample, Path("/tmp/MagicMirror") / "config" / "config.js.sample")
+        self.assertEqual(configs.config_js_sample, MMPM_CONFIG_DIR / "config" / "config.js.sample")
 
     @patch("mmpm.magicmirror.magicmirror.MMPMEnv")
     def test_custom_css(self, mock_env):

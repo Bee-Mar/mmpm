@@ -1,48 +1,83 @@
-<p-button
-  label="Shopping Cart"
-  icon="fa-solid fa-shopping-cart"
-  styleClass="p-button-success ml-2"
-  (click)="op.toggle($event)"
-  [style]="{ 'margin-left': '1em' }"
-  badge="{{ selectedPackages.length }}"
-></p-button>
+<div class="cart-panel">
 
-<p-confirmDialog [style]="{ width: '50vw' }"></p-confirmDialog>
+  @if (selectedPackages.length === 0) {
 
-<p-overlayPanel #op>
-  <div *ngIf="selectedPackages && selectedPackages?.length; else noPackages" class="package-details-grid">
-    <p-scroller [items]="selectedPackages" [itemSize]="50" scrollHeight="200px" styleClass="border-1 surface-border" [style]="{ width: '300px', height: '200px' }">
-      <ng-template pTemplate="item" let-package>
-        <div class="flex align-items-center p-2" style="height: 50px">
-          {{ package.title }}
-          <span>
-            <i *ngIf="package.is_installed; else notInstalled" class="fa-solid fa-trash" [style.color]="'#e05252'"></i>
-            <ng-template #notInstalled>
-              <i class="fa-solid fa-download" [style.color]="'#009933'"></i>
-            </ng-template>
-          </span>
-        </div>
-      </ng-template>
-    </p-scroller>
-
-    <p-divider></p-divider>
-
-    <div class="confirm-button">
-      <p-button label="Checkout" [disabled]="!(selectedPackages && selectedPackages.length > 0)" (click)="onCheckout()" icon="fa-solid fa-check"></p-button>
+    <div class="cart-splash">
+      <div class="cart-splash-icon">
+        <i class="fa-solid fa-cart-shopping"></i>
+      </div>
+      <div class="cart-splash-title">Cart is empty</div>
+      <div class="cart-splash-hint">
+        Browse the marketplace, select modules, and they'll appear here ready to install or remove.
+      </div>
     </div>
 
-    <p-toolbar>
-      <ng-template pTemplate="start"> <i class="fa-solid fa-download" [style.color]="'#009933'"></i> = Install </ng-template>
-      <ng-template pTemplate="center">
-        <span class="text-primary font-semibold text-xl"></span>
-      </ng-template>
-      <ng-template pTemplate="end"> <i class="fa-solid fa-trash" [style.color]="'#e05252'"></i> = Remove </ng-template>
-    </p-toolbar>
+  } @else {
+
+    <div class="section-title">QUEUED · INSTALL</div>
+    @for (pkg of installs; track pkg.repository) {
+      @let status = opStatus.get(pkgKey(pkg));
+      <div class="cart-item" [class.op-working]="status === 'working'" [class.op-done]="status === 'done'" [class.op-failed]="status === 'failed'">
+        <div class="cart-item-info">
+          <div class="cart-item-name">{{ pkg.title }}</div>
+          <div class="cart-item-author">{{ pkg.author }}</div>
+        </div>
+        @if (status === 'working') {
+          <i class="fa-solid fa-spinner fa-spin op-icon"></i>
+        } @else if (status === 'done') {
+          <i class="fa-solid fa-check op-icon op-icon-done"></i>
+        } @else if (status === 'failed') {
+          <i class="fa-solid fa-xmark op-icon op-icon-fail"></i>
+        } @else {
+          <span class="badge installed">INSTALL</span>
+        }
+      </div>
+    }
+    @if (installs.length === 0) {
+      <div class="cart-empty">— none —</div>
+    }
+
+    <div class="section-title" style="margin-top: 12px">QUEUED · REMOVE</div>
+    @for (pkg of removals; track pkg.repository) {
+      @let status = opStatus.get(pkgKey(pkg));
+      <div class="cart-item" [class.op-working]="status === 'working'" [class.op-done]="status === 'done'" [class.op-failed]="status === 'failed'">
+        <div class="cart-item-info">
+          <div class="cart-item-name">{{ pkg.title }}</div>
+          <div class="cart-item-author">{{ pkg.author }}</div>
+        </div>
+        @if (status === 'working') {
+          <i class="fa-solid fa-spinner fa-spin op-icon"></i>
+        } @else if (status === 'done') {
+          <i class="fa-solid fa-check op-icon op-icon-done"></i>
+        } @else if (status === 'failed') {
+          <i class="fa-solid fa-xmark op-icon op-icon-fail"></i>
+        } @else {
+          <span class="badge update">REMOVE</span>
+        }
+      </div>
+    }
+    @if (removals.length === 0) {
+      <div class="cart-empty">— none —</div>
+    }
+
+  }
+
+  <div class="cart-footer">
+    <button class="btn primary" [disabled]="selectedPackages.length === 0 || isRunning" (click)="onCheckout()">
+      @if (isRunning) {
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        Running…
+      } @else {
+        <i class="fa-solid fa-play"></i>
+        Execute ({{ selectedPackages.length }})
+      }
+    </button>
+    <button class="btn ghost" [disabled]="selectedPackages.length === 0 || isRunning" (click)="selectedPackagesChange.emit([])">
+      Clear queue
+    </button>
   </div>
 
-  <ng-template #noPackages>
-    <div>No packages selected.</div>
-  </ng-template>
-</p-overlayPanel>
+</div>
 
+<p-confirmDialog></p-confirmDialog>
 <p-toast></p-toast>

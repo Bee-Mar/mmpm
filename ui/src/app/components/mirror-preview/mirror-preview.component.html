@@ -1,0 +1,115 @@
+<div class="page-head">
+  <div class="page-title">
+    <h1>Mirror Preview</h1>
+    <span class="sub">// drag &amp; drop modules · snap to positions</span>
+  </div>
+  <div class="spacer"></div>
+  <div class="chip">
+    <span class="dot" style="background: var(--accent)"></span>
+    {{ placedCount }} modules placed
+  </div>
+  <button class="btn ghost" (click)="resetLayout()" title="Reset from config.js">
+    <i class="fa-solid fa-arrows-rotate"></i> Reset
+  </button>
+  <button class="btn primary" (click)="saveToConfig()">
+    <i class="fa-solid fa-floppy-disk"></i> Save layout
+  </button>
+</div>
+
+@if (loading) {
+  <div class="mirror-loading">
+    <i class="fa-solid fa-spinner fa-spin"></i> Reading config.js…
+  </div>
+} @else {
+  <div class="mirror-stage">
+
+    <!-- Sidebar palette -->
+    <aside class="mirror-sidebar"
+           [class.drag-over]="libraryDragOver"
+           (dragover)="onLibraryDragOver($event)"
+           (dragleave)="onLibraryDragLeave($event)"
+           (drop)="onLibraryDrop($event)">
+
+      <div class="sidebar-head">// PALETTE · DRAG TO PLACE</div>
+
+      @if (library.length === 0) {
+        <div class="sidebar-empty">All installed modules are placed.</div>
+      } @else {
+        @for (entry of library; track entry.name) {
+          @let mi = getModuleIcon(entry);
+          <div
+            class="palette-tile"
+            [class.dragging]="draggingName === entry.name"
+            draggable="true"
+            (dragstart)="onDragStartEntry($event, entry)"
+            (dragend)="onDragEnd()"
+            [title]="entry.title">
+            <div class="tile-icon" [style.background]="mi.bg" [style.color]="mi.fg">
+              @if (mi.icon) {
+                <i [class]="mi.icon"></i>
+              } @else {
+                <span class="tile-letter">{{ mi.letter }}</span>
+              }
+            </div>
+            <span class="tile-name">{{ entry.title }}</span>
+          </div>
+        }
+      }
+
+    </aside>
+
+    <!-- Mirror stage -->
+    <div class="mirror-main">
+      <div class="mirror-wrap">
+        <div class="mirror-frame">
+          @for (region of regions; track region.key) {
+            <div
+              class="mm-region"
+              [class.drag-over]="dragOverRegion === region.key"
+              [class.flash]="flashRegion === region.key"
+              [attr.data-region]="region.key"
+              [style.grid-area]="region.gridArea"
+              (dragover)="onDragOver($event, region.key)"
+              (dragleave)="onDragLeave($event)"
+              (drop)="onDrop($event, region.key)">
+              <div class="region-label">{{ region.label }}</div>
+              @for (name of modulesInRegion(region.key); track name) {
+                @let mi = getModuleIconForName(name);
+                <div
+                  class="mm-mod"
+                  [class.dragging]="draggingName === name"
+                  [class.disabled]="isDisabled(name)"
+                  draggable="true"
+                  (dragstart)="onDragStartName($event, name)"
+                  (dragend)="onDragEnd()"
+                  (contextmenu)="onContextMenu($event, name)"
+                  [title]="displayTitle(name)">
+                  <div class="mod-icon" [style.background]="mi.bg" [style.color]="mi.fg">
+                    @if (mi.icon) {
+                      <i [class]="mi.icon"></i>
+                    } @else {
+                      <span>{{ mi.letter }}</span>
+                    }
+                  </div>
+                  <div class="mod-name">{{ displayTitle(name) }}</div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="mirror-hint">
+        <div class="hint-label">// HINT</div>
+        <div class="hint-body">
+          Layout is seeded from your <code>config.js</code> on first load.
+          Drag tiles between regions to rearrange, or drag back to the palette to unplace.
+          Right-click any tile to enable or disable it.
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<p-contextmenu #contextMenu [model]="contextMenuItems" appendTo="body" />
+<p-toast />

@@ -379,3 +379,35 @@
 ## Version 4.4.0
 
 - Add backwards compatibility for `custom.css` and `custom.css.sample` files based on upcoming release of MagicMirror
+
+## Version 4.5.0
+
+### UI
+
+- Complete UI modernization: dark theme built on an oklch color system, redesigned application shell with a collapsible navigation rail, resizable right-side dock panel, and a persistent header
+- Angular updated from 19 to 21; PrimeNG updated from 16 to 21; ESLint migrated to v9 flat config
+- Added animated splash screen with a minimum 3-second display duration
+- Added Mirror Preview panel: visually arrange MagicMirror modules across regions by drag-and-drop, with live read and write of `config.js`
+- Marketplace: card and table views with sortable columns (title, category, author, status, stars) and resizable table columns in table view
+- Marketplace: card sort controls always visible in the toolbar; per-package progress indicators during cart checkout
+- Marketplace: packages flagged with INSTALLED and UPDATE badges; mmpm itself blocked from self-install
+- Toggle Modules panel moved from a floating drawer into the dock alongside the cart and other panels, styled consistently with the rest of the design system
+- Increased global font sizes for improved readability
+- Dock resize capped to always preserve a minimum content area width
+- View mode (cards/table) persisted in a cookie across sessions
+
+### Backend
+
+- `MagicMirrorController.start()` now detects the active display server at runtime and selects the appropriate npm start script: `npm run start:x11`, `npm run start:wayland`, or `npm run start:windows`
+- Fixed latent bug where `ELECTRON_DISABLE_SANDBOX=1` was passed as the first element of the command array, causing `shutil.which` to look for it instead of `npm`
+
+### Bug Fixes
+
+- Mirror Preview: fixed config.js save — brace scanning now blanks JS comments before parsing, so `{` / `}` inside comments no longer produce phantom module blocks; newly-dragged modules are correctly appended on save
+- Fixed Angular template type cast in sort control binding to avoid pipe parser conflict
+
+### Tests
+
+- Added 167 new unit tests, raising coverage from 66% to 99%
+- Added `TestDetectDisplayServerScript` covering X11, Wayland (via `XDG_SESSION_TYPE` and `WAYLAND_DISPLAY`), Windows, and the fallback path
+

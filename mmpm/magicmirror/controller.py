@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 from pathlib import Path
 from time import sleep
 from typing import List
@@ -165,6 +166,25 @@ class MagicMirrorController(Singleton):
 
         return False
 
+    @staticmethod
+    def _detect_display_server_script() -> str:
+        """
+        Returns the appropriate npm start script name for the current display environment.
+
+        Returns:
+            'start:windows' on Windows, 'start:wayland' when a Wayland session is detected,
+            and 'start:x11' otherwise.
+        """
+        if sys.platform == "win32":
+            return "start:windows"
+
+        session_type = os.environ.get("XDG_SESSION_TYPE", "").lower()
+
+        if session_type == "wayland" or os.environ.get("WAYLAND_DISPLAY"):
+            return "start:wayland"
+
+        return "start:x11"
+
     def start(self) -> bool:
         """
         Launches MagicMirror using pm2, if found, otherwise a 'npm start' is run as
@@ -176,10 +196,12 @@ class MagicMirrorController(Singleton):
         Returns:
             True if the operation is successful, False otherwise.
         """
-        command = ["npm", "run", "start"]
+        script = self._detect_display_server_script()
+        os.environ["ELECTRON_DISABLE_SANDBOX"] = "1"
+        command = ["npm", "run", script]
 
-        pm2_process: str = self.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get()
-        compose_file: str = self.env.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.get()
+        pm2_process = str(self.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get())
+        compose_file = str(self.env.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.get())
 
         if compose_file:
             logger.debug(f"Docker compose file set as {compose_file}")
@@ -192,7 +214,7 @@ class MagicMirrorController(Singleton):
             logger.error(f"{command[0]} not found in PATH. Unable to start MagicMirror")
             return False
 
-        root = self.env.MMPM_MAGICMIRROR_ROOT.get()
+        root: Path = self.env.MMPM_MAGICMIRROR_ROOT.get()
         root.mkdir(exist_ok=True, parents=True)
 
         if not Path(root / "node_modules").exists():

@@ -7,9 +7,47 @@
   <base href="/" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" type="image/x-icon" href="assets/MagicMirror-Package-Manager-Icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    #mmpm-splash {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #0b0b10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 500ms ease;
+    }
+
+    #mmpm-splash.splash-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .splash-logo {
+      width: 420px;
+      max-width: 80vw;
+      opacity: 0;
+      animation: splash-logo-in 600ms ease 100ms forwards;
+    }
+
+    @keyframes splash-logo-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 
 <body>
+  <div id="mmpm-splash">
+    <img class="splash-logo" src="assets/MagicMirror-Package-Manager-animated.svg" alt="MagicMirror Package Manager" />
+  </div>
+
+  <script>window.__splashStart = Date.now();</script>
   <app-root></app-root>
 </body>
 

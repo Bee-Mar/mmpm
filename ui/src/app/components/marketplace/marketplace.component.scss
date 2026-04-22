@@ -1,49 +1,379 @@
-/* Inside your component's SCSS file */
-.category-icon-text {
-  display: flex; /* Display the content in a row */
-  align-items: center; /* Vertically center-align the content */
-}
-
-.category-icon-text i {
-  margin-left: 20px; /* Adjust the right margin to control spacing between the text and the icon */
-  font-size: 20px; /* Adjust the font size of the icon */
-}
-
-.category-icon-text i.pi-question {
-  color: gray; /* Define a default color for the question mark icon */
-}
-
-.package-details-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-gap: 10px;
-  align-items: center;
-}
-
-.detail {
-  padding: 5px 0;
-}
-
-.detail strong {
-  margin-right: 5px;
-}
-
-.confirm-button {
+:host {
   display: flex;
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  width: 100%; /* Take full width of the parent container */
-  margin-bottom: 1em;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
-.install-icon {
-  position: absolute;
-  right: 0;
-  bottom: 0;
+/* ── Toolbar ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line-soft);
+  flex-shrink: 0;
+
+  .search {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-2);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    color: var(--fg-3);
+
+    &:focus-within {
+      border-color: var(--accent);
+      color: var(--fg-1);
+    }
+
+    input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--fg-1);
+      font-size: 16px;
+
+      &::placeholder { color: var(--fg-4); }
+    }
+  }
 }
 
-.remove-icon {
-  position: absolute;
-  left: 0;
-  bottom: 0;
+/* ── Filter bar ── */
+.filterbar {
+  display: flex;
+  gap: 6px;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--line-soft);
+  overflow-x: auto;
+  flex-shrink: 0;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+
+  .cat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line-soft);
+    background: transparent;
+    font-size: 14px;
+    color: var(--fg-3);
+    white-space: nowrap;
+    transition: all 120ms;
+    cursor: pointer;
+
+    &:hover { color: var(--fg-1); background: var(--bg-2); }
+
+    &.active {
+      background: var(--bg-3);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .n {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--fg-4);
+      background: var(--bg-2);
+      padding: 1px 5px;
+      border-radius: 999px;
+    }
+
+    &.active .n { background: oklch(0.87 0.07 75 / 0.15); color: var(--accent); }
+  }
+}
+
+/* ── Card sort bar ── */
+.sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .sort-lbl {
+    font-size: 12px;
+    color: var(--fg-4);
+    font-family: var(--mono);
+    letter-spacing: 0.05em;
+    margin-right: 2px;
+  }
+
+  .sort-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line-soft);
+    background: transparent;
+    font-size: 13px;
+    color: var(--fg-3);
+    white-space: nowrap;
+    transition: all 120ms;
+    cursor: pointer;
+
+    &:hover { color: var(--fg-1); background: var(--bg-2); }
+    &.active { background: var(--bg-3); border-color: var(--accent); color: var(--accent); }
+  }
+}
+
+/* ── Market body ── */
+.market-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  padding: 16px 20px;
+}
+
+/* ── Cards grid ── */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pkg-card {
+  background: var(--bg-2);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  transition: border-color 120ms, background 120ms;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &:hover { border-color: var(--line); background: var(--bg-3); }
+  &.selected {
+    border-color: var(--accent);
+    background: oklch(0.87 0.07 75 / 0.07);
+    box-shadow: 0 0 0 1px var(--accent), 0 4px 24px oklch(0.87 0.07 75 / 0.18);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  // Icon tile — contains the FA glyph and the select checkbox overlaid top-left
+  .pkg-icon-tile {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+    position: relative;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+
+    .pkg-check {
+      position: absolute;
+      top: -5px;
+      left: -5px;
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      z-index: 1;
+    }
+
+    .tile-letter {
+      font-family: var(--ui);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    &.sm {
+      width: 28px;
+      height: 28px;
+      font-size: 13px;
+      border-radius: 5px;
+
+      .tile-letter { font-size: 11px; }
+    }
+  }
+
+  .card-name {
+    min-width: 0;
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg-0);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .author {
+      font-size: 13px;
+      color: var(--fg-4);
+      margin-top: 2px;
+    }
+  }
+
+  .card-badges {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    flex-shrink: 0;
+  }
+
+  .card-desc {
+    font-size: 14px;
+    color: var(--fg-2);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+  }
+
+  .card-stats {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--fg-4);
+
+    i { color: var(--warn); }
+  }
+}
+
+/* ── Category pill ── */
+.cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--fg-2);
+  background: var(--bg-1);
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+  padding: 1px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+/* ── Table view ── */
+.pkg-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 15px;
+  margin-bottom: 16px;
+
+  thead tr {
+    border-bottom: 1px solid var(--line);
+  }
+
+  th {
+    text-align: left;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--fg-4);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+
+    .th-resize {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      cursor: col-resize;
+      z-index: 1;
+      transition: background 100ms;
+
+      &:hover { background: oklch(0.87 0.07 75 / 0.3); }
+    }
+  }
+
+  td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--fg-1);
+  }
+
+  tr {
+    cursor: pointer;
+    transition: background 100ms;
+
+    &:hover td { background: var(--bg-2); }
+    &.selected td {
+      background: oklch(0.87 0.07 75 / 0.07);
+      border-bottom-color: oklch(0.87 0.07 75 / 0.15);
+    }
+  }
+
+  .title-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    color: var(--fg-0);
+  }
+
+  .row-desc {
+    font-size: 14px;
+    color: var(--fg-2);
+    margin-top: 3px;
+    max-width: 500px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .col-stars  { font-family: var(--mono); font-size: 14px; color: var(--fg-2); }
+  .col-actions { text-align: right; }
+
+  th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: color 120ms;
+
+    &:hover { color: var(--fg-1); }
+
+    .sort-arrow { font-size: 10px; margin-left: 3px; color: var(--accent); }
+  }
+}
+
+/* ── Pager ── */
+.pager {
+  font-size: 13px;
+  color: var(--fg-4);
+  padding: 8px 0;
 }

@@ -1,32 +1,222 @@
-<div class="logo-container">
-  <a href="https://github.com/bee-mar/mmpm" target="_blank">
-    <img src="/assets/MagicMirror-Package-Manager.png" alt="MagicMirror Package Manager Logo" style="padding: 30px" />
-  </a>
-  <div style="float: right">
-    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank">
-      <img src="/assets/paypal.svg" style="height: 35px; width: 35px; margin-top: 3em; margin-right: 1em" alt="Donate with PayPal" pTooltip="Donate" tooltipPosition="left" />
-    </a>
-  </div>
+<div class="app-bg"></div>
 
-  <div style="float: left; margin-left: 1em; margin-top: 1.5em">
-    <app-magicmirror-controller></app-magicmirror-controller>
+<div class="app" [class.rail-expanded]="isRailExpanded">
+  <!-- Left rail navigation -->
+  <nav class="rail">
+    <div class="brand-mini" title="MMPM">
+      <i class="fa-solid fa-layer-group"></i>
+    </div>
+
+    <button class="nav-btn" [class.active]="activeTab === 'marketplace'" (click)="setTab('marketplace')" title="Marketplace">
+      <span class="nav-icon"><i class="fa-solid fa-shop"></i></span>
+      @if (selectedPackages.length > 0) {
+        <span class="dot"></span>
+      }
+      <span class="tip">Marketplace</span>
+      <span class="nav-label">Marketplace</span>
+    </button>
+
+    <button class="nav-btn" [class.active]="activeTab === 'mirror'" (click)="setTab('mirror')" title="Mirror Preview">
+      <span class="nav-icon"><i class="fa-solid fa-tv"></i></span>
+      <span class="tip">Mirror Preview</span>
+      <span class="nav-label">Mirror Preview</span>
+    </button>
+
+    <button class="nav-btn" [class.active]="activeTab === 'config'" (click)="setTab('config')" title="Config Editor">
+      <span class="nav-icon"><i class="fa-solid fa-code"></i></span>
+      <span class="tip">Config Editor</span>
+      <span class="nav-label">Config Editor</span>
+    </button>
+
+    <button class="nav-btn" [class.active]="activeTab === 'logs'" (click)="setTab('logs')" title="Server Logs">
+      <span class="nav-icon"><i class="fa-solid fa-terminal"></i></span>
+      <span class="tip">Server Logs</span>
+      <span class="nav-label">Server Logs</span>
+    </button>
+
+    <div class="spacer"></div>
+
+    <button class="nav-btn rail-toggle" (click)="toggleRail()" [title]="isRailExpanded ? 'Collapse' : 'Expand'">
+      <span class="nav-icon"><i class="fa-solid" [class.fa-angles-right]="!isRailExpanded" [class.fa-angles-left]="isRailExpanded"></i></span>
+    </button>
+  </nav>
+
+  <!-- Top header -->
+  <header class="header">
+    <app-magicmirror-controller
+      #ctrlRef
+      [(showPopover)]="showControllerPopover"
+      (statusChange)="mmStatus = $event"
+      (openPanel)="setDockPanel($event)">
+    </app-magicmirror-controller>
+
+    <div class="status-pill" [class.running]="mmStatus === 'running'" [class.stopped]="mmStatus === 'stopped'">
+      <span class="led"></span>
+      <span>MM · {{ mmStatus.toUpperCase() }}</span>
+    </div>
+
+    <div class="logo">
+      <img src="assets/MagicMirror-Package-Manager.svg" alt="MagicMirror Package Manager">
+    </div>
+
+    <div class="spacer"></div>
+
+    <button class="icon-btn" (click)="dockTab = dockTab === 'cart' ? 'details' : 'cart'" title="Cart">
+      <i class="fa-solid fa-cart-shopping"></i>
+      @if (selectedPackages.length > 0) {
+        <span class="badge">{{ selectedPackages.length }}</span>
+      }
+    </button>
+
+    <a class="donate-btn" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank" title="Donate">
+      <i class="fa-solid fa-heart" style="color: oklch(0.70 0.22 10)"></i>
+    </a>
+  </header>
+
+  <!-- Main content + right dock -->
+  <div class="main">
+    <div class="content">
+
+      @if (activeTab === 'marketplace') {
+        <app-marketplace
+          [viewMode]="viewMode"
+          (viewModeChange)="setViewMode($event)"
+          [(selectedPackages)]="selectedPackages"
+          (selectedPackageChange)="onPackageSelected($event)"
+          (openPanel)="setDockPanel($event)">
+        </app-marketplace>
+      }
+
+      @if (activeTab === 'mirror') {
+        <app-mirror-preview></app-mirror-preview>
+      }
+
+      @if (activeTab === 'config') {
+        <div class="page-head">
+          <div class="page-title">
+            <h1>Config Editor</h1>
+            <span class="sub">// ~/MagicMirror/config</span>
+          </div>
+        </div>
+        <div class="tab-content">
+          <app-config-editor></app-config-editor>
+        </div>
+      }
+
+      @if (activeTab === 'logs') {
+        <div class="page-head">
+          <div class="page-title">
+            <h1>Server Logs</h1>
+            <span class="sub">// streaming from mmpm-api</span>
+          </div>
+        </div>
+        <div class="tab-content">
+          <app-log-stream-viewer></app-log-stream-viewer>
+        </div>
+      }
+
+    </div>
+
+    <!-- Right dock (hidden during Mirror Preview) -->
+    @if (activeTab !== 'mirror') {
+    <div class="dock" [style.width.px]="dockWidth">
+      <div class="dock-resize-handle" (mousedown)="onResizeStart($event)"></div>
+      @if (!dockPanelTitle) {
+        <div class="dock-tabs">
+          <button class="dock-tab" [class.active]="dockTab === 'cart'" (click)="dockTab = 'cart'">
+            <i class="fa-solid fa-cart-shopping"></i>
+            Cart
+            @if (selectedPackages.length > 0) {
+              <span class="n">{{ selectedPackages.length }}</span>
+            }
+          </button>
+          @if (selectedPackage) {
+            <button class="dock-tab" [class.active]="dockTab === 'details'" (click)="dockTab = 'details'">
+              <i class="fa-solid fa-circle-info"></i>
+              Details
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="dock-panel-head">
+          <button class="dock-back" (click)="dockTab = 'cart'" title="Back">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <span class="dock-panel-title">{{ dockPanelTitle }}</span>
+        </div>
+      }
+
+      <div class="dock-body">
+        @if (dockTab === 'details' && selectedPackage) {
+          <app-package-details-viewer
+            [selectedPackage]="selectedPackage"
+            [(selectedPackages)]="selectedPackages"
+            (closePanel)="selectedPackage = null; dockTab = 'cart'">
+          </app-package-details-viewer>
+        }
+
+        @if (dockTab === 'cart' || (dockTab === 'details' && !selectedPackage)) {
+          <app-shopping-cart
+            [(selectedPackages)]="selectedPackages"
+            [(loading)]="loading">
+          </app-shopping-cart>
+        }
+
+        @if (dockTab === 'add-package') {
+          <app-custom-package-manager
+            [view]="'add'"
+            (panelClosed)="dockTab = 'cart'">
+          </app-custom-package-manager>
+        }
+
+        @if (dockTab === 'remove-package') {
+          <app-custom-package-manager
+            [view]="'remove'"
+            (panelClosed)="dockTab = 'cart'">
+          </app-custom-package-manager>
+        }
+
+        @if (dockTab === 'db-info') {
+          <app-database-info
+            [view]="'info'"
+            (panelClosed)="dockTab = 'cart'">
+          </app-database-info>
+        }
+
+        @if (dockTab === 'db-upgrades') {
+          <app-database-info
+            [view]="'upgrades'"
+            (panelClosed)="dockTab = 'cart'">
+          </app-database-info>
+        }
+
+        @if (dockTab === 'mm-modules') {
+          @if (ctrlRef.modules.length === 0) {
+            <div class="empty-state" style="padding: 20px 16px">
+              <i class="fa-solid fa-plug-circle-xmark glyph"></i>
+              <div class="title">No modules found</div>
+              <div class="hint">Is MagicMirror running, and is <a href="https://github.com/bee-mar/mmm-mmpm" target="_blank">MMM-mmpm</a> installed?</div>
+            </div>
+          } @else {
+            <div class="module-toggle-list">
+              @for (module of ctrlRef.modules; track module.key) {
+                <button
+                  class="btn module-toggle-btn"
+                  [class.active]="module.hidden"
+                  (click)="module.hidden = !module.hidden; ctrlRef.onModuleVisibilityChange(module)">
+                  <i class="fa-solid" [class.fa-eye]="module.hidden" [class.fa-eye-slash]="!module.hidden"></i>
+                  <span class="module-name">{{ module.name }}</span>
+                  <span class="module-key">({{ module.key }})</span>
+                </button>
+              }
+            </div>
+          }
+        }
+      </div>
+    </div>
+    } <!-- end @if activeTab !== 'mirror' -->
   </div>
 </div>
 
-<p-tabView [scrollable]="true" [(activeIndex)]="index" (onChange)="onTabChange($event.index)">
-  <!-- <p-tabPanel header="MagicMirror Controller" rightIcon="fa-solid fa-gamepad"> </p-tabPanel> -->
-
-  <p-tabPanel header="Marketplace" rightIcon="fa-solid fa-shop">
-    <app-marketplace></app-marketplace>
-  </p-tabPanel>
-
-  <p-tabPanel header="Config Editor" rightIcon="fa-solid fa-pen-to-square">
-    <app-config-editor></app-config-editor>
-  </p-tabPanel>
-
-  <p-tabPanel header="Logs" rightIcon="fa fa-message">
-    <app-log-stream-viewer></app-log-stream-viewer>
-  </p-tabPanel>
-</p-tabView>
 
 <router-outlet></router-outlet>

@@ -1,15 +1,15 @@
 import { NgModule } from "@angular/core";
 import { TableModule } from "primeng/table";
-import { DropdownModule } from "primeng/dropdown";
+import { SelectModule } from "primeng/select";
 import { MultiSelectModule } from "primeng/multiselect";
 import { ButtonModule } from "primeng/button";
 import { FormsModule } from "@angular/forms";
-import { TabViewModule } from "primeng/tabview";
+import { TabsModule } from "primeng/tabs";
 import { DialogModule } from "primeng/dialog";
 import { ProgressSpinnerModule } from "primeng/progressspinner";
 import { PanelModule } from "primeng/panel";
 import { ToolbarModule } from "primeng/toolbar";
-import { OverlayPanelModule } from "primeng/overlaypanel";
+import { PopoverModule } from "primeng/popover";
 import { DividerModule } from "primeng/divider";
 import { ScrollerModule } from "primeng/scroller";
 import { TooltipModule } from "primeng/tooltip";
@@ -25,20 +25,21 @@ import { CardModule } from "primeng/card";
 import { SpeedDialModule } from "primeng/speeddial";
 import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { ToggleButtonModule } from "primeng/togglebutton";
+import { ContextMenuModule } from "primeng/contextmenu";
+import { DrawerModule } from "primeng/drawer";
 
-// all the modules from primeng are grouped in here for cleanliness
 const PrimeNg = [
   TableModule,
-  DropdownModule,
+  SelectModule,
   MultiSelectModule,
   ButtonModule,
   FormsModule,
-  TabViewModule,
+  TabsModule,
   DialogModule,
   ProgressSpinnerModule,
   PanelModule,
   ToolbarModule,
-  OverlayPanelModule,
+  PopoverModule,
   DividerModule,
   ScrollerModule,
   TooltipModule,
@@ -54,6 +55,8 @@ const PrimeNg = [
   SpeedDialModule,
   ConfirmDialogModule,
   ToggleButtonModule,
+  ContextMenuModule,
+  DrawerModule,
 ];
 
 @NgModule({

@@ -15,6 +15,9 @@ import { CustomPackageManagerComponent } from "./components/custom-package-manag
 import { PackageDetailsViewerComponent } from "./components/package-details-viewer/package-details-viewer.component";
 import { ShoppingCartComponent } from "./components/shopping-cart/shopping-cart.component";
 import { MagicMirrorControllerComponent } from "./components/magicmirror-controller/magicmirror-controller.component";
+import { MirrorPreviewComponent } from "./components/mirror-preview/mirror-preview.component";
+import { providePrimeNG } from "primeng/config";
+import Aura from "@primeuix/themes/aura";
 
 export function init_shared_store(store: SharedStoreService) {
   return () => store.load();
@@ -31,6 +34,7 @@ export function init_shared_store(store: SharedStoreService) {
     PackageDetailsViewerComponent,
     ShoppingCartComponent,
     MagicMirrorControllerComponent,
+    MirrorPreviewComponent,
   ],
   imports: [BrowserAnimationsModule, BrowserModule, AppRoutingModule, HttpClientModule, PrimeNgModule, MonacoEditorModule.forRoot()],
   providers: [
@@ -40,6 +44,14 @@ export function init_shared_store(store: SharedStoreService) {
       deps: [SharedStoreService],
       multi: true,
     },
+    providePrimeNG({
+      theme: {
+        preset: Aura,
+        options: {
+          darkModeSelector: false,
+        },
+      },
+    }),
   ],
   bootstrap: [AppComponent],
 })

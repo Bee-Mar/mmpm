@@ -1,7 +1,121 @@
-.confirm-button {
+.cart-panel {
+  padding: 12px 16px;
   display: flex;
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  width: 100%; /* Take full width of the parent container */
-  margin-bottom: 1em;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.cart-splash {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  text-align: center;
+  gap: 10px;
+  animation: tab-enter 220ms ease both;
+
+  .cart-splash-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    border: 1px solid var(--line-soft);
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    color: var(--fg-4);
+    margin-bottom: 4px;
+  }
+
+  .cart-splash-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--fg-2);
+  }
+
+  .cart-splash-hint {
+    font-size: 13px;
+    color: var(--fg-4);
+    line-height: 1.55;
+    max-width: 220px;
+  }
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+  margin-bottom: 5px;
+  gap: 8px;
+  transition: border-color 200ms, background 200ms;
+
+  &.op-working {
+    border-color: oklch(0.87 0.07 75 / 0.4);
+    background: oklch(0.87 0.07 75 / 0.06);
+  }
+
+  &.op-done {
+    border-color: oklch(0.78 0.12 160 / 0.4);
+    background: oklch(0.78 0.12 160 / 0.06);
+  }
+
+  &.op-failed {
+    border-color: oklch(0.68 0.14 22 / 0.4);
+    background: oklch(0.68 0.14 22 / 0.06);
+  }
+
+  .cart-item-info { min-width: 0; flex: 1; }
+
+  .cart-item-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--fg-0);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cart-item-author {
+    font-size: 13px;
+    color: var(--fg-4);
+    margin-top: 2px;
+  }
+}
+
+.op-icon {
+  font-size: 15px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.op-icon-done { color: var(--signal); }
+.op-icon-fail { color: var(--danger); }
+
+.cart-empty {
+  font-size: 13px;
+  color: var(--fg-4);
+  padding: 4px 2px;
+}
+
+.cart-footer {
+  margin-top: auto;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .btn { justify-content: center; }
+
+  .btn.primary {
+    padding: 11px 16px;
+    font-size: 15px;
+    font-weight: 700;
+    box-shadow: 0 2px 18px oklch(0.87 0.07 75 / 0.30);
+  }
 }

@@ -1,22 +1,83 @@
-.package-details-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-gap: 10px;
-  align-items: center;
+:host { position: relative; display: inline-flex; }
+
+.btn-done {
+  border-color: oklch(0.55 0.14 145 / 0.5) !important;
+  transition: border-color 300ms;
 }
 
-.detail {
-  padding: 5px 0;
-}
-
-.detail strong {
-  margin-right: 5px;
-}
-
-.confirm-button {
+.panel-body {
   display: flex;
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  width: 100%; /* Take full width of the parent container */
-  margin-bottom: 1em;
+  flex-direction: column;
+  padding: 16px;
+  width: 100%;
+}
+
+.panel-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.panel-empty {
+  font-size: 14px;
+  color: var(--fg-3);
+  padding: 10px 0;
+}
+
+.kv {
+  dt {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-4);
+    margin-top: 12px;
+
+    &:first-child { margin-top: 0; }
+  }
+
+  dd {
+    font-size: 14px;
+    color: var(--fg-1);
+    margin-left: 0;
+    margin-top: 3px;
+  }
+}
+
+.db-btn-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.drop-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  z-index: 50;
+  min-width: 200px;
+  overflow: hidden;
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--fg-1);
+    text-align: left;
+    transition: background 100ms;
+
+    &:hover { background: var(--bg-3); }
+  }
+
+  .menu-sep {
+    height: 1px;
+    background: var(--line-soft);
+    margin: 3px 0;
+  }
 }

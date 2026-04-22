@@ -88,5 +88,35 @@ class TestMMPMEnv(unittest.TestCase):
             )
 
 
+class TestMMPMEnvGet(unittest.TestCase):
+    """Tests for MMPMEnv.get() method (lines 141-146)."""
+
+    def setUp(self):
+        from mmpm.singleton import Singleton
+
+        Singleton._instances = {}
+
+    def test_get_returns_dict(self):
+        """MMPMEnv.get() reads the env file and returns a dict (lines 141-146)."""
+        env = MMPMEnv()
+        result = env.get()
+        self.assertIsInstance(result, dict)
+
+    def test_get_contains_expected_keys(self):
+        """MMPMEnv.get() should return a dict with the MMPM env keys."""
+        env = MMPMEnv()
+        result = env.get()
+        self.assertIn("MMPM_MAGICMIRROR_URI", result)
+
+    def test_get_reads_from_file(self):
+        """MMPMEnv.get() reads from the MMPM_ENV_FILE."""
+        env = MMPMEnv()
+        fake_env = {"MMPM_MAGICMIRROR_URI": "http://fake:9999"}
+
+        with patch("mmpm.env.open", mock_open(read_data=json.dumps(fake_env))):
+            result = env.get()
+            self.assertEqual(result["MMPM_MAGICMIRROR_URI"], "http://fake:9999")
+
+
 if __name__ == "__main__":
     unittest.main()

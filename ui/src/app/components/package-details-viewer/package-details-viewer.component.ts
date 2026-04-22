@@ -1,78 +1,66 @@
-import {MagicMirrorPackage, RemotePackageDetails} from "@/models/magicmirror-package";
-import {Component, Input, Output, EventEmitter} from "@angular/core";
-import {MarketPlaceIcons} from "@/components/marketplace/marketplace-icons.model";
-import {APIResponse} from "@/services/api/base-api";
-import {MagicMirrorPackageAPI} from "@/services/api/magicmirror-package-api.service";
-import {MessageService} from "primeng/api";
+import { MagicMirrorPackage, RemotePackageDetails } from '@/models/magicmirror-package';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { APIResponse } from '@/services/api/base-api';
+import { MagicMirrorPackageAPI } from '@/services/api/magicmirror-package-api.service';
+import { MessageService } from 'primeng/api';
+import { getModuleIcon, ModuleIcon } from '@/utils/module-icon';
 
 @Component({
-  selector: "app-package-details-viewer",
-  templateUrl: "./package-details-viewer.component.html",
-  styleUrls: ["./package-details-viewer.component.scss"],
+  selector: 'app-package-details-viewer',
+  templateUrl: './package-details-viewer.component.html',
+  styleUrls: ['./package-details-viewer.component.scss'],
   providers: [MessageService],
   standalone: false,
 })
 export class PackageDetailsViewerComponent {
-  constructor(
-    private mmPkgApi: MagicMirrorPackageAPI,
-    private msg: MessageService,
-  ) {}
+  private mmPkgApi = inject(MagicMirrorPackageAPI);
+  private msg = inject(MessageService);
 
-  @Input()
-  public display: boolean;
+  @Input() selectedPackage: MagicMirrorPackage | null = null;
+  @Input() selectedPackages: MagicMirrorPackage[] = [];
+  @Output() selectedPackagesChange = new EventEmitter<MagicMirrorPackage[]>();
+  @Output() closePanel = new EventEmitter<void>();
 
-  @Output()
-  public displayChange = new EventEmitter<boolean>();
+  public loadingRemote = false;
 
-  @Input()
-  public selectedPackage: MagicMirrorPackage | null;
-
-  @Output()
-  public selectedPackageChange = new EventEmitter<MagicMirrorPackage | null>();
-
-  public loading = false;
-  public icons = MarketPlaceIcons;
-
-  public onHideDisplay(): void {
-    this.selectedPackageChange.emit(null);
-    this.displayChange.emit(false);
+  public get isQueued(): boolean {
+    if (!this.selectedPackage) return false;
+    return this.selectedPackages.some(
+      p => p.title === this.selectedPackage!.title && p.repository === this.selectedPackage!.repository
+    );
   }
 
-  public getPackageDetails(): void {
-    if (this.selectedPackage === null) {
-      return;
+  public toggleQueue(): void {
+    if (!this.selectedPackage) return;
+    const next = this.isQueued
+      ? this.selectedPackages.filter(
+          p => !(p.title === this.selectedPackage!.title && p.repository === this.selectedPackage!.repository)
+        )
+      : [...this.selectedPackages, this.selectedPackage];
+    this.selectedPackagesChange.emit(next);
+  }
+
+  public loadRemoteDetails(): void {
+    if (!this.selectedPackage || this.selectedPackage.remote_details) return;
+
+    this.loadingRemote = true;
+    this.mmPkgApi.postDetails(this.selectedPackage).then((response: APIResponse) => {
+      if (response.code === 200 && this.selectedPackage) {
+        this.selectedPackage.remote_details = response.message as RemotePackageDetails;
+      }
+      this.loadingRemote = false;
+    }).catch(() => {
+      this.loadingRemote = false;
+    });
+  }
+
+  public openRepo(): void {
+    if (this.selectedPackage?.repository) {
+      window.open(this.selectedPackage.repository, '_blank');
     }
+  }
 
-    if (typeof this.selectedPackage?.remote_details != "undefined") {
-      console.log(`${this.selectedPackage?.title} already has remote_details stored`);
-      this.loading = false;
-      return;
-    }
-
-    this.loading = true;
-    console.log(`${this.selectedPackage?.title} does not have remote_details stored. Collecting...`);
-
-    this.mmPkgApi
-      .postDetails(this.selectedPackage)
-      .then((response: APIResponse) => {
-        if (response.code === 200) {
-          this.selectedPackage!.remote_details = response.message as RemotePackageDetails;
-
-          console.log(`Retrieved remote details for ${this.selectedPackage?.title}`);
-          this.loading = false;
-        } else {
-          this.msg.add({
-            severity: "error",
-            summary: "Package Details",
-            detail: response.message,
-          });
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-        // failed getting remote details (probably because we exceeded the request count)
-        // so we need to still display some content
-        this.loading = false;
-      });
+  public get moduleIcon(): ModuleIcon | null {
+    return this.selectedPackage ? getModuleIcon(this.selectedPackage) : null;
   }
 }

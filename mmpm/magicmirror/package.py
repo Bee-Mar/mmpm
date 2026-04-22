@@ -47,6 +47,7 @@ class MagicMirrorPackage:
         "is_upgradable",
         "stars",
         "last_updated",
+        "license",
     )
 
     # pylint: disable=unused-argument,too-many-positional-arguments
@@ -61,6 +62,7 @@ class MagicMirrorPackage:
         is_installed: bool = False,
         stars: int = 0,
         last_updated: str = NA,
+        license: str = NA,
         **kwargs,
     ) -> None:
         """
@@ -89,6 +91,7 @@ class MagicMirrorPackage:
         self.is_upgradable = False
         self.stars = stars
         self.last_updated = last_updated
+        self.license = license.strip() if isinstance(license, str) else NA
 
     def __str__(self) -> str:
         return str(self.serialize())
@@ -183,6 +186,7 @@ class MagicMirrorPackage:
             "directory": self.directory.name,
             "stars": self.stars,
             "last_updated": self.last_updated,
+            "license": self.license,
         }
 
         if full:
@@ -319,6 +323,7 @@ class MagicMirrorPackage:
         category = data.get("category") or NA
         stars = data.get("stars") or 0
         last_commit = data.get("lastCommit") or NA
+        license = data.get("license") or NA
 
         if last_commit != NA:
             last_updated = last_commit.split("T")[0]
@@ -345,6 +350,7 @@ class MagicMirrorPackage:
             directory=directory,
             last_updated=last_updated,
             stars=stars,
+            license=license,
         )
 
 

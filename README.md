@@ -67,7 +67,8 @@ echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc && source ~/.bashrc
 - Easy access to MMPM and MagicMirror configuration.
 - Manage MagicMirror: install, upgrade, remove.
 - Control MagicMirror modules: hide/show ([details](https://github.com/Bee-Mar/mmpm/wiki/Status,-Hide,-Show-MagicMirror-Modules))
-- Control MagicMirror state: start, stop, restart (supports npm, pm2, docker-compose).
+- Control MagicMirror state: start, stop, restart (supports npm with automatic X11/Wayland/Windows detection, pm2, docker-compose).
+- Mirror Preview: drag-and-drop interface for arranging modules across MagicMirror regions, with direct read/write of `config.js`.
 
 
 ## Look to the [Wiki](https://github.com/Bee-Mar/mmpm/wiki)

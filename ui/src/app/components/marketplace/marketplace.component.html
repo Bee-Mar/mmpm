@@ -1,113 +1,221 @@
-<div class="card" [style]="{ 'min-height': '66vh' }">
-  <p-toolbar>
-    <ng-template pTemplate="start">
-      <app-custom-package-manager [(loading)]="loading"></app-custom-package-manager>
-    </ng-template>
-    <ng-template pTemplate="end">
-      <app-database-info [(loading)]="loading"></app-database-info>
-      <app-shopping-cart [(loading)]="loading" [(selectedPackages)]="selectedPackages"></app-shopping-cart>
-    </ng-template>
-  </p-toolbar>
+<div class="page-head">
+  <div class="page-title">
+    <h1>Marketplace</h1>
+    <span class="sub">// {{ packages.length }} packages indexed</span>
+  </div>
+  <div class="spacer"></div>
+  <div class="segmented">
+    <button [class.active]="viewMode === 'cards'" (click)="viewModeChange.emit('cards')">CARDS</button>
+    <button [class.active]="viewMode === 'table'" (click)="viewModeChange.emit('table')">TABLE</button>
+  </div>
+  <app-custom-package-manager (openPanel)="openPanel.emit($event)"></app-custom-package-manager>
+  <app-database-info (openPanel)="openPanel.emit($event)"></app-database-info>
+</div>
 
-  <p-table
-    #dt
-    [value]="packages"
-    styleClass="p-datatable-striped p-datatable-sm"
-    [rows]="10"
-    [showCurrentPageReport]="true"
-    selectionMode="multiple"
-    [(selection)]="selectedPackages"
-    [rowsPerPageOptions]="[5, 10, 25, 50]"
-    [style]="{ 'min-height': '66vh' }"
-    [loading]="loading"
-    [paginator]="true"
-    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-    [tableStyle]="{ 'min-width': '75rem' }"
-    [filterDelay]="0"
-  >
-    <ng-template pTemplate="header">
-      <tr>
-        <th style="width: 4rem">
-          <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-        </th>
-        <th style="min-width: 10rem" pSortableColumn="category">
-          <div class="flex align-items-center">
-            Category
-            <p-columnFilter field="category" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
-              <ng-template pTemplate="filter" let-filter="filterCallback">
-                <p-multiSelect [options]="categories" [(ngModel)]="selectedCategories" placeholder="Select Categories" (onChange)="filter($event.value)">
-                  <ng-template let-category pTemplate="item">
-                    <span class="category-icon-text">
-                      {{ category }}
-                      <i [class]="icons[category].logo || 'fa fa-question-circle'" [style.color]="icons[category].color || 'black'"></i>
-                    </span>
-                  </ng-template>
-                </p-multiSelect>
-              </ng-template>
-            </p-columnFilter>
-            <p-sortIcon field="category"></p-sortIcon>
+<div class="toolbar">
+  <div class="search">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input
+      type="text"
+      placeholder="Search packages by name, author, keyword…"
+      [(ngModel)]="searchQuery"
+    />
+  </div>
+
+  @if (viewMode === 'cards') {
+    <div class="sort-bar">
+      <span class="sort-lbl">Sort</span>
+      @for (f of ([['title','Title'],['category','Category'],['author','Author'],['stars','Stars']]); track f[0]) {
+        <button class="sort-chip" [class.active]="sortField === f[0]" (click)="toggleSort($any(f[0]))">
+          {{ f[1] }}
+          @if (sortField === f[0]) {
+            <i class="fa-solid" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'" style="font-size:10px"></i>
+          }
+        </button>
+      }
+    </div>
+  }
+
+  <div class="chip">
+    <span class="dot" style="background: var(--accent)"></span>
+    {{ selectedPackages.length }} queued
+  </div>
+  <div class="chip">
+    <span class="dot" style="background: var(--warn)"></span>
+    {{ upgradableCount }} updates
+  </div>
+</div>
+
+<div class="filterbar">
+  @for (cat of categories; track cat) {
+    <button
+      class="cat-chip"
+      [class.active]="selectedCategory === cat"
+      (click)="selectedCategory = cat">
+      {{ cat === 'all' ? 'All' : cat }}
+      <span class="n">
+        {{ cat === 'all' ? packages.length : categoryCount(cat) }}
+      </span>
+    </button>
+  }
+
+</div>
+
+<div class="market-body">
+  @if (loading) {
+    <div class="empty-state">
+      <i class="fa-solid fa-spinner fa-spin glyph"></i>
+      <div class="title">Loading packages…</div>
+    </div>
+  } @else if (filteredPackages.length === 0) {
+    <div class="empty-state">
+      <i class="fa-solid fa-filter-circle-xmark glyph"></i>
+      <div class="title">Nothing found</div>
+      <div class="hint">{{ packages.length }} packages indexed — try broadening your search or picking a different category.</div>
+    </div>
+  } @else if (viewMode === 'cards') {
+    <div class="cards">
+      @for (pkg of filteredPackages; track pkg.repository) {
+        @let mi = getModuleIcon(pkg);
+        <div class="pkg-card" [class.selected]="isSelected(pkg)" (click)="openDetails(pkg)" (keydown.enter)="openDetails(pkg)" role="button" tabindex="0">
+          <div class="card-top">
+            <div class="card-meta">
+              <div class="pkg-icon-tile" [style.background]="mi.bg">
+                <button class="pkg-check" [class.on]="isSelected(pkg)"
+                  [disabled]="!pkg.is_installed && !isInstallable(pkg)"
+                  (click)="$event.stopPropagation(); toggleSelect(pkg)"
+                  [title]="!pkg.is_installed && !isInstallable(pkg) ? 'Cannot install mmpm via mmpm' : isSelected(pkg) ? 'Remove from queue' : 'Add to queue'">
+                  @if (isSelected(pkg)) {
+                    <i class="fa-solid fa-check" style="font-size: 8px"></i>
+                  }
+                </button>
+                @if (mi.icon) {
+                  <i [class]="mi.icon" [style.color]="mi.fg"></i>
+                } @else {
+                  <span class="tile-letter" [style.color]="mi.fg">{{ mi.letter }}</span>
+                }
+              </div>
+              <div class="card-name">
+                <h3>{{ pkg.title }}</h3>
+                <div class="author">{{ pkg.author }}</div>
+              </div>
+            </div>
+            <div class="card-badges">
+              @if (pkg.is_installed && pkg.is_upgradable) {
+                <span class="badge update">UPDATE</span>
+              } @else if (pkg.is_installed) {
+                <span class="badge installed">INSTALLED</span>
+              }
+              @if (pkg.category === 'Custom Packages') {
+                <span class="badge custom">CUSTOM</span>
+              }
+            </div>
           </div>
-        </th>
-        <th style="min-width: 10rem" pSortableColumn="title">
-          <div class="flex align-items-center">
+          <div class="card-desc">{{ pkg.description }}</div>
+          <div class="card-footer">
+            <span class="cat-pill">{{ pkg.category }}</span>
+            <span class="card-stats">
+              <i class="fa-solid fa-star"></i> {{ pkg.stars }}
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <table class="pkg-table">
+      <thead>
+        <tr>
+          <th style="width: 36px"></th>
+          <th class="sortable" [style.width.px]="colWidths['title']" (click)="toggleSort('title')">
             Title
-            <p-columnFilter type="text" field="title" display="menu" [showOperator]="false" [showAddButton]="false" filterDelay="0"> </p-columnFilter>
-            <p-sortIcon field="title"></p-sortIcon>
-          </div>
-        </th>
-        <th style="min-width: 10rem" pSortableColumn="author">
-          <div class="flex align-items-center">
+            @if (sortField === 'title') {
+              <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
+            }
+            <button class="th-resize" (mousedown)="startColResize($event, 'title')" (click)="$event.stopPropagation()" aria-label="Resize title column"></button>
+          </th>
+          <th class="col-cat sortable" [style.width.px]="colWidths['category']" (click)="toggleSort('category')">
+            Category
+            @if (sortField === 'category') {
+              <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
+            }
+            <button class="th-resize" (mousedown)="startColResize($event, 'category')" (click)="$event.stopPropagation()" aria-label="Resize category column"></button>
+          </th>
+          <th class="col-author sortable" [style.width.px]="colWidths['author']" (click)="toggleSort('author')">
             Author
-            <p-columnFilter type="text" field="author" display="menu" [showOperator]="false" [showAddButton]="false"> </p-columnFilter>
-            <p-sortIcon field="author"></p-sortIcon>
-          </div>
-        </th>
-        <th style="min-width: 10rem" pSortableColumn="is_installed">
-          <div class="flex align-items-center">
-            Installed
-            <p-columnFilter field="is_installed" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
-              <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                <p-dropdown [options]="installedOptions" [(ngModel)]="selectedInstalled" placeholder="Is Installed?" (onChange)="filter($event.value, 'is_installed')">
-                </p-dropdown>
-              </ng-template>
-            </p-columnFilter>
-            <p-sortIcon field="is_installed"></p-sortIcon>
-          </div>
-        </th>
-        <th style="min-width: 10rem">Details</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-package>
-      <tr class="p-selectable-row">
-        <td>
-          <p-tableCheckbox [value]="package"></p-tableCheckbox>
-        </td>
-        <td>
-          <span class="category-icon-text">
-            {{ package?.category }}
-            <i [class]="icons[package.category].logo || 'fa fa-question-circle'" [style.color]="icons[package.category].color || 'black'"></i>
-          </span>
-        </td>
-        <td>
-          {{ package?.title }}
-        </td>
-        <td>
-          {{ package?.author }}
-        </td>
-        <td>
-          <i class="pi pi-{{ package?.is_installed ? 'check' : 'times' }}-circle" [style.color]="package?.is_installed ? '#009933' : '#e05252'"></i>
-        </td>
-        <td>
-          <p-button [raised]="true" severity="info" icon="fa-solid fa-circle-info" (click)="selectedPackage = package; displayDetailsDialog = true"> </p-button>
-        </td>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="emptymessage">
-      <tr>
-        <td colspan="5">Unable to load packages.</td>
-      </tr>
-    </ng-template>
-  </p-table>
+            @if (sortField === 'author') {
+              <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
+            }
+            <button class="th-resize" (mousedown)="startColResize($event, 'author')" (click)="$event.stopPropagation()" aria-label="Resize author column"></button>
+          </th>
+          <th class="col-status sortable" [style.width.px]="colWidths['status']" (click)="toggleSort('status')">
+            Status
+            @if (sortField === 'status') {
+              <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
+            }
+            <button class="th-resize" (mousedown)="startColResize($event, 'status')" (click)="$event.stopPropagation()" aria-label="Resize status column"></button>
+          </th>
+          <th class="col-stars sortable" [style.width.px]="colWidths['stars']" (click)="toggleSort('stars')" title="Stars">
+            <i class="fa-solid fa-star"></i>
+            @if (sortField === 'stars') {
+              <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
+            }
+            <button class="th-resize" (mousedown)="startColResize($event, 'stars')" (click)="$event.stopPropagation()" aria-label="Resize stars column"></button>
+          </th>
+          <th class="col-actions" style="width: 100px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (pkg of filteredPackages; track pkg.repository) {
+          @let mi = getModuleIcon(pkg);
+          <tr [class.selected]="isSelected(pkg)" (click)="openDetails(pkg)">
+            <td (click)="$event.stopPropagation()">
+              <button class="pkg-check" [class.on]="isSelected(pkg)"
+                [disabled]="!pkg.is_installed && !isInstallable(pkg)"
+                [title]="!pkg.is_installed && !isInstallable(pkg) ? 'Cannot install mmpm via mmpm' : ''"
+                (click)="toggleSelect(pkg)">
+                @if (isSelected(pkg)) { <i class="fa-solid fa-check" style="font-size: 8px"></i> }
+              </button>
+            </td>
+            <td>
+              <div class="title-cell">
+                <div class="pkg-icon-tile sm" [style.background]="mi.bg">
+                  @if (mi.icon) {
+                    <i [class]="mi.icon" [style.color]="mi.fg"></i>
+                  } @else {
+                    <span class="tile-letter" [style.color]="mi.fg">{{ mi.letter }}</span>
+                  }
+                </div>
+                {{ pkg.title }}
+                @if (pkg.category === 'Custom Packages') {
+                  <span class="badge custom">CUSTOM</span>
+                }
+              </div>
+              <div class="row-desc">{{ pkg.description }}</div>
+            </td>
+            <td class="col-cat"><span class="cat-pill">{{ pkg.category }}</span></td>
+            <td class="col-author">{{ pkg.author }}</td>
+            <td class="col-status">
+              @if (pkg.is_installed && pkg.is_upgradable) {
+                <span class="badge update">UPDATE</span>
+              } @else if (pkg.is_installed) {
+                <span class="badge installed">INSTALLED</span>
+              } @else {
+                <span class="badge">—</span>
+              }
+            </td>
+            <td class="col-stars">{{ pkg.stars | number }}</td>
+            <td class="col-actions" (click)="$event.stopPropagation()">
+              <button class="btn sm ghost" (click)="openDetails(pkg)">
+                <i class="fa-solid fa-circle-info"></i> Details
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
 
-  <app-package-details-viewer [(selectedPackage)]="selectedPackage" [(display)]="displayDetailsDialog"> </app-package-details-viewer>
+  <div class="pager">
+    Showing <strong>{{ filteredPackages.length }}</strong> of <strong>{{ packages.length }}</strong>
+  </div>
 </div>

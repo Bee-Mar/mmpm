@@ -6,6 +6,7 @@ from pathlib import Path, PosixPath
 from typing import Optional
 
 from mmpm.constants import color, urls
+from mmpm.constants.paths import MMPM_CONFIG_DIR
 from mmpm.env import MMPMEnv
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.singleton import Singleton
@@ -19,14 +20,17 @@ class MagicMirrorConfigs(Singleton):
         self.env = MMPMEnv()
 
     def get(self, name: str) -> Optional[Path]:
-        if name == self.config_js.name:
-            return self.config_js
-        elif name == self.config_js_sample.name:
-            return self.config_js_sample
-        elif name == self.custom_css.name:
-            return self.custom_css
-        elif name == self.custom_css_sample.name:
-            return self.custom_css_sample
+        match name:
+            case self.config_js.name:
+                return self.config_js
+            case self.config_js_sample.name:
+                return self.config_js_sample
+            case self.custom_css.name:
+                return self.custom_css
+            case self.custom_css_sample.name:
+                return self.custom_css_sample
+            case self.mmpm_env_json.name:
+                return self.mmpm_env_json
 
         logger.error(f"File named {name} doesn't exist within MagicMirrorConfigs")
         return None
@@ -50,8 +54,12 @@ class MagicMirrorConfigs(Singleton):
 
     @property
     def config_js_sample(self) -> Path:
-        root: Path = self.env.MMPM_MAGICMIRROR_ROOT.get()
-        return root / "config" / "config.js.sample"
+        return MMPM_CONFIG_DIR / "config" / "config.js.sample"
+
+    @property
+    def mmpm_env_json(self) -> Path:
+        root: Path = Path.home() / ".config" / "mmpm"
+        return root / "mmpm-env.json"
 
 
 class MagicMirror(Singleton):

@@ -376,6 +376,10 @@
 - Improve test coverage with mocked HTTP requests
 - Move `stars` and `last_updated` fields from remote details to the base package fields
 
+## Version 4.4.0
+
+- Add backwards compatibility for `custom.css` and `custom.css.sample` files based on upcoming release of MagicMirror
+
 ## Version 4.5.0
 
 ### UI
@@ -407,6 +411,3 @@
 - Added 167 new unit tests, raising coverage from 66% to 99%
 - Added `TestDetectDisplayServerScript` covering X11, Wayland (via `XDG_SESSION_TYPE` and `WAYLAND_DISPLAY`), Windows, and the fallback path
 
-## Version 4.4.0
-
-- Add backwards compatibility for `custom.css` and `custom.css.sample` files based on upcoming release of MagicMirror

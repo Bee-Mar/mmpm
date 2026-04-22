@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, OnInit } from "@angular/core";
+import { Component, AfterViewInit } from "@angular/core";
 import { MagicMirrorPackage } from "@/models/magicmirror-package";
 
 @Component({
@@ -7,21 +7,16 @@ import { MagicMirrorPackage } from "@/models/magicmirror-package";
   styleUrls: ["./app.component.scss"],
   standalone: false,
 })
-export class AppComponent implements OnInit, AfterViewInit {
+export class AppComponent implements AfterViewInit {
   public activeTab: string = localStorage.getItem("mmpm.tab") || "marketplace";
   public dockTab: string = "cart";
   public viewMode: "cards" | "table" = (AppComponent.getCookie("mmpm.view") as "cards" | "table") || "cards";
   public mmStatus: string = "unknown";
   public showControllerPopover: boolean = false;
   public loading: boolean = false;
-  public theme: "dark" | "light" = (localStorage.getItem("mmpm.theme") as "dark" | "light") || "dark";
 
   public selectedPackages: MagicMirrorPackage[] = [];
   public selectedPackage: MagicMirrorPackage | null = null;
-
-  public ngOnInit(): void {
-    this.applyTheme();
-  }
 
   public ngAfterViewInit(): void {
     const splash = document.getElementById('mmpm-splash');
@@ -74,13 +69,4 @@ export class AppComponent implements OnInit, AfterViewInit {
     return titles[this.dockTab] ?? '';
   }
 
-  public toggleTheme(): void {
-    this.theme = this.theme === 'dark' ? 'light' : 'dark';
-    localStorage.setItem('mmpm.theme', this.theme);
-    this.applyTheme();
-  }
-
-  private applyTheme(): void {
-    document.documentElement.setAttribute('data-theme', this.theme);
-  }
 }

@@ -35,27 +35,6 @@
   --dock-w:   340px;
 }
 
-html[data-theme="light"] {
-  /* bg-1 (rail, header, dock) is dark warm brown; bg-0 (content) is light cream */
-  --bg-0: oklch(0.92 0.018 65);
-  --bg-1: oklch(0.72 0.038 62);
-  --bg-2: oklch(0.86 0.024 63);
-  --bg-3: oklch(0.79 0.032 61);
-  --line: oklch(0.45 0.038 58 / 0.25);
-  --line-soft: oklch(0.45 0.038 58 / 0.11);
-
-  --fg-0: oklch(0.16 0.028 50);
-  --fg-1: oklch(0.26 0.025 52);
-  --fg-2: oklch(0.40 0.022 55);
-  --fg-3: oklch(0.52 0.020 58);
-  --fg-4: oklch(0.58 0.018 60);
-
-  --accent:    oklch(0.42 0.10 42);
-  --accent-hi: oklch(0.50 0.10 42);
-  --accent-lo: oklch(0.35 0.09 40);
-  --accent-2:  oklch(0.38 0.08 200);
-  --warn:      oklch(0.52 0.10 50);
-}
 
 *, *::before, *::after { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; overflow: hidden; }

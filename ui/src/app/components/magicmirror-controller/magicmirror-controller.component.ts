@@ -8,6 +8,7 @@ import {
   EventEmitter,
   inject,
 } from '@angular/core';
+import { environment } from '../../../environments/environment';
 import { io, Socket } from 'socket.io-client';
 import { MMPMEnv } from '@/models/mmpm-env';
 import { MagicMirrorModule } from '@/models/magicmirror-module';
@@ -286,7 +287,7 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   public initSocket(): void {
     console.log('Initializing socket');
 
-    this.socket = io(`${window.location.hostname}:8907`, {
+    this.socket = io(`${window.location.hostname}:${environment.socketPort}`, {
       reconnection: true,
     });
 

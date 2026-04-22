@@ -26,7 +26,7 @@ export class BaseAPI {
   }
 
   public route(path: string): string {
-    return `http://${window.location.hostname}:7891/api/${path}`;
+    return `/api/${path}`;
   }
 
   public get_(endpoint: string): Promise<APIResponse> {

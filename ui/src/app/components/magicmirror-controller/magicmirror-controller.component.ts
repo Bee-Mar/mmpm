@@ -35,11 +35,11 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   @Input() showPopover: boolean = false;
   @Output() showPopoverChange = new EventEmitter<boolean>();
   @Output() statusChange = new EventEmitter<string>();
+  @Output() openPanel = new EventEmitter<string>();
 
   public env: MMPMEnv;
   public openHelpDialog = false;
   public socket: Socket | null = null;
-  public openModuleVisibilityDialog = false;
   public modules = new Array<MagicMirrorModule>();
   public selectedModules = new Array<MagicMirrorModule>();
   public menuItems = new Array<MenuItem>();
@@ -50,7 +50,7 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
     {
       icon: 'fa-solid fa-eye',
       command: () => {
-        this.openModuleVisibilityDialog = true;
+        this.openPanel.emit('mm-modules');
       },
       tooltip: 'Toggle Modules',
     },

@@ -12,7 +12,7 @@
     </div>
 
     <div class="ctrl-actions">
-      <button class="btn" (click)="openModuleVisibilityDialog = true; showPopoverChange.emit(false)">
+      <button class="btn" (click)="openPanel.emit('mm-modules'); showPopoverChange.emit(false)">
         <i class="fa-solid fa-eye"></i> Toggle Modules
       </button>
       <button class="btn primary" (click)="onStart(); showPopoverChange.emit(false)">
@@ -33,30 +33,6 @@
     </div>
   </div>
 }
-
-<p-drawer header="MagicMirror Modules" [(visible)]="openModuleVisibilityDialog"
-  position="right" [style]="{ width: '420px' }">
-  @if (modules.length === 0) {
-    <div style="color: var(--fg-3); padding: 10px 0">
-      Unable to retrieve modules. Is MagicMirror running, and is
-      <a href="https://github.com/bee-mar/mmm-mmpm" target="_blank">MMM-mmpm</a> installed?
-    </div>
-  } @else {
-    @for (module of modules; track module) {
-      <div style="display: block; margin-bottom: 1em">
-        <p-toggleButton
-          [(ngModel)]="module.hidden"
-          onLabel="{{ module.name }} ({{ module.key }})"
-          offLabel="{{ module.name }} ({{ module.key }})"
-          onIcon="pi pi-check"
-          offIcon="pi pi-times"
-          [style]="{ width: '20em' }"
-          (onChange)="onModuleVisibilityChange(module)">
-        </p-toggleButton>
-      </div>
-    }
-  }
-</p-drawer>
 
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>

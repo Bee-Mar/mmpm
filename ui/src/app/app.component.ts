@@ -109,6 +109,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       'remove-package': 'Remove Custom Packages',
       'db-info': 'Database Info',
       'db-upgrades': 'Available Upgrades',
+      'mm-modules': 'Toggle Modules',
     };
     return titles[this.dockTab] ?? '';
   }

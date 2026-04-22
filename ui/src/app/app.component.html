@@ -44,8 +44,10 @@
   <!-- Top header -->
   <header class="header">
     <app-magicmirror-controller
+      #ctrlRef
       [(showPopover)]="showControllerPopover"
-      (statusChange)="mmStatus = $event">
+      (statusChange)="mmStatus = $event"
+      (openPanel)="setDockPanel($event)">
     </app-magicmirror-controller>
 
     <div class="status-pill" [class.running]="mmStatus === 'running'" [class.stopped]="mmStatus === 'stopped'">
@@ -186,6 +188,29 @@
             [view]="'upgrades'"
             (panelClosed)="dockTab = 'cart'">
           </app-database-info>
+        }
+
+        @if (dockTab === 'mm-modules') {
+          @if (ctrlRef.modules.length === 0) {
+            <div class="empty-state" style="padding: 20px 16px">
+              <i class="fa-solid fa-plug-circle-xmark glyph"></i>
+              <div class="title">No modules found</div>
+              <div class="hint">Is MagicMirror running, and is <a href="https://github.com/bee-mar/mmm-mmpm" target="_blank">MMM-mmpm</a> installed?</div>
+            </div>
+          } @else {
+            <div class="module-toggle-list">
+              @for (module of ctrlRef.modules; track module.key) {
+                <button
+                  class="btn module-toggle-btn"
+                  [class.active]="module.hidden"
+                  (click)="module.hidden = !module.hidden; ctrlRef.onModuleVisibilityChange(module)">
+                  <i class="fa-solid" [class.fa-eye]="module.hidden" [class.fa-eye-slash]="!module.hidden"></i>
+                  <span class="module-name">{{ module.name }}</span>
+                  <span class="module-key">({{ module.key }})</span>
+                </button>
+              }
+            </div>
+          }
         }
       </div>
     </div>

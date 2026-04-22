@@ -1,3 +1,4 @@
+import sys
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -52,7 +53,11 @@ class TestMagicMirrorController(unittest.TestCase):
         controller = MagicMirrorController()
         success = controller.start()
         self.assertTrue(success)
-        mock_run_cmd.assert_called_with(["npm", "run", "start"], message="Starting MagicMirror", background=True)
+        args, kwargs = mock_run_cmd.call_args
+        self.assertEqual(args[0][:2], ["npm", "run"])
+        self.assertIn(args[0][2], ["start:x11", "start:wayland", "start:windows"])
+        self.assertEqual(kwargs.get("message"), "Starting MagicMirror")
+        self.assertTrue(kwargs.get("background"))
 
     @patch("mmpm.magicmirror.controller.socketio.Client")
     def test_hide_modules(self, mock_client):
@@ -293,6 +298,59 @@ class TestMagicMirrorClientFactoryCallbacks(unittest.TestCase):
         self.assertIn("MODULES_TOGGLED", registered_callbacks)
         registered_callbacks["MODULES_TOGGLED"]([])  # Empty data
         mock_client.disconnect.assert_called()
+
+
+class TestDetectDisplayServerScript(unittest.TestCase):
+    """Tests for MagicMirrorController._detect_display_server_script."""
+
+    def test_returns_windows_on_win32(self):
+        with patch.object(sys, "platform", "win32"):
+            self.assertEqual(MagicMirrorController._detect_display_server_script(), "start:windows")
+
+    def test_returns_wayland_for_xdg_session_type(self):
+        with patch.object(sys, "platform", "linux"):
+            with patch.dict("os.environ", {"XDG_SESSION_TYPE": "wayland"}, clear=False):
+                self.assertEqual(MagicMirrorController._detect_display_server_script(), "start:wayland")
+
+    def test_returns_wayland_for_wayland_display_env(self):
+        with patch.object(sys, "platform", "linux"):
+            with patch.dict("os.environ", {"XDG_SESSION_TYPE": "", "WAYLAND_DISPLAY": "wayland-0"}, clear=False):
+                self.assertEqual(MagicMirrorController._detect_display_server_script(), "start:wayland")
+
+    def test_returns_x11_when_no_wayland(self):
+        with patch.object(sys, "platform", "linux"):
+            env = {k: v for k, v in __import__("os").environ.items() if k not in ("XDG_SESSION_TYPE", "WAYLAND_DISPLAY")}
+            env["XDG_SESSION_TYPE"] = "x11"
+            with patch.dict("os.environ", env, clear=True):
+                self.assertEqual(MagicMirrorController._detect_display_server_script(), "start:x11")
+
+    def test_returns_x11_as_fallback_with_no_env(self):
+        with patch.object(sys, "platform", "linux"):
+            env = {k: v for k, v in __import__("os").environ.items() if k not in ("XDG_SESSION_TYPE", "WAYLAND_DISPLAY")}
+            with patch.dict("os.environ", env, clear=True):
+                self.assertEqual(MagicMirrorController._detect_display_server_script(), "start:x11")
+
+    def test_start_uses_detected_script(self):
+        """start() passes the detected script to npm run."""
+        from mmpm.singleton import Singleton
+
+        Singleton._instances = {}
+        controller = MagicMirrorController()
+
+        with patch.object(MagicMirrorController, "_detect_display_server_script", return_value="start:wayland"):
+            with patch("mmpm.magicmirror.controller.shutil.which", return_value="/usr/bin/npm"):
+                with patch("mmpm.magicmirror.controller.Path.exists", return_value=True):
+                    with patch("mmpm.magicmirror.controller.os.chdir"):
+                        with patch("mmpm.magicmirror.controller.run_cmd", return_value=(0, "", "")) as mock_run_cmd:
+                            controller.env = MagicMock()
+                            controller.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get.return_value = ""
+                            controller.env.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.get.return_value = ""
+                            controller.env.MMPM_MAGICMIRROR_ROOT.get.return_value = MagicMock()
+                            result = controller.start()
+
+        self.assertTrue(result)
+        args, _ = mock_run_cmd.call_args
+        self.assertEqual(args[0], ["npm", "run", "start:wayland"])
 
 
 class TestMagicMirrorControllerErrors(unittest.TestCase):

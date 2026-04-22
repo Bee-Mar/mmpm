@@ -170,20 +170,30 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
     return this.extractModuleBlocksWithOffsets(source).map(b => b.block);
   }
 
-  /** Same as extractModuleBlocks but returns start/end offsets in source. */
-  private extractModuleBlocksWithOffsets(source: string): Array<{ block: string; start: number; end: number }> {
+  /** Replaces comment text with spaces to preserve offsets while making braces inside comments invisible. */
+  private blankComments(source: string): string {
+    return source
+      .replace(/\/\*[\s\S]*?\*\//g, m => ' '.repeat(m.length))
+      .replace(/\/\/[^\n]*/g, m => ' '.repeat(m.length));
+  }
+
+  /** Same as extractModuleBlocks but returns start/end offsets in source.
+   *  scanSource, if provided, is used for brace scanning (e.g. comment-blanked)
+   *  while block text is always sliced from the original source. */
+  private extractModuleBlocksWithOffsets(source: string, scanSource?: string): Array<{ block: string; start: number; end: number }> {
+    const scan = scanSource ?? source;
     const blocks: Array<{ block: string; start: number; end: number }> = [];
-    const startIdx = source.search(/\bmodules\s*:/);
+    const startIdx = scan.search(/\bmodules\s*:/);
     if (startIdx === -1) return blocks;
 
-    const arrOpen = source.indexOf('[', startIdx);
+    const arrOpen = scan.indexOf('[', startIdx);
     if (arrOpen === -1) return blocks;
 
     let depth = 0;
     let blockStart = -1;
 
-    for (let i = arrOpen + 1; i < source.length; i++) {
-      const ch = source[i];
+    for (let i = arrOpen + 1; i < scan.length; i++) {
+      const ch = scan[i];
       if (ch === ']' && depth === 0) break;
       if (ch === '{') {
         if (depth === 0) blockStart = i;
@@ -210,7 +220,8 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
       }
     }
 
-    const blocks = [...this.extractModuleBlocksWithOffsets(source)].reverse();
+    const blanked = this.blankComments(source);
+    const blocks = [...this.extractModuleBlocksWithOffsets(source, blanked)].reverse();
     let result = source;
     const existingNames = new Set<string>();
 

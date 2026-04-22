@@ -360,6 +360,45 @@
   }
 }
 
+/* ── Module toggle list ── */
+.module-toggle-list {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.module-toggle-btn {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 8px;
+  color: var(--fg-3);
+
+  &:hover { color: var(--fg-1); }
+
+  &.active {
+    background: oklch(0.87 0.07 75 / 0.08);
+    border-color: var(--accent);
+    color: var(--accent);
+    &:hover { background: oklch(0.87 0.07 75 / 0.14); }
+  }
+
+  .module-name {
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .module-key {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--fg-4);
+    flex-shrink: 0;
+  }
+}
+
 /* ── Tweaks panel ── */
 .tweaks-panel {
   position: fixed;

@@ -36,18 +36,20 @@
 }
 
 html[data-theme="light"] {
-  --bg-0: oklch(0.91 0.007 320);
-  --bg-1: oklch(0.87 0.009 320);
-  --bg-2: oklch(0.83 0.011 320);
-  --bg-3: oklch(0.78 0.013 320);
-  --line: oklch(0.50 0.015 320 / 0.22);
-  --line-soft: oklch(0.50 0.015 320 / 0.10);
+  /* warm earthy brown/parchment — backgrounds are muted earth tones so       */
+  /* the gold accent (oklch 0.87 chroma 0.07) reads as bright against them   */
+  --bg-0: oklch(0.80 0.032 62);
+  --bg-1: oklch(0.75 0.038 60);
+  --bg-2: oklch(0.70 0.044 58);
+  --bg-3: oklch(0.64 0.050 56);
+  --line: oklch(0.45 0.040 55 / 0.28);
+  --line-soft: oklch(0.45 0.040 55 / 0.13);
 
-  --fg-0: oklch(0.13 0.012 320);
-  --fg-1: oklch(0.23 0.010 320);
-  --fg-2: oklch(0.36 0.010 320);
-  --fg-3: oklch(0.48 0.012 320);
-  --fg-4: oklch(0.53 0.011 320);
+  --fg-0: oklch(0.17 0.030 50);
+  --fg-1: oklch(0.27 0.028 52);
+  --fg-2: oklch(0.40 0.025 55);
+  --fg-3: oklch(0.52 0.022 58);
+  --fg-4: oklch(0.58 0.020 60);
 }
 
 *, *::before, *::after { box-sizing: border-box; }

@@ -131,35 +131,35 @@
             @if (sortField === 'title') {
               <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
             }
-            <div class="th-resize" (mousedown)="startColResize($event, 'title')" (click)="$event.stopPropagation()"></div>
+            <button class="th-resize" (mousedown)="startColResize($event, 'title')" (click)="$event.stopPropagation()" aria-label="Resize title column"></button>
           </th>
           <th class="col-cat sortable" [style.width.px]="colWidths['category']" (click)="toggleSort('category')">
             Category
             @if (sortField === 'category') {
               <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
             }
-            <div class="th-resize" (mousedown)="startColResize($event, 'category')" (click)="$event.stopPropagation()"></div>
+            <button class="th-resize" (mousedown)="startColResize($event, 'category')" (click)="$event.stopPropagation()" aria-label="Resize category column"></button>
           </th>
           <th class="col-author sortable" [style.width.px]="colWidths['author']" (click)="toggleSort('author')">
             Author
             @if (sortField === 'author') {
               <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
             }
-            <div class="th-resize" (mousedown)="startColResize($event, 'author')" (click)="$event.stopPropagation()"></div>
+            <button class="th-resize" (mousedown)="startColResize($event, 'author')" (click)="$event.stopPropagation()" aria-label="Resize author column"></button>
           </th>
           <th class="col-status sortable" [style.width.px]="colWidths['status']" (click)="toggleSort('status')">
             Status
             @if (sortField === 'status') {
               <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
             }
-            <div class="th-resize" (mousedown)="startColResize($event, 'status')" (click)="$event.stopPropagation()"></div>
+            <button class="th-resize" (mousedown)="startColResize($event, 'status')" (click)="$event.stopPropagation()" aria-label="Resize status column"></button>
           </th>
           <th class="col-stars sortable" [style.width.px]="colWidths['stars']" (click)="toggleSort('stars')" title="Stars">
             <i class="fa-solid fa-star"></i>
             @if (sortField === 'stars') {
               <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
             }
-            <div class="th-resize" (mousedown)="startColResize($event, 'stars')" (click)="$event.stopPropagation()"></div>
+            <button class="th-resize" (mousedown)="startColResize($event, 'stars')" (click)="$event.stopPropagation()" aria-label="Resize stars column"></button>
           </th>
           <th class="col-actions" style="width: 100px"></th>
         </tr>

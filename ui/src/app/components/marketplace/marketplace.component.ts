@@ -74,7 +74,12 @@ export class MarketPlaceComponent implements OnInit, OnDestroy {
     return this.selectedPackages.some(p => p.title === pkg.title && p.repository === pkg.repository);
   }
 
+  public isInstallable(pkg: MagicMirrorPackage): boolean {
+    return pkg.title.toLowerCase() !== 'mmpm';
+  }
+
   public toggleSelect(pkg: MagicMirrorPackage): void {
+    if (!pkg.is_installed && !this.isInstallable(pkg)) return;
     const next = this.isSelected(pkg)
       ? this.selectedPackages.filter(p => !(p.title === pkg.title && p.repository === pkg.repository))
       : [...this.selectedPackages, pkg];

@@ -66,8 +66,9 @@
             <div class="card-meta">
               <div class="pkg-icon-tile" [style.background]="mi.bg">
                 <button class="pkg-check" [class.on]="isSelected(pkg)"
+                  [disabled]="!pkg.is_installed && !isInstallable(pkg)"
                   (click)="$event.stopPropagation(); toggleSelect(pkg)"
-                  [title]="isSelected(pkg) ? 'Remove from queue' : 'Add to queue'">
+                  [title]="!pkg.is_installed && !isInstallable(pkg) ? 'Cannot install mmpm via mmpm' : isSelected(pkg) ? 'Remove from queue' : 'Add to queue'">
                   @if (isSelected(pkg)) {
                     <i class="fa-solid fa-check" style="font-size: 8px"></i>
                   }
@@ -128,7 +129,10 @@
           @let mi = getModuleIcon(pkg);
           <tr [class.selected]="isSelected(pkg)" (click)="openDetails(pkg)">
             <td (click)="$event.stopPropagation()">
-              <button class="pkg-check" [class.on]="isSelected(pkg)" (click)="toggleSelect(pkg)">
+              <button class="pkg-check" [class.on]="isSelected(pkg)"
+                [disabled]="!pkg.is_installed && !isInstallable(pkg)"
+                [title]="!pkg.is_installed && !isInstallable(pkg) ? 'Cannot install mmpm via mmpm' : ''"
+                (click)="toggleSelect(pkg)">
                 @if (isSelected(pkg)) { <i class="fa-solid fa-check" style="font-size: 8px"></i> }
               </button>
             </td>

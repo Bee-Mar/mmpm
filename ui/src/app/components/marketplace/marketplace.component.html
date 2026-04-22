@@ -134,9 +134,8 @@
               <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
             }
           </th>
-          <th class="col-stars sortable" (click)="toggleSort('stars')">
+          <th class="col-stars sortable" (click)="toggleSort('stars')" title="Stars">
             <i class="fa-solid fa-star"></i>
-            Stars
             @if (sortField === 'stars') {
               <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
             }

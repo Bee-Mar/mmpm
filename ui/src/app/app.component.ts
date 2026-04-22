@@ -21,6 +21,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   public loading: boolean = false;
   public dockWidth: number = Number(localStorage.getItem(DOCK_WIDTH_KEY)) || DOCK_DEFAULT;
   public isResizing = false;
+  public isRailExpanded: boolean = localStorage.getItem('mmpm.rail-expanded') === 'true';
+
+  public toggleRail(): void {
+    this.isRailExpanded = !this.isRailExpanded;
+    localStorage.setItem('mmpm.rail-expanded', String(this.isRailExpanded));
+  }
 
   public selectedPackages: MagicMirrorPackage[] = [];
   public selectedPackage: MagicMirrorPackage | null = null;

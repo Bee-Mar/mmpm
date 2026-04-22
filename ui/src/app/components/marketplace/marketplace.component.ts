@@ -30,6 +30,36 @@ export class MarketPlaceComponent implements OnInit, OnDestroy {
   public sortField: 'title' | 'category' | 'author' | 'status' | 'stars' | null = null;
   public sortDir: 'asc' | 'desc' = 'asc';
 
+  public colWidths: Record<string, number> = { title: 260, category: 160, author: 120, status: 100, stars: 90 };
+  private resizingCol: string | null = null;
+  private resizeStartX = 0;
+  private resizeStartWidth = 0;
+
+  private onColMouseMove = (e: MouseEvent): void => {
+    if (!this.resizingCol) return;
+    this.colWidths = { ...this.colWidths, [this.resizingCol]: Math.max(60, this.resizeStartWidth + e.clientX - this.resizeStartX) };
+  };
+
+  private onColMouseUp = (): void => {
+    this.resizingCol = null;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    window.removeEventListener('mousemove', this.onColMouseMove);
+    window.removeEventListener('mouseup', this.onColMouseUp);
+  };
+
+  public startColResize(e: MouseEvent, col: string): void {
+    e.preventDefault();
+    e.stopPropagation();
+    this.resizingCol = col;
+    this.resizeStartX = e.clientX;
+    this.resizeStartWidth = this.colWidths[col];
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    window.addEventListener('mousemove', this.onColMouseMove);
+    window.addEventListener('mouseup', this.onColMouseUp);
+  }
+
   public get filteredPackages(): MagicMirrorPackage[] {
     const filtered = this.packages.filter(pkg => {
       const matchesCategory = this.selectedCategory === 'all' || pkg.category === this.selectedCategory;
@@ -123,5 +153,7 @@ export class MarketPlaceComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this.packagesSubscription.unsubscribe();
+    window.removeEventListener('mousemove', this.onColMouseMove);
+    window.removeEventListener('mouseup', this.onColMouseUp);
   }
 }

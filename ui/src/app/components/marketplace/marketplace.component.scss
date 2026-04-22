@@ -90,6 +90,40 @@
   }
 }
 
+/* ── Card sort bar ── */
+.sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+
+  .sort-lbl {
+    font-size: 12px;
+    color: var(--fg-4);
+    font-family: var(--mono);
+    letter-spacing: 0.05em;
+    margin-right: 2px;
+  }
+
+  .sort-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line-soft);
+    background: transparent;
+    font-size: 13px;
+    color: var(--fg-3);
+    white-space: nowrap;
+    transition: all 120ms;
+    cursor: pointer;
+
+    &:hover { color: var(--fg-1); background: var(--bg-2); }
+    &.active { background: var(--bg-3); border-color: var(--accent); color: var(--accent); }
+  }
+}
+
 /* ── Market body ── */
 .market-body {
   flex: 1;
@@ -254,6 +288,7 @@
 /* ── Table view ── */
 .pkg-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 15px;
   margin-bottom: 16px;
@@ -270,6 +305,22 @@
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--fg-4);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+
+    .th-resize {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      cursor: col-resize;
+      z-index: 1;
+      transition: background 100ms;
+
+      &:hover { background: oklch(0.87 0.07 75 / 0.3); }
+    }
   }
 
   td {
@@ -307,11 +358,8 @@
     text-overflow: ellipsis;
   }
 
-  .col-cat    { width: 180px; }
-  .col-author { width: 120px; }
-  .col-status { width: 100px; }
-  .col-stars  { width: 90px; font-family: var(--mono); font-size: 14px; color: var(--fg-2); }
-  .col-actions { width: 90px; text-align: right; }
+  .col-stars  { font-family: var(--mono); font-size: 14px; color: var(--fg-2); }
+  .col-actions { text-align: right; }
 
   th.sortable {
     cursor: pointer;

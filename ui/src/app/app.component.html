@@ -8,7 +8,7 @@
     </div>
 
     <button class="nav-btn" [class.active]="activeTab === 'marketplace'" (click)="setTab('marketplace')" title="Marketplace">
-      <i class="fa-solid fa-shop"></i>
+      <span class="nav-icon"><i class="fa-solid fa-shop"></i></span>
       @if (selectedPackages.length > 0) {
         <span class="dot"></span>
       }
@@ -17,19 +17,19 @@
     </button>
 
     <button class="nav-btn" [class.active]="activeTab === 'mirror'" (click)="setTab('mirror')" title="Mirror Preview">
-      <i class="fa-solid fa-tv"></i>
+      <span class="nav-icon"><i class="fa-solid fa-tv"></i></span>
       <span class="tip">Mirror Preview</span>
       <span class="nav-label">Mirror Preview</span>
     </button>
 
     <button class="nav-btn" [class.active]="activeTab === 'config'" (click)="setTab('config')" title="Config Editor">
-      <i class="fa-solid fa-code"></i>
+      <span class="nav-icon"><i class="fa-solid fa-code"></i></span>
       <span class="tip">Config Editor</span>
       <span class="nav-label">Config Editor</span>
     </button>
 
     <button class="nav-btn" [class.active]="activeTab === 'logs'" (click)="setTab('logs')" title="Server Logs">
-      <i class="fa-solid fa-terminal"></i>
+      <span class="nav-icon"><i class="fa-solid fa-terminal"></i></span>
       <span class="tip">Server Logs</span>
       <span class="nav-label">Server Logs</span>
     </button>
@@ -37,7 +37,7 @@
     <div class="spacer"></div>
 
     <button class="nav-btn rail-toggle" (click)="toggleRail()" [title]="isRailExpanded ? 'Collapse' : 'Expand'">
-      <i class="fa-solid" [class.fa-angles-right]="!isRailExpanded" [class.fa-angles-left]="isRailExpanded"></i>
+      <span class="nav-icon"><i class="fa-solid" [class.fa-angles-right]="!isRailExpanded" [class.fa-angles-left]="isRailExpanded"></i></span>
     </button>
   </nav>
 

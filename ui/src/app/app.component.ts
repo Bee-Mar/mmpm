@@ -1,5 +1,10 @@
-import { Component, AfterViewInit } from "@angular/core";
+import { Component, AfterViewInit, OnDestroy } from "@angular/core";
 import { MagicMirrorPackage } from "@/models/magicmirror-package";
+
+const DOCK_WIDTH_KEY = 'mmpm.dock-width';
+const DOCK_MIN = 240;
+const DOCK_MAX = 600;
+const DOCK_DEFAULT = 340;
 
 @Component({
   selector: "app-root",
@@ -7,16 +12,46 @@ import { MagicMirrorPackage } from "@/models/magicmirror-package";
   styleUrls: ["./app.component.scss"],
   standalone: false,
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent implements AfterViewInit, OnDestroy {
   public activeTab: string = localStorage.getItem("mmpm.tab") || "marketplace";
   public dockTab: string = "cart";
   public viewMode: "cards" | "table" = (AppComponent.getCookie("mmpm.view") as "cards" | "table") || "cards";
   public mmStatus: string = "unknown";
   public showControllerPopover: boolean = false;
   public loading: boolean = false;
+  public dockWidth: number = Number(localStorage.getItem(DOCK_WIDTH_KEY)) || DOCK_DEFAULT;
+  public isResizing = false;
 
   public selectedPackages: MagicMirrorPackage[] = [];
   public selectedPackage: MagicMirrorPackage | null = null;
+
+  private onMouseMove = (e: MouseEvent): void => {
+    const next = Math.min(DOCK_MAX, Math.max(DOCK_MIN, window.innerWidth - e.clientX));
+    this.dockWidth = next;
+  };
+
+  private onMouseUp = (): void => {
+    this.isResizing = false;
+    localStorage.setItem(DOCK_WIDTH_KEY, String(this.dockWidth));
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    window.removeEventListener('mousemove', this.onMouseMove);
+    window.removeEventListener('mouseup', this.onMouseUp);
+  };
+
+  public onResizeStart(e: MouseEvent): void {
+    e.preventDefault();
+    this.isResizing = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    window.addEventListener('mousemove', this.onMouseMove);
+    window.addEventListener('mouseup', this.onMouseUp);
+  }
+
+  public ngOnDestroy(): void {
+    window.removeEventListener('mousemove', this.onMouseMove);
+    window.removeEventListener('mouseup', this.onMouseUp);
+  }
 
   public ngAfterViewInit(): void {
     const splash = document.getElementById('mmpm-splash');

@@ -110,7 +110,8 @@
 
     <!-- Right dock (hidden during Mirror Preview) -->
     @if (activeTab !== 'mirror') {
-    <div class="dock">
+    <div class="dock" [style.width.px]="dockWidth">
+      <div class="dock-resize-handle" (mousedown)="onResizeStart($event)"></div>
       @if (!dockPanelTitle) {
         <div class="dock-tabs">
           <button class="dock-tab" [class.active]="dockTab === 'cart'" (click)="dockTab = 'cart'">

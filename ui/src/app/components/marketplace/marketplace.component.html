@@ -48,7 +48,7 @@
     <div class="sort-bar">
       <span class="sort-lbl">Sort</span>
       @for (f of ([['title','Title'],['category','Category'],['author','Author'],['stars','Stars']]); track f[0]) {
-        <button class="sort-chip" [class.active]="sortField === f[0]" (click)="toggleSort(f[0] as 'title'|'category'|'author'|'stars')">
+        <button class="sort-chip" [class.active]="sortField === f[0]" (click)="toggleSort($any(f[0]))"
           {{ f[1] }}
           @if (sortField === f[0]) {
             <i class="fa-solid" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'" style="font-size:10px"></i>

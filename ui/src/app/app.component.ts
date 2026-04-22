@@ -5,6 +5,7 @@ const DOCK_WIDTH_KEY = 'mmpm.dock-width';
 const DOCK_MIN = 240;
 const DOCK_MAX = 600;
 const DOCK_DEFAULT = 340;
+const CONTENT_MIN = 420; // minimum px to reserve for main content area
 
 @Component({
   selector: "app-root",
@@ -32,7 +33,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   public selectedPackage: MagicMirrorPackage | null = null;
 
   private onMouseMove = (e: MouseEvent): void => {
-    const next = Math.min(DOCK_MAX, Math.max(DOCK_MIN, window.innerWidth - e.clientX));
+    const railW = this.isRailExpanded ? 180 : 60;
+    const effectiveMax = Math.min(DOCK_MAX, window.innerWidth - railW - CONTENT_MIN);
+    const next = Math.min(effectiveMax, Math.max(DOCK_MIN, window.innerWidth - e.clientX));
     this.dockWidth = next;
   };
 

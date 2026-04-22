@@ -36,7 +36,7 @@
       border: none;
       outline: none;
       color: var(--fg-1);
-      font-size: 15px;
+      font-size: 16px;
 
       &::placeholder { color: var(--fg-4); }
     }
@@ -63,7 +63,7 @@
     border-radius: 999px;
     border: 1px solid var(--line-soft);
     background: transparent;
-    font-size: 13px;
+    font-size: 14px;
     color: var(--fg-3);
     white-space: nowrap;
     transition: all 120ms;
@@ -79,7 +79,7 @@
 
     .n {
       font-family: var(--mono);
-      font-size: 11px;
+      font-size: 12px;
       color: var(--fg-4);
       background: var(--bg-2);
       padding: 1px 5px;
@@ -182,7 +182,7 @@
 
     h3 {
       margin: 0;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 600;
       color: var(--fg-0);
       white-space: nowrap;
@@ -191,7 +191,7 @@
     }
 
     .author {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--fg-4);
       margin-top: 2px;
     }
@@ -206,7 +206,7 @@
   }
 
   .card-desc {
-    font-size: 13.5px;
+    font-size: 14px;
     color: var(--fg-2);
     line-height: 1.5;
     display: -webkit-box;
@@ -227,7 +227,7 @@
     align-items: center;
     gap: 4px;
     font-family: var(--mono);
-    font-size: 12.5px;
+    font-size: 13px;
     color: var(--fg-4);
 
     i { color: var(--warn); }
@@ -239,7 +239,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--fg-2);
   background: var(--bg-1);
   border: 1px solid var(--line-soft);
@@ -255,7 +255,7 @@
 .pkg-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 15px;
   margin-bottom: 16px;
 
   thead tr {
@@ -265,7 +265,7 @@
   th {
     text-align: left;
     padding: 8px 10px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -298,7 +298,7 @@
   }
 
   .row-desc {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--fg-2);
     margin-top: 3px;
     max-width: 500px;
@@ -310,7 +310,7 @@
   .col-cat    { width: 180px; }
   .col-author { width: 120px; }
   .col-status { width: 100px; }
-  .col-stars  { width: 90px; font-family: var(--mono); font-size: 13px; color: var(--fg-2); }
+  .col-stars  { width: 90px; font-family: var(--mono); font-size: 14px; color: var(--fg-2); }
   .col-actions { width: 90px; text-align: right; }
 
   th.sortable {
@@ -320,13 +320,13 @@
 
     &:hover { color: var(--fg-1); }
 
-    .sort-arrow { font-size: 9px; margin-left: 3px; color: var(--accent); }
+    .sort-arrow { font-size: 10px; margin-left: 3px; color: var(--accent); }
   }
 }
 
 /* ── Pager ── */
 .pager {
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--fg-4);
   padding: 8px 0;
 }

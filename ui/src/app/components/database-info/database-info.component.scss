@@ -20,7 +20,7 @@
 }
 
 .panel-empty {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--fg-3);
   padding: 10px 0;
 }
@@ -28,7 +28,7 @@
 .kv {
   dt {
     font-family: var(--mono);
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--fg-4);
@@ -38,7 +38,7 @@
   }
 
   dd {
-    font-size: 13.5px;
+    font-size: 14px;
     color: var(--fg-1);
     margin-left: 0;
     margin-top: 3px;
@@ -67,7 +67,7 @@
     gap: 8px;
     width: 100%;
     padding: 8px 12px;
-    font-size: 12.5px;
+    font-size: 13px;
     color: var(--fg-1);
     text-align: left;
     transition: background 100ms;

@@ -27,8 +27,8 @@ export class MarketPlaceComponent implements OnInit, OnDestroy {
   public categories: string[] = [];
   public selectedCategory: string = 'all';
   public searchQuery: string = '';
-  public sortField: 'stars' | null = null;
-  public sortDir: 'asc' | 'desc' = 'desc';
+  public sortField: 'title' | 'category' | 'author' | 'status' | 'stars' | null = null;
+  public sortDir: 'asc' | 'desc' = 'asc';
 
   public get filteredPackages(): MagicMirrorPackage[] {
     const filtered = this.packages.filter(pkg => {
@@ -41,21 +41,34 @@ export class MarketPlaceComponent implements OnInit, OnDestroy {
         || pkg.description.toLowerCase().includes(q);
     });
 
-    if (this.sortField === 'stars') {
-      const dir = this.sortDir === 'desc' ? -1 : 1;
-      return [...filtered].sort((a, b) => (a.stars - b.stars) * dir);
-    }
+    if (!this.sortField) return filtered;
 
-    return filtered;
+    const dir = this.sortDir === 'asc' ? 1 : -1;
+    return [...filtered].sort((a, b) => {
+      switch (this.sortField) {
+        case 'title':    return a.title.localeCompare(b.title) * dir;
+        case 'category': return a.category.localeCompare(b.category) * dir;
+        case 'author':   return a.author.localeCompare(b.author) * dir;
+        case 'status':   return (this.statusRank(a) - this.statusRank(b)) * dir;
+        case 'stars':    return (a.stars - b.stars) * dir;
+        default:         return 0;
+      }
+    });
   }
 
-  public toggleSort(field: 'stars'): void {
+  public toggleSort(field: typeof this.sortField): void {
     if (this.sortField === field) {
-      this.sortDir = this.sortDir === 'desc' ? 'asc' : 'desc';
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
     } else {
       this.sortField = field;
-      this.sortDir = 'desc';
+      this.sortDir = field === 'stars' ? 'desc' : 'asc';
     }
+  }
+
+  private statusRank(pkg: MagicMirrorPackage): number {
+    if (pkg.is_installed && pkg.is_upgradable) return 0;
+    if (pkg.is_installed) return 1;
+    return 2;
   }
 
   public get installedCount(): number {

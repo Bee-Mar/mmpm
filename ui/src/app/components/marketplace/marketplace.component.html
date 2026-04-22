@@ -110,10 +110,30 @@
       <thead>
         <tr>
           <th style="width: 28px"></th>
-          <th>Title</th>
-          <th class="col-cat">Category</th>
-          <th class="col-author">Author</th>
-          <th class="col-status">Status</th>
+          <th class="sortable" (click)="toggleSort('title')">
+            Title
+            @if (sortField === 'title') {
+              <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
+            }
+          </th>
+          <th class="col-cat sortable" (click)="toggleSort('category')">
+            Category
+            @if (sortField === 'category') {
+              <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
+            }
+          </th>
+          <th class="col-author sortable" (click)="toggleSort('author')">
+            Author
+            @if (sortField === 'author') {
+              <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
+            }
+          </th>
+          <th class="col-status sortable" (click)="toggleSort('status')">
+            Status
+            @if (sortField === 'status') {
+              <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
+            }
+          </th>
           <th class="col-stars sortable" (click)="toggleSort('stars')">
             <i class="fa-solid fa-star"></i>
             Stars

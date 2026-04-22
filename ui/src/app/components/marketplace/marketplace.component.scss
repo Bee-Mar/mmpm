@@ -310,7 +310,18 @@
   .col-cat    { width: 180px; }
   .col-author { width: 120px; }
   .col-status { width: 100px; }
+  .col-stars  { width: 90px; font-family: var(--mono); font-size: 13px; color: var(--fg-2); }
   .col-actions { width: 90px; text-align: right; }
+
+  th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: color 120ms;
+
+    &:hover { color: var(--fg-1); }
+
+    .sort-arrow { font-size: 9px; margin-left: 3px; color: var(--accent); }
+  }
 }
 
 /* ── Pager ── */

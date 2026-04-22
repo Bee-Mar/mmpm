@@ -27,9 +27,11 @@ export class MarketPlaceComponent implements OnInit, OnDestroy {
   public categories: string[] = [];
   public selectedCategory: string = 'all';
   public searchQuery: string = '';
+  public sortField: 'stars' | null = null;
+  public sortDir: 'asc' | 'desc' = 'desc';
 
   public get filteredPackages(): MagicMirrorPackage[] {
-    return this.packages.filter(pkg => {
+    const filtered = this.packages.filter(pkg => {
       const matchesCategory = this.selectedCategory === 'all' || pkg.category === this.selectedCategory;
       if (!matchesCategory) return false;
       if (!this.searchQuery) return true;
@@ -38,6 +40,22 @@ export class MarketPlaceComponent implements OnInit, OnDestroy {
         || pkg.author.toLowerCase().includes(q)
         || pkg.description.toLowerCase().includes(q);
     });
+
+    if (this.sortField === 'stars') {
+      const dir = this.sortDir === 'desc' ? -1 : 1;
+      return [...filtered].sort((a, b) => (a.stars - b.stars) * dir);
+    }
+
+    return filtered;
+  }
+
+  public toggleSort(field: 'stars'): void {
+    if (this.sortField === field) {
+      this.sortDir = this.sortDir === 'desc' ? 'asc' : 'desc';
+    } else {
+      this.sortField = field;
+      this.sortDir = 'desc';
+    }
   }
 
   public get installedCount(): number {

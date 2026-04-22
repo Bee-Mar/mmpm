@@ -113,6 +113,13 @@
           <th class="col-cat">Category</th>
           <th class="col-author">Author</th>
           <th class="col-status">Status</th>
+          <th class="col-stars sortable" (click)="toggleSort('stars')">
+            <i class="fa-solid fa-star"></i>
+            Stars
+            @if (sortField === 'stars') {
+              <i class="fa-solid sort-arrow" [class.fa-arrow-up]="sortDir === 'asc'" [class.fa-arrow-down]="sortDir === 'desc'"></i>
+            }
+          </th>
           <th class="col-actions"></th>
         </tr>
       </thead>
@@ -152,6 +159,7 @@
                 <span class="badge">—</span>
               }
             </td>
+            <td class="col-stars">{{ pkg.stars | number }}</td>
             <td class="col-actions" (click)="$event.stopPropagation()">
               <button class="btn sm ghost" (click)="openDetails(pkg)">
                 <i class="fa-solid fa-circle-info"></i> Details

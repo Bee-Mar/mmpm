@@ -55,7 +55,11 @@
     </div>
 
     <div class="logo">
-      <img src="assets/MagicMirror-Package-Manager.svg" alt="MagicMirror Package Manager">
+      @if (theme === 'light') {
+        <img src="assets/MagicMirror-Package-Manager-dark.svg" alt="MagicMirror Package Manager">
+      } @else {
+        <img src="assets/MagicMirror-Package-Manager.svg" alt="MagicMirror Package Manager">
+      }
     </div>
 
     <div class="spacer"></div>

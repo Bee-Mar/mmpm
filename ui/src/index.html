@@ -16,7 +16,7 @@
       position: fixed;
       inset: 0;
       z-index: 9999;
-      background: var(--splash-bg, #0b0b10);
+      background: #0b0b10;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -49,11 +49,8 @@
 
   <script>
     window.__splashStart = Date.now();
-    (function() {
-      var theme = localStorage.getItem('mmpm.theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', theme);
-      document.documentElement.style.setProperty('--splash-bg', theme === 'light' ? '#d6c8ae' : '#0b0b10');
-    })();
+    var theme = localStorage.getItem('mmpm.theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
   </script>
   <app-root></app-root>
 </body>

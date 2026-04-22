@@ -200,7 +200,8 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
     return blocks;
   }
 
-  /** Returns a copy of source with each placed module's position and disabled state updated. */
+  /** Returns a copy of source with each placed module's position and disabled state updated.
+   *  Modules placed in the layout that have no existing config.js entry are appended. */
   private applyLayoutToConfigJs(source: string): string {
     const newPos = new Map<string, string>();
     for (const [region, names] of Object.entries(this.layout)) {
@@ -211,6 +212,7 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
 
     const blocks = [...this.extractModuleBlocksWithOffsets(source)].reverse();
     let result = source;
+    const existingNames = new Set<string>();
 
     for (const { block, start, end } of blocks) {
       const stripped = block
@@ -220,6 +222,7 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
       if (!modMatch) continue;
 
       const name = modMatch[1];
+      existingNames.add(name);
       let newBlock = block;
 
       const desiredPos = newPos.get(name);
@@ -253,6 +256,35 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
       }
 
       result = result.slice(0, start) + newBlock + result.slice(end);
+    }
+
+    // Append entries for modules placed in the layout that aren't in config.js yet
+    const newEntries: string[] = [];
+    for (const [region, names] of Object.entries(this.layout)) {
+      for (const name of names) {
+        if (!existingNames.has(name)) {
+          const disabledLine = this.disabledNames.has(name) ? ',\n\t\t\tdisabled: true' : '';
+          newEntries.push(`\t\t{\n\t\t\tmodule: "${name}",\n\t\t\tposition: "${region}"${disabledLine}\n\t\t}`);
+        }
+      }
+    }
+
+    if (newEntries.length > 0) {
+      const startIdx = result.search(/\bmodules\s*:/);
+      if (startIdx !== -1) {
+        const arrOpen = result.indexOf('[', startIdx);
+        if (arrOpen !== -1) {
+          let depth = 0;
+          let arrClose = -1;
+          for (let i = arrOpen; i < result.length; i++) {
+            if (result[i] === '[') depth++;
+            else if (result[i] === ']') { depth--; if (depth === 0) { arrClose = i; break; } }
+          }
+          if (arrClose !== -1) {
+            result = result.slice(0, arrClose) + ',\n' + newEntries.join(',\n') + '\n\t' + result.slice(arrClose);
+          }
+        }
+      }
     }
 
     return result;

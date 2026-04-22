@@ -69,9 +69,9 @@
 .palette-tile {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 8px;
-  border-radius: 5px;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
   border: 1px solid oklch(0.26 0.006 260);
   background: oklch(0.17 0.005 260);
   cursor: grab;
@@ -87,24 +87,24 @@
   }
 
   .tile-icon {
-    width: 22px;
-    height: 22px;
-    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
     display: grid;
     place-items: center;
-    font-size: 11px;
+    font-size: 14px;
     flex-shrink: 0;
 
     .tile-letter {
       font-family: var(--mono);
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 700;
       line-height: 1;
     }
   }
 
   .tile-name {
-    font-size: 12.5px;
+    font-size: 14px;
     color: var(--fg-1);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -260,13 +260,13 @@
 .mm-mod {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   background: oklch(0.20 0.005 260);
   border: 1px solid oklch(0.32 0.008 260);
-  border-radius: 4px;
-  padding: 5px 9px 5px 5px;
+  border-radius: 5px;
+  padding: 8px 12px 8px 8px;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 14px;
   color: oklch(0.90 0.005 260);
   cursor: grab;
   max-width: 100%;
@@ -289,12 +289,12 @@
   }
 
   .mod-icon {
-    width: 18px;
-    height: 18px;
-    border-radius: 3px;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
     display: grid;
     place-items: center;
-    font-size: 9px;
+    font-size: 12px;
     flex-shrink: 0;
   }
 

@@ -16,6 +16,8 @@ MMPM_DEFAULT_ENV: dict = {
     "MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE": "",
     "MMPM_IS_DOCKER_IMAGE": False,
     "MMPM_LOG_LEVEL": "INFO",
+    "MMPM_UI_API_BASE_URL": "",
+    "MMPM_UI_SOCKET_URL": "",
 }
 
 
@@ -113,6 +115,8 @@ class MMPMEnv(Singleton):
         self.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE: EnvVar = None
         self.MMPM_IS_DOCKER_IMAGE: EnvVar = None
         self.MMPM_LOG_LEVEL: EnvVar = None
+        self.MMPM_UI_API_BASE_URL: EnvVar = None
+        self.MMPM_UI_SOCKET_URL: EnvVar = None
 
         env_vars = {}
 

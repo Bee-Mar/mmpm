@@ -287,7 +287,10 @@ export class MagicMirrorControllerComponent implements OnInit, OnDestroy {
   public initSocket(): void {
     console.log('Initializing socket');
 
-    this.socket = io(`${window.location.hostname}:${environment.socketPort}`, {
+    const cfg = (window as Record<string, unknown>)['MMPM_CONFIG'] as { socketUrl?: string } | undefined;
+    const socketUrl = cfg?.socketUrl ?? `http://${window.location.hostname}:${environment.socketPort}`;
+
+    this.socket = io(socketUrl, {
       reconnection: true,
     });
 

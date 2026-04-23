@@ -2,13 +2,16 @@ from gevent import monkey
 
 monkey.patch_all()
 
+import importlib.resources as pkg_resources
 import json
+import os
 
-from flask import Flask, Response
+from flask import Flask, Response, request, send_from_directory
 from flask_cors import CORS
 
 import mmpm.api.endpoints
 from mmpm.api.endpoints.index import Index
+from mmpm.constants import urls
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.subcommands.loader import Loader
 
@@ -70,3 +73,28 @@ for endpoint in entrypoints:
         logger.debug(f"Loaded blueprint for {endpoint}")
     except Exception as exception:
         logger.error(f"Failed to load blueprint for {endpoint}: {exception}")
+
+_ui_path = str(pkg_resources.files("mmpm").joinpath("ui"))
+
+
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve_ui(path: str) -> Response:
+    full_path = os.path.join(_ui_path, path)
+
+    if path and os.path.isfile(full_path):
+        return send_from_directory(_ui_path, path)  # type: ignore
+
+    api_base = os.environ.get("MMPM_UI_API_BASE_URL", "")
+    hostname = request.host.split(":")[0]
+    default_socket_url = f"http://{hostname}:{urls.MMPM_REPEATER_SERVER_PORT}"
+    socket_url = os.environ.get("MMPM_UI_SOCKET_URL", default_socket_url)
+
+    config_script = f'<script>window.MMPM_CONFIG={{"apiBase":"{api_base}","socketUrl":"{socket_url}"}};</script>'
+
+    index_path = os.path.join(_ui_path, "index.html")
+
+    with open(index_path, encoding="utf-8") as fh:
+        html = fh.read()
+
+    return Response(html.replace("</head>", f"{config_script}</head>", 1), mimetype="text/html")

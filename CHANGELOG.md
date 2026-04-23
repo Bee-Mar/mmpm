@@ -400,11 +400,14 @@
 
 - `MagicMirrorController.start()` now detects the active display server at runtime and selects the appropriate npm start script: `npm run start:x11`, `npm run start:wayland`, or `npm run start:windows`
 - Fixed latent bug where `ELECTRON_DISABLE_SANDBOX=1` was passed as the first element of the command array, causing `shutil.which` to look for it instead of `npm`
+- Flask now serves the Angular SPA directly, injecting `window.MMPM_CONFIG` into `index.html` at request time; the pre-built wheel works behind a reverse proxy without rebuilding (resolves [#190](https://github.com/Bee-Mar/mmpm/issues/190))
+- Added `MMPM_UI_API_BASE_URL` and `MMPM_UI_SOCKET_URL` to `MMPMEnv` / `mmpm-env.json`; set these to configure the API base URL and Socket.IO URL when running behind a reverse proxy
 
 ### Bug Fixes
 
 - Mirror Preview: fixed config.js save — brace scanning now blanks JS comments before parsing, so `{` / `}` inside comments no longer produce phantom module blocks; newly-dragged modules are correctly appended on save
 - Fixed Angular template type cast in sort control binding to avoid pipe parser conflict
+- Fixed fragile relative `environments/environment` import path — replaced with `@env/environment` alias defined in `tsconfig.json`
 
 ### Tests
 

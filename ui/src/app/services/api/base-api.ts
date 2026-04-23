@@ -26,7 +26,7 @@ export class BaseAPI {
   }
 
   public route(path: string): string {
-    const cfg = (window as Record<string, unknown>)['MMPM_CONFIG'] as { apiBase?: string } | undefined;
+    const cfg = (window as unknown as Record<string, unknown>)['MMPM_CONFIG'] as { apiBase?: string } | undefined;
     return `${cfg?.apiBase ?? ''}/api/${path}`;
   }
 

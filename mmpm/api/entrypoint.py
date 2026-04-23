@@ -9,7 +9,6 @@ from flask_cors import CORS
 
 import mmpm.api.endpoints
 from mmpm.api.endpoints.index import Index
-from mmpm.api.endpoints.ui import UI
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.subcommands.loader import Loader
 
@@ -64,7 +63,6 @@ app.url_map.strict_slashes = False
 
 entrypoints = list(loader.objects.values())
 entrypoints.append(Index(app.url_map))
-entrypoints.append(UI())  # must be last — catch-all route would shadow earlier blueprints
 
 for endpoint in entrypoints:
     try:

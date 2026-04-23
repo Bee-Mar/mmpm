@@ -12,7 +12,7 @@ logger = MMPMLogFactory.get_logger(__name__)
 _ui_path = str(pkg_resources.files("mmpm").joinpath("ui"))
 
 
-class UI(Endpoint):
+class Ui(Endpoint):
     """
     Catch-all endpoint that serves the Angular SPA and injects runtime config
     (window.MMPM_CONFIG) into index.html so the pre-built bundle works behind

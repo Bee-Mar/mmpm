@@ -20,6 +20,17 @@ MMPM_DEFAULT_ENV: dict = {
     "MMPM_UI_SOCKET_URL": "",
 }
 
+MMPM_ENV_DESCRIPTIONS: dict = {
+    "MMPM_MAGICMIRROR_ROOT": "Root directory of the MagicMirror installation. MMPM uses this to locate modules, the config file, and other MagicMirror paths.",
+    "MMPM_MAGICMIRROR_URI": "URI of the MagicMirror web server. Used when MMPM communicates directly with MagicMirror (e.g. checking status).",
+    "MMPM_MAGICMIRROR_PM2_PROCESS_NAME": "PM2 process name for MagicMirror. Set this if MagicMirror is managed by PM2 to allow MMPM to start and stop it.",
+    "MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE": "Path to the Docker Compose file for MagicMirror. Set this if MagicMirror is managed via Docker Compose.",
+    "MMPM_IS_DOCKER_IMAGE": "Set to true when MMPM itself is running inside a Docker container. Adjusts internal path handling accordingly.",
+    "MMPM_LOG_LEVEL": "Logging verbosity for MMPM. Accepted values: DEBUG, INFO, WARNING, ERROR, CRITICAL.",
+    "MMPM_UI_API_BASE_URL": "Override the base URL the web UI uses to reach the MMPM REST API. Set this when the UI is served behind a reverse proxy at a custom path.",
+    "MMPM_UI_SOCKET_URL": "Override the WebSocket URL the web UI uses to connect to the MMPM API. Required when a reverse proxy handles WebSocket connections on a non-default path.",
+}
+
 
 class EnvVar:
     """
@@ -151,3 +162,14 @@ class MMPMEnv(Singleton):
 
     def display(self) -> None:  # pragma: no cover
         print(highlight(json.dumps(self.get(), indent=2), JsonLexer(), TerminalFormatter()))
+
+    def describe(self) -> None:  # pragma: no cover
+        current = self.get()
+
+        for name, description in MMPM_ENV_DESCRIPTIONS.items():
+            value = current.get(name, MMPM_DEFAULT_ENV.get(name, ""))
+
+            print(f"{color.b_green(name)}")
+            print(f"  {color.n_cyan('value:')}  {value}")
+            print(f"  {color.n_cyan('about:')}  {description}")
+            print()

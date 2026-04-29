@@ -24,6 +24,13 @@ class Env(SubCmd):
 
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
+        self.parser.add_argument(
+            "-d",
+            "--describe",
+            action="store_true",
+            dest="describe",
+            help="include a description of each environment variable",
+        )
 
     def exec(self, args, extra):
         if extra:
@@ -31,5 +38,10 @@ class Env(SubCmd):
             return
 
         logger.debug("Printing user environment to stdout")
-        self.env.display()
+
+        if args.describe:
+            self.env.describe()
+        else:
+            self.env.display()
+
         MMPMLogFactory.shutdown()

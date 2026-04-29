@@ -43,7 +43,7 @@
     }:
     let
       forEachSystem = nixpkgs.lib.genAttrs (import systems);
-      version = "4.3.0";
+      version = (builtins.fromTOML (builtins.readFile ./pyproject.toml)).project.version;
       name = "mmpm";
     in
     {
@@ -220,13 +220,13 @@
           '';
 
           lint = pkgs.writeShellScriptBin "lint" ''
-            uv run ruff check mmpm
+            uv run ruff check mmpm tests
             bun --cwd=ui run lint
           '';
 
           setup = pkgs.writeShellScriptBin "setup" ''
-            uv run ruff check mmpm
-            bun --cwd=ui run lint
+            uv sync --all-groups
+            bun --cwd=ui install
           '';
 
           lock = pkgs.writeShellScriptBin "lock" ''

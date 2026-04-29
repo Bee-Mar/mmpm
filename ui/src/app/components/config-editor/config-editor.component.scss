@@ -58,6 +58,43 @@
   }
 }
 
+.env-info-btn {
+  color: var(--accent);
+  &:hover { color: var(--fg-1); }
+}
+
+.env-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 0;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.env-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line-soft);
+
+  &:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .env-name {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .env-desc {
+    font-size: 12.5px;
+    color: var(--fg-3);
+    line-height: 1.5;
+  }
+}
+
 .editor-wrap {
   flex: 1;
   min-height: 0;

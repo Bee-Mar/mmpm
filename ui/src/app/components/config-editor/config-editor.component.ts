@@ -8,6 +8,7 @@ import {
 import { EditorComponent } from 'ngx-monaco-editor-v2';
 import { getCookie, setCookie } from '@/utils/utils';
 import { ConfigFileAPI } from '@/services/api/config-file-api.service';
+import { EnvApiService, EnvVarInfo } from '@/services/api/env-api.service';
 import { MessageService } from 'primeng/api';
 import { APIResponse } from '@/services/api/base-api';
 import { SharedStoreService } from '@/services/shared-store.service';
@@ -27,8 +28,12 @@ interface FileContentsState {
 })
 export class ConfigEditorComponent implements OnInit {
   private configFileApi = inject(ConfigFileAPI);
+  private envApi = inject(EnvApiService);
   private store = inject(SharedStoreService);
   private msg = inject(MessageService);
+
+  public showEnvInfo = false;
+  public envDescriptions: EnvVarInfo[] = [];
 
   @ViewChild(EditorComponent, { static: false })
   public editor: EditorComponent;
@@ -174,5 +179,16 @@ export class ConfigEditorComponent implements OnInit {
   public onFontSizeChange(): void {
     setCookie('mmpm-config-editor-font-size', String(this.fontSize));
     this.options = Object.assign({}, this.options, { fontSize: this.fontSize });
+  }
+
+  public openEnvInfo(): void {
+    if (this.envDescriptions.length === 0) {
+      this.envApi.getDescriptions().then((items) => {
+        this.envDescriptions = items;
+        this.showEnvInfo = true;
+      });
+    } else {
+      this.showEnvInfo = true;
+    }
   }
 }

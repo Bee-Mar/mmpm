@@ -5,7 +5,7 @@ from flask import Blueprint, Response, request
 from mmpm.api.constants import http
 from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.constants import paths
-from mmpm.env import MMPM_DEFAULT_ENV, MMPMEnv
+from mmpm.env import MMPM_DEFAULT_ENV, MMPM_ENV_DESCRIPTIONS, MMPMEnv
 from mmpm.log.factory import MMPMLogFactory
 
 logger = MMPMLogFactory.get_logger(__name__)
@@ -51,6 +51,10 @@ class Env(Endpoint):
 
             logger.info("Sending back default MMPM Env")
             return self.success({key: str(value) for key, value in MMPM_DEFAULT_ENV.items()})
+
+        @self.blueprint.route("/describe", methods=[http.GET])
+        def describe() -> Response:
+            return self.success([{"name": name, "description": description} for name, description in MMPM_ENV_DESCRIPTIONS.items()])
 
         @self.blueprint.route("/update", methods=[http.POST])
         def update() -> Response:

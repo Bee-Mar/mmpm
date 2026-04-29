@@ -75,7 +75,6 @@ echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc && source ~/.bashrc
 
 Key Pages:
 
-- [Migrating to MMPM 4.x.x](https://github.com/Bee-Mar/mmpm/wiki/Migrating-to-MMPM%E2%80%904.x.x)
 - [Installation & Removal](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Installation-&-Removal)
 - [UI Installation & Removal](https://github.com/Bee-Mar/mmpm/wiki/MMPM-UI-Installation-&-Removal)
 - [Environment Variables](https://github.com/Bee-Mar/mmpm/wiki/MMPM-Environment-Variables) (**Extremely** important)

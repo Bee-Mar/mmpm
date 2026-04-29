@@ -21,7 +21,8 @@
     "target": "ES2022",
     "module": "es2020",
     "paths": {
-      "@/*": ["src/app/*"]
+      "@/*": ["src/app/*"],
+      "@env/*": ["src/environments/*"]
     },
     "useDefineForClassFields": false,
     "skipLibCheck": true

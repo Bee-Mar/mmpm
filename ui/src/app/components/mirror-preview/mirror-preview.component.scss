@@ -137,6 +137,7 @@
 .mirror-frame {
   width: 100%;
   aspect-ratio: 16 / 9;
+  max-height: calc(100vh - var(--header-h) - 240px); // cap height on ultrawide; aspect-ratio transfers this to max-width
   background: #000;
   border: 1px solid oklch(0.30 0.008 260);
   border-radius: 3px;

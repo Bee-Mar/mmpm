@@ -1,17 +1,20 @@
 import {
   Component,
   HostListener,
+  OnDestroy,
   OnInit,
   ViewChild,
   inject,
 } from '@angular/core';
 import { EditorComponent } from 'ngx-monaco-editor-v2';
+import { Subscription } from 'rxjs';
 import { getCookie, setCookie } from '@/utils/utils';
 import { ConfigFileAPI } from '@/services/api/config-file-api.service';
 import { EnvApiService, EnvVarInfo } from '@/services/api/env-api.service';
 import { MessageService } from 'primeng/api';
 import { APIResponse } from '@/services/api/base-api';
 import { SharedStoreService } from '@/services/shared-store.service';
+import { MagicMirrorPackage } from '@/models/magicmirror-package';
 
 interface FileContentsState {
   current: string;
@@ -26,7 +29,7 @@ interface FileContentsState {
   providers: [MessageService],
   standalone: false,
 })
-export class ConfigEditorComponent implements OnInit {
+export class ConfigEditorComponent implements OnInit, OnDestroy {
   private configFileApi = inject(ConfigFileAPI);
   private envApi = inject(EnvApiService);
   private store = inject(SharedStoreService);
@@ -34,6 +37,10 @@ export class ConfigEditorComponent implements OnInit {
 
   public showEnvInfo = false;
   public envDescriptions: EnvVarInfo[] = [];
+  public uninstalledModules: string[] = [];
+
+  private packages: MagicMirrorPackage[] = [];
+  private pkgSub = new Subscription();
 
   @ViewChild(EditorComponent, { static: false })
   public editor: EditorComponent;
@@ -125,7 +132,17 @@ export class ConfigEditorComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this.pkgSub = this.store.packages.subscribe(pkgs => {
+      this.packages = pkgs;
+      if (this.file === 'config.js' && this.state['config.js'].current) {
+        this.checkUninstalledModules();
+      }
+    });
     this.onSelectFile(this.file);
+  }
+
+  public ngOnDestroy(): void {
+    this.pkgSub.unsubscribe();
   }
 
   public onEditorInit(editor: EditorComponent): void {
@@ -141,9 +158,11 @@ export class ConfigEditorComponent implements OnInit {
       this.configFileApi.getConfigFile(this.file).then((contents: string) => {
         this.state[file].current = this.state[file].saved = contents;
         this.setLanguage();
+        if (file === 'config.js') this.checkUninstalledModules();
       });
     } else {
       this.setLanguage();
+      if (file === 'config.js') this.checkUninstalledModules();
     }
   }
 
@@ -160,6 +179,10 @@ export class ConfigEditorComponent implements OnInit {
         if (response.code === 200) {
           this.state[this.file].saved = this.state[this.file].current;
           this.store.load();
+          if (this.file === 'config.js') {
+            this.store.notifyConfigJsSaved();
+            this.checkUninstalledModules();
+          }
           this.msg.add({
             severity: 'success',
             summary: 'Save File',
@@ -174,6 +197,21 @@ export class ConfigEditorComponent implements OnInit {
           });
         }
       });
+  }
+
+  private checkUninstalledModules(): void {
+    const source = this.state['config.js'].current
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/.*/g, '');
+    const pkgByDir = new Map(this.packages.map(p => [p.directory?.toLowerCase(), p]));
+    const uninstalled = new Set<string>();
+    const re = /module\s*:\s*["'`]([^"'`]+)["'`]/g;
+    let match: RegExpExecArray | null;
+    while ((match = re.exec(source)) !== null) {
+      const pkg = pkgByDir.get(match[1].toLowerCase());
+      if (pkg && !pkg.is_installed) uninstalled.add(match[1]);
+    }
+    this.uninstalledModules = [...uninstalled];
   }
 
   public onFontSizeChange(): void {

@@ -1,5 +1,7 @@
 """Command line options for 'list' subcommand"""
 
+from collections import Counter
+
 from mmpm.constants import color
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.database import MagicMirrorDatabase
@@ -91,15 +93,14 @@ class List(SubCmd):
                 package.display(title_only=args.title_only, exclude_installed=args.exclude_installed)
 
         elif args.categories:
-            categories = {package.category for package in self.database.packages}
+            counts = Counter(package.category for package in self.database.packages)
 
             if args.title_only:
-                for category in categories:
+                for category in counts:
                     print(category)
                 return
 
-            for category in categories:
-                package_count = sum(1 for package in self.database.packages if package.category == category)
+            for category, package_count in counts.items():
                 print(color.n_green(category), f"\n\tPackages: {package_count}\n")
 
         elif args.upgradable:

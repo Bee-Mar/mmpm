@@ -16,8 +16,7 @@ logger = MMPMLogFactory.get_logger(__name__)
 
 
 class MagicMirrorConfigs(Singleton):
-    def __init__(self) -> None:
-        self.env = MMPMEnv()
+    env: MMPMEnv = MMPMEnv()
 
     def get(self, name: str) -> Optional[Path]:
         match name:
@@ -68,8 +67,7 @@ class MagicMirror(Singleton):
     and removal functionalities.
     """
 
-    def __init__(self):
-        self.env = MMPMEnv()
+    env: MMPMEnv = MMPMEnv()
 
     def update(self):
         """

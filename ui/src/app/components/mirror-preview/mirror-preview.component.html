@@ -16,6 +16,14 @@
   </button>
 </div>
 
+@if (uninstalledModules.length > 0) {
+  <div class="uninstalled-banner">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span class="banner-label">Modules referenced but not installed:</span>
+    <span class="banner-modules">{{ uninstalledModules.join(', ') }}</span>
+  </div>
+}
+
 @if (loading) {
   <div class="mirror-loading">
     <i class="fa-solid fa-spinner fa-spin"></i> Reading config.js…

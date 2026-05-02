@@ -130,13 +130,14 @@ class Packages(Endpoint):
 
             for package in packages:
                 pkg = MagicMirrorPackage(**package)
+                ok, error = pkg.upgrade()
 
-                if pkg.upgrade():
+                if ok:
                     logger.debug(f"Upgraded {pkg.title}")
                     success.append(package)
                 else:
-                    logger.debug(f"Failed to upgrade {pkg.title}")
-                    failure.append(package)
+                    logger.debug(f"Failed to upgrade {pkg.title}: {error}")
+                    failure.append({"title": pkg.title, "error": error})
 
             return self.success({"success": success, "failure": failure})
 

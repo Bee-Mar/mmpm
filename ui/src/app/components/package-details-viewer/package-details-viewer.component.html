@@ -80,7 +80,16 @@
     }
 
     <div class="details-actions">
-      <button class="btn" [class.primary]="!isQueued" (click)="toggleQueue()">
+      @if (selectedPackage.is_installed && selectedPackage.is_upgradable) {
+        <button class="btn primary" [disabled]="upgrading" (click)="onUpgrade()">
+          @if (upgrading) {
+            <i class="fa-solid fa-arrows-rotate fa-spin"></i> Upgrading…
+          } @else {
+            <i class="fa-solid fa-arrow-up-from-bracket"></i> Upgrade now
+          }
+        </button>
+      }
+      <button class="btn" [class.primary]="!isQueued && !selectedPackage.is_upgradable" (click)="toggleQueue()">
         @if (isQueued) {
           <i class="fa-solid fa-xmark"></i> Remove from queue
         } @else if (selectedPackage.is_installed) {

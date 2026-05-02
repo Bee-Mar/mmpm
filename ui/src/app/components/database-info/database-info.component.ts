@@ -128,6 +128,16 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
     });
   }
 
+  public isUpgradeSelected(pkg: MagicMirrorPackage): boolean {
+    return this.selectedUpgrades.some(p => p.title === pkg.title);
+  }
+
+  public toggleUpgrade(pkg: MagicMirrorPackage): void {
+    this.selectedUpgrades = this.isUpgradeSelected(pkg)
+      ? this.selectedUpgrades.filter(p => p.title !== pkg.title)
+      : [...this.selectedUpgrades, pkg];
+  }
+
   public onUpgrade() {
     let message = 'Are you sure you want to upgrade the selected packages?';
 
@@ -207,18 +217,23 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
 
     if (packages.length) {
       const response = await this.mmPkgApi.postUpgradePackages(packages);
+      const succeeded: MagicMirrorPackage[] = response.message?.success ?? [];
+      const failures: { title: string; error: string }[] = response.message?.failure ?? [];
 
-      if (response.code === 200) {
+      if (response.code === 200 && succeeded.length > 0) {
         this.msg.add({
           severity: 'success',
           summary: 'Upgrade',
-          detail: `${packages.length} packages have been upgraded`,
+          detail: `${succeeded.length} package${succeeded.length === 1 ? '' : 's'} upgraded successfully`,
         });
-      } else {
+      }
+
+      for (const f of failures) {
         this.msg.add({
           severity: 'error',
-          summary: 'Upgrade',
-          detail: response.message,
+          summary: `Failed to upgrade ${f.title}`,
+          detail: f.error,
+          life: 8000,
         });
       }
     }

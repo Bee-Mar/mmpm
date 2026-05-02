@@ -2,6 +2,7 @@ import { MagicMirrorPackage, RemotePackageDetails } from '@/models/magicmirror-p
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { APIResponse } from '@/services/api/base-api';
 import { MagicMirrorPackageAPI } from '@/services/api/magicmirror-package-api.service';
+import { SharedStoreService } from '@/services/shared-store.service';
 import { MessageService } from 'primeng/api';
 import { getModuleIcon, ModuleIcon } from '@/utils/module-icon';
 
@@ -14,6 +15,7 @@ import { getModuleIcon, ModuleIcon } from '@/utils/module-icon';
 })
 export class PackageDetailsViewerComponent {
   private mmPkgApi = inject(MagicMirrorPackageAPI);
+  private store = inject(SharedStoreService);
   private msg = inject(MessageService);
 
   @Input() selectedPackage: MagicMirrorPackage | null = null;
@@ -22,6 +24,7 @@ export class PackageDetailsViewerComponent {
   @Output() closePanel = new EventEmitter<void>();
 
   public loadingRemote = false;
+  public upgrading = false;
 
   public get isQueued(): boolean {
     if (!this.selectedPackage) return false;
@@ -51,6 +54,25 @@ export class PackageDetailsViewerComponent {
       this.loadingRemote = false;
     }).catch(() => {
       this.loadingRemote = false;
+    });
+  }
+
+  public onUpgrade(): void {
+    if (!this.selectedPackage || this.upgrading) return;
+    this.upgrading = true;
+    this.mmPkgApi.postUpgradePackages([this.selectedPackage]).then((response: APIResponse) => {
+      this.upgrading = false;
+      const failure = response.message?.failure?.[0];
+      if (response.code === 200 && !failure) {
+        this.msg.add({ severity: 'success', summary: 'Upgrade', detail: `${this.selectedPackage!.title} upgraded successfully` });
+        this.store.load();
+      } else {
+        const detail = failure?.error || response.message || 'Upgrade failed';
+        this.msg.add({ severity: 'error', summary: `Failed to upgrade ${this.selectedPackage!.title}`, detail, life: 8000 });
+      }
+    }).catch(() => {
+      this.upgrading = false;
+      this.msg.add({ severity: 'error', summary: 'Upgrade', detail: 'Upgrade failed' });
     });
   }
 

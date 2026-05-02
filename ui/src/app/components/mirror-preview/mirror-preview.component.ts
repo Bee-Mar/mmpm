@@ -59,6 +59,7 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
 
   public packages: MagicMirrorPackage[] = [];
   public layout: MirrorLayout = emptyLayout();
+  public uninstalledModules: string[] = [];
   public disabledNames = new Set<string>();
   public contextMenuItems: MenuItem[] = [];
   public loading = true;
@@ -76,10 +77,18 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
   // ── Initialisation ────────────────────────────────────────────────────────
 
   public ngOnInit(): void {
-    this.sub = this.store.packages.subscribe(pkgs => {
+    this.sub.add(this.store.packages.subscribe(pkgs => {
       this.packages = pkgs;
       this.pkgByDir = new Map(pkgs.map(p => [p.directory?.toLowerCase(), p]));
-    });
+      this.warnUninstalledModules();
+    }));
+    this.sub.add(this.store.configJsSaved$.subscribe(() => this.resetLayout()));
+
+    if (this.store.configJsDirty) {
+      this.store.configJsDirty = false;
+      this.resetLayout();
+      return;
+    }
 
     const savedDisabled = localStorage.getItem(DISABLED_KEY);
     if (savedDisabled) {
@@ -108,6 +117,7 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
             }
           }
           this.loading = false;
+          this.warnUninstalledModules();
           return;
         }
       } catch { /* fall through to config.js parse */ }
@@ -116,6 +126,7 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
     this.configApi.getConfigFile('config.js').then(source => {
       this.layout = this.parseConfigJs(source);
       this.saveLayout();
+      this.warnUninstalledModules();
     }).catch(() => {
       this.layout = emptyLayout();
     }).finally(() => {
@@ -487,6 +498,19 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
     localStorage.setItem(KNOWN_KEY, JSON.stringify([...this.knownModuleNames]));
   }
 
+  private warnUninstalledModules(): void {
+    const uninstalled = new Set<string>();
+    for (const names of Object.values(this.layout)) {
+      for (const name of names) {
+        const pkg = this.pkgByDir.get(name.toLowerCase());
+        if (pkg && !pkg.is_installed) {
+          uninstalled.add(name);
+        }
+      }
+    }
+    this.uninstalledModules = [...uninstalled];
+  }
+
   public resetLayout(): void {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(DISABLED_KEY);
@@ -496,6 +520,7 @@ export class MirrorPreviewComponent implements OnInit, OnDestroy {
     this.configApi.getConfigFile('config.js').then(source => {
       this.layout = this.parseConfigJs(source);
       this.saveLayout();
+      this.warnUninstalledModules();
     }).catch(() => {
       this.layout = emptyLayout();
     }).finally(() => {

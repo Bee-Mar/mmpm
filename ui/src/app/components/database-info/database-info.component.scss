@@ -45,6 +45,40 @@
   }
 }
 
+.upgrade-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.upgrade-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--fg-1);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 100ms;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--bg-2); }
+  &.selected { background: oklch(0.87 0.07 75 / 0.06); }
+
+  .upgrade-title {
+    flex: 1;
+    font-weight: 500;
+  }
+}
+
 .db-btn-wrap {
   position: relative;
   display: inline-flex;

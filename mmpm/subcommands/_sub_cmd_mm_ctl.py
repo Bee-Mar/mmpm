@@ -22,6 +22,8 @@ class MmCtl(SubCmd):
         env (MMPMEnv): A singleton of MMPMEnv which contains environment variables
     """
 
+    env: MMPMEnv = MMPMEnv()
+
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "mm-ctl"
@@ -29,7 +31,6 @@ class MmCtl(SubCmd):
         self.usage = f"{self.app_name} {self.name} [--<option>]"
         self.controller = MagicMirrorController()
         self.magicmirror = MagicMirror()
-        self.env = MMPMEnv()
 
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)

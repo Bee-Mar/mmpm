@@ -26,12 +26,13 @@ class Open(SubCmd):
         [Method] edit(self, file: PosixPath): see method docs
     """
 
+    env: MMPMEnv = MMPMEnv()
+
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "open"
         self.help = "Open config files, documentation, wikis, and MagicMirror itself"
         self.usage = f"{self.app_name} {self.name} [--<option>]"
-        self.env = MMPMEnv()
         self.ui = MMPMui()
         self.mm_configs = MagicMirrorConfigs()
 

@@ -22,8 +22,9 @@ class MagicMirrorDatabase(Singleton):
     and managing the list of available MagicMirror modules and custom packages.
     """
 
+    env: MMPMEnv = MMPMEnv()
+
     def __init__(self):
-        self.env = MMPMEnv()
         self.packages: List[MagicMirrorPackage] = None
         self.last_update: datetime.datetime = None
         self.expiration_date: datetime.datetime = None

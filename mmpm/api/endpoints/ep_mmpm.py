@@ -15,10 +15,11 @@ class Mmpm(Endpoint):
     A Flask endpoint class for interacting with the MMPM application in more 'meta' manner.
     """
 
+    env: MMPMEnv = MMPMEnv()
+
     def __init__(self):
         self.name = "mmpm"
         self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
-        self.env = MMPMEnv()
 
         @self.blueprint.route("/version", methods=[http.GET])
         def version() -> Response:

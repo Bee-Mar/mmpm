@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { MagicMirrorPackage } from '@/models/magicmirror-package';
 import { MagicMirrorPackageAPI } from './api/magicmirror-package-api.service';
 import { APIResponse } from '@/services/api/base-api';
@@ -42,6 +42,15 @@ export class SharedStoreService {
   });
 
   public readonly env: Observable<MMPMEnv> = this.envSubj.asObservable();
+
+  private configJsSavedSubj = new Subject<void>();
+  public readonly configJsSaved$ = this.configJsSavedSubj.asObservable();
+  public configJsDirty = false;
+
+  public notifyConfigJsSaved(): void {
+    this.configJsDirty = true;
+    this.configJsSavedSubj.next();
+  }
 
   public load(): void {
     console.log('Getting packages for data store');

@@ -380,6 +380,34 @@
 
 - Add backwards compatibility for `custom.css` and `custom.css.sample` files based on upcoming release of MagicMirror
 
+## Version 4.6.0
+
+### UI
+
+- Added "Currently Installed" tab in the navigation rail showing all installed packages (marketplace and custom) with search, sort, card, and table views
+- Mirror Preview: Config Editor save now automatically triggers a layout reset so the visual grid always reflects the saved `config.js` without requiring a manual Reset click
+- Mirror Preview: persistent warning banner lists any modules referenced in `config.js` that are not installed; clears automatically when the missing packages are installed
+- Config Editor: persistent warning banner below the toolbar lists the same uninstalled modules while `config.js` is active; updates live when packages are installed or the file is saved
+- Upgrades panel: replaced `p-listbox` with native-styled list matching the design system
+- Package details panel: "Upgrade now" button appears for installed packages that have an available upgrade
+
+### Backend
+
+- `MagicMirrorPackage.upgrade()` rewritten: uses `git stash` / `git stash pop` to preserve local changes before pulling, surfaces error text from git through to the API response and UI toasts, rolls back via `git reset --hard ORIG_HEAD` if dependency installation fails after a successful pull
+- `run_cmd()` gained an optional `cwd` parameter; `upgrade()` passes it instead of using process-global `os.chdir()`
+- `MMPMEnv` promoted from a per-instance `__init__` assignment to a class-level attribute across all 14 consumer classes, making the singleton relationship explicit
+- `mmpm list --categories` package count replaced O(n²) double-scan with a single `Counter` pass
+
+### Bug Fixes
+
+- Mirror Preview warning banner now fires on every code path including the localStorage cache early-return, not only when `config.js` is fetched from the API
+- Mirror Preview correctly picks up a `config.js` save made while the panel was off-screen (`@if`-destroyed), via a `configJsDirty` flag checked on remount
+
+### Tests
+
+- Fixed test suite after `MMPMEnv` class-level attribute refactor: replaced instance-attribute assignment (blocked by `__slots__`) with `patch.object(MagicMirrorPackage, "env", ...)` + `addCleanup`
+- All 245 tests passing
+
 ## Version 4.5.0
 
 ### UI

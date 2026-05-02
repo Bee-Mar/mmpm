@@ -95,8 +95,9 @@ class MagicMirrorController(Singleton):
     or hide specific modules.
     """
 
+    env: MMPMEnv = MMPMEnv()
+
     def __init__(self):
-        self.env = MMPMEnv()
         self.factory = MagicMirrorClientFactory()
 
     def status(self):

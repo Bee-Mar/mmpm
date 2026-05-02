@@ -17,11 +17,12 @@ class Configs(Endpoint):
     including retrieving and updating various configuration files.
     """
 
+    env: MMPMEnv = MMPMEnv()
+
     def __init__(self):
         self.name = "configs"
         self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
         self.handler = None
-        self.env = MMPMEnv()
         self.mm_configs = MagicMirrorConfigs()
 
         @self.blueprint.route("/retrieve/<filename>", methods=[http.GET])

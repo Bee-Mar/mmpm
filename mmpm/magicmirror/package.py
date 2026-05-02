@@ -35,6 +35,8 @@ class MagicMirrorPackage:
     MagicMirror package's metadata
     """
 
+    env: MMPMEnv = MMPMEnv()
+
     __slots__ = (
         "title",
         "author",
@@ -43,7 +45,6 @@ class MagicMirrorPackage:
         "category",
         "directory",
         "is_installed",
-        "env",
         "is_upgradable",
         "stars",
         "last_updated",
@@ -80,7 +81,6 @@ class MagicMirrorPackage:
         Additional keyword arguments are ignored, but intentionally provided as a means to simplify API interaction.
         """
 
-        self.env = MMPMEnv()
         self.title = __sanitize__(title).strip()
         self.author = __sanitize__(author).strip()
         self.repository = repository.strip()

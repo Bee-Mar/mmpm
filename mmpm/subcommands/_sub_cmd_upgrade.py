@@ -24,6 +24,8 @@ class Upgrade(SubCmd):
         magicmirror (MagicMirror): An instance of the MagicMirror object (similar to a MagicMirrorPackage)
     """
 
+    env: MMPMEnv = MMPMEnv()
+
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "upgrade"
@@ -31,7 +33,6 @@ class Upgrade(SubCmd):
         self.usage = f"{self.app_name} {self.name} <package(s)> [--yes]"
         self.database = MagicMirrorDatabase()
         self.magicmirror = MagicMirror()
-        self.env = MMPMEnv()
 
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)

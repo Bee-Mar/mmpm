@@ -24,6 +24,8 @@ class Ui(SubCmd):
         ui (MMPMui): An instance of the MMPMui class for managing the MMPM user interface.
     """
 
+    env: MMPMEnv = MMPMEnv()
+
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "ui"
@@ -31,7 +33,6 @@ class Ui(SubCmd):
         self.usage = f"{self.app_name} {self.name} [--url] [--status] <install/remove>"
         self.database = MagicMirrorDatabase()
         self.ui = MMPMui()
-        self.env = MMPMEnv()
 
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)

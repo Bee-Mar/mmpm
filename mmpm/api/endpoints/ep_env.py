@@ -17,10 +17,11 @@ class Env(Endpoint):
     including retrieving the current environment, the default environment, and updating the environment settings.
     """
 
+    env: MMPMEnv = MMPMEnv()
+
     def __init__(self):
         self.name = "env"
         self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
-        self.env = MMPMEnv()
 
         @self.blueprint.route("/", methods=[http.GET])
         def retrieve() -> Response:

@@ -64,15 +64,19 @@
   <!-- Panel mode: lives in the dock -->
   <div class="panel-body">
     @if (upgradesAvailable) {
-      <p-listbox
-        [options]="upgradableItems"
-        [(ngModel)]="selectedUpgrades"
-        optionLabel="title"
-        [multiple]="true"
-        [checkbox]="true"
-        [metaKeySelection]="false"
-        [listStyle]="{ 'max-height': '240px' }">
-      </p-listbox>
+      <div class="upgrade-list">
+        @for (pkg of upgradableItems; track pkg.title) {
+          <button class="upgrade-item" [class.selected]="isUpgradeSelected(pkg)" (click)="toggleUpgrade(pkg)">
+            <span class="pkg-check" [class.on]="isUpgradeSelected(pkg)">
+              @if (isUpgradeSelected(pkg)) {
+                <i class="fa-solid fa-check" style="font-size: 8px"></i>
+              }
+            </span>
+            <span class="upgrade-title">{{ pkg.title }}</span>
+            <span class="badge update">UPDATE</span>
+          </button>
+        }
+      </div>
       <div class="panel-actions">
         <button class="btn ghost" (click)="panelClosed.emit()">Cancel</button>
         <button class="btn primary" [disabled]="!selectedUpgrades.length" (click)="onUpgrade()">

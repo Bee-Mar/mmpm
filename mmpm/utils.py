@@ -5,7 +5,7 @@ import subprocess
 import time
 import urllib.request
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import git
 import requests
@@ -84,7 +84,7 @@ def get_host_ip() -> str:
     return address
 
 
-def run_cmd(command: List[str], progress=True, background=False, message: str = "") -> Tuple[int, str, str]:
+def run_cmd(command: List[str], progress=True, background=False, message: str = "", cwd: Optional[Path] = None) -> Tuple[int, str, str]:
     """
     Executes a shell command and captures its output and errors.
 
@@ -93,6 +93,8 @@ def run_cmd(command: List[str], progress=True, background=False, message: str = 
         progress (bool): If True, displays a spinner during command execution.
         background (bool): If True, runs the command in the background.
         message (str): The message to display alongside the spinner.
+        cwd (Optional[Path]): Working directory for the subprocess. Defaults to the
+            current process working directory when None.
 
     Returns:
         Tuple[int, str, str]: A tuple containing the command's return code, standard output, and standard error.
@@ -103,13 +105,13 @@ def run_cmd(command: List[str], progress=True, background=False, message: str = 
         # fully detach the terminal from the process so nothing hangs
         with open(os.devnull, "wb") as devnull:
             # pylint: disable=subprocess-popen-preexec-fn
-            subprocess.Popen(command, stdout=devnull, stderr=devnull, stdin=devnull, close_fds=True, preexec_fn=os.setsid)
+            subprocess.Popen(command, stdout=devnull, stderr=devnull, stdin=devnull, close_fds=True, preexec_fn=os.setsid, cwd=cwd)
 
         return 0, "", ""
 
     logger.debug(f"Executing command `{' '.join(command)}`")
 
-    with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE) as process:
+    with subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE, cwd=cwd) as process:
         if progress:
             with yaspin(text=message, color="green") as spinner:
                 spinner.spinner = Spinners.bouncingBar

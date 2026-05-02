@@ -16,6 +16,12 @@
       <span class="nav-label">Marketplace</span>
     </button>
 
+    <button class="nav-btn" [class.active]="activeTab === 'installed'" (click)="setTab('installed')" title="Installed">
+      <span class="nav-icon"><i class="fa-solid fa-circle-check"></i></span>
+      <span class="tip">Installed</span>
+      <span class="nav-label">Installed</span>
+    </button>
+
     <button class="nav-btn" [class.active]="activeTab === 'mirror'" (click)="setTab('mirror')" title="Mirror Preview">
       <span class="nav-icon"><i class="fa-solid fa-tv"></i></span>
       <span class="tip">Mirror Preview</span>
@@ -85,6 +91,16 @@
           (selectedPackageChange)="onPackageSelected($event)"
           (openPanel)="setDockPanel($event)">
         </app-marketplace>
+      }
+
+      @if (activeTab === 'installed') {
+        <app-currently-installed
+          [viewMode]="viewMode"
+          (viewModeChange)="setViewMode($event)"
+          [(selectedPackages)]="selectedPackages"
+          (selectedPackageChange)="onPackageSelected($event)"
+          (openPanel)="setDockPanel($event)">
+        </app-currently-installed>
       }
 
       @if (activeTab === 'mirror') {

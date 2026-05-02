@@ -73,7 +73,7 @@ class Upgrade(SubCmd):
 
         if upgradable["packages"]:
             packages = {MagicMirrorPackage(**package) for package in upgradable["packages"]}
-            packages_to_upgrade.extend(filter(lambda pkg: pkg.upgrade(), packages))
+            packages_to_upgrade.extend(filter(lambda pkg: pkg.upgrade()[0], packages))
             upgradable["packages"] = [package.serialize() for package in (packages - set(packages_to_upgrade))]
 
         upgradable["MagicMirror"] = upgradable["MagicMirror"] and self.magicmirror.upgrade()

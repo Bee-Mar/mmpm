@@ -99,49 +99,44 @@ class TestMagicMirrorPackage(unittest.TestCase):
             message="Downloading",
         )
 
-    @patch("os.chdir")
     @patch("mmpm.magicmirror.package.repo_up_to_date")
     @patch("pathlib.PosixPath.exists")
-    def test_update(self, mock_exists, mock_repo_up_to_date, mock_chdir):
+    def test_update(self, mock_exists, mock_repo_up_to_date):
         mock_exists.return_value = True
         mock_repo_up_to_date.return_value = True
         self.package.env = MMPMEnv()
-        expected_dir = MMPM_DEFAULT_ENV.get("MMPM_MAGICMIRROR_ROOT") / "modules" / self.package.directory
         self.package.update()
-        mock_chdir.assert_called_with(expected_dir)
         self.assertTrue(self.package.is_upgradable)
 
-    @patch("os.chdir")
     @patch("mmpm.magicmirror.package.repo_up_to_date")
     @patch("pathlib.PosixPath.exists")
-    def test_update_no_changes(self, mock_exists, mock_repo_up_to_date, mock_chdir):
+    def test_update_no_changes(self, mock_exists, mock_repo_up_to_date):
         mock_repo_up_to_date.return_value = False
         self.package.env = MMPMEnv()
-        expected_dir = MMPM_DEFAULT_ENV.get("MMPM_MAGICMIRROR_ROOT") / "modules" / self.package.directory
         self.package.update()
-        mock_chdir.assert_called_with(expected_dir)
         self.assertFalse(self.package.is_upgradable)
 
-    @patch("os.chdir")
     @patch("mmpm.magicmirror.package.run_cmd")
     @patch("mmpm.magicmirror.package.InstallationHandler.install")
-    def test_upgrade(self, mock_install_install, mock_run_cmd, mock_chdir):
-        mock_run_cmd.return_value = (0, "", "")
+    def test_upgrade(self, mock_install, mock_run_cmd):
+        # status (clean) → pull (changes pulled)
+        mock_run_cmd.side_effect = [(0, "", ""), (0, "Updating abc..def\nFast-forward", "")]
+        mock_install.return_value = True
         self.package.env = MMPMEnv()
-        expected_dir = MMPM_DEFAULT_ENV.get("MMPM_MAGICMIRROR_ROOT") / "modules" / self.package.directory
         self.package.is_upgradable = True
-        self.package.upgrade()
-        mock_chdir.assert_called_with(expected_dir)
+        ok, err = self.package.upgrade()
+        self.assertTrue(ok)
+        self.assertEqual(err, "")
+        mock_install.assert_called_once()
 
-    @patch("os.chdir")
     @patch("mmpm.magicmirror.package.run_cmd")
-    def test_upgrade_failure(self, mock_run_cmd, mock_chdir):
-        mock_run_cmd.return_value = (1, "", "error")
-        expected_dir = MMPM_DEFAULT_ENV.get("MMPM_MAGICMIRROR_ROOT") / "modules" / self.package.directory
+    def test_upgrade_failure(self, mock_run_cmd):
+        # status (clean) → pull (fails)
+        mock_run_cmd.side_effect = [(0, "", ""), (1, "", "error: merge conflict")]
         self.package.env = MMPMEnv()
-        result = self.package.upgrade()
-        mock_chdir.assert_called_with(expected_dir)
-        self.assertFalse(result)
+        ok, err = self.package.upgrade()
+        self.assertFalse(ok)
+        self.assertIn("error", err)
 
     def test_equality_with_none(self):
         """Line 107: __eq__ with None returns False (compares against __NULL__ hash)."""
@@ -158,10 +153,9 @@ class TestMagicMirrorPackage(unittest.TestCase):
         p2 = MagicMirrorPackage(repository="https://github.com/a/b", directory="b")
         self.assertEqual(hash(p1), hash(p2))
 
-    @patch("os.chdir")
     @patch("mmpm.magicmirror.package.repo_up_to_date")
-    def test_update_modules_dir_not_exists(self, mock_repo, mock_chdir):
-        """Lines 257-259: update returns early when modules dir doesn't exist."""
+    def test_update_modules_dir_not_exists(self, mock_repo):
+        """update() returns early when modules dir doesn't exist."""
         self.package.env = MagicMock()
         mock_modules_dir = MagicMock()
         mock_modules_dir.exists.return_value = False
@@ -173,11 +167,10 @@ class TestMagicMirrorPackage(unittest.TestCase):
         mock_repo.assert_not_called()
         self.assertFalse(self.package.is_upgradable)
 
-    @patch("os.chdir")
     @patch("mmpm.magicmirror.package.repo_up_to_date", side_effect=KeyboardInterrupt)
     @patch("mmpm.magicmirror.package.sys.exit")
-    def test_update_keyboard_interrupt(self, mock_exit, mock_repo, mock_chdir):
-        """Lines 265-267: KeyboardInterrupt calls sys.exit(127)."""
+    def test_update_keyboard_interrupt(self, mock_exit, mock_repo):
+        """KeyboardInterrupt in update() calls sys.exit(127)."""
         self.package.env = MagicMock()
         mock_modules_dir = MagicMock()
         mock_modules_dir.exists.return_value = True
@@ -189,16 +182,17 @@ class TestMagicMirrorPackage(unittest.TestCase):
         self.package.update()
         mock_exit.assert_called_once_with(127)
 
-    @patch("os.chdir")
     @patch("mmpm.magicmirror.package.run_cmd")
     @patch("mmpm.magicmirror.package.InstallationHandler.install")
-    def test_upgrade_up_to_date_no_force(self, mock_install, mock_run_cmd, mock_chdir):
-        """Lines 289-293: when up to date and force=False, no install is called."""
-        mock_run_cmd.return_value = (0, "Already up to date", "")
+    def test_upgrade_up_to_date_no_force(self, mock_install, mock_run_cmd):
+        """When already up to date and force=False, no install is called."""
+        # status (clean) → pull (already up to date)
+        mock_run_cmd.side_effect = [(0, "", ""), (0, "Already up to date.", "")]
         self.package.env = MMPMEnv()
-        result = self.package.upgrade(force=False)
+        ok, err = self.package.upgrade(force=False)
         mock_install.assert_not_called()
-        self.assertTrue(result)
+        self.assertTrue(ok)
+        self.assertEqual(err, "")
 
     def test_display_title_only(self):
         """Lines 139-141: title_only displays just the title."""

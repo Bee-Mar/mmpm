@@ -258,39 +258,76 @@ class MagicMirrorPackage:
             self.is_upgradable = False
             return
 
-        os.chdir(modules_dir / self.directory)
-
         try:
             self.is_upgradable = repo_up_to_date(modules_dir / self.directory)
         except KeyboardInterrupt:
             logger.info("User killed process with CTRL-C")
             sys.exit(127)
 
-    def upgrade(self, force: bool = False) -> bool:
+    def upgrade(self, force: bool = False) -> tuple[bool, str]:
         """
         Upgrades the package by pulling the latest changes from the remote repository.
 
+        Local modifications are stashed before the pull and restored afterwards so
+        that a dirty working tree does not block the merge and user changes are not
+        silently discarded. If dependency installation fails after a successful pull
+        the commit is rolled back via ORIG_HEAD so the package is left in its last
+        known-good state.
+
         Parameters:
-            force (bool): If True, forces the upgrade even if the repository is up to date.
+            force (bool): If True, forces dependency reinstall even when already up to date.
 
         Returns:
-            bool: True if the upgrade is successful, False otherwise.
+            tuple[bool, str]: (True, "") on success; (False, error_message) on failure.
         """
-        modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
+        pkg_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules" / self.directory
 
-        os.chdir(modules_dir / self.directory)
+        # Stash any local modifications so git pull cannot be blocked by dirty-tree
+        # conflicts while still preserving the user's changes.
+        _, status_out, _ = run_cmd(["git", "status", "--porcelain"], progress=False, cwd=pkg_dir)
+        stashed = False
 
-        error_code, stdout, stderr = run_cmd(["git", "pull"], message="Retrieving changes")
+        if status_out.strip():
+            logger.debug(f"Stashing local changes in {self.directory} before upgrade")
+            stash_code, _, stash_err = run_cmd(["git", "stash"], message="Stashing local changes", cwd=pkg_dir)
 
-        if error_code or stderr:
-            logger.error(f"Failed to upgrade {self.title}: {stderr}")
-            return False
+            if stash_code:
+                return False, f"Failed to stash local changes: {stash_err.strip()}"
 
-        elif "up to date" not in stdout or force and InstallationHandler(self).install():
+            stashed = True
+
+        error_code, stdout, stderr = run_cmd(["git", "pull"], message="Retrieving changes", cwd=pkg_dir)
+
+        # Restore stashed changes regardless of pull outcome.
+        if stashed:
+            pop_code, _, pop_err = run_cmd(["git", "stash", "pop"], message="Restoring local changes", cwd=pkg_dir)
+
+            if pop_code:
+                # Conflicts between the stash and the pulled changes need manual resolution.
+                logger.warning(
+                    f"git stash pop had conflicts in {self.directory}. Run 'git stash pop' in the module directory to resolve them manually."
+                )
+
+        # Only a non-zero exit code signals failure — git writes fetch progress to
+        # stderr even on a successful pull, so checking stderr alone gives false negatives.
+        if error_code:
+            error_msg = (stderr or stdout).strip()
+            logger.error(f"Failed to upgrade {self.title}: {error_msg}")
+            return False, error_msg
+
+        pulled_changes = "Already up to date." not in stdout
+
+        if pulled_changes or force:
+            if not InstallationHandler(self).install():
+                # Roll back the pull so the package is not left with a broken dependency state.
+                logger.error(f"Dependency install failed after upgrading {self.title}; rolling back to previous commit")
+                run_cmd(["git", "reset", "--hard", "ORIG_HEAD"], progress=False, cwd=pkg_dir)
+                return False, "Upgrade pulled successfully but dependency installation failed; changes have been rolled back"
+
             print(f"Upgraded {color.n_green(self.title)}")
-            logger.debug(f"Upgraded {color.n_green(self.title)}")
+            logger.debug(f"Upgraded {self.title}")
 
-        return True
+        return True, ""
 
     @classmethod
     def from_json(cls, data: Dict[str, Any]):

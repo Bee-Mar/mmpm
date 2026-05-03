@@ -46,6 +46,8 @@
   overflow-x: auto;
   flex-shrink: 0;
   scrollbar-width: none;
+  cursor: grab;
+
   &::-webkit-scrollbar { display: none; }
 
   .cat-chip {

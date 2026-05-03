@@ -442,3 +442,17 @@
 - Fixed test suite after `MMPMEnv` class-level attribute refactor: replaced instance-attribute assignment (blocked by `__slots__`) with `patch.object(MagicMirrorPackage, "env", ...)` + `addCleanup`
 - All 245 tests passing
 
+## Version 4.6.1
+
+### UI
+
+- Fixed 404 errors on `/api/env`, `/api/packages`, and `/api/mmpm/version`: the `mmpm.ui` PM2 process now runs the Flask app (gunicorn) on port 7890 instead of `python -m http.server`, so the Angular SPA is served with `window.MMPM_CONFIG` injection and relative `/api/*` calls resolve correctly
+- Log stream viewer: server-side replay buffer (last 500 entries) so logs accumulated while the panel was navigated away are shown immediately on return
+- Log stream viewer: auto-follow scrolling rewritten using Monaco's `onDidChangeModelContent` event and `setScrollPosition` — eliminates the timing race that caused follow mode to silently drop out after a few entries
+- Log stream viewer: "Follow" button appears in the toolbar when auto-scroll is paused; clicking it jumps to the bottom and re-enables following; scrolling back to the bottom re-enables it automatically
+- Log stream viewer: level filter bar (DEBUG / INFO / WARNING / ERROR / CRITICAL) with per-level color coding; selected levels persisted as a cookie (`mmpm-log-level-filter`)
+- Log stream viewer: configurable auto-clear window (1 h / 2 h / 4 h / **6 h** default / 12 h / 24 h) with selection persisted as a cookie (`mmpm-log-max-age-h`); old entries pruned every 2 minutes in the background
+- Database dropdown (update, upgrades) added to the "Installed" panel header, matching the Marketplace panel
+- Category filter bars in Marketplace and Installed panels are now drag-scrollable with the mouse; cursor changes to a grab hand as a visual affordance
+- PrimeNG toast notifications restyled to match the dark UI: dark `--bg-2` base, per-severity colored borders and summary text (signal / warn / danger / accent-2), bright `--fg-1` detail text; achieved via `definePreset` dark token overrides and `darkModeSelector: ':root'`
+

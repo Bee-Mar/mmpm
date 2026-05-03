@@ -19,6 +19,53 @@ import { MirrorPreviewComponent } from "./components/mirror-preview/mirror-previ
 import { CurrentlyInstalledComponent } from "./components/currently-installed/currently-installed.component";
 import { providePrimeNG } from "primeng/config";
 import Aura from "@primeuix/themes/aura";
+import { definePreset } from "@primeuix/themes";
+import { DragScrollDirective } from "./directives/drag-scroll.directive";
+
+// Design tokens matching styles.scss oklch palette
+const MMPMPreset = definePreset(Aura, {
+  components: {
+    toast: {
+      colorScheme: {
+        dark: {
+          root: { blur: '0' },
+          info: {
+            background:   'oklch(0.72 0.07 200 / 0.12)',
+            borderColor:  'oklch(0.72 0.07 200 / 0.35)',
+            color:        'oklch(0.72 0.07 200)',
+            detailColor:  'oklch(0.90 0.006 80)',
+            shadow:       '0 8px 24px oklch(0 0 0 / 0.40)',
+            closeButton:  { hoverBackground: 'oklch(0.72 0.07 200 / 0.12)' },
+          },
+          success: {
+            background:   'oklch(0.78 0.12 160 / 0.12)',
+            borderColor:  'oklch(0.78 0.12 160 / 0.35)',
+            color:        'oklch(0.78 0.12 160)',
+            detailColor:  'oklch(0.90 0.006 80)',
+            shadow:       '0 8px 24px oklch(0 0 0 / 0.40)',
+            closeButton:  { hoverBackground: 'oklch(0.78 0.12 160 / 0.12)' },
+          },
+          warn: {
+            background:   'oklch(0.83 0.11 75 / 0.12)',
+            borderColor:  'oklch(0.83 0.11 75 / 0.35)',
+            color:        'oklch(0.83 0.11 75)',
+            detailColor:  'oklch(0.90 0.006 80)',
+            shadow:       '0 8px 24px oklch(0 0 0 / 0.40)',
+            closeButton:  { hoverBackground: 'oklch(0.83 0.11 75 / 0.12)' },
+          },
+          error: {
+            background:   'oklch(0.68 0.14 22 / 0.12)',
+            borderColor:  'oklch(0.68 0.14 22 / 0.35)',
+            color:        'oklch(0.68 0.14 22)',
+            detailColor:  'oklch(0.90 0.006 80)',
+            shadow:       '0 8px 24px oklch(0 0 0 / 0.40)',
+            closeButton:  { hoverBackground: 'oklch(0.68 0.14 22 / 0.12)' },
+          },
+        },
+      },
+    },
+  },
+});
 
 export function init_shared_store(store: SharedStoreService) {
   return () => store.load();
@@ -27,6 +74,7 @@ export function init_shared_store(store: SharedStoreService) {
 @NgModule({
   declarations: [
     AppComponent,
+    DragScrollDirective,
     MarketPlaceComponent,
     LogStreamViewerComponent,
     ConfigEditorComponent,
@@ -48,9 +96,9 @@ export function init_shared_store(store: SharedStoreService) {
     },
     providePrimeNG({
       theme: {
-        preset: Aura,
+        preset: MMPMPreset,
         options: {
-          darkModeSelector: false,
+          darkModeSelector: ':root',
         },
       },
     }),

@@ -8,6 +8,7 @@
     <button [class.active]="viewMode === 'cards'" (click)="viewModeChange.emit('cards')">CARDS</button>
     <button [class.active]="viewMode === 'table'" (click)="viewModeChange.emit('table')">TABLE</button>
   </div>
+  <app-database-info (openPanel)="openPanel.emit($event)"></app-database-info>
 </div>
 
 <div class="toolbar">
@@ -46,7 +47,7 @@
   }
 </div>
 
-<div class="filterbar">
+<div class="filterbar" dragScroll>
   @for (cat of categories; track cat) {
     <button
       class="cat-chip"

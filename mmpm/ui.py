@@ -1,4 +1,3 @@
-import importlib.resources as pkg_resources
 import json
 import os
 from shutil import rmtree, which
@@ -52,7 +51,7 @@ class MMPMui(Singleton):
                 {
                     "namespace": namespace,
                     "name": f"{namespace}.ui",
-                    "script": f"{python} -m http.server -d {pkg_resources.files('mmpm').resolve() / 'ui'} -b 0.0.0.0 {urls.MMPM_UI_PORT}",
+                    "script": f"{gunicorn} -k gevent -b 0.0.0.0:{urls.MMPM_UI_PORT} mmpm.wsgi:app",
                     "version": version,
                     "watch": True,
                 },

@@ -134,7 +134,7 @@ jobs:
 
       - name: Angular Lint
         run: |
-          cd ui && npm run lint && cd ..
+          cd ui && node --run lint && cd ..
 
       - name: Angular Unit Tests
         run: |

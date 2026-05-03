@@ -46,7 +46,7 @@ class TestMagicMirrorController(unittest.TestCase):
         mock_env.return_value.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.get.return_value = None
         mock_env.return_value.MMPM_MAGICMIRROR_ROOT.get.return_value = "/path/to/magicmirror"
         mock_exists.return_value = True
-        mock_which.side_effect = lambda x: "/usr/bin/" + x if x in ["npm"] else None
+        mock_which.side_effect = lambda x: "/usr/bin/" + x if x in ["node"] else None
         mock_run_cmd.return_value = (0, "", "")  # Simulate successful command execution
 
         # Instantiate and start MagicMirror
@@ -54,7 +54,7 @@ class TestMagicMirrorController(unittest.TestCase):
         success = controller.start()
         self.assertTrue(success)
         args, kwargs = mock_run_cmd.call_args
-        self.assertEqual(args[0][:2], ["npm", "run"])
+        self.assertEqual(args[0][:2], ["node", "--run"])
         self.assertIn(args[0][2], ["start:x11", "start:wayland", "start:windows"])
         self.assertEqual(kwargs.get("message"), "Starting MagicMirror")
         self.assertTrue(kwargs.get("background"))
@@ -331,7 +331,7 @@ class TestDetectDisplayServerScript(unittest.TestCase):
                 self.assertEqual(MagicMirrorController._detect_display_server_script(), "start:x11")
 
     def test_start_uses_detected_script(self):
-        """start() passes the detected script to npm run."""
+        """start() passes the detected script to node --run."""
         from mmpm.singleton import Singleton
 
         Singleton._instances = {}
@@ -350,7 +350,7 @@ class TestDetectDisplayServerScript(unittest.TestCase):
 
         self.assertTrue(result)
         args, _ = mock_run_cmd.call_args
-        self.assertEqual(args[0], ["npm", "run", "start:wayland"])
+        self.assertEqual(args[0], ["node", "--run", "start:wayland"])
 
 
 class TestMagicMirrorControllerErrors(unittest.TestCase):

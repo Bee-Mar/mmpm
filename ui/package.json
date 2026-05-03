@@ -28,7 +28,6 @@
     "@fortawesome/angular-fontawesome": "^4.0.0",
     "@fortawesome/fontawesome-free": "^6.7.2",
     "@primeuix/themes": "^2.0.3",
-    "axios": "^1.15.2",
     "monaco-editor": "^0.44.0",
     "ngx-monaco-editor-v2": "^21.1.4",
     "prettier": "^3.8.3",
@@ -51,16 +50,16 @@
     "@angular/compiler-cli": "^21.2.10",
     "@types/jasmine": "~3.10.19",
     "@types/node": "20.11.28",
-    "ajv": "^8.20.0",
     "@typescript-eslint/utils": "^8.59.1",
+    "ajv": "^8.20.0",
     "eslint": "^9.39.4",
-    "typescript-eslint": "^8.59.1",
     "jasmine-core": "~4.0.1",
     "karma": "~6.3.20",
     "karma-chrome-launcher": "~3.1.1",
     "karma-coverage": "~2.1.1",
     "karma-jasmine": "~4.0.2",
     "karma-jasmine-html-reporter": "~1.7.0",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.59.1"
   }
 }

@@ -188,7 +188,7 @@ class MagicMirrorController(Singleton):
 
     def start(self) -> bool:
         """
-        Launches MagicMirror using pm2, if found, otherwise a 'npm start' is run as
+        Launches MagicMirror using pm2, if found, otherwise a 'node --run' is run as
         a background process
 
         Parameters:
@@ -199,7 +199,7 @@ class MagicMirrorController(Singleton):
         """
         script = self._detect_display_server_script()
         os.environ["ELECTRON_DISABLE_SANDBOX"] = "1"
-        command = ["npm", "run", script]
+        command = ["node", "--run", script]
 
         pm2_process = str(self.env.MMPM_MAGICMIRROR_PM2_PROCESS_NAME.get())
         compose_file = str(self.env.MMPM_MAGICMIRROR_DOCKER_COMPOSE_FILE.get())
@@ -228,7 +228,7 @@ class MagicMirrorController(Singleton):
         error_code, _, stderr = run_cmd(
             command,
             message="Starting MagicMirror",
-            background=bool(command[0] == "npm"),
+            background=bool(command[0] == "node"),
         )
 
         if error_code:

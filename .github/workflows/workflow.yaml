@@ -196,6 +196,13 @@ jobs:
 
           uv build
 
+      - name: Upload Wheel
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop' && matrix.python-version == '3.13'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mmpm-wheel
+          path: ${{ github.workspace }}/dist/*.whl
+
       - name: Cache MMPM Artifacts
         uses: actions/cache@v3
         with:

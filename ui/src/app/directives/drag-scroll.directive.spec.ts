@@ -11,6 +11,17 @@ import { DragScrollDirective } from './drag-scroll.directive';
 })
 class TestHostComponent {}
 
+interface DragScrollPrivates {
+  dragging: boolean;
+  startX: number;
+  startScrollLeft: number;
+  moved: boolean;
+}
+
+function priv(d: DragScrollDirective): DragScrollPrivates {
+  return d as unknown as DragScrollPrivates;
+}
+
 describe('DragScrollDirective', () => {
   let fixture: ComponentFixture<TestHostComponent>;
   let el: HTMLElement;
@@ -42,18 +53,18 @@ describe('DragScrollDirective', () => {
   describe('mousedown', () => {
     it('ignores non-left-button press', () => {
       el.dispatchEvent(new MouseEvent('mousedown', { button: 2, clientX: 50, bubbles: true }));
-      expect((directive as any).dragging).toBeFalse();
+      expect(priv(directive).dragging).toBeFalse();
       expect(el.style.cursor).toBe('');
     });
 
     it('starts drag on left-button press', () => {
       el.dispatchEvent(new MouseEvent('mousedown', { button: 0, clientX: 100, bubbles: true }));
-      expect((directive as any).dragging).toBeTrue();
+      expect(priv(directive).dragging).toBeTrue();
     });
 
     it('records clientX as startX', () => {
       el.dispatchEvent(new MouseEvent('mousedown', { button: 0, clientX: 75, bubbles: true }));
-      expect((directive as any).startX).toBe(75);
+      expect(priv(directive).startX).toBe(75);
     });
 
     it('records element scrollLeft as startScrollLeft', () => {
@@ -64,7 +75,7 @@ describe('DragScrollDirective', () => {
         configurable: true,
       });
       el.dispatchEvent(new MouseEvent('mousedown', { button: 0, clientX: 100, bubbles: true }));
-      expect((directive as any).startScrollLeft).toBe(42);
+      expect(priv(directive).startScrollLeft).toBe(42);
     });
 
     it('sets cursor to grabbing', () => {
@@ -78,9 +89,9 @@ describe('DragScrollDirective', () => {
     });
 
     it('resets moved flag on each new drag', () => {
-      (directive as any).moved = true;
+      priv(directive).moved = true;
       el.dispatchEvent(new MouseEvent('mousedown', { button: 0, clientX: 50, bubbles: true }));
-      expect((directive as any).moved).toBeFalse();
+      expect(priv(directive).moved).toBeFalse();
     });
   });
 
@@ -119,12 +130,12 @@ describe('DragScrollDirective', () => {
 
     it('does not mark moved for displacement ≤ 4px', () => {
       document.dispatchEvent(new MouseEvent('mousemove', { clientX: 104, bubbles: true }));
-      expect((directive as any).moved).toBeFalse();
+      expect(priv(directive).moved).toBeFalse();
     });
 
     it('marks moved for displacement > 4px', () => {
       document.dispatchEvent(new MouseEvent('mousemove', { clientX: 105, bubbles: true }));
-      expect((directive as any).moved).toBeTrue();
+      expect(priv(directive).moved).toBeTrue();
     });
   });
 
@@ -137,7 +148,7 @@ describe('DragScrollDirective', () => {
 
     it('clears dragging flag', () => {
       document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-      expect((directive as any).dragging).toBeFalse();
+      expect(priv(directive).dragging).toBeFalse();
     });
 
     it('restores cursor', () => {

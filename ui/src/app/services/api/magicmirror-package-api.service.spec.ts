@@ -1,12 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { MagicMirrorPackageAPI } from './magicmirror-package-api.service';
+import { MagicMirrorPackage, RemotePackageDetails } from '@/models/magicmirror-package';
 
 describe('MagicMirrorPackageAPI', () => {
   let service: MagicMirrorPackageAPI;
   let httpMock: HttpTestingController;
 
-  const pkg = {
+  const pkg: MagicMirrorPackage = {
     title: 'MMM-Test',
     author: 'tester',
     repository: 'https://github.com/tester/MMM-Test',
@@ -15,7 +16,7 @@ describe('MagicMirrorPackageAPI', () => {
     category: 'Test',
     is_installed: false,
     is_upgradable: false,
-    remote_details: null as any,
+    remote_details: {} as RemotePackageDetails,
     stars: 0,
     last_updated: '2024-01-01',
   };
@@ -54,6 +55,7 @@ describe('MagicMirrorPackageAPI', () => {
   it('postRemovePackages calls packages/remove endpoint', () => {
     service.postRemovePackages([pkg]).then(res => expect(res.code).toBe(200));
     const req = httpMock.expectOne(r => r.url.includes('packages/remove'));
+    expect(req.request.method).toBe('POST');
     req.flush({ code: 200, message: { success: [], failure: [] } });
   });
 
@@ -67,18 +69,21 @@ describe('MagicMirrorPackageAPI', () => {
   it('postAddMmPkg calls packages/mm-pkg/add endpoint', () => {
     service.postAddMmPkg(pkg).then(res => expect(res.code).toBe(200));
     const req = httpMock.expectOne(r => r.url.includes('packages/mm-pkg/add'));
+    expect(req.request.method).toBe('POST');
     req.flush({ code: 200, message: '' });
   });
 
   it('postRemoveMmPkgs calls packages/mm-pkg/remove endpoint', () => {
     service.postRemoveMmPkgs([pkg]).then(res => expect(res.code).toBe(200));
     const req = httpMock.expectOne(r => r.url.includes('packages/mm-pkg/remove'));
+    expect(req.request.method).toBe('POST');
     req.flush({ code: 200, message: '' });
   });
 
   it('postDetails calls packages/details endpoint', () => {
     service.postDetails(pkg).then(res => expect(res.code).toBe(200));
     const req = httpMock.expectOne(r => r.url.includes('packages/details'));
+    expect(req.request.method).toBe('POST');
     req.flush({ code: 200, message: {} });
   });
 });

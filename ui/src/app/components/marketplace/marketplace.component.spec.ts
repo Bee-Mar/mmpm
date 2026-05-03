@@ -2,10 +2,11 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 import { SharedStoreService } from '@/services/shared-store.service';
+import { MagicMirrorPackage } from '@/models/magicmirror-package';
 import { MarketPlaceComponent } from './marketplace.component';
 
 class MockSharedStoreService {
-  packages = new BehaviorSubject<any[]>([]);
+  packages = new BehaviorSubject<MagicMirrorPackage[]>([]);
 }
 
 describe('MarketPlaceComponent', () => {

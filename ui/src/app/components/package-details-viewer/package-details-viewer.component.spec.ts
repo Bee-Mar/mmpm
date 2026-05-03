@@ -4,10 +4,11 @@ import { BehaviorSubject } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { MagicMirrorPackageAPI } from '@/services/api/magicmirror-package-api.service';
 import { SharedStoreService } from '@/services/shared-store.service';
+import { MagicMirrorPackage, RemotePackageDetails } from '@/models/magicmirror-package';
 import { PackageDetailsViewerComponent } from './package-details-viewer.component';
 
 class MockSharedStoreService {
-  packages = new BehaviorSubject<any[]>([]);
+  packages = new BehaviorSubject<MagicMirrorPackage[]>([]);
   load = jasmine.createSpy('load');
 }
 
@@ -16,7 +17,7 @@ describe('PackageDetailsViewerComponent', () => {
   let fixture: ComponentFixture<PackageDetailsViewerComponent>;
   let mockMmPkgApi: jasmine.SpyObj<MagicMirrorPackageAPI>;
 
-  const pkg = {
+  const pkg: MagicMirrorPackage = {
     title: 'MMM-Test',
     author: 'tester',
     repository: 'https://github.com/tester/MMM-Test',
@@ -25,7 +26,7 @@ describe('PackageDetailsViewerComponent', () => {
     category: 'Test',
     is_installed: false,
     is_upgradable: false,
-    remote_details: null as any,
+    remote_details: {} as RemotePackageDetails,
     stars: 5,
     last_updated: '2024-01-01',
   };
@@ -82,8 +83,8 @@ describe('PackageDetailsViewerComponent', () => {
   });
 
   it('toggleQueue adds package to queue when not queued', () => {
-    const emitted: any[] = [];
-    component.selectedPackagesChange.subscribe((v: any) => emitted.push(v));
+    const emitted: MagicMirrorPackage[][] = [];
+    component.selectedPackagesChange.subscribe((v: MagicMirrorPackage[]) => emitted.push(v));
     component.selectedPackage = { ...pkg };
     component.selectedPackages = [];
     component.toggleQueue();
@@ -91,8 +92,8 @@ describe('PackageDetailsViewerComponent', () => {
   });
 
   it('toggleQueue removes package from queue when already queued', () => {
-    const emitted: any[] = [];
-    component.selectedPackagesChange.subscribe((v: any) => emitted.push(v));
+    const emitted: MagicMirrorPackage[][] = [];
+    component.selectedPackagesChange.subscribe((v: MagicMirrorPackage[]) => emitted.push(v));
     component.selectedPackage = { ...pkg };
     component.selectedPackages = [{ ...pkg }];
     component.toggleQueue();
@@ -112,9 +113,9 @@ describe('PackageDetailsViewerComponent', () => {
   });
 
   it('loadRemoteDetails calls postDetails and sets remote_details on success', async () => {
-    const details = { issues: 3, created: '2020-01-01', forks: 2 };
+    const details: RemotePackageDetails = { issues: 3, created: '2020-01-01', forks: 2 };
     mockMmPkgApi.postDetails.and.returnValue(Promise.resolve({ code: 200, message: details }));
-    component.selectedPackage = { ...pkg };
+    component.selectedPackage = { ...pkg, remote_details: null as unknown as RemotePackageDetails };
     component.loadRemoteDetails();
     expect(component.loadingRemote).toBeTrue();
     await fixture.whenStable();

@@ -1,6 +1,7 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { SharedStoreService } from './shared-store.service';
+import { MagicMirrorPackage, RemotePackageDetails } from '@/models/magicmirror-package';
 
 describe('SharedStoreService', () => {
   let service: SharedStoreService;
@@ -43,15 +44,15 @@ describe('SharedStoreService', () => {
   });
 
   it('load triggers HTTP requests and updates packages on success', fakeAsync(() => {
-    const mockPackages = [
+    const mockPackages: MagicMirrorPackage[] = [
       {
         title: 'MMM-Test', author: 'a', repository: 'r', description: 'd',
         directory: 'MMM-Test', category: 'Test', is_installed: false,
-        is_upgradable: false, remote_details: null as any, stars: 0, last_updated: '',
+        is_upgradable: false, remote_details: {} as RemotePackageDetails, stars: 0, last_updated: '',
       },
     ];
 
-    const received: any[] = [];
+    const received: MagicMirrorPackage[][] = [];
     service.packages.subscribe(pkgs => received.push(pkgs));
 
     service.load();

@@ -1,12 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { MagicMirrorControllerAPI } from './magicmirror-controller-api.service';
+import { MagicMirrorModule } from '@/models/magicmirror-module';
 
 describe('MagicMirrorControllerAPI', () => {
   let service: MagicMirrorControllerAPI;
   let httpMock: HttpTestingController;
 
-  const mmModule = { key: 'MMM-Clock', name: 'MMM-Clock' };
+  const mmModule: MagicMirrorModule = { key: 1, name: 'MMM-Clock', hidden: false };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -35,24 +36,26 @@ describe('MagicMirrorControllerAPI', () => {
   it('getRestart calls mm-ctl/restart endpoint', () => {
     service.getRestart().then(res => expect(res.code).toBe(200));
     const req = httpMock.expectOne(r => r.url.includes('mm-ctl/restart'));
+    expect(req.request.method).toBe('GET');
     req.flush({ code: 200, message: '' });
   });
 
   it('getStop calls mm-ctl/stop endpoint', () => {
     service.getStop().then(res => expect(res.code).toBe(200));
     const req = httpMock.expectOne(r => r.url.includes('mm-ctl/stop'));
+    expect(req.request.method).toBe('GET');
     req.flush({ code: 200, message: '' });
   });
 
   it('postHide calls mm-ctl/hide endpoint', () => {
-    service.postHide(mmModule as any).then(res => expect(res.code).toBe(200));
+    service.postHide(mmModule).then(res => expect(res.code).toBe(200));
     const req = httpMock.expectOne(r => r.url.includes('mm-ctl/hide'));
     expect(req.request.method).toBe('POST');
     req.flush({ code: 200, message: '' });
   });
 
   it('postShow calls mm-ctl/show endpoint', () => {
-    service.postShow(mmModule as any).then(res => expect(res.code).toBe(200));
+    service.postShow(mmModule).then(res => expect(res.code).toBe(200));
     const req = httpMock.expectOne(r => r.url.includes('mm-ctl/show'));
     expect(req.request.method).toBe('POST');
     req.flush({ code: 200, message: '' });

@@ -207,15 +207,6 @@ jobs:
           name: mmpm-wheel
           path: ${{ github.workspace }}/dist/*.whl
 
-      - name: Cache MMPM Artifacts
-        uses: actions/cache@v3
-        with:
-          path: |
-            ${{ github.workspace }}/dist
-          key: python-build-${{ hashFiles('**/uv.lock') }}
-          restore-keys: |
-            python-build-${{ hashFiles('**/uv.lock') }}
-
       - name: Publish to PyPi
         if: startsWith(github.ref, 'refs/tags/') && matrix.python-version == '3.13'
         uses: pypa/gh-action-pypi-publish@release/v1

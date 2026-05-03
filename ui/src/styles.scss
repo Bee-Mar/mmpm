@@ -329,6 +329,25 @@ a:hover { text-decoration: underline; }
 /* ── PrimeNG global overrides ── */
 .p-toast { z-index: 9999 !important; }
 
+.p-toast-message {
+  /* Solid dark base so the colored tint reads correctly over any backdrop */
+  background-color: oklch(0.23 0.014 320) !important;
+  border-radius: var(--radius-sm) !important;
+  font-family: var(--ui) !important;
+
+  .p-toast-summary {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.01em !important;
+  }
+
+  .p-toast-detail {
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    color: oklch(0.90 0.006 80) !important;
+  }
+}
+
 .p-dialog {
   background: var(--bg-1) !important;
   border: 1px solid var(--line) !important;

@@ -1,18 +1,47 @@
 <div class="logs-toolbar">
-  <button class="btn" (click)="onDownload()">
-    <i class="fa-solid fa-download"></i> Download
-  </button>
-  <div class="chip">
-    <span class="dot" [style.background]="socket?.connected ? 'var(--signal)' : 'var(--danger)'"></span>
-    {{ socket?.connected ? 'LIVE' : 'DISCONNECTED' }}
+  <div class="toolbar-row">
+    <button class="btn sm" (click)="onDownload()">
+      <i class="fa-solid fa-download"></i> Download
+    </button>
+    <div class="chip">
+      <span class="dot" [style.background]="socket?.connected ? 'var(--signal)' : 'var(--danger)'"></span>
+      {{ socket?.connected ? 'LIVE' : 'DISCONNECTED' }}
+    </div>
+    <div class="spacer"></div>
+    @if (!following) {
+      <button class="btn sm btn-follow" (click)="scrollToBottom()">
+        <i class="fa-solid fa-angles-down"></i> Follow
+      </button>
+    }
+    <div class="font-size-ctrl">
+      <span class="font-label">Size</span>
+      <div class="segmented">
+        <button [class.active]="fontSize === 10" (click)="fontSize = 10; onFontSizeChange()">10</button>
+        <button [class.active]="fontSize === 12" (click)="fontSize = 12; onFontSizeChange()">12</button>
+        <button [class.active]="fontSize === 14" (click)="fontSize = 14; onFontSizeChange()">14</button>
+      </div>
+    </div>
   </div>
-  <div class="spacer"></div>
-  <div class="font-size-ctrl">
-    <span class="font-label">Size</span>
-    <div class="segmented">
-      <button [class.active]="fontSize === 10" (click)="fontSize = 10; onFontSizeChange()">10</button>
-      <button [class.active]="fontSize === 12" (click)="fontSize = 12; onFontSizeChange()">12</button>
-      <button [class.active]="fontSize === 14" (click)="fontSize = 14; onFontSizeChange()">14</button>
+
+  <div class="toolbar-row level-filter-row">
+    <span class="font-label">Levels</span>
+    @for (level of ALL_LEVELS; track level) {
+      <button
+        class="level-btn"
+        [class]="'level-' + level.toLowerCase()"
+        [class.active]="activeLevels.has(level)"
+        (click)="toggleLevel(level)">
+        {{ level }}
+      </button>
+    }
+    <div class="spacer"></div>
+    <div class="font-size-ctrl">
+      <span class="font-label">Clear after</span>
+      <div class="segmented">
+        @for (h of MAX_AGE_OPTIONS; track h) {
+          <button [class.active]="maxAgeHours === h" (click)="setMaxAge(h)">{{ h }}h</button>
+        }
+      </div>
     </div>
   </div>
 </div>

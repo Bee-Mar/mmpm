@@ -1,6 +1,7 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { removeCookie } from 'typescript-cookie';
+import { Socket } from 'socket.io-client';
 import { BaseAPI } from '@/services/api/base-api';
 import { LogStreamViewerComponent } from './log-stream-viewer.component';
 
@@ -14,10 +15,39 @@ const FONT_COOKIE = 'mmpm-log-stream-font-size';
 
 function clearComponentCookies() {
   [LEVEL_COOKIE, AGE_COOKIE, FONT_COOKIE].forEach(name => {
-    // Remove with both path variants used by typescript-cookie
     removeCookie(name, { path: '/' });
     removeCookie(name, { path: '' });
   });
+}
+
+type LogLevel = 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
+
+interface LogEntry {
+  raw: string;
+  level: LogLevel;
+  timestamp: Date;
+}
+
+interface MockMonacoEditor {
+  setScrollPosition: jasmine.Spy;
+  getScrollHeight: jasmine.Spy;
+  getScrollTop: jasmine.Spy;
+  getLayoutInfo: jasmine.Spy;
+  onDidChangeModelContent: jasmine.Spy;
+  onDidScrollChange: jasmine.Spy;
+}
+
+interface ComponentPrivates {
+  allLogs: LogEntry[];
+  monacoEditor: MockMonacoEditor | null;
+  pruneTimer: ReturnType<typeof setInterval> | null;
+  parseEntry(raw: string): LogEntry;
+  recomputeLogs(): void;
+  pruneOldLogs(): void;
+}
+
+function priv(c: LogStreamViewerComponent): ComponentPrivates {
+  return c as unknown as ComponentPrivates;
 }
 
 describe('LogStreamViewerComponent', () => {
@@ -75,7 +105,7 @@ describe('LogStreamViewerComponent', () => {
     });
 
     it('adds an inactive level', () => {
-      component.activeLevels = new Set(['INFO', 'WARNING', 'ERROR', 'CRITICAL']);
+      component.activeLevels = new Set(['INFO', 'WARNING', 'ERROR', 'CRITICAL'] as LogLevel[]);
       component.toggleLevel('DEBUG');
       expect(component.activeLevels.has('DEBUG')).toBeTrue();
     });
@@ -87,17 +117,17 @@ describe('LogStreamViewerComponent', () => {
     });
 
     it('re-enables a level in displayed logs', () => {
-      const entry = { raw: 'debug line', level: 'DEBUG' as const, timestamp: new Date() };
-      (component as any).allLogs = [entry];
-      component.activeLevels = new Set(['INFO', 'WARNING', 'ERROR', 'CRITICAL']);
+      const entry: LogEntry = { raw: 'debug line', level: 'DEBUG', timestamp: new Date() };
+      priv(component).allLogs = [entry];
+      component.activeLevels = new Set(['INFO', 'WARNING', 'ERROR', 'CRITICAL'] as LogLevel[]);
 
       component.toggleLevel('DEBUG');
       expect(component.logs).toContain('debug line');
     });
 
     it('hides a deactivated level from displayed logs', () => {
-      const entry = { raw: 'debug line', level: 'DEBUG' as const, timestamp: new Date() };
-      (component as any).allLogs = [entry];
+      const entry: LogEntry = { raw: 'debug line', level: 'DEBUG', timestamp: new Date() };
+      priv(component).allLogs = [entry];
 
       component.toggleLevel('DEBUG');
       expect(component.logs).not.toContain('debug line');
@@ -114,22 +144,22 @@ describe('LogStreamViewerComponent', () => {
 
     it('prunes entries older than the new window', () => {
       const twoHoursAgo = new Date(Date.now() - 2 * 3600 * 1000 - 1);
-      (component as any).allLogs = [
+      priv(component).allLogs = [
         { raw: 'old', level: 'INFO', timestamp: twoHoursAgo },
         { raw: 'new', level: 'INFO', timestamp: new Date() },
       ];
 
       component.setMaxAge(1);
-      expect((component as any).allLogs.length).toBe(1);
-      expect((component as any).allLogs[0].raw).toBe('new');
+      expect(priv(component).allLogs.length).toBe(1);
+      expect(priv(component).allLogs[0].raw).toBe('new');
     });
 
     it('keeps entries within the new window', () => {
       const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000);
-      (component as any).allLogs = [{ raw: 'recent', level: 'INFO', timestamp: thirtyMinAgo }];
+      priv(component).allLogs = [{ raw: 'recent', level: 'INFO', timestamp: thirtyMinAgo }];
 
       component.setMaxAge(1);
-      expect((component as any).allLogs.length).toBe(1);
+      expect(priv(component).allLogs.length).toBe(1);
     });
   });
 
@@ -142,21 +172,29 @@ describe('LogStreamViewerComponent', () => {
 
     it('sets following to true', () => {
       component.following = false;
-      const mockEditor = {
+      const mockEditor: MockMonacoEditor = {
         setScrollPosition: jasmine.createSpy(),
         getScrollHeight: jasmine.createSpy().and.returnValue(500),
+        getScrollTop: jasmine.createSpy(),
+        getLayoutInfo: jasmine.createSpy(),
+        onDidChangeModelContent: jasmine.createSpy(),
+        onDidScrollChange: jasmine.createSpy(),
       };
-      (component as any).monacoEditor = mockEditor;
+      priv(component).monacoEditor = mockEditor;
       component.scrollToBottom();
       expect(component.following).toBeTrue();
     });
 
     it('scrolls the editor to the bottom', () => {
-      const mockEditor = {
+      const mockEditor: MockMonacoEditor = {
         setScrollPosition: jasmine.createSpy(),
         getScrollHeight: jasmine.createSpy().and.returnValue(800),
+        getScrollTop: jasmine.createSpy(),
+        getLayoutInfo: jasmine.createSpy(),
+        onDidChangeModelContent: jasmine.createSpy(),
+        onDidScrollChange: jasmine.createSpy(),
       };
-      (component as any).monacoEditor = mockEditor;
+      priv(component).monacoEditor = mockEditor;
       component.scrollToBottom();
       expect(mockEditor.setScrollPosition).toHaveBeenCalledWith({ scrollTop: 800 });
     });
@@ -167,7 +205,7 @@ describe('LogStreamViewerComponent', () => {
   describe('onEditorInit', () => {
     let contentChangeCallback: () => void;
     let scrollChangeCallback: () => void;
-    let mockEditor: any;
+    let mockEditor: MockMonacoEditor;
 
     beforeEach(() => {
       mockEditor = {
@@ -186,7 +224,7 @@ describe('LogStreamViewerComponent', () => {
 
     it('stores the editor reference', () => {
       component.onEditorInit(mockEditor);
-      expect((component as any).monacoEditor).toBe(mockEditor);
+      expect(priv(component).monacoEditor).toBe(mockEditor);
     });
 
     it('registers a content-change listener', () => {
@@ -239,8 +277,8 @@ describe('LogStreamViewerComponent', () => {
   // ── parseEntry (private) ──────────────────────────────────────────────────
 
   describe('parseEntry', () => {
-    function parse(raw: string) {
-      return (component as any).parseEntry(raw) as { raw: string; level: string; timestamp: Date };
+    function parse(raw: string): LogEntry {
+      return priv(component).parseEntry(raw);
     }
 
     it('preserves the raw string', () => {
@@ -283,32 +321,32 @@ describe('LogStreamViewerComponent', () => {
 
   describe('recomputeLogs', () => {
     it('includes entries matching active levels', () => {
-      (component as any).allLogs = [
+      priv(component).allLogs = [
         { raw: 'info line', level: 'INFO', timestamp: new Date() },
         { raw: 'debug line', level: 'DEBUG', timestamp: new Date() },
       ];
-      component.activeLevels = new Set(['INFO']);
-      (component as any).recomputeLogs();
+      component.activeLevels = new Set<LogLevel>(['INFO']);
+      priv(component).recomputeLogs();
       expect(component.logs).toContain('info line');
       expect(component.logs).not.toContain('debug line');
     });
 
     it('joins entries with double newlines', () => {
-      (component as any).allLogs = [
+      priv(component).allLogs = [
         { raw: 'a', level: 'INFO', timestamp: new Date() },
         { raw: 'b', level: 'INFO', timestamp: new Date() },
       ];
-      component.activeLevels = new Set(['INFO']);
-      (component as any).recomputeLogs();
+      component.activeLevels = new Set<LogLevel>(['INFO']);
+      priv(component).recomputeLogs();
       expect(component.logs).toBe('a\n\nb');
     });
 
     it('produces empty string when all levels are deactivated', () => {
-      (component as any).allLogs = [
+      priv(component).allLogs = [
         { raw: 'info line', level: 'INFO', timestamp: new Date() },
       ];
-      component.activeLevels = new Set<any>([]);
-      (component as any).recomputeLogs();
+      component.activeLevels = new Set<LogLevel>([]);
+      priv(component).recomputeLogs();
       expect(component.logs).toBe('');
     });
   });
@@ -319,33 +357,33 @@ describe('LogStreamViewerComponent', () => {
     it('removes entries older than maxAgeHours', () => {
       component.maxAgeHours = 1;
       const old = new Date(Date.now() - 2 * 3600 * 1000);
-      (component as any).allLogs = [
+      priv(component).allLogs = [
         { raw: 'old', level: 'INFO', timestamp: old },
         { raw: 'new', level: 'INFO', timestamp: new Date() },
       ];
-      (component as any).pruneOldLogs();
-      expect((component as any).allLogs.length).toBe(1);
-      expect((component as any).allLogs[0].raw).toBe('new');
+      priv(component).pruneOldLogs();
+      expect(priv(component).allLogs.length).toBe(1);
+      expect(priv(component).allLogs[0].raw).toBe('new');
     });
 
     it('keeps all entries when all are within the window', () => {
       component.maxAgeHours = 24;
-      (component as any).allLogs = [
+      priv(component).allLogs = [
         { raw: 'a', level: 'INFO', timestamp: new Date(Date.now() - 60_000) },
         { raw: 'b', level: 'INFO', timestamp: new Date() },
       ];
-      (component as any).pruneOldLogs();
-      expect((component as any).allLogs.length).toBe(2);
+      priv(component).pruneOldLogs();
+      expect(priv(component).allLogs.length).toBe(2);
     });
 
     it('triggers recomputeLogs when entries are removed', () => {
       component.maxAgeHours = 1;
       const old = new Date(Date.now() - 2 * 3600 * 1000);
-      (component as any).allLogs = [{ raw: 'old', level: 'INFO', timestamp: old }];
+      priv(component).allLogs = [{ raw: 'old', level: 'INFO', timestamp: old }];
       component.activeLevels = new Set(['INFO'] as const);
       component.logs = 'old';
 
-      fixture.ngZone!.run(() => (component as any).pruneOldLogs());
+      fixture.ngZone!.run(() => priv(component).pruneOldLogs());
       expect(component.logs).toBe('');
     });
   });
@@ -355,21 +393,21 @@ describe('LogStreamViewerComponent', () => {
   describe('ngOnDestroy', () => {
     it('clears the prune interval', () => {
       const clearSpy = spyOn(window, 'clearInterval').and.callThrough();
-      (component as any).pruneTimer = setInterval(() => {}, 999_999);
+      priv(component).pruneTimer = setInterval(() => {}, 999_999);
       component.ngOnDestroy();
       expect(clearSpy).toHaveBeenCalled();
     });
 
     it('disconnects a connected socket', () => {
       const mockSocket = { connected: true, disconnect: jasmine.createSpy('disconnect') };
-      component.socket = mockSocket as any;
+      component.socket = mockSocket as unknown as Socket;
       component.ngOnDestroy();
       expect(mockSocket.disconnect).toHaveBeenCalled();
     });
 
     it('does not call disconnect when socket is not connected', () => {
       const mockSocket = { connected: false, disconnect: jasmine.createSpy('disconnect') };
-      component.socket = mockSocket as any;
+      component.socket = mockSocket as unknown as Socket;
       component.ngOnDestroy();
       expect(mockSocket.disconnect).not.toHaveBeenCalled();
     });

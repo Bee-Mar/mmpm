@@ -4,10 +4,11 @@ import { BehaviorSubject } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { MagicMirrorPackageAPI } from '@/services/api/magicmirror-package-api.service';
 import { SharedStoreService } from '@/services/shared-store.service';
+import { MagicMirrorPackage } from '@/models/magicmirror-package';
 import { CustomPackageManagerComponent } from './custom-package-manager.component';
 
 class MockSharedStoreService {
-  packages = new BehaviorSubject<any[]>([]);
+  packages = new BehaviorSubject<MagicMirrorPackage[]>([]);
 }
 
 describe('CustomPackageManagerComponent', () => {

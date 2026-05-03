@@ -5,10 +5,11 @@ import { MessageService } from 'primeng/api';
 import { ConfigFileAPI } from '@/services/api/config-file-api.service';
 import { EnvApiService } from '@/services/api/env-api.service';
 import { SharedStoreService } from '@/services/shared-store.service';
+import { MagicMirrorPackage } from '@/models/magicmirror-package';
 import { ConfigEditorComponent } from './config-editor.component';
 
 class MockSharedStoreService {
-  packages      = new BehaviorSubject<any[]>([]);
+  packages      = new BehaviorSubject<MagicMirrorPackage[]>([]);
   configJsSaved$ = new Subject<void>();
   configJsDirty  = false;
 }

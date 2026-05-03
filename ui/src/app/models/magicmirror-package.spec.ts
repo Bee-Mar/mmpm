@@ -1,4 +1,4 @@
-import { MagicMirrorPackage } from './magicmirror-package';
+import { MagicMirrorPackage, RemotePackageDetails } from './magicmirror-package';
 
 describe('MagicMirrorPackage', () => {
   it('can construct a valid package object', () => {
@@ -11,7 +11,7 @@ describe('MagicMirrorPackage', () => {
       category: 'Test',
       is_installed: false,
       is_upgradable: false,
-      remote_details: null as any,
+      remote_details: {} as RemotePackageDetails,
       stars: 0,
       last_updated: '2024-01-01',
     };
@@ -31,7 +31,7 @@ describe('MagicMirrorPackage', () => {
       category: 'Other',
       is_installed: true,
       is_upgradable: false,
-      remote_details: null as any,
+      remote_details: {} as RemotePackageDetails,
       stars: 10,
       last_updated: '2024-06-01',
       license: 'MIT',

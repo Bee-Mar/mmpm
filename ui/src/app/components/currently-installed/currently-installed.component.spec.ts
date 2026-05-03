@@ -297,9 +297,10 @@ describe('CurrentlyInstalledComponent', () => {
       const event = new MouseEvent('mousedown', { clientX: 200, bubbles: true, cancelable: true });
       component.colWidths['title'] = 260;
       component.startColResize(event, 'title');
-      expect((component as any).resizingCol).toBe('title');
-      expect((component as any).resizeStartX).toBe(200);
-      expect((component as any).resizeStartWidth).toBe(260);
+      const p = component as unknown as { resizingCol: string | null; resizeStartX: number; resizeStartWidth: number };
+      expect(p.resizingCol).toBe('title');
+      expect(p.resizeStartX).toBe(200);
+      expect(p.resizeStartWidth).toBe(260);
     });
 
     it('prevents default to avoid text selection during resize', () => {

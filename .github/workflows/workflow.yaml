@@ -129,9 +129,13 @@ jobs:
         run: |
           cd ui && npm install --legacy-peer-deps && cd ..
 
-      - name: Angular Tests
+      - name: Angular Lint
         run: |
           cd ui && npm run lint && cd ..
+
+      - name: Angular Unit Tests
+        run: |
+          cd ui && npx ng test --watch=false --browsers=ChromeHeadlessNoSandbox && cd ..
 
       - name: Angular Build
         run: |

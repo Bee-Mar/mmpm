@@ -21,19 +21,13 @@
   </a>
 </p>
 
-| Author          | Contact                           |
-| --------------- | --------------------------------- |
-| Brandon Marlowe | bpmarlowe-software@protonmail.com |
+| Author          | Contact                           | Support |
+| --------------- | --------------------------------- | ------- |
+| Brandon Marlowe | bpmarlowe-software@protonmail.com | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;"></a> |
 
 `MMPM`, the MagicMirror Package Manager is a self updating command line and graphical interface designed to simplify the installation, removal, and maintenance of MagicMirror packages.
 
 The MagicMirror Package Manager is featured as an alternative installation method on the [MagicMirror Documentation](https://docs.magicmirror.builders/getting-started/installation.html#alternative-installation-methods).
-
-<p align="center">
-  <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank">
-    <img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;">
-  </a>
-</p>
 
 <p align="center">
     <img src="https://github.com/Bee-Mar/mmpm/blob/develop/assets/MMPM-UI-Homepage.png" alt="MagicMirror Package Manager">

@@ -11,6 +11,9 @@ on:
   release:
     types: [created]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   mmpm-cli:
     runs-on: ubuntu-latest
@@ -112,7 +115,7 @@ jobs:
           fetch-depth: 0
 
       - name: Cache Node Modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             './ui/node_modules'

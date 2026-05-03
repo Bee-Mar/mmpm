@@ -456,3 +456,9 @@
 - Category filter bars in Marketplace and Installed panels are now drag-scrollable with the mouse; cursor changes to a grab hand as a visual affordance
 - PrimeNG toast notifications restyled to match the dark UI: dark `--bg-2` base, per-severity colored borders and summary text (signal / warn / danger / accent-2), bright `--fg-1` detail text; achieved via `definePreset` dark token overrides and `darkModeSelector: ':root'`
 
+## Version 4.6.2
+
+### CI/CD Pipeline
+
+- Bumping version to 4.6.2 to trigger a new build
+- Stale cache within CI/CD pipeline caused incorrect wheels to be built thus producing inconsistent builds

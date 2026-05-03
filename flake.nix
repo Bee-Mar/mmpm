@@ -112,6 +112,20 @@
                 entry = "${bun}/bin/bun --cwd=ui run lint";
               };
 
+              ui-test = {
+                enable = true;
+                pass_filenames = false;
+                name = "ui:test";
+                types = [
+                  "javascript"
+                  "ts"
+                  "jsx"
+                  "tsx"
+                ];
+                stages = [ "pre-commit" ];
+                entry = "CHROME_BIN=${chromium}/bin/chromium ${bun}/bin/bun --cwd=ui run test --watch=false --browsers=ChromeHeadlessNoSandbox";
+              };
+
               nixfmt.enable = true;
             };
           };
@@ -210,7 +224,10 @@
           remove = pkgs.writeShellScriptBin "remove" ''pm2 delete mmpm'';
           logs = pkgs.writeShellScriptBin "logs" ''pm2 logs mmpm'';
 
-          unit-tests = pkgs.writeShellScriptBin "unit-tests" ''uv run coverage run -m pytest'';
+          unit-tests = pkgs.writeShellScriptBin "unit-tests" ''
+            uv run coverage run -m pytest
+            CHROME_BIN=${pkgs.chromium}/bin/chromium bun --cwd=ui run test --watch=false --browsers=ChromeHeadlessNoSandbox
+          '';
           static-analysis = pkgs.writeShellScriptBin "static-analysis" ''uv run mypy mmpm'';
 
           format = pkgs.writeShellScriptBin "format" ''
@@ -305,6 +322,7 @@
                 bun
                 pm2
                 cacert
+                chromium
                 bun2nix.packages.${system}.default
               ]
               ++ scripts;

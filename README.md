@@ -6,9 +6,6 @@
   <a href="http://choosealicense.com/licenses/mit" target="_blank">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
   </a>
-  <a href="https://github.com/Bee-Mar/mmpm/actions" target="_blank">
-    <img src="https://github.com/bee-mar/mmpm/actions/workflows/workflow.yml/badge.svg?master" alt="GitHub Actions">
-  </a>
   <a href="https://hub.docker.com/r/karsten13/mmpm" target="_blank">
     <img src="https://img.shields.io/docker/pulls/karsten13/mmpm.svg" alt="Docker Pulls">
   </a>
@@ -24,9 +21,9 @@
   </a>
 </p>
 
-| Author          | Contact                           |
-| --------------- | --------------------------------- |
-| Brandon Marlowe | bpmarlowe-software@protonmail.com |
+| Author          | Contact                           | Support |
+| --------------- | --------------------------------- | ------- |
+| Brandon Marlowe | bpmarlowe-software@protonmail.com | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L2ML7F8DTMAT2&currency_code=USD&source=ur" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;"></a> |
 
 `MMPM`, the MagicMirror Package Manager is a self updating command line and graphical interface designed to simplify the installation, removal, and maintenance of MagicMirror packages.
 

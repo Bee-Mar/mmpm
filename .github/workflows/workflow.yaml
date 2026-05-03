@@ -120,15 +120,6 @@ jobs:
           restore-keys: |
             angular-deps-${{ hashFiles('**/package-lock.json') }}
 
-      - name: Cache Angular Build Artifacts
-        uses: actions/cache@v3
-        with:
-          path: |
-            ${{ github.workspace }}/ui/build
-          key: angular-build-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            angular-build-${{ hashFiles('**/package-lock.json') }}
-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -145,6 +136,13 @@ jobs:
       - name: Angular Build
         run: |
           cd ui && ./node_modules/@angular/cli/bin/ng.js build --configuration production --output-hashing none --base-href / && cd ..
+
+      - name: Upload Angular Build Artifacts
+        if: matrix.node-version == '22'
+        uses: actions/upload-artifact@v4
+        with:
+          name: angular-build
+          path: ${{ github.workspace }}/ui/build/browser
 
   create-artifact:
     needs: [mmpm-cli, mmpm-ui]
@@ -171,14 +169,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
 
-      - name: Restore Angular Build Artifacts Cache
-        uses: actions/cache@v3
+      - name: Download Angular Build Artifacts
+        uses: actions/download-artifact@v4
         with:
-          path: |
-            ${{ github.workspace }}/ui/build
-          key: angular-build-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            angular-build-${{ hashFiles('**/package-lock.json') }}
+          name: angular-build
+          path: ${{ github.workspace }}/ui/build/browser
 
       - name: Package MMPM
         run: |

@@ -1,6 +1,6 @@
 import { Directive, ElementRef, HostListener, inject } from '@angular/core';
 
-@Directive({ selector: '[dragScroll]', standalone: false })
+@Directive({ selector: '[appDragScroll]', standalone: false })
 export class DragScrollDirective {
   private el = inject(ElementRef<HTMLElement>);
 

@@ -31,7 +31,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v8
         with:
           version: 0.8.19
           python-version: ${{ matrix.python-version }}
@@ -68,7 +68,7 @@ jobs:
             keep-outputs = true
 
       - name: Restore and save Nix store
-        uses: nix-community/cache-nix-action@v6
+        uses: nix-community/cache-nix-action@v7
         with:
           primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.lock') }} # restore and save a cache using this key
           restore-prefixes-first-match: nix-${{ runner.os }}- # if there's no cache hit, restore a cache by this prefix
@@ -170,7 +170,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v8
         with:
           version: 0.8.19
           python-version: ${{ matrix.python-version }}

@@ -123,7 +123,7 @@
                   "tsx"
                 ];
                 stages = [ "pre-commit" ];
-                entry = "CHROME_BIN=${chromium}/bin/chromium ${bun}/bin/bun --cwd=ui run test --watch=false --browsers=ChromeHeadless";
+                entry = "CHROME_BIN=${chromium}/bin/chromium ${bun}/bin/bun --cwd=ui run test --watch=false --browsers=ChromeHeadlessNoSandbox";
               };
 
               nixfmt.enable = true;
@@ -226,7 +226,7 @@
 
           unit-tests = pkgs.writeShellScriptBin "unit-tests" ''
             uv run coverage run -m pytest
-            CHROME_BIN=${pkgs.chromium}/bin/chromium bun --cwd=ui run test --watch=false --browsers=ChromeHeadless
+            CHROME_BIN=${pkgs.chromium}/bin/chromium bun --cwd=ui run test --watch=false --browsers=ChromeHeadlessNoSandbox
           '';
           static-analysis = pkgs.writeShellScriptBin "static-analysis" ''uv run mypy mmpm'';
 

@@ -215,8 +215,8 @@ class MagicMirrorUpgradeTestCase(unittest.TestCase):
         self.assertFalse(result)
 
     @patch("mmpm.magicmirror.magicmirror.run_cmd")
-    def test_upgrade_git_checkout_fails(self, mock_run_cmd):
-        """Lines 129-131: returns stderr string when git checkout fails."""
+    def test_upgrade_git_restore_fails(self, mock_run_cmd):
+        """Lines 129-131: returns stderr string when git restore fails."""
         mm = MagicMirror()
         mm.env = MockedMMPMEnv()
         root = mm.env.MMPM_MAGICMIRROR_ROOT.get()

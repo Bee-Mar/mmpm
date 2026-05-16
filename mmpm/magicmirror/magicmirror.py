@@ -121,10 +121,10 @@ class MagicMirror(Singleton):
 
         os.chdir(root_dir)
 
-        error_code, _, stderr = run_cmd(["git", "checkout", "."], progress=False)
+        error_code, _, stderr = run_cmd(["git", "restore", "."], progress=False)
 
         if error_code:
-            message = "Failed to checkout MagicMirror repo for clean upgrade"
+            message = "Failed to restore MagicMirror repo for clean upgrade"
             logger.error(f"{message}. See `mmpm logs` for details")
             return stderr
 

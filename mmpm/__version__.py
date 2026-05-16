@@ -1,5 +1,5 @@
 major = 4
 minor = 6
-patch = 2
+patch = 3
 
 version = f"{major}.{minor}.{patch}"

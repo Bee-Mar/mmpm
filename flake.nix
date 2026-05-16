@@ -127,6 +127,31 @@
               };
 
               nixfmt.enable = true;
+
+              sync-version = {
+                enable = true;
+                name = "sync:version";
+                stages = [ "pre-commit" ];
+                pass_filenames = false;
+                entry = toString (
+                  pkgs.writeShellScript "sync-version" ''
+                    set -euo pipefail
+                    VERSION=$(${pkgs.python3}/bin/python3 -c "import tomllib; f=open('pyproject.toml','rb'); print(tomllib.load(f)['project']['version'])")
+                    IFS='.' read -r MAJOR MINOR PATCH <<< "''${VERSION}"
+                    printf '%s\n' \
+                      "major = ''${MAJOR}" \
+                      "minor = ''${MINOR}" \
+                      "patch = ''${PATCH}" \
+                      "" \
+                      'version = f"{major}.{minor}.{patch}"' \
+                      > mmpm/__version__.py
+                    ${pkgs.gnused}/bin/sed -i \
+                      "s/\"version\": \"[^\"]*\"/\"version\": \"''${VERSION}\"/" \
+                      ui/package.json
+                    git add mmpm/__version__.py ui/package.json
+                  ''
+                );
+              };
             };
           };
         }
@@ -219,16 +244,16 @@
           };
 
           # ---- Utility Scripts
-          start = pkgs.writeShellScriptBin "start" ''pm2 start dev/ecosystem.json'';
-          stop = pkgs.writeShellScriptBin "stop" ''pm2 stop mmpm'';
-          remove = pkgs.writeShellScriptBin "remove" ''pm2 delete mmpm'';
-          logs = pkgs.writeShellScriptBin "logs" ''pm2 logs mmpm'';
+          start = pkgs.writeShellScriptBin "start" "pm2 start dev/ecosystem.json";
+          stop = pkgs.writeShellScriptBin "stop" "pm2 stop mmpm";
+          remove = pkgs.writeShellScriptBin "remove" "pm2 delete mmpm";
+          logs = pkgs.writeShellScriptBin "logs" "pm2 logs mmpm";
 
           unit-tests = pkgs.writeShellScriptBin "unit-tests" ''
             uv run coverage run -m pytest
             CHROME_BIN=${pkgs.chromium}/bin/chromium bun --cwd=ui run test --watch=false --browsers=ChromeHeadlessNoSandbox
           '';
-          static-analysis = pkgs.writeShellScriptBin "static-analysis" ''uv run mypy mmpm'';
+          static-analysis = pkgs.writeShellScriptBin "static-analysis" "uv run mypy mmpm";
 
           format = pkgs.writeShellScriptBin "format" ''
             uv run ruff format mmpm tests
@@ -249,6 +274,7 @@
           lock = pkgs.writeShellScriptBin "lock" ''
             uv lock --upgrade
             bun --cwd=ui update
+            (cd ui && ${bun2nix.packages.${system}.default}/bin/bun2nix -o bun.nix)
           '';
 
           deploy = pkgs.writeShellScriptBin "deploy" ''
@@ -336,7 +362,7 @@
 
               source $VIRTUAL_ENV/bin/activate
               uv sync
-              bun --cwd=ui install
+              bun --cwd=ui install --ignore-scripts
             '';
           };
         }

@@ -462,3 +462,22 @@
 
 - Bumping version to 4.6.2 to trigger a new build
 - Stale cache within CI/CD pipeline caused incorrect wheels to be built thus producing inconsistent builds
+
+## Version 4.6.3
+
+### Bug Fixes
+
+- Fixed working tree reset in `MagicMirrorPackage.upgrade()` to use `git restore .` instead of the deprecated `git checkout .`; `git restore` is the correct modern command for discarding working tree changes
+
+### Build
+
+- Fixed `nix build` failure caused by Angular attempting to inline Google Fonts over the network during the production build; disabled `optimization.fonts.inline` in the production configuration so fonts continue to load at runtime via `<link>` as intended
+- Fixed `postinstall` script bash quoting bug where `[ -x $(command -v b2n) ]` evaluated truthy when `b2n` was absent, causing a spurious "command not found" error in the Nix sandbox
+- Updated Python and UI dependencies
+
+### Tooling
+
+- `bun.nix` no longer regenerates on every `direnv reload` / shell entry; the devshell now runs `bun install --ignore-scripts` to skip lifecycle scripts during shell initialization, and `lock` explicitly regenerates `bun.nix` after `bun update`
+- Added `sync:version` pre-commit hook that reads the version from `pyproject.toml` and keeps `mmpm/__version__.py` and `ui/package.json` in sync automatically on every commit
+- Removed unused `axios` dependency from the UI
+- Replaced `npm run` with `node --run` in the MagicMirror start command and CI lint step (requires Node 22+)

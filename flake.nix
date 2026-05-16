@@ -127,6 +127,31 @@
               };
 
               nixfmt.enable = true;
+
+              sync-version = {
+                enable = true;
+                name = "sync:version";
+                stages = [ "pre-commit" ];
+                pass_filenames = false;
+                entry = toString (
+                  pkgs.writeShellScript "sync-version" ''
+                    set -euo pipefail
+                    VERSION=$(${pkgs.python3}/bin/python3 -c "import tomllib; f=open('pyproject.toml','rb'); print(tomllib.load(f)['project']['version'])")
+                    IFS='.' read -r MAJOR MINOR PATCH <<< "''${VERSION}"
+                    printf '%s\n' \
+                      "major = ''${MAJOR}" \
+                      "minor = ''${MINOR}" \
+                      "patch = ''${PATCH}" \
+                      "" \
+                      'version = f"{major}.{minor}.{patch}"' \
+                      > mmpm/__version__.py
+                    ${pkgs.gnused}/bin/sed -i \
+                      "s/\"version\": \"[^\"]*\"/\"version\": \"''${VERSION}\"/" \
+                      ui/package.json
+                    git add mmpm/__version__.py ui/package.json
+                  ''
+                );
+              };
             };
           };
         }

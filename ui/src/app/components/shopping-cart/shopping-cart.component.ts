@@ -38,8 +38,12 @@ export class ShoppingCartComponent {
     return this.selectedPackages.filter(p => !p.is_installed);
   }
 
+  public get upgrades(): MagicMirrorPackage[] {
+    return this.selectedPackages.filter(p => p.is_installed && p.is_upgradable);
+  }
+
   public get removals(): MagicMirrorPackage[] {
-    return this.selectedPackages.filter(p => p.is_installed);
+    return this.selectedPackages.filter(p => p.is_installed && !p.is_upgradable);
   }
 
   public pkgKey(pkg: MagicMirrorPackage): string {
@@ -63,12 +67,24 @@ export class ShoppingCartComponent {
   async checkout() {
     if (!this.selectedPackages?.length) return;
 
-    const toRemove = this.selectedPackages.filter(p => p.is_installed);
-    const toInstall = this.selectedPackages.filter(p => !p.is_installed);
+    const toUpgrade = this.upgrades;
+    const toRemove = this.removals;
+    const toInstall = this.installs;
 
     this.isRunning = true;
     this.opStatus = new Map(this.selectedPackages.map(p => [this.pkgKey(p), 'pending' as OpStatus]));
     this.loadingChange.emit(true);
+
+    for (const pkg of toUpgrade) {
+      this.setStatus(pkg, 'working');
+      const response = await this.mmPkgApi.postUpgradePackages([pkg]);
+      const failure = response.message?.failure?.[0];
+      const success = !failure && response.code === 200;
+      this.setStatus(pkg, success ? 'done' : 'failed');
+      if (!success) {
+        this.msg.add({ severity: 'error', summary: 'Upgrade', detail: `Failed to upgrade ${pkg.title}. See logs for details.` });
+      }
+    }
 
     for (const pkg of toRemove) {
       this.setStatus(pkg, 'working');

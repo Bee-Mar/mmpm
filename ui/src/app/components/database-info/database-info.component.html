@@ -65,22 +65,53 @@
   <div class="panel-body">
     @if (upgradesAvailable) {
       <div class="upgrade-list">
+        <button class="upgrade-item select-all-row" [disabled]="isRunning" (click)="toggleSelectAll()">
+          <span class="pkg-check" [class.on]="allUpgradesSelected" [class.indeterminate]="someUpgradesSelected && !allUpgradesSelected">
+            @if (allUpgradesSelected) {
+              <i class="fa-solid fa-check" style="font-size: 8px"></i>
+            } @else if (someUpgradesSelected) {
+              <i class="fa-solid fa-minus" style="font-size: 8px"></i>
+            }
+          </span>
+          <span class="upgrade-title">Select All</span>
+        </button>
         @for (pkg of upgradableItems; track pkg.title) {
-          <button class="upgrade-item" [class.selected]="isUpgradeSelected(pkg)" (click)="toggleUpgrade(pkg)">
-            <span class="pkg-check" [class.on]="isUpgradeSelected(pkg)">
-              @if (isUpgradeSelected(pkg)) {
-                <i class="fa-solid fa-check" style="font-size: 8px"></i>
-              }
-            </span>
+          @let status = opStatus.get(pkg.title);
+          <button class="upgrade-item"
+            [class.selected]="isUpgradeSelected(pkg)"
+            [class.op-working]="status === 'working'"
+            [class.op-done]="status === 'done'"
+            [class.op-failed]="status === 'failed'"
+            [disabled]="isRunning"
+            (click)="toggleUpgrade(pkg)">
+            @if (status === 'working') {
+              <i class="fa-solid fa-spinner fa-spin op-icon"></i>
+            } @else if (status === 'done') {
+              <i class="fa-solid fa-check op-icon op-icon-done"></i>
+            } @else if (status === 'failed') {
+              <i class="fa-solid fa-xmark op-icon op-icon-fail"></i>
+            } @else {
+              <span class="pkg-check" [class.on]="isUpgradeSelected(pkg)">
+                @if (isUpgradeSelected(pkg)) {
+                  <i class="fa-solid fa-check" style="font-size: 8px"></i>
+                }
+              </span>
+            }
             <span class="upgrade-title">{{ pkg.title }}</span>
-            <span class="badge update">UPDATE</span>
+            @if (!status) {
+              <span class="badge update">UPDATE</span>
+            }
           </button>
         }
       </div>
       <div class="panel-actions">
-        <button class="btn ghost" (click)="panelClosed.emit()">Cancel</button>
-        <button class="btn primary" [disabled]="!selectedUpgrades.length" (click)="onUpgrade()">
-          <i class="fa-solid fa-check"></i> Upgrade selected
+        <button class="btn ghost" [disabled]="isRunning" (click)="panelClosed.emit()">Cancel</button>
+        <button class="btn primary" [disabled]="!selectedUpgrades.length || isRunning" (click)="onUpgrade()">
+          @if (isRunning) {
+            <i class="fa-solid fa-spinner fa-spin"></i> Upgrading…
+          } @else {
+            <i class="fa-solid fa-check"></i> Upgrade selected
+          }
         </button>
       </div>
     } @else {

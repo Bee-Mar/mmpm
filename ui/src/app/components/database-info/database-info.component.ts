@@ -51,6 +51,8 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
   public upgradableItems = new Array<MagicMirrorPackage>();
   public selectedPackages = new Array<MagicMirrorPackage>();
   public selectedUpgrades = new Array<MagicMirrorPackage>();
+  public opStatus: Map<string, 'working' | 'done' | 'failed'> = new Map();
+  public isRunning = false;
   private updateDoneTimer: ReturnType<typeof setTimeout> | null = null;
 
 
@@ -132,6 +134,18 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
     return this.selectedUpgrades.some(p => p.title === pkg.title);
   }
 
+  public get allUpgradesSelected(): boolean {
+    return this.upgradableItems.length > 0 && this.upgradableItems.every(p => this.isUpgradeSelected(p));
+  }
+
+  public get someUpgradesSelected(): boolean {
+    return this.upgradableItems.some(p => this.isUpgradeSelected(p));
+  }
+
+  public toggleSelectAll(): void {
+    this.selectedUpgrades = this.allUpgradesSelected ? [] : [...this.upgradableItems];
+  }
+
   public toggleUpgrade(pkg: MagicMirrorPackage): void {
     this.selectedUpgrades = this.isUpgradeSelected(pkg)
       ? this.selectedUpgrades.filter(p => p.title !== pkg.title)
@@ -163,54 +177,29 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
   }
 
   async upgrade() {
-    const packages = this.selectedUpgrades.filter(
-      (pkg: MagicMirrorPackage) =>
-        pkg.title !== 'MMPM' && pkg.title !== 'MagicMirror',
-    );
+    const toUpgrade = [...this.selectedUpgrades];
+    const packages = toUpgrade.filter(p => p.title !== 'MMPM' && p.title !== 'MagicMirror');
+
+    this.isRunning = true;
+    this.opStatus = new Map(toUpgrade.map(p => [p.title, 'working']));
     this.loadingChange.emit(true);
 
-    if (
-      this.selectedUpgrades.findIndex(
-        (pkg: MagicMirrorPackage) => pkg.title === 'MMPM',
-      ) !== -1
-    ) {
+    if (toUpgrade.find(p => p.title === 'MMPM')) {
+      // fire-and-forget: MMPM restarts itself mid-upgrade
       this.baseApi.get_('mmpm/upgrade').then((response: APIResponse) => {
-        if (response.code === 200) {
-          this.msg.add({
-            severity: 'success',
-            summary: 'Upgrade',
-            detail: 'MMPM has been upgraded',
-          });
-        } else {
-          this.msg.add({
-            severity: 'error',
-            summary: 'Upgrade',
-            detail: response.message,
-          });
-        }
+        this.setOpStatus('MMPM', response.code === 200 ? 'done' : 'failed');
+        this.msg.add(response.code === 200
+          ? { severity: 'success', summary: 'Upgrade', detail: 'MMPM has been upgraded' }
+          : { severity: 'error', summary: 'Upgrade', detail: response.message });
       });
     }
 
-    if (
-      this.selectedUpgrades.findIndex(
-        (pkg: MagicMirrorPackage) => pkg.title === 'MagicMirror',
-      ) !== -1
-    ) {
+    if (toUpgrade.find(p => p.title === 'MagicMirror')) {
       const response = await this.mmApi.getUpgrade();
-
-      if (response.code === 200) {
-        this.msg.add({
-          severity: 'success',
-          summary: 'Upgrade',
-          detail: 'MagicMirror has been upgraded',
-        });
-      } else {
-        this.msg.add({
-          severity: 'error',
-          summary: 'Upgrade',
-          detail: response.message,
-        });
-      }
+      this.setOpStatus('MagicMirror', response.code === 200 ? 'done' : 'failed');
+      this.msg.add(response.code === 200
+        ? { severity: 'success', summary: 'Upgrade', detail: 'MagicMirror has been upgraded' }
+        : { severity: 'error', summary: 'Upgrade', detail: response.message });
     }
 
     this.selectedUpgrades = [];
@@ -220,6 +209,9 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
       const succeeded: MagicMirrorPackage[] = response.message?.success ?? [];
       const failures: { title: string; error: string }[] = response.message?.failure ?? [];
 
+      succeeded.forEach(p => this.setOpStatus(p.title, 'done'));
+      failures.forEach(f => this.setOpStatus(f.title, 'failed'));
+
       if (response.code === 200 && succeeded.length > 0) {
         this.msg.add({
           severity: 'success',
@@ -227,37 +219,30 @@ export class DatabaseInfoComponent implements OnInit, OnDestroy {
           detail: `${succeeded.length} package${succeeded.length === 1 ? '' : 's'} upgraded successfully`,
         });
       }
-
       for (const f of failures) {
-        this.msg.add({
-          severity: 'error',
-          summary: `Failed to upgrade ${f.title}`,
-          detail: f.error,
-          life: 8000,
-        });
+        this.msg.add({ severity: 'error', summary: `Failed to upgrade ${f.title}`, detail: f.error, life: 8000 });
       }
     }
 
     // the update endpoint will write out which packages have updates, and this needs
     // to get updated again following the actual upgrades
-    const response = await this.baseApi.get_('db/update');
-
-    if (response.code === 200) {
-      this.msg.add({
-        severity: 'success',
-        summary: 'Upgrade',
-        detail: 'Database updated to reflect changes',
-      });
+    const dbResponse = await this.baseApi.get_('db/update');
+    if (dbResponse.code === 200) {
+      this.msg.add({ severity: 'success', summary: 'Upgrade', detail: 'Database updated to reflect changes' });
     } else {
-      this.msg.add({
-        severity: 'error',
-        summary: 'Upgrade',
-        detail: response.message,
-      });
+      this.msg.add({ severity: 'error', summary: 'Upgrade', detail: dbResponse.message });
     }
 
     this.store.load();
+
+    await new Promise<void>(resolve => setTimeout(resolve, 1400));
+    this.opStatus = new Map();
+    this.isRunning = false;
     this.loadingChange.emit(false);
+  }
+
+  private setOpStatus(title: string, status: 'working' | 'done' | 'failed'): void {
+    this.opStatus = new Map(this.opStatus).set(title, status);
   }
 
   private dummyPackage(title: string): MagicMirrorPackage {

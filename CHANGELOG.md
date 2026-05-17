@@ -481,3 +481,11 @@
 - Added `sync:version` pre-commit hook that reads the version from `pyproject.toml` and keeps `mmpm/__version__.py` and `ui/package.json` in sync automatically on every commit
 - Removed unused `axios` dependency from the UI
 - Replaced `npm run` with `node --run` in the MagicMirror start command and CI lint step (requires Node 22+)
+
+## Version 4.6.4
+
+### UI
+
+- Available Upgrades panel: added a "Select All" row at the top of the upgrade list; clicking it selects all upgradable packages at once; the checkbox shows a tri-state appearance (checked / indeterminate / unchecked) reflecting the current selection
+- Available Upgrades panel: upgrade operations now show immediate visual feedback — each item transitions to an amber spinner ("working"), then to a green check ("done") or red × ("failed") as results arrive; the "Upgrade selected" button displays "Upgrading…" with a spinning icon while the operation runs; items and the Select All row are disabled during execution to prevent accidental changes mid-run
+- Shopping cart: upgradable packages selected from the Installed view are now correctly routed to `postUpgradePackages` rather than `postRemovePackages`; a dedicated "QUEUED · UPGRADE" section appears in the cart above installs and removals

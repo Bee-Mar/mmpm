@@ -14,7 +14,30 @@
 
   } @else {
 
-    <div class="section-title">QUEUED · INSTALL</div>
+    <div class="section-title">QUEUED · UPGRADE</div>
+    @for (pkg of upgrades; track pkg.repository) {
+      @let status = opStatus.get(pkgKey(pkg));
+      <div class="cart-item" [class.op-working]="status === 'working'" [class.op-done]="status === 'done'" [class.op-failed]="status === 'failed'">
+        <div class="cart-item-info">
+          <div class="cart-item-name">{{ pkg.title }}</div>
+          <div class="cart-item-author">{{ pkg.author }}</div>
+        </div>
+        @if (status === 'working') {
+          <i class="fa-solid fa-spinner fa-spin op-icon"></i>
+        } @else if (status === 'done') {
+          <i class="fa-solid fa-check op-icon op-icon-done"></i>
+        } @else if (status === 'failed') {
+          <i class="fa-solid fa-xmark op-icon op-icon-fail"></i>
+        } @else {
+          <span class="badge update">UPGRADE</span>
+        }
+      </div>
+    }
+    @if (upgrades.length === 0) {
+      <div class="cart-empty">— none —</div>
+    }
+
+    <div class="section-title" style="margin-top: 12px">QUEUED · INSTALL</div>
     @for (pkg of installs; track pkg.repository) {
       @let status = opStatus.get(pkgKey(pkg));
       <div class="cart-item" [class.op-working]="status === 'working'" [class.op-done]="status === 'done'" [class.op-failed]="status === 'failed'">

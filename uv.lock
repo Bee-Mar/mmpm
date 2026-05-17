@@ -793,7 +793,7 @@ wheels = [
 
 [[package]]
 name = "mmpm"
-version = "4.6.3"
+version = "4.6.4"
 source = { editable = "." }
 dependencies = [
     { name = "argcomplete" },

@@ -1,12 +1,10 @@
 import json
 
-from flask import Blueprint, Response
+from flask import Blueprint, Response, request
 
 from mmpm.api.endpoints.endpoint import Endpoint
+from mmpm.constants import urls
 from mmpm.env import MMPMEnv
-from mmpm.log.factory import MMPMLogFactory
-
-logger = MMPMLogFactory.get_logger(__name__)
 
 
 class UiConfig(Endpoint):
@@ -24,9 +22,12 @@ class UiConfig(Endpoint):
         @self.blueprint.route("/api/ui-config", methods=["GET"])
         def ui_config() -> Response:
             env = MMPMEnv()
+            hostname = request.host.split(":")[0]
+            default_socket_url = f"http://{hostname}:{urls.MMPM_REPEATER_SERVER_PORT}"
+            socket_url = env.MMPM_UI_SOCKET_URL.get() or default_socket_url
             config = {
                 "apiBase": env.MMPM_UI_API_BASE_URL.get(),
-                "socketUrl": env.MMPM_UI_SOCKET_URL.get(),
+                "socketUrl": socket_url,
                 "baseUrl": env.MMPM_UI_BASE_URL.get(),
             }
             return Response(

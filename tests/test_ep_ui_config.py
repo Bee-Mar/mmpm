@@ -62,5 +62,13 @@ def test_empty_env_values(client):
     raw = response.data.decode()
     config = json.loads(raw.removeprefix("window.MMPM_CONFIG=").removesuffix(";"))
     assert config["apiBase"] == ""
-    assert config["socketUrl"] == ""
+    assert config["socketUrl"] == "http://localhost:8907"
     assert config["baseUrl"] == ""
+
+
+def test_socket_url_defaults_when_empty(client):
+    with patch("mmpm.api.endpoints.ep_ui_config.MMPMEnv", return_value=_mock_env(socket_url="")):
+        response = client.get("/api/ui-config")
+    raw = response.data.decode()
+    config = json.loads(raw.removeprefix("window.MMPM_CONFIG=").removesuffix(";"))
+    assert config["socketUrl"] == "http://localhost:8907"

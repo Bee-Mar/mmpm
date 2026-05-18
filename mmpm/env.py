@@ -18,6 +18,7 @@ MMPM_DEFAULT_ENV: dict = {
     "MMPM_LOG_LEVEL": "INFO",
     "MMPM_UI_API_BASE_URL": "",
     "MMPM_UI_SOCKET_URL": "",
+    "MMPM_UI_BASE_URL": "",
 }
 
 MMPM_ENV_DESCRIPTIONS: dict = {
@@ -29,6 +30,7 @@ MMPM_ENV_DESCRIPTIONS: dict = {
     "MMPM_LOG_LEVEL": "Logging verbosity for MMPM. Accepted values: DEBUG, INFO, WARNING, ERROR, CRITICAL.",
     "MMPM_UI_API_BASE_URL": "Override the base URL the web UI uses to reach the MMPM REST API. Set this when the UI is served behind a reverse proxy at a custom path.",
     "MMPM_UI_SOCKET_URL": "Override the WebSocket URL the web UI uses to connect to the MMPM API. Required when a reverse proxy handles WebSocket connections on a non-default path.",
+    "MMPM_UI_BASE_URL": "Override the base URL the web UI is served from. Set this when the UI is hosted behind a reverse proxy at a custom sub-path (e.g. http://host/mmpm). The path component is injected as <base href> in index.html so assets and routing resolve correctly.",
 }
 
 
@@ -128,6 +130,7 @@ class MMPMEnv(Singleton):
         self.MMPM_LOG_LEVEL: EnvVar = None
         self.MMPM_UI_API_BASE_URL: EnvVar = None
         self.MMPM_UI_SOCKET_URL: EnvVar = None
+        self.MMPM_UI_BASE_URL: EnvVar = None
 
         env_vars = {}
 

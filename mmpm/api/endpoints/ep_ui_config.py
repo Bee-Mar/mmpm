@@ -30,7 +30,9 @@ class UiConfig(Endpoint):
                 "socketUrl": socket_url,
                 "baseUrl": env.MMPM_UI_BASE_URL.get(),
             }
-            return Response(
+            response = Response(
                 f"window.MMPM_CONFIG={json.dumps(config)};",
                 mimetype="application/javascript",
             )
+            response.headers["Cache-Control"] = "no-store"
+            return response

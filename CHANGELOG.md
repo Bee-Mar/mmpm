@@ -517,4 +517,3 @@
 ### Tests
 
 - New `tests/magicmirror/test_lockfile.py` covering lock recording, history bounds and de-duplication, rollback, sync, and detached-HEAD upgrade recovery
-- All 267 tests passing

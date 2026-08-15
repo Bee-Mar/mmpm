@@ -74,3 +74,59 @@
     box-shadow: 0 2px 16px oklch(0.87 0.07 75 / 0.28);
   }
 }
+
+.version-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+
+  .version-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--line);
+
+    &:last-child { border-bottom: none; }
+
+    &.current { background: oklch(0.87 0.07 75 / 0.08); }
+
+    .sha {
+      font-family: monospace;
+      color: var(--fg-2);
+      flex-shrink: 0;
+    }
+
+    .date {
+      color: var(--fg-4);
+      flex-shrink: 0;
+    }
+
+    .subject {
+      color: var(--fg-2);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .installed-tag {
+      color: var(--warn);
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .current-tag {
+      color: var(--signal);
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+  }
+}

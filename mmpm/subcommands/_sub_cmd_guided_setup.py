@@ -98,7 +98,7 @@ class GuidedSetup(SubCmd):
             print("Execute the following commands to install the desired features:")
 
         if install_as_module:
-            print(color.b_green("mmpm install -y MMM-mmpm"))
+            print(color.b_green("mmpm add -y MMM-mmpm"))
         if install_ui:
             print(color.b_green("mmpm ui install -y"))
         if install_autocomplete:

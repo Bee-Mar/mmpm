@@ -60,6 +60,23 @@ export class MagicMirrorPackageAPI extends BaseAPI {
     console.log("Requesting to remove a custom MagicMirrorPackage");
     return this.postPackages("packages/mm-pkg/remove", packages);
   }
+  public postVersionHistory(pkg: MagicMirrorPackage): Promise<APIResponse> {
+    console.log(`Requesting version history for ${pkg.title}`);
+    return this.postPackages("packages/versions", [pkg]);
+  }
+
+  public postRollback(pkg: MagicMirrorPackage, sha: string): Promise<APIResponse> {
+    console.log(`Requesting rollback of ${pkg.title} to ${sha}`);
+    return firstValueFrom(
+      this.http.post(this.route("packages/rollback"), { package: pkg, sha }, { headers: this.headers({ "Content-Type": "application/json" }) }).pipe(
+        map((response) => {
+          return typeof response === "string" ? JSON.parse(response) : response;
+        }),
+        catchError(this.handleError),
+      ),
+    );
+  }
+
   public postDetails(pkg: MagicMirrorPackage): Promise<APIResponse> {
     console.log(`Requesting to get remote package details for ${pkg.title} (${pkg.repository})`);
     return this.postPackages("packages/details", [pkg]);

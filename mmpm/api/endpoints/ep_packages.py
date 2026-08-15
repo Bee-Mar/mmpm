@@ -141,6 +141,55 @@ class Packages(Endpoint):
 
             return self.success({"success": success, "failure": failure})
 
+        @self.blueprint.route("/versions", methods=[http.POST])
+        def versions() -> Response:
+            """
+            A Flask route method for retrieving the commit history of an installed package.
+
+            Parameters:
+                None
+
+            Returns:
+                Response: A Flask Response object containing the package's version history.
+            """
+
+            package = request.get_json()["packages"][0]
+            pkg = MagicMirrorPackage(**package)
+            history = pkg.version_history()
+
+            if not history:
+                return self.failure(f"Unable to retrieve version history for {pkg.title}", code=400)
+
+            return self.success(history)
+
+        @self.blueprint.route("/rollback", methods=[http.POST])
+        def rollback() -> Response:
+            """
+            A Flask route method for rolling back an installed package to a specific
+            commit. The commit is recorded in mmpm.lock on success.
+
+            Parameters:
+                None
+
+            Returns:
+                Response: A Flask Response object indicating the success or failure of the rollback.
+            """
+
+            data = request.get_json()
+            pkg = MagicMirrorPackage(**data["package"])
+            sha = data.get("sha", "")
+
+            if not sha:
+                return self.failure("No commit sha provided", code=400)
+
+            ok, error = pkg.rollback(sha)
+
+            if ok:
+                logger.debug(f"Rolled back {pkg.title} to {sha}")
+                return self.success(f"Rolled back {pkg.title} to {sha[:8]}")
+
+            return self.failure(error, code=500)
+
         @self.blueprint.route("/mm-pkg/add", methods=[http.POST])
         def add_mm_pkg() -> Response:
             """

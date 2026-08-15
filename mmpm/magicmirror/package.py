@@ -17,6 +17,7 @@ import requests
 from mmpm.constants import color
 from mmpm.env import MMPMEnv
 from mmpm.log.factory import MMPMLogFactory
+from mmpm.magicmirror.lockfile import Lockfile
 from mmpm.utils import repo_up_to_date, run_cmd, safe_get_request
 
 NA: str = "N/A"
@@ -110,6 +111,13 @@ class MagicMirrorPackage:
 
     def __ne__(self, other) -> bool:
         return not self.__eq__(other)
+
+    @property
+    def lockfile(self) -> Lockfile:
+        # Resolved at access time (the metaclass caches the instance) so a reset
+        # of Singleton._instances — e.g. between tests — never leaves a stale
+        # reference writing to the wrong lock file.
+        return Lockfile()
 
     # pylint: disable=too-many-positional-arguments
     def display(
@@ -206,7 +214,11 @@ class MagicMirrorPackage:
             bool: True if the installation is successful, False otherwise.
         """
 
-        return InstallationHandler(self).install()
+        if not InstallationHandler(self).install():
+            return False
+
+        self.__record_lock_entry__()
+        return True
 
     def remove(self) -> bool:
         """
@@ -221,7 +233,12 @@ class MagicMirrorPackage:
 
         modules_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
         error_code, stdout, stderr = run_cmd(["rm", "-rf", str(modules_dir / self.directory)], message="Removing package")
-        return not error_code and not stderr and not stdout
+
+        if not error_code and not stderr and not stdout:
+            self.lockfile.remove(self.directory.name)
+            return True
+
+        return False
 
     def clone(self) -> Tuple[int, str, str]:
         """
@@ -296,6 +313,21 @@ class MagicMirrorPackage:
 
             stashed = True
 
+        # A rollback leaves the repo on a detached HEAD where `git pull` cannot
+        # merge — return to the default branch first so the upgrade proceeds.
+        moved_from_detached = False
+        detached_code, _, _ = run_cmd(["git", "symbolic-ref", "-q", "HEAD"], progress=False, cwd=pkg_dir)
+
+        if detached_code:
+            branch_code, ref, _ = run_cmd(["git", "symbolic-ref", "refs/remotes/origin/HEAD", "--short"], progress=False, cwd=pkg_dir)
+            branch = ref.strip().replace("origin/", "") if not branch_code and ref.strip() else "master"
+            checkout_code, _, checkout_err = run_cmd(["git", "checkout", branch], message=f"Returning to {branch}", cwd=pkg_dir)
+
+            if checkout_code:
+                return False, f"Failed to return {self.title} to the '{branch}' branch: {checkout_err.strip()}"
+
+            moved_from_detached = True
+
         error_code, stdout, stderr = run_cmd(["git", "pull"], message="Retrieving changes", cwd=pkg_dir)
 
         # Restore stashed changes regardless of pull outcome.
@@ -315,7 +347,9 @@ class MagicMirrorPackage:
             logger.error(f"Failed to upgrade {self.title}: {error_msg}")
             return False, error_msg
 
-        pulled_changes = "Already up to date." not in stdout
+        # Leaving a detached HEAD changes the working tree even when the pull
+        # itself is a no-op, so dependencies still need a reinstall.
+        pulled_changes = moved_from_detached or "Already up to date." not in stdout
 
         if pulled_changes or force:
             if not InstallationHandler(self).install():
@@ -327,7 +361,163 @@ class MagicMirrorPackage:
             print(f"Upgraded {color.n_green(self.title)}")
             logger.debug(f"Upgraded {self.title}")
 
+        self.__record_lock_entry__(via="upgrade")
         return True, ""
+
+    def version_history(self, count: int = 30) -> List[Dict[str, Any]]:
+        """
+        Retrieves the commit history of the installed package's repository.
+
+        Parameters:
+            count (int): Maximum number of commits to return.
+
+        Returns:
+            List[Dict[str, Any]]: Commits (newest first) as dicts with 'sha',
+            'date', 'subject', and 'is_current' keys. Empty if the package is not
+            an installed git repository.
+        """
+        pkg_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules" / self.directory.name
+
+        if not (pkg_dir / ".git").exists():
+            logger.error(f"{pkg_dir} is not a git repository; cannot retrieve version history")
+            return []
+
+        # Fetch first so history includes commits ahead of the current checkout
+        # (e.g. after a rollback, or when upgrades are available).
+        run_cmd(["git", "fetch", "--quiet"], progress=False, cwd=pkg_dir)
+
+        _, current_sha, _ = run_cmd(["git", "rev-parse", "HEAD"], progress=False, cwd=pkg_dir)
+        current_sha = current_sha.strip()
+
+        error_code, stdout, stderr = run_cmd(
+            ["git", "log", "--all", f"--max-count={count}", "--date=short", "--format=%H%x09%ad%x09%s"],
+            progress=False,
+            cwd=pkg_dir,
+        )
+
+        if error_code:
+            logger.error(f"Failed to read git history for {self.title}: {stderr.strip()}")
+            return []
+
+        previously_installed = {item["sha"]: item for item in self.lockfile.history(self.directory.name)}
+        history = []
+
+        for line in stdout.strip().splitlines():
+            sha, _, remainder = line.partition("\t")
+            date, _, subject = remainder.partition("\t")
+            entry = {"sha": sha, "date": date, "subject": subject, "is_current": sha == current_sha}
+
+            if sha in previously_installed:
+                entry["was_installed"] = True
+                entry["replaced"] = previously_installed[sha].get("replaced", "")
+
+            history.append(entry)
+
+        return history
+
+    def rollback(self, sha: str) -> tuple[bool, str]:
+        """
+        Checks out the package at the given commit and reinstalls its dependencies.
+        On success the lock file records that commit; the package stays there until
+        the user upgrades it, which moves the lock forward again. If dependency
+        installation fails, the checkout is reverted to the previous commit.
+
+        Parameters:
+            sha (str): The commit sha to roll the package back to.
+
+        Returns:
+            tuple[bool, str]: (True, "") on success; (False, error_message) on failure.
+        """
+        pkg_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules" / self.directory.name
+
+        if not (pkg_dir / ".git").exists():
+            return False, f"{pkg_dir} is not a git repository"
+
+        _, previous_sha, _ = run_cmd(["git", "rev-parse", "HEAD"], progress=False, cwd=pkg_dir)
+        previous_sha = previous_sha.strip()
+
+        if previous_sha == sha:
+            self.lockfile.record(self.directory.name, self.repository, sha, via="rollback")
+            return True, ""
+
+        error_code, _, stderr = run_cmd(["git", "checkout", sha], message=f"Checking out {sha[:8]}", cwd=pkg_dir)
+
+        if error_code:
+            error_msg = stderr.strip()
+            logger.error(f"Failed to checkout {sha} for {self.title}: {error_msg}")
+            return False, error_msg
+
+        if not InstallationHandler(self).install():
+            logger.error(f"Dependency install failed after rolling back {self.title}; restoring previous version")
+            run_cmd(["git", "checkout", previous_sha], progress=False, cwd=pkg_dir)
+            InstallationHandler(self).install()
+            return False, "Checkout succeeded but dependency installation failed; previous version restored"
+
+        self.lockfile.record(self.directory.name, self.repository, sha, via="rollback")
+        logger.debug(f"Rolled back {self.title} to {sha}")
+        return True, ""
+
+    def sync(self, sha: str) -> tuple[bool, str]:
+        """
+        Ensures the package matches its lock file entry: clones the repository if
+        it is missing, checks out the locked commit if the working tree is
+        elsewhere, and installs dependencies whenever the checkout changed.
+
+        Parameters:
+            sha (str): The commit sha recorded in the lock file.
+
+        Returns:
+            tuple[bool, str]: (True, "") on success; (False, error_message) on failure.
+        """
+        pkg_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules" / self.directory.name
+        cloned = False
+
+        if not (pkg_dir / ".git").exists():
+            error_code, _, stderr = self.clone()
+
+            if error_code:
+                return False, f"Failed to clone {self.repository}: {stderr.strip()}"
+
+            cloned = True
+
+        _, current_sha, _ = run_cmd(["git", "rev-parse", "HEAD"], progress=False, cwd=pkg_dir)
+        current_sha = current_sha.strip()
+
+        if current_sha != sha:
+            # The locked commit may not exist locally yet (e.g. a fresh clone of a
+            # moved branch) — fetch before checking out.
+            run_cmd(["git", "fetch", "--quiet"], progress=False, cwd=pkg_dir)
+            error_code, _, stderr = run_cmd(["git", "checkout", sha], message=f"Checking out {sha[:8]}", cwd=pkg_dir)
+
+            if error_code:
+                return False, f"Failed to checkout {sha}: {stderr.strip()}"
+
+        if cloned or current_sha != sha:
+            if not InstallationHandler(self).install():
+                return False, "Checkout succeeded but dependency installation failed"
+
+        return True, ""
+
+    def __record_lock_entry__(self, via: str = "install") -> None:
+        """
+        Records the package's currently checked out commit in the MMPM lock file.
+        Called automatically after successful installs and upgrades so the lock
+        file always reflects what is on disk.
+
+        Parameters:
+            via (str): The operation that moved the lock (install, upgrade, rollback).
+
+        Returns:
+            None
+        """
+        pkg_dir: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules" / self.directory.name
+        error_code, sha, _ = run_cmd(["git", "rev-parse", "HEAD"], progress=False, cwd=pkg_dir)
+
+        if error_code:
+            logger.error(f"Unable to determine current commit of {self.title}; lock file not updated")
+            return
+
+        self.lockfile.record(self.directory.name, self.repository, sha.strip(), via=via)
 
     @classmethod
     def from_json(cls, data: Dict[str, Any]):

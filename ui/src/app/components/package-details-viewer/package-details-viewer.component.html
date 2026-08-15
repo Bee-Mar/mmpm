@@ -79,6 +79,43 @@
       </button>
     }
 
+    @if (selectedPackage.is_installed) {
+      <div class="section-title">Versions</div>
+      @if (versionHistory) {
+        <ul class="version-list">
+          @for (version of versionHistory; track version.sha) {
+            <li class="version-row" [class.current]="version.is_current">
+              <code class="sha">{{ version.sha.slice(0, 8) }}</code>
+              <span class="date">{{ version.date }}</span>
+              <span class="subject" [title]="version.subject">{{ version.subject }}</span>
+              @if (version.was_installed && !version.is_current) {
+                <span class="installed-tag" [title]="'Installed until ' + (version.replaced || 'unknown')">previous</span>
+              }
+              @if (version.is_current) {
+                <span class="current-tag">current</span>
+              } @else {
+                <button class="btn ghost sm" [disabled]="rollingBackSha !== null" (click)="onRollback(version)" title="Roll back to this version">
+                  @if (rollingBackSha === version.sha) {
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                  } @else {
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                  }
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      } @else {
+        <button class="btn ghost sm details-remote-btn" (click)="loadVersionHistory()" [disabled]="loadingVersions">
+          @if (loadingVersions) {
+            <i class="fa-solid fa-spinner fa-spin"></i> Loading…
+          } @else {
+            <i class="fa-solid fa-clock-rotate-left"></i> Load version history
+          }
+        </button>
+      }
+    }
+
     <div class="details-actions">
       @if (selectedPackage.is_installed && selectedPackage.is_upgradable) {
         <button class="btn primary" [disabled]="upgrading" (click)="onUpgrade()">

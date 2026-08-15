@@ -18,3 +18,12 @@ export interface RemotePackageDetails {
   created: string;
   forks: number;
 }
+
+export interface PackageVersion {
+  sha: string;
+  date: string;
+  subject: string;
+  is_current: boolean;
+  was_installed?: boolean;
+  replaced?: string;
+}

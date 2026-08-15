@@ -1,5 +1,5 @@
-import { MagicMirrorPackage, RemotePackageDetails } from '@/models/magicmirror-package';
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { MagicMirrorPackage, PackageVersion, RemotePackageDetails } from '@/models/magicmirror-package';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { APIResponse } from '@/services/api/base-api';
 import { MagicMirrorPackageAPI } from '@/services/api/magicmirror-package-api.service';
 import { SharedStoreService } from '@/services/shared-store.service';
@@ -13,7 +13,7 @@ import { getModuleIcon, ModuleIcon } from '@/utils/module-icon';
   providers: [MessageService],
   standalone: false,
 })
-export class PackageDetailsViewerComponent {
+export class PackageDetailsViewerComponent implements OnChanges {
   private mmPkgApi = inject(MagicMirrorPackageAPI);
   private store = inject(SharedStoreService);
   private msg = inject(MessageService);
@@ -25,6 +25,55 @@ export class PackageDetailsViewerComponent {
 
   public loadingRemote = false;
   public upgrading = false;
+  public versionHistory: PackageVersion[] | null = null;
+  public loadingVersions = false;
+  public rollingBackSha: string | null = null;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedPackage']) {
+      this.versionHistory = null;
+      this.loadingVersions = false;
+      this.rollingBackSha = null;
+    }
+  }
+
+  public loadVersionHistory(): void {
+    if (!this.selectedPackage || this.loadingVersions) return;
+
+    this.loadingVersions = true;
+    this.mmPkgApi.postVersionHistory(this.selectedPackage).then((response: APIResponse) => {
+      this.loadingVersions = false;
+      if (response.code === 200) {
+        this.versionHistory = response.message as PackageVersion[];
+      } else {
+        this.msg.add({ severity: 'error', summary: 'Version history', detail: response.message || 'Failed to load version history' });
+      }
+    }).catch(() => {
+      this.loadingVersions = false;
+      this.msg.add({ severity: 'error', summary: 'Version history', detail: 'Failed to load version history' });
+    });
+  }
+
+  public onRollback(version: PackageVersion): void {
+    if (!this.selectedPackage || this.rollingBackSha || version.is_current) return;
+
+    const pkg = this.selectedPackage;
+    this.rollingBackSha = version.sha;
+    this.mmPkgApi.postRollback(pkg, version.sha).then((response: APIResponse) => {
+      this.rollingBackSha = null;
+      if (response.code === 200) {
+        this.versionHistory = null;
+        this.msg.add({ severity: 'success', summary: 'Rollback', detail: `${pkg.title} rolled back to ${version.sha.slice(0, 8)}` });
+        this.store.load();
+        this.loadVersionHistory();
+      } else {
+        this.msg.add({ severity: 'error', summary: `Failed to roll back ${pkg.title}`, detail: response.message || 'Rollback failed', life: 8000 });
+      }
+    }).catch(() => {
+      this.rollingBackSha = null;
+      this.msg.add({ severity: 'error', summary: 'Rollback', detail: 'Rollback failed' });
+    });
+  }
 
   public get isQueued(): boolean {
     if (!this.selectedPackage) return false;

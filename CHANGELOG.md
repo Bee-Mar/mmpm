@@ -489,3 +489,31 @@
 - Available Upgrades panel: added a "Select All" row at the top of the upgrade list; clicking it selects all upgradable packages at once; the checkbox shows a tri-state appearance (checked / indeterminate / unchecked) reflecting the current selection
 - Available Upgrades panel: upgrade operations now show immediate visual feedback — each item transitions to an amber spinner ("working"), then to a green check ("done") or red × ("failed") as results arrive; the "Upgrade selected" button displays "Upgrading…" with a spinning icon while the operation runs; items and the Select All row are disabled during execution to prevent accidental changes mid-run
 - Shopping cart: upgradable packages selected from the Installed view are now correctly routed to `postUpgradePackages` rather than `postRemovePackages`; a dedicated "QUEUED · UPGRADE" section appears in the cart above installs and removals
+
+## Version 4.7.0
+
+### Lock File (mmpm.lock)
+
+- Every installed package is now automatically recorded in `~/.config/mmpm/mmpm.lock` with its exact commit sha, uv.lock-style; installing locks the version, upgrading moves the lock forward, removing drops the entry — the file is never edited by hand
+- Each lock entry keeps a bounded history (last 10) of previously installed commits, recorded automatically whenever the lock moves, with the date and operation (`install` / `upgrade` / `rollback`) that replaced them
+- Lock file access goes through a new `Lockfile` singleton (`mmpm/magicmirror/lockfile.py`), following the same `Singleton` pattern as `MMPMEnv` and `MagicMirrorDatabase`; the file on disk remains the source of truth so concurrent CLI/API processes always see the latest state
+
+### CLI
+
+- New `add` subcommand replaces `install` as the canonical way to install packages; `install` remains as a deprecated alias that warns and delegates to `add`
+- New `sync` subcommand reads `mmpm.lock` and makes the installed packages match it: missing packages are cloned, drifted packages are checked out at their locked commit, and dependencies are reinstalled whenever the checkout changes — useful for reproducing a setup on new hardware or repairing drift
+- New `rollback` subcommand restores a package to a version previously installed: with no options it rolls back to the most recently replaced commit from the lock history; `--select` opens an interactive picker over the package's full commit history (previously installed commits annotated with the date they were replaced); `--commit <sha>` targets an exact commit; `--history` displays the version list without rolling back
+- A rollback that leaves the repository on a detached HEAD is handled transparently by `upgrade`, which returns to the default branch before pulling and reinstalls dependencies when the working tree changes
+
+### API
+
+- New `POST /api/packages/versions` endpoint returns a package's commit history, annotated with which commits were previously installed
+- New `POST /api/packages/rollback` endpoint checks out a specific commit and records it in the lock file
+
+### UI
+
+- Package details panel: new "Versions" section with a lazy-loaded, scrollable commit history; the current version is highlighted, previously installed versions carry a "previous" badge (hover shows when they were replaced), and each older commit offers a one-click rollback
+
+### Tests
+
+- New `tests/magicmirror/test_lockfile.py` covering lock recording, history bounds and de-duplication, rollback, sync, and detached-HEAD upgrade recovery

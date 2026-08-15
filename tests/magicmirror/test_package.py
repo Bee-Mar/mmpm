@@ -1,10 +1,12 @@
 import unittest
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock, patch
 
 from faker import Faker
 
 from mmpm.env import MMPM_DEFAULT_ENV
+from mmpm.magicmirror.lockfile import Lockfile
 from mmpm.magicmirror.package import InstallationHandler, MagicMirrorPackage, RemotePackage
 
 fake = Faker()
@@ -17,6 +19,14 @@ class TestMagicMirrorPackage(unittest.TestCase):
         env_patcher = patch.object(MagicMirrorPackage, "env", self.env_mock)
         env_patcher.start()
         self.addCleanup(env_patcher.stop)
+
+        # Redirect the lock file so install/upgrade side effects never touch the user's real one
+        self.tmp = TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.lockfile = Lockfile()
+        lock_patcher = patch.object(self.lockfile, "file", Path(self.tmp.name) / "mmpm.lock")
+        lock_patcher.start()
+        self.addCleanup(lock_patcher.stop)
         self.package = MagicMirrorPackage(
             title=f"{fake.pystr()} // ",
             author=fake.pystr(),
@@ -71,13 +81,16 @@ class TestMagicMirrorPackage(unittest.TestCase):
 
         self.assertTrue(package1 != package2)
 
+    @patch("mmpm.magicmirror.package.run_cmd")
     @patch("mmpm.magicmirror.package.InstallationHandler")
-    def test_install(self, mock_handler):
+    def test_install(self, mock_handler, mock_run_cmd):
         mock_install = MagicMock()
         mock_handler.return_value = mock_install
+        mock_run_cmd.return_value = (0, "abc123\n", "")  # rev-parse for the lock file entry
         self.package.is_installed = False
         self.package.install()
         mock_install.install.assert_called_once()
+        self.assertEqual(self.lockfile.get(self.package.directory.name)["sha"], "abc123")
 
     @patch("mmpm.magicmirror.package.run_cmd")
     def test_remove(self, mock_run_cmd):
@@ -118,8 +131,8 @@ class TestMagicMirrorPackage(unittest.TestCase):
     @patch("mmpm.magicmirror.package.run_cmd")
     @patch("mmpm.magicmirror.package.InstallationHandler.install")
     def test_upgrade(self, mock_install, mock_run_cmd):
-        # status (clean) → pull (changes pulled)
-        mock_run_cmd.side_effect = [(0, "", ""), (0, "Updating abc..def\nFast-forward", "")]
+        # status (clean) → symbolic-ref (on a branch) → pull (changes pulled) → rev-parse (lock file entry)
+        mock_run_cmd.side_effect = [(0, "", ""), (0, "refs/heads/master\n", ""), (0, "Updating abc..def\nFast-forward", ""), (0, "def456\n", "")]
         mock_install.return_value = True
         self.package.is_upgradable = True
         ok, err = self.package.upgrade()
@@ -129,8 +142,8 @@ class TestMagicMirrorPackage(unittest.TestCase):
 
     @patch("mmpm.magicmirror.package.run_cmd")
     def test_upgrade_failure(self, mock_run_cmd):
-        # status (clean) → pull (fails)
-        mock_run_cmd.side_effect = [(0, "", ""), (1, "", "error: merge conflict")]
+        # status (clean) → symbolic-ref (on a branch) → pull (fails)
+        mock_run_cmd.side_effect = [(0, "", ""), (0, "refs/heads/master\n", ""), (1, "", "error: merge conflict")]
         ok, err = self.package.upgrade()
         self.assertFalse(ok)
         self.assertIn("error", err)
@@ -181,8 +194,8 @@ class TestMagicMirrorPackage(unittest.TestCase):
     @patch("mmpm.magicmirror.package.InstallationHandler.install")
     def test_upgrade_up_to_date_no_force(self, mock_install, mock_run_cmd):
         """When already up to date and force=False, no install is called."""
-        # status (clean) → pull (already up to date)
-        mock_run_cmd.side_effect = [(0, "", ""), (0, "Already up to date.", "")]
+        # status (clean) → symbolic-ref (on a branch) → pull (already up to date) → rev-parse (lock file entry)
+        mock_run_cmd.side_effect = [(0, "", ""), (0, "refs/heads/master\n", ""), (0, "Already up to date.", ""), (0, "abc123\n", "")]
         ok, err = self.package.upgrade(force=False)
         mock_install.assert_not_called()
         self.assertTrue(ok)

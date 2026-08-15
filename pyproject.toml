@@ -1,6 +1,6 @@
 [project]
 name = "mmpm"
-version = "4.6.4"
+version = "4.7.0"
 description = "MMPM, the MagicMirror Package Manager CLI simplifies the installation, removal, and general maintenance of MagicMirror packages"
 
 authors = [
@@ -73,7 +73,7 @@ packages = ["mmpm"]
 
 [project.urls]
 Homepage = "https://github.com/Bee-Mar/mmpm"
-Downloads = "https://github.com/Bee-Mar/mmpm/archive/4.6.2.tar.gz"
+Downloads = "https://github.com/Bee-Mar/mmpm/archive/4.7.0.tar.gz"
 
 [project.scripts]
 mmpm = "mmpm.entrypoint:main"

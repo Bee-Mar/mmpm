@@ -176,6 +176,9 @@
 
             nativeBuildInputs = [
               pkgs.bun2nix.hook
+              # a real node is required in PATH: without it, bun executes ng.js itself and
+              # reports its emulated Node version, which Angular CLI 22+ rejects as too old
+              pkgs.nodejs_24
             ];
 
             bunDeps = pkgs.bun2nix.fetchBunDeps {

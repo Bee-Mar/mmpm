@@ -1,14 +1,22 @@
 from importlib import import_module
 from pkgutil import iter_modules
-from typing import Dict
+from typing import Dict, Generic, Protocol, TypeVar
 
 from mmpm.log.factory import MMPMLogFactory
-from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogFactory.get_logger(__name__)
 
 
-class Loader:
+class Loadable(Protocol):
+    """Anything the Loader can load: an instance exposing a 'name' attribute (e.g. SubCmd, Endpoint)."""
+
+    name: str
+
+
+T = TypeVar("T", bound=Loadable)
+
+
+class Loader(Generic[T]):
     """
     This class handles dynamically loading all subcommands/endpoints from given modules.
 
@@ -33,9 +41,9 @@ class Loader:
             prefix (str, optional): A prefix to filter which submodules to load. Defaults to an empty string.
         """
 
-        self.objects: Dict[str, SubCmd] = self.__load__(module_path, module_name, app_name, prefix)
+        self.objects: Dict[str, T] = self.__load__(module_path, module_name, app_name, prefix)
 
-    def __load__(self, module_path, module_name: str, app_name: str = "", prefix: str = "") -> Dict[str, SubCmd]:
+    def __load__(self, module_path, module_name: str, app_name: str = "", prefix: str = "") -> Dict[str, T]:
         """
         Loads objects dynamically from the specified module.
 
@@ -57,7 +65,7 @@ class Loader:
             Exception: For any other exceptions encountered during loading.
         """
 
-        objects: Dict[str, object] = {}
+        objects: Dict[str, T] = {}
         snake_to_pascal = lambda name: name.replace("_", " ").title().replace(" ", "")
 
         for submodule in iter_modules(module_path):
@@ -67,7 +75,7 @@ class Loader:
                 try:
                     imported_module = import_module(f"{module_name}.{submodule.name}")
                     objekt = getattr(imported_module, class_name)
-                    instance: SubCmd = objekt(app_name) if app_name else objekt()
+                    instance: T = objekt(app_name) if app_name else objekt()
                     objects[instance.name] = instance
 
                     for alias in getattr(instance, "aliases", []):

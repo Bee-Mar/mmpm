@@ -8,6 +8,7 @@ from flask import Flask, Response
 from flask_cors import CORS
 
 import mmpm.api.endpoints
+from mmpm.api.endpoints.endpoint import Endpoint
 from mmpm.api.endpoints.index import Index
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.subcommands.loader import Loader
@@ -53,7 +54,7 @@ def exception_handler(error) -> Response:
 
 
 # dynamically load all the endpoints within the "mmpm.api.endpoints" module
-loader = Loader(
+loader: Loader[Endpoint] = Loader(
     module_path=mmpm.api.endpoints.__path__,
     module_name="mmpm.api.endpoints",
     prefix="ep_",

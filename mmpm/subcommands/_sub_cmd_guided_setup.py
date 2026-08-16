@@ -179,7 +179,7 @@ class GuidedSetup(SubCmd):
 
         if ui.install():
             logger.info("Installed MMPM-UI")
-            print(f"Run `{self.app_name} ui url` to display the UI address, or execute `{self.app_name} open --ui` to open it.")
+            print(f"Run `{self.app_name} ui url` to display the UI address, or execute `{self.app_name} open ui` to open it.")
         else:
             logger.error(f"Failed to install the MMPM UI. Run `{self.app_name} ui install` to try again.")
             ui.delete()

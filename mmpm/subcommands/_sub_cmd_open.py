@@ -1,15 +1,17 @@
 """Command line options for 'open' subcommand"""
 
-from os import getenv, system
+import subprocess
+import sys
+from os import getenv
 from pathlib import Path
-from shutil import copyfile
+from shlex import split
+from shutil import copyfile, which
 
 from mmpm.constants import paths, urls
 from mmpm.env import MMPMEnv
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.magicmirror import MagicMirrorConfigs
 from mmpm.subcommands.sub_cmd import SubCmd
-from mmpm.ui import MMPMui
 from mmpm.utils import run_cmd
 
 logger = MMPMLogFactory.get_logger(__name__)
@@ -22,7 +24,7 @@ class Open(SubCmd):
 
     Custom Attributes:
         env (MMPMEnv): An instance of the MMPMEnv class for managing environment variables.
-        ui (MMPMui): An instance of the MMPMui class for managing the MMPM UI.
+        mm_configs (MagicMirrorConfigs): Locations of the MagicMirror configuration files.
         [Method] edit(self, file: PosixPath): see method docs
     """
 
@@ -32,8 +34,7 @@ class Open(SubCmd):
         self.app_name = app_name
         self.name = "open"
         self.help = "Open config files, documentation, wikis, and MagicMirror itself"
-        self.usage = f"{self.app_name} {self.name} [--<option>]"
-        self.ui = MMPMui()
+        self.usage = f"{self.app_name} {self.name} <config/css/env/ui/magicmirror/mm-wiki/mm-docs/mmpm-wiki>"
         self.mm_configs = MagicMirrorConfigs()
 
     def edit(self, file: Path) -> None:
@@ -55,97 +56,78 @@ class Open(SubCmd):
                 file.touch(mode=0o664, exist_ok=True)
             except OSError as error:
                 logger.fatal(f"Unable to create {file}: {str(error)}")
+                sys.exit(1)
 
+        editor = getenv("EDITOR") or getenv("VISUAL") or "nano"
         logger.info(f"Opening {file} for user to edit")
-        command = getenv("EDITOR", getenv("VISUAL", "edit"))
-        system(f"{command} {file}")
+        subprocess.run([*split(editor), str(file)], check=False)
+
+    def open_in_browser(self, url: str) -> None:
+        """
+        Opens the provided URL in the user's default browser via xdg-open.
+
+        Parameters:
+            url (str): The URL to open.
+
+        Returns:
+            None
+        """
+
+        if not which("xdg-open"):
+            logger.error("The executable 'xdg-open' could not be found. Unable to open a browser.")
+            sys.exit(1)
+
+        run_cmd(["xdg-open", url], background=True)
 
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
 
-        group = self.parser.add_mutually_exclusive_group()
-
-        group.add_argument(
-            "--config",
-            action="store_true",
-            help="open MagicMirror config/config.js file in your $EDITOR",
-            dest="config",
+        subparsers = self.parser.add_subparsers(
+            dest="command",
+            description=f"use `{self.app_name} {self.name} <subcommand> --help` to see more details",
+            title=f"{self.app_name} {self.name} subcommands",
+            metavar="",
         )
 
-        group.add_argument(
-            "--css",
-            action="store_true",
-            help="open MagicMirror css/custom.css file (if it exists) in your $EDITOR",
-            dest="custom_css",
-        )
-
-        group.add_argument(
-            "--ui",
-            action="store_true",
-            help="open the MMPM UI in your default browser",
-            dest="ui",
-        )
-
-        group.add_argument(
-            "--magicmirror",
-            action="store_true",
-            help="open MagicMirror in your default browser (uses the MMPM_MAGICMIRROR_URI address)",
-            dest="magicmirror",
-        )
-
-        group.add_argument(
-            "--mm-wiki",
-            action="store_true",
-            help="open the MagicMirror GitHub wiki in your default browser",
-            dest="mm_wiki",
-        )
-
-        group.add_argument(
-            "--mm-docs",
-            action="store_true",
-            help="open the MagicMirror documentation in your default browser",
-            dest="mm_docs",
-        )
-
-        group.add_argument(
-            "--mmpm-wiki",
-            action="store_true",
-            help="open the MMPM GitHub wiki in your default browser",
-            dest="mmpm_wiki",
-        )
-
-        group.add_argument(
-            "--env",
-            action="store_true",
-            help="open the MMPM run-time environment variables JSON configuration file in your $EDITOR",
-            dest="mmpm_env",
-        )
+        subparsers.add_parser("config", help="open MagicMirror config/config.js file in your $EDITOR")
+        subparsers.add_parser("css", help="open MagicMirror css/custom.css file in your $EDITOR")
+        subparsers.add_parser("env", help="open the MMPM run-time environment variables JSON configuration file in your $EDITOR")
+        subparsers.add_parser("ui", help="open the MMPM UI in your default browser")
+        subparsers.add_parser("magicmirror", help="open MagicMirror in your default browser (uses the MMPM_MAGICMIRROR_URI address)")
+        subparsers.add_parser("mm-wiki", help="open the MagicMirror GitHub wiki in your default browser")
+        subparsers.add_parser("mm-docs", help="open the MagicMirror documentation in your default browser")
+        subparsers.add_parser("mmpm-wiki", help="open the MMPM GitHub wiki in your default browser")
 
     def exec(self, args, extra):
         if extra:
             logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")
-        elif args.config:
+        elif args.command == "config":
             config_js = self.mm_configs.config_js
             config_js_sample = self.mm_configs.config_js_sample
 
-            if not config_js.stat().st_size and config_js_sample.exists():
+            if not config_js.exists() and not config_js_sample.exists():
+                logger.error(f"Unable to find {config_js.name} or {config_js_sample.name}. Unable to access MagicMirror config.")
+                sys.exit(1)
+
+            # seed config.js from the sample only when it's missing or empty
+            if (not config_js.exists() or not config_js.stat().st_size) and config_js_sample.exists():
                 copyfile(config_js_sample, config_js)
 
             self.edit(config_js)
 
-        elif args.custom_css:
+        elif args.command == "css":
             self.edit(self.mm_configs.custom_css)
-        elif args.magicmirror:
-            run_cmd(["xdg-open", self.env.MMPM_MAGICMIRROR_URI.get()], background=True)
-        elif args.ui:
-            run_cmd(["xdg-open", f"http://{urls.HOST}:{urls.MMPM_UI_PORT}"], background=True)
-        elif args.mm_wiki:
-            run_cmd(["xdg-open", urls.MAGICMIRROR_WIKI_URL], background=True)
-        elif args.mm_docs:
-            run_cmd(["xdg-open", urls.MAGICMIRROR_DOCUMENTATION_URL], background=True)
-        elif args.mmpm_wiki:
-            run_cmd(["xdg-open", urls.MMPM_WIKI_URL], background=True)
-        elif args.mmpm_env:
+        elif args.command == "env":
             self.edit(paths.MMPM_ENV_FILE)
+        elif args.command == "magicmirror":
+            self.open_in_browser(self.env.MMPM_MAGICMIRROR_URI.get())
+        elif args.command == "ui":
+            self.open_in_browser(f"http://{urls.HOST}:{urls.MMPM_UI_PORT}")
+        elif args.command == "mm-wiki":
+            self.open_in_browser(urls.MAGICMIRROR_WIKI_URL)
+        elif args.command == "mm-docs":
+            self.open_in_browser(urls.MAGICMIRROR_DOCUMENTATION_URL)
+        elif args.command == "mmpm-wiki":
+            self.open_in_browser(urls.MMPM_WIKI_URL)
         else:
             logger.error(f"No arguments provided. See '{self.app_name} {self.name} --help'")

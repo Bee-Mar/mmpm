@@ -103,7 +103,7 @@ class Ui(SubCmd):
                 self.ui.delete()
             else:
                 logger.info("Installed MMPM-UI")
-                print(f"Run `{self.app_name} {self.name} url` to display the UI address, or execute `{self.app_name} open --ui` to open it.")
+                print(f"Run `{self.app_name} {self.name} url` to display the UI address, or execute `{self.app_name} open ui` to open it.")
 
         elif args.command == "reinstall":
             if not args.assume_yes and not confirm("Are you sure you want to reinstall the MMPM UI?"):
@@ -120,7 +120,7 @@ class Ui(SubCmd):
                 self.ui.delete()
             else:
                 logger.info("Reinstalled MMPM-UI")
-                print(f"Run `{self.app_name} {self.name} url` to display the UI address, or execute `{self.app_name} open --ui` to open it.")
+                print(f"Run `{self.app_name} {self.name} url` to display the UI address, or execute `{self.app_name} open ui` to open it.")
 
         elif args.command == "remove":
             if not args.assume_yes and not confirm("Are you sure you want to remove the MMPM UI?"):

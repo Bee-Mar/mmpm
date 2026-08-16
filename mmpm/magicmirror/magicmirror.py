@@ -159,7 +159,7 @@ class MagicMirror(Singleton):
         root_path: PosixPath = root.get()
 
         if root_path.exists() and Path(root_path / "modules").exists() and Path(root_path / "node_modules").exists():
-            message = f"MagicMirror appears to already be installed in {root_path}. To install MagicMirror elsewhere, modify the {root.name} using 'mmpm open --env'"
+            message = f"MagicMirror appears to already be installed in {root_path}. To install MagicMirror elsewhere, modify the {root.name} using 'mmpm open env'"
             logger.fatal(message)
             return False
 

@@ -11,6 +11,7 @@ from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.magicmirror import MagicMirror
 from mmpm.magicmirror.package import MagicMirrorPackage
 from mmpm.subcommands.sub_cmd import SubCmd
+from mmpm.utils import confirm
 
 logger = MMPMLogFactory.get_logger(__name__)
 
@@ -30,7 +31,7 @@ class Upgrade(SubCmd):
         self.app_name = app_name
         self.name = "upgrade"
         self.help = "Upgrade packages, MMPM, and/or MagicMirror"
-        self.usage = f"{self.app_name} {self.name} <package(s)> [--yes]"
+        self.usage = f"{self.app_name} {self.name} [package(s)] [--yes] [--force]"
         self.database = MagicMirrorDatabase()
         self.magicmirror = MagicMirror()
 
@@ -60,30 +61,64 @@ class Upgrade(SubCmd):
             self.database.load()
 
         upgradable = self.database.upgradable()
-        packages_to_upgrade: List[MagicMirrorPackage] = []
+        requested = set(extra)
+
+        upgradable_packages = {MagicMirrorPackage(**package) for package in upgradable["packages"]}
 
         if args.force:
-            for package in filter(lambda pkg: pkg.is_installed, self.database.packages):
-                package.upgrade(force=True)
+            candidates = {package for package in self.database.packages if package.is_installed}
+        else:
+            candidates = upgradable_packages
 
-            upgradable["packages"] = {}
+        upgrade_magicmirror = upgradable["MagicMirror"]
+        upgrade_mmpm = upgradable["mmpm"]
 
-        elif not any(upgradable.values()):
-            logger.info("All packages and applications are up to date.\n ")
+        if requested:
+            upgrade_magicmirror = upgrade_magicmirror and "MagicMirror" in requested
+            upgrade_mmpm = upgrade_mmpm and self.app_name in requested
+
+            candidates = {package for package in candidates if package.title in requested}
+
+            installed_titles = {package.title for package in self.database.packages if package.is_installed}
+
+            for name in requested - {package.title for package in candidates} - {"MagicMirror", self.app_name}:
+                if name not in installed_titles:
+                    logger.error(f"'{name}' is not an installed package")
+                else:
+                    logger.error(f"No upgrade available for '{name}'. Use `{self.app_name} {self.name} --force {name}` to force an upgrade.")
+
+        if not candidates and not upgrade_magicmirror and not upgrade_mmpm:
+            if not requested:
+                logger.info("All packages and applications are up to date.")
             return
 
-        if upgradable["packages"]:
-            packages = {MagicMirrorPackage(**package) for package in upgradable["packages"]}
-            packages_to_upgrade.extend(filter(lambda pkg: pkg.upgrade()[0], packages))
-            upgradable["packages"] = [package.serialize() for package in (packages - set(packages_to_upgrade))]
+        upgraded: List[MagicMirrorPackage] = []
 
-        upgradable["MagicMirror"] = upgradable["MagicMirror"] and self.magicmirror.upgrade()
+        for package in candidates:
+            if not args.assume_yes and not confirm(f"Upgrade {package.title}?"):
+                continue
 
-        if upgradable["mmpm"]:
+            success, error = package.upgrade(force=args.force)
+
+            if success:
+                upgraded.append(package)
+            else:
+                logger.error(f"Failed to upgrade {package.title}: {error}")
+
+        upgradable["packages"] = [package.serialize() for package in (upgradable_packages - set(upgraded))]
+
+        if upgrade_magicmirror and (args.assume_yes or confirm("Upgrade MagicMirror?")):
+            # magicmirror.upgrade() returns stderr (a truthy str) on some failures, so compare against True exactly
+            upgradable["MagicMirror"] = self.magicmirror.upgrade() is not True
+
+        if upgrade_mmpm:
             if self.env.MMPM_IS_DOCKER_IMAGE.get():
                 logger.warning("Cannot perform self-upgrade because MMPM is a Docker image. Stop MMPM and run `docker pull karsten13/mmpm:latest`")
-            else:
-                upgradable["mmpm"] = utils.upgrade()
+            elif args.assume_yes or confirm(f"Upgrade {self.app_name}?"):
+                upgradable["mmpm"] = not utils.upgrade()
+
+        if not requested and not args.force and upgradable["packages"]:
+            logger.info(f"Some packages were not upgraded. Run `{self.app_name} list --upgradable` to see what remains.")
 
         with open(paths.MMPM_AVAILABLE_UPGRADES_FILE, mode="w", encoding="utf-8") as upgrade_file:
             json.dump(upgradable, upgrade_file)

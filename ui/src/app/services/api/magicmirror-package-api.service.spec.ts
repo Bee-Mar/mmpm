@@ -66,16 +66,16 @@ describe('MagicMirrorPackageAPI', () => {
     req.flush({ code: 200, message: { success: [], failure: [] } });
   });
 
-  it('postAddMmPkg calls packages/mm-pkg/add endpoint', () => {
+  it('postAddMmPkg calls packages/custom-pkg/add endpoint', () => {
     service.postAddMmPkg(pkg).then(res => expect(res.code).toBe(200));
-    const req = httpMock.expectOne(r => r.url.includes('packages/mm-pkg/add'));
+    const req = httpMock.expectOne(r => r.url.includes('packages/custom-pkg/add'));
     expect(req.request.method).toBe('POST');
     req.flush({ code: 200, message: '' });
   });
 
-  it('postRemoveMmPkgs calls packages/mm-pkg/remove endpoint', () => {
+  it('postRemoveMmPkgs calls packages/custom-pkg/remove endpoint', () => {
     service.postRemoveMmPkgs([pkg]).then(res => expect(res.code).toBe(200));
-    const req = httpMock.expectOne(r => r.url.includes('packages/mm-pkg/remove'));
+    const req = httpMock.expectOne(r => r.url.includes('packages/custom-pkg/remove'));
     expect(req.request.method).toBe('POST');
     req.flush({ code: 200, message: '' });
   });

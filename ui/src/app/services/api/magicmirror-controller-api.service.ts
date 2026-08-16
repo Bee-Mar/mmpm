@@ -9,25 +9,25 @@ import { catchError, firstValueFrom, map, retry } from "rxjs";
 export class MagicMirrorControllerAPI extends BaseAPI {
   public getStart(): Promise<APIResponse> {
     console.log("Requesting to start MagicMirror");
-    return this.get_("mm-ctl/start");
+    return this.get_("mm/start");
   }
 
   public getRestart(): Promise<APIResponse> {
     console.log("Requesting to restart MagicMirror");
-    return this.get_("mm-ctl/restart");
+    return this.get_("mm/restart");
   }
 
   public getStop(): Promise<APIResponse> {
     console.log("Requesting to stop MagicMirror");
-    return this.get_("mm-ctl/stop");
+    return this.get_("mm/stop");
   }
 
   public postHide(mmModule: MagicMirrorModule): Promise<APIResponse> {
-    return this.postModule("mm-ctl/hide", mmModule);
+    return this.postModule("mm/hide", mmModule);
   }
 
   public postShow(mmModule: MagicMirrorModule): Promise<APIResponse> {
-    return this.postModule("mm-ctl/show", mmModule);
+    return this.postModule("mm/show", mmModule);
   }
 
   private postModule(url: string, mmModule: MagicMirrorModule): Promise<APIResponse> {

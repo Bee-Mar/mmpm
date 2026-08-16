@@ -190,7 +190,7 @@ class Packages(Endpoint):
 
             return self.failure(error, code=500)
 
-        @self.blueprint.route("/mm-pkg/add", methods=[http.POST])
+        @self.blueprint.route("/custom-pkg/add", methods=[http.POST])
         def add_mm_pkg() -> Response:
             """
             A Flask route method for adding a custom MagicMirror package.
@@ -209,7 +209,7 @@ class Packages(Endpoint):
 
             return self.failure("Failed to add custom package. See logs for details.")
 
-        @self.blueprint.route("/mm-pkg/remove", methods=[http.POST])
+        @self.blueprint.route("/custom-pkg/remove", methods=[http.POST])
         def remove_mm_pkg() -> Response:
             """
             A Flask route method for removing custom MagicMirror packages.

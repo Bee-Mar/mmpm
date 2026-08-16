@@ -9,14 +9,14 @@ from mmpm.magicmirror.magicmirror import MagicMirror
 logger = MMPMLogFactory.get_logger(__name__)
 
 
-class MmCtl(Endpoint):
+class Mm(Endpoint):
     """
     A Flask endpoint for interacting with MagicMirror at the core level. This includes operations
     like install, remove, upgrade, start, stop, restart, hide, and show.
     """
 
     def __init__(self):
-        self.name = "mm-ctl"
+        self.name = "mm"
         self.blueprint = Blueprint(self.name, __name__, url_prefix=f"/api/{self.name}")
         self.controller = MagicMirrorController()
         self.magicmirror = MagicMirror()

@@ -23,30 +23,30 @@ describe('MagicMirrorAPI', () => {
     expect(service).toBeTruthy();
   });
 
-  it('getStatus calls mm-ctl/status endpoint', () => {
+  it('getStatus calls mm/status endpoint', () => {
     service.getStatus().then(res => expect(res.code).toBe(200));
-    const req = httpMock.expectOne(r => r.url.includes('mm-ctl/status'));
+    const req = httpMock.expectOne(r => r.url.includes('mm/status'));
     expect(req.request.method).toBe('GET');
     req.flush({ code: 200, message: [] });
   });
 
-  it('getUpgrade calls mm-ctl/upgrade endpoint', () => {
+  it('getUpgrade calls mm/upgrade endpoint', () => {
     service.getUpgrade().then(res => expect(res.code).toBe(200));
-    const req = httpMock.expectOne(r => r.url.includes('mm-ctl/upgrade'));
+    const req = httpMock.expectOne(r => r.url.includes('mm/upgrade'));
     expect(req.request.method).toBe('GET');
     req.flush({ code: 200, message: '' });
   });
 
-  it('getInstall calls mm-ctl/install endpoint', () => {
+  it('getInstall calls mm/install endpoint', () => {
     service.getInstall().then(res => expect(res.code).toBe(200));
-    const req = httpMock.expectOne(r => r.url.includes('mm-ctl/install'));
+    const req = httpMock.expectOne(r => r.url.includes('mm/install'));
     expect(req.request.method).toBe('GET');
     req.flush({ code: 200, message: '' });
   });
 
-  it('getRemove calls mm-ctl/remove endpoint', () => {
+  it('getRemove calls mm/remove endpoint', () => {
     service.getRemove().then(res => expect(res.code).toBe(200));
-    const req = httpMock.expectOne(r => r.url.includes('mm-ctl/remove'));
+    const req = httpMock.expectOne(r => r.url.includes('mm/remove'));
     expect(req.request.method).toBe('GET');
     req.flush({ code: 200, message: '' });
   });

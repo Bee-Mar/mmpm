@@ -337,7 +337,7 @@
         {
           default = pkgs.mkShell {
             env = {
-              UV_PYTHON = "3.13";
+              UV_PYTHON = "3.14";
               VIRTUAL_ENV = ".venv";
             };
 

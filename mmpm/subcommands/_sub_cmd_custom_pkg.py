@@ -99,14 +99,17 @@ class CustomPkg(SubCmd):
             self.database.load()
 
         if args.command == "add":
+            required = lambda field: lambda value: None if value else f"{field} cannot be empty"
+            valid_repo = lambda value: None if value.startswith(("http://", "https://", "git@")) else f"'{value}' does not look like a repository URL"
+
             if not args.title:
-                args.title = prompt("Title: ")
+                args.title = prompt("Title: ", validate=required("Title"))
             if not args.author:
-                args.author = prompt("Author: ")
+                args.author = prompt("Author: ", validate=required("Author"))
             if not args.repo:
-                args.repo = prompt("Repository: ")
+                args.repo = prompt("Repository: ", validate=valid_repo)
             if not args.desc:
-                args.desc = prompt("Description: ")
+                args.desc = prompt("Description: ", validate=required("Description"))
 
             self.database.add_mm_pkg(args.title, args.author, args.repo, args.desc)
         elif args.command == "remove":

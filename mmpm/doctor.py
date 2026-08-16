@@ -15,6 +15,7 @@ from mmpm.env import MMPM_DEFAULT_ENV, MMPMEnv
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.magicmirror.database import MagicMirrorDatabase
 from mmpm.magicmirror.lockfile import Lockfile
+from mmpm.magicmirror.magicmirror import MagicMirror, MagicMirrorConfigs
 from mmpm.magicmirror.package import RemotePackage
 
 logger = MMPMLogFactory.get_logger(__name__)
@@ -44,6 +45,8 @@ class Doctor:
         self.app_name = app_name
         self.database = MagicMirrorDatabase()
         self.lockfile = Lockfile()
+        self.magicmirror = MagicMirror()
+        self.mm_configs = MagicMirrorConfigs()
         self.results: List[dict] = []
         self.on_check: Optional[Callable[[dict], None]] = None
 
@@ -81,17 +84,17 @@ class Doctor:
         self.results = []
         self.on_check = on_check
 
-        self.__check_env__()
-        self.__check_magicmirror__()
-        self.__check_dependencies__()
-        self.__check_database__()
-        self.__check_packages__()
-        self.__check_services__()
-        self.__check_remote_apis__()
+        self.check_env()
+        self.check_magicmirror()
+        self.check_dependencies()
+        self.check_database()
+        self.check_packages()
+        self.check_services()
+        self.check_remote_apis()
 
         return self.results
 
-    def __check_env__(self) -> None:
+    def check_env(self) -> None:
         category = "environment"
 
         try:
@@ -142,7 +145,7 @@ class Doctor:
         else:
             self.check(PASS, category, "MagicMirror process manager configuration is coherent")
 
-    def __check_magicmirror__(self) -> None:
+    def check_magicmirror(self) -> None:
         category = "magicmirror"
         root: Path = self.env.MMPM_MAGICMIRROR_ROOT.get()
 
@@ -156,8 +159,8 @@ class Doctor:
         else:
             self.check(PASS, category, f"MagicMirror root exists ({root})")
 
-            if not (root / "modules").exists():
-                self.check(WARN, category, f"No modules/ directory found in {root}", "Is MagicMirror fully installed?")
+            if not self.magicmirror.is_installed:
+                self.check(WARN, category, f"MagicMirror does not appear to be fully installed in {root}", f"Run `{self.app_name} mm install`")
 
             if not (root / ".git").exists():
                 self.check(
@@ -167,7 +170,7 @@ class Doctor:
                     f"`{self.app_name} update` and `{self.app_name} upgrade MagicMirror` will not work for MagicMirror",
                 )
 
-            config_js = root / "config" / "config.js"
+            config_js = self.mm_configs.config_js
 
             if not config_js.exists() or not config_js.stat().st_size:
                 self.check(WARN, category, "MagicMirror config/config.js is missing or empty", f"Run `{self.app_name} open config` to create it")
@@ -191,7 +194,7 @@ class Doctor:
                 f"Start it with `{self.app_name} mm start`, or correct MMPM_MAGICMIRROR_URI with `{self.app_name} open env`",
             )
 
-    def __check_dependencies__(self) -> None:
+    def check_dependencies(self) -> None:
         category = "dependencies"
 
         for binary in ("git", "node", "npm"):
@@ -215,7 +218,7 @@ class Doctor:
         else:
             self.check(WARN, category, "$EDITOR is not set", f"`{self.app_name} open config` will fall back to nano")
 
-    def __check_database__(self) -> None:
+    def check_database(self) -> None:
         category = "database"
 
         if not self.database.is_initialized():
@@ -250,7 +253,7 @@ class Doctor:
         except (OSError, json.JSONDecodeError):
             self.check(WARN, category, "Available-upgrades file is corrupted", f"It will be reset the next time `{self.app_name} update` runs")
 
-    def __check_packages__(self) -> None:
+    def check_packages(self) -> None:
         category = "packages"
         modules_dir: Path = self.env.MMPM_MAGICMIRROR_ROOT.get() / "modules"
 
@@ -304,7 +307,7 @@ class Doctor:
                 f"`{self.app_name} mm hide/show` requires it. Install with `{self.app_name} add MMM-mmpm`",
             )
 
-    def __check_services__(self) -> None:
+    def check_services(self) -> None:
         category = "services"
 
         for label, port, hint in (
@@ -319,7 +322,7 @@ class Doctor:
                 else:
                     self.check(WARN, category, f"{label} is not listening on port {port}", hint)
 
-    def __check_remote_apis__(self) -> None:
+    def check_remote_apis(self) -> None:
         category = "remote"
 
         try:

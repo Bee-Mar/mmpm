@@ -38,31 +38,6 @@ class GuidedSetup(SubCmd):
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
 
-    def __prompt_for_path__(self, message: str, default: str = "", must_exist_hint: str = "") -> str:
-        """
-        Prompts for a filesystem path, warning (with the option to re-enter)
-        when the provided path does not exist.
-
-        Parameters:
-            message (str): the prompt message
-            default (str): value prefilled in the prompt
-            must_exist_hint (str): short description of what should exist at the path
-
-        Returns:
-            str: the path provided by the user (possibly nonexistent, if they insisted)
-        """
-
-        while True:
-            response: str = prompt(message, default=default).strip()
-
-            if not response or Path(response).expanduser().exists():
-                return response
-
-            logger.warning(f"'{response}' does not exist{f' ({must_exist_hint})' if must_exist_hint else ''}")
-
-            if confirm("Keep this value anyway?"):
-                return response
-
     def exec(self, args, extra):
         """
         Provides the user a guided configuration of the environment variables, and
@@ -86,33 +61,34 @@ class GuidedSetup(SubCmd):
         magicmirror_pm2_proc: str = ""
         magicmirror_docker_compose_file: str = ""
 
-        magicmirror_root = self.__prompt_for_path__(
+        path_exists = lambda hint: lambda path: None if not path or Path(path).expanduser().exists() else f"'{path}' does not exist{hint}"
+
+        magicmirror_root = prompt(
             "Enter the absolute path to your MagicMirror installation: ",
             default=current_root,
-            must_exist_hint="it will be created when MagicMirror is installed",
+            validate=path_exists(" (it will be created when MagicMirror is installed)"),
+            allow_invalid=True,
         )
 
         mmpm_is_docker_image = confirm("Is MMPM running as a Docker image?")
 
         if not mmpm_is_docker_image and confirm("Did you install MagicMirror using docker-compose?"):
-            magicmirror_docker_compose_file = self.__prompt_for_path__(
+            magicmirror_docker_compose_file = prompt(
                 f"What is the absolute path to the MagicMirror docker-compose file (ie. {Path.home()}/docker-compose.yml)? ",
                 default=current_compose_file,
+                validate=path_exists(""),
+                allow_invalid=True,
             )
 
         if not mmpm_is_docker_image and not magicmirror_docker_compose_file and confirm("Are you using PM2 to start/stop MagicMirror?"):
             magicmirror_pm2_proc = prompt("What is the name of the PM2 process for MagicMirror? ", default=current_pm2_proc)
 
-        while True:
-            magicmirror_uri = prompt("Enter the address and port used to access MagicMirror: ", default=current_uri).strip()
-
-            if magicmirror_uri.startswith(("http://", "https://")):
-                break
-
-            logger.warning(f"'{magicmirror_uri}' does not begin with http:// or https://")
-
-            if confirm("Keep this value anyway?"):
-                break
+        magicmirror_uri = prompt(
+            "Enter the address and port used to access MagicMirror: ",
+            default=current_uri,
+            validate=lambda uri: None if uri.startswith(("http://", "https://")) else f"'{uri}' does not begin with http:// or https://",
+            allow_invalid=True,
+        )
 
         install_ui = not mmpm_is_docker_image and confirm("Would you like to install the MMPM UI (user interface)?")
 
@@ -143,17 +119,17 @@ class GuidedSetup(SubCmd):
         print(line_break)
 
         if install_as_module:
-            self.__install_mmpm_module__()
+            self.install_mmpm_module()
 
         if install_ui:
-            self.__install_ui__()
+            self.install_ui()
 
         if install_autocomplete:
-            self.__show_autocomplete_setup__()
+            self.show_autocomplete_setup()
 
         print(color.b_green("\nSetup complete!"), f"Run `{self.app_name} list --installed` at any time to see your installed packages.")
 
-    def __install_mmpm_module__(self) -> None:
+    def install_mmpm_module(self) -> None:
         database = MagicMirrorDatabase()
 
         if not database.is_initialized():
@@ -170,7 +146,7 @@ class GuidedSetup(SubCmd):
         else:
             logger.error(f"Failed to install MMM-mmpm. Run `{self.app_name} add MMM-mmpm` to try again.")
 
-    def __install_ui__(self) -> None:
+    def install_ui(self) -> None:
         if not which("pm2"):
             logger.error(f"pm2 is not in your PATH. Please run `npm install -g pm2`, then run `{self.app_name} ui install`.")
             return
@@ -184,7 +160,7 @@ class GuidedSetup(SubCmd):
             logger.error(f"Failed to install the MMPM UI. Run `{self.app_name} ui install` to try again.")
             ui.delete()
 
-    def __show_autocomplete_setup__(self) -> None:
+    def show_autocomplete_setup(self) -> None:
         shell = getenv("SHELL")
 
         if shell:

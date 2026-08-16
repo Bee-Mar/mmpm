@@ -63,7 +63,7 @@ export class LogStreamViewerComponent implements OnInit, OnDestroy {
       useShadows: true,
       verticalHasArrows: false,
       horizontalHasArrows: false,
-      vertical: 'visible',
+      vertical: 'visible' as const,
       verticalScrollbarSize: 12,
       horizontalScrollbarSize: 12,
       arrowSize: 30,

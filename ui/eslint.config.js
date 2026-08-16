@@ -1,18 +1,13 @@
 // @ts-check
 const tseslint = require("typescript-eslint");
-const angularPlugin = require("@angular-eslint/eslint-plugin");
-const angularTemplatePlugin = require("@angular-eslint/eslint-plugin-template");
-const angularTemplateParser = require("@angular-eslint/template-parser");
+const angular = require("angular-eslint");
 
 module.exports = tseslint.config(
   {
     files: ["**/*.ts"],
-    extends: [...tseslint.configs.recommended],
-    plugins: {
-      "@angular-eslint": angularPlugin,
-    },
+    extends: [...tseslint.configs.recommended, ...angular.configs.tsRecommended],
+    processor: angular.processInlineTemplates,
     rules: {
-      ...angularPlugin.configs.recommended.rules,
       "@angular-eslint/directive-selector": [
         "error",
         {
@@ -35,15 +30,7 @@ module.exports = tseslint.config(
   },
   {
     files: ["**/*.html"],
-    languageOptions: {
-      parser: angularTemplateParser,
-    },
-    plugins: {
-      "@angular-eslint/template": angularTemplatePlugin,
-    },
-    rules: {
-      ...angularTemplatePlugin.configs.recommended.rules,
-      ...angularTemplatePlugin.configs.accessibility.rules,
-    },
+    extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility],
+    rules: {},
   },
 );

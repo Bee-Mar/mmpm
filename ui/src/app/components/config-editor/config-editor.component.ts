@@ -106,7 +106,7 @@ export class ConfigEditorComponent implements OnInit, OnDestroy {
       useShadows: true,
       verticalHasArrows: false,
       horizontalHasArrows: false,
-      vertical: 'visible',
+      vertical: 'visible' as const,
       verticalScrollbarSize: 12,
       horizontalScrollbarSize: 12,
       arrowSize: 30,
@@ -145,7 +145,8 @@ export class ConfigEditorComponent implements OnInit, OnDestroy {
     this.pkgSub.unsubscribe();
   }
 
-  public onEditorInit(editor: EditorComponent): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public onEditorInit(editor: any): void {
     this.editor = editor;
   }
 

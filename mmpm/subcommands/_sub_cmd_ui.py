@@ -1,4 +1,4 @@
-"""Command line options for 'db' subcommand"""
+"""Command line options for 'ui' subcommand"""
 
 from shutil import which
 from time import sleep
@@ -17,7 +17,7 @@ logger = MMPMLogFactory.get_logger(__name__)
 class Ui(SubCmd):
     """
     The 'Ui' subcommand allows users to interact with the MMPM user interface (UI), which includes
-    displaying the UI URL, checking its status, installing, or removing it.
+    displaying the UI URL, checking its status, starting/stopping it, installing, or removing it.
 
     Custom Attributes:
         database (MagicMirrorDatabase): An instance of the MagicMirrorDatabase class for managing the database.
@@ -29,49 +29,13 @@ class Ui(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "ui"
-        self.help = f"Interact with the {self.app_name} UI "
-        self.usage = f"{self.app_name} {self.name} [--url] [--status] <install/remove>"
+        self.help = f"Interact with the {self.app_name} UI"
+        self.usage = f"{self.app_name} {self.name} <url/status/start/stop/restart/install/remove/reinstall>"
         self.database = MagicMirrorDatabase()
         self.ui = MMPMui()
 
     def register(self, subparser):
         self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
-
-        self.parser.add_argument(
-            "-u",
-            "--url",
-            action="store_true",
-            help=f"display the url of the {self.app_name} {self.name}",
-            dest="url",
-        )
-
-        self.parser.add_argument(
-            "--status",
-            action="store_true",
-            help=f"display the status of the {self.app_name} {self.name}",
-            dest="status",
-        )
-
-        self.parser.add_argument(
-            "--start",
-            action="store_true",
-            help=f"Start the {self.app_name} {self.name}",
-            dest="start",
-        )
-
-        self.parser.add_argument(
-            "--restart",
-            action="store_true",
-            help=f"Restart the {self.app_name} {self.name}",
-            dest="restart",
-        )
-
-        self.parser.add_argument(
-            "--stop",
-            action="store_true",
-            help=f"Stop the {self.app_name} {self.name}",
-            dest="stop",
-        )
 
         subparsers = self.parser.add_subparsers(
             dest="command",
@@ -80,35 +44,22 @@ class Ui(SubCmd):
             metavar="",
         )
 
-        install_parser = subparsers.add_parser("install", help=f"Install the {self.app_name} {self.name}")
+        subparsers.add_parser("url", help=f"display the url of the {self.app_name} {self.name}")
+        subparsers.add_parser("status", help=f"display the status of the {self.app_name} {self.name}")
+        subparsers.add_parser("start", help=f"start the {self.app_name} {self.name}")
+        subparsers.add_parser("stop", help=f"stop the {self.app_name} {self.name}")
+        subparsers.add_parser("restart", help=f"restart the {self.app_name} {self.name}")
 
-        install_parser.add_argument(
-            "-y",
-            "--yes",
-            action="store_true",
-            help="assume yes",
-            dest="assume_yes",
-        )
+        for command in ("install", "remove", "reinstall"):
+            parser = subparsers.add_parser(command, help=f"{command} the {self.app_name} {self.name}")
 
-        remove_parser = subparsers.add_parser("remove", help=f"Remove the {self.app_name} {self.name}")
-
-        remove_parser.add_argument(
-            "-y",
-            "--yes",
-            action="store_true",
-            help="assume yes",
-            dest="assume_yes",
-        )
-
-        reinstall_parser = subparsers.add_parser("reinstall", help=f"Reinstall the {self.app_name} {self.name}")
-
-        reinstall_parser.add_argument(
-            "-y",
-            "--yes",
-            action="store_true",
-            help="assume yes",
-            dest="assume_yes",
-        )
+            parser.add_argument(
+                "-y",
+                "--yes",
+                action="store_true",
+                help="assume yes for user response and do not show prompt",
+                dest="assume_yes",
+            )
 
     def exec(self, args, extra):
         if not which("pm2"):
@@ -126,19 +77,19 @@ class Ui(SubCmd):
             logger.error(f"Extra arguments are not accepted. See '{self.app_name} {self.name} --help'")
             return
 
-        if args.url:
+        if args.command == "url":
             print(f"http://{urls.HOST}:{urls.MMPM_UI_PORT}")
 
-        elif args.status:
+        elif args.command == "status":
             self.ui.status()
 
-        elif args.start:
+        elif args.command == "start":
             self.ui.start()
 
-        elif args.stop:
+        elif args.command == "stop":
             self.ui.stop()
 
-        elif args.restart:
+        elif args.command == "restart":
             self.ui.stop()
             sleep(1)
             self.ui.start()
@@ -152,7 +103,7 @@ class Ui(SubCmd):
                 self.ui.delete()
             else:
                 logger.info("Installed MMPM-UI")
-                print("Run `mmpm ui --url` to display the UI address, or execute `mmpm open --ui` to open it.")
+                print(f"Run `{self.app_name} {self.name} url` to display the UI address, or execute `{self.app_name} open --ui` to open it.")
 
         elif args.command == "reinstall":
             if not args.assume_yes and not confirm("Are you sure you want to reinstall the MMPM UI?"):
@@ -169,7 +120,7 @@ class Ui(SubCmd):
                 self.ui.delete()
             else:
                 logger.info("Reinstalled MMPM-UI")
-                print("Run `mmpm ui --url` to display the UI address, or execute `mmpm open --ui` to open it.")
+                print(f"Run `{self.app_name} {self.name} url` to display the UI address, or execute `{self.app_name} open --ui` to open it.")
 
         elif args.command == "remove":
             if not args.assume_yes and not confirm("Are you sure you want to remove the MMPM UI?"):

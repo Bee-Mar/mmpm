@@ -1,0 +1,60 @@
+<div class="doctor">
+  <div class="doctor-toolbar">
+    @if (report && !loading) {
+      <div class="summary">
+        <span class="chip pass"><i class="fa-solid fa-circle-check"></i> {{ passed }} passed</span>
+        <span class="chip warn" [class.zero]="report.warnings === 0"><i class="fa-solid fa-triangle-exclamation"></i> {{ report.warnings }} warnings</span>
+        <span class="chip fail" [class.zero]="report.failures === 0"><i class="fa-solid fa-circle-xmark"></i> {{ report.failures }} failures</span>
+      </div>
+    }
+    <div class="spacer"></div>
+    <button class="btn run-btn" (click)="run()" [disabled]="loading">
+      <i class="fa-solid" [class.fa-stethoscope]="!loading" [class.fa-spinner]="loading" [class.fa-spin]="loading"></i>
+      {{ loading ? 'Running checks…' : 'Run again' }}
+    </button>
+  </div>
+
+  @if (error) {
+    <div class="doctor-error">
+      <i class="fa-solid fa-circle-xmark"></i>
+      Failed to run diagnostics: {{ error }}
+    </div>
+  }
+
+  @if (loading && !report) {
+    <div class="doctor-loading">
+      <i class="fa-solid fa-spinner fa-spin"></i>
+      Running diagnostics…
+    </div>
+  }
+
+  @if (report && !error) {
+    <div class="categories">
+      @for (category of categories; track category.name) {
+        <section class="category">
+          <h2>{{ category.name }}</h2>
+          <ul>
+            @for (check of category.checks; track check.check) {
+              <li class="check" [class.pass]="check.status === 'pass'" [class.warn]="check.status === 'warn'" [class.fail]="check.status === 'fail'">
+                <span class="status-icon">
+                  <i
+                    class="fa-solid"
+                    [class.fa-circle-check]="check.status === 'pass'"
+                    [class.fa-triangle-exclamation]="check.status === 'warn'"
+                    [class.fa-circle-xmark]="check.status === 'fail'">
+                  </i>
+                </span>
+                <span class="check-body">
+                  <span class="check-label">{{ check.check }}</span>
+                  @if (check.hint && check.status !== 'pass') {
+                    <span class="check-hint">{{ check.hint }}</span>
+                  }
+                </span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+  }
+</div>

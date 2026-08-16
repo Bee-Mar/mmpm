@@ -1,5 +1,8 @@
 """Command line options for 'rollback' subcommand"""
 
+import string
+from typing import Optional
+
 from mmpm import utils
 from mmpm.constants import color
 from mmpm.log.factory import MMPMLogFactory
@@ -122,18 +125,25 @@ class Rollback(SubCmd):
         if args.history:
             return
 
-        response = utils.prompt("Select a version to roll back to (index or sha, blank to cancel): ")
+        def valid_selection(value: str) -> Optional[str]:
+            if not value:
+                return None  # blank cancels the rollback
 
-        if not response.strip():
+            if value.isdigit():
+                return None if int(value) < len(history) else f"Index {value} is out of range (0-{len(history) - 1})"
+
+            if len(value) >= 4 and all(character in string.hexdigits for character in value):
+                return None
+
+            return f"'{value}' is not a valid index or commit sha"
+
+        selection = utils.prompt("Select a version to roll back to (index or sha, blank to cancel): ", validate=valid_selection)
+
+        if not selection:
             logger.info("Rollback cancelled")
             return
 
-        selection = response.strip()
-
-        if selection.isdigit() and int(selection) < len(history):
-            sha = history[int(selection)]["sha"]
-        else:
-            sha = selection
+        sha = history[int(selection)]["sha"] if selection.isdigit() else selection
 
         self.__rollback__(package, sha)
 

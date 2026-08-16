@@ -1,0 +1,139 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.doctor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 24px;
+}
+
+.doctor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .spacer { flex: 1; }
+}
+
+.summary {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+
+  &.pass {
+    color: oklch(0.75 0.16 145);
+    border-color: oklch(0.55 0.14 145 / 0.4);
+  }
+
+  &.warn {
+    color: oklch(0.8 0.14 85);
+    border-color: oklch(0.7 0.13 85 / 0.4);
+  }
+
+  &.fail {
+    color: oklch(0.7 0.2 25);
+    border-color: oklch(0.6 0.18 25 / 0.4);
+  }
+
+  &.zero {
+    opacity: 0.45;
+  }
+}
+
+.run-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.doctor-error,
+.doctor-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--fg-3);
+  padding: 20px 4px;
+}
+
+.doctor-error {
+  color: oklch(0.7 0.2 25);
+}
+
+.categories {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.category {
+  h2 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-4);
+    margin: 0 0 8px;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+
+  &.warn { background: oklch(0.7 0.13 85 / 0.07); }
+  &.fail { background: oklch(0.6 0.18 25 / 0.09); }
+
+  .status-icon {
+    padding-top: 1px;
+  }
+
+  &.pass .status-icon { color: oklch(0.75 0.16 145); }
+  &.warn .status-icon { color: oklch(0.8 0.14 85); }
+  &.fail .status-icon { color: oklch(0.7 0.2 25); }
+}
+
+.check-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.check-label {
+  font-size: 14px;
+}
+
+.check-hint {
+  font-size: 12.5px;
+  color: var(--fg-3);
+
+  &::before {
+    content: '→ ';
+  }
+}

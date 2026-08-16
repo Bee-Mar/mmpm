@@ -517,3 +517,36 @@
 ### Tests
 
 - New `tests/magicmirror/test_lockfile.py` covering lock recording, history bounds and de-duplication, rollback, sync, and detached-HEAD upgrade recovery
+
+## Version 5.0.0
+
+### Breaking Changes
+
+- `mm-ctl` renamed to `mm`, with `magicmirror` as an alias; its flag-style verbs (`--start`, `--stop`, `--restart`, `--status`, `--hide`, `--show`) are now subcommands: `mmpm mm start|stop|restart|status|hide|show|install|remove`
+- `mm-pkg` renamed to `custom-pkg` (no alias retained)
+- `ui` flag-style verbs replaced with subcommands: `mmpm ui url|status|start|stop|restart|install|remove|reinstall`
+- `open` flag-style options replaced with subcommands: `mmpm open config|css|env|ui|magicmirror|mm-wiki|mm-docs|mmpm-wiki`
+- REST API routes renamed to match: `/api/mm-ctl/*` is now `/api/mm/*`, and `/api/packages/mm-pkg/*` is now `/api/packages/custom-pkg/*` (external API consumers must update; the bundled UI is already in sync)
+
+### CLI
+
+- New `doctor` subcommand: read-only diagnostics covering environment sanity
+- Subcommands now support aliases; `add` gained the `install` alias via this mechanism
+- `upgrade` now accepts package names, honors `--yes` with per-item confirmation prompts, composes `--force` with named packages, distinguishes "not installed" from "no upgrade available" errors, and surfaces per-package upgrade failure reasons that were previously discarded
+- `guided-setup` reworked: prompts are prefilled from the current environment values on re-run, paths and the MagicMirror URI are validated with a re-prompt loop, selected features  are installed directly at the end of the wizard instead of printing commands to copy, and the unset-`$SHELL` crash in the autocomplete step is fixed
+- `mm install`/`mm remove` now honor `-y/--yes` (previously registered but ignored)
+- `utils.prompt()` gained optional `validate`/`allow_invalid` parameters (validator returns an error message or None); used by `guided-setup` (paths, URI), `custom-pkg add` (non-empty fields, repository URL shape), and `rollback --select`
+- Fixed inverted bookkeeping in the available-upgrades file: successful MagicMirror/mmpm upgrades now clear their upgradable flag instead of leaving a phantom "upgrade available"
+
+### API
+
+- New `GET /api/doctor/run` endpoint returning the doctor diagnostics with summary counts; the checks live in a shared `mmpm/doctor.py` used by both the CLI and the endpoint
+- `MagicMirror.is_installed` property extracted from the install-detection logic and reused by `install()` and the doctor
+
+### UI
+
+- New "Doctor" tab in the navigation rail: runs the diagnostics on load, groups results by category with pass/warn/fail chips and per-check remediation hints, and offers a "Run again" button
+
+### Tooling
+
+- `Loader` is now generic (`Loader[SubCmd]` / `Loader[Endpoint]`) with alias resolution, keeping mypy strict across both the CLI and API entrypoints

@@ -53,12 +53,12 @@ export class MagicMirrorPackageAPI extends BaseAPI {
 
   public postAddMmPkg(pkg: MagicMirrorPackage): Promise<APIResponse> {
     console.log("Requesting to add a custom MagicMirrorPackage");
-    return this.postPackage("packages/mm-pkg/add", pkg);
+    return this.postPackage("packages/custom-pkg/add", pkg);
   }
 
   public postRemoveMmPkgs(packages: MagicMirrorPackage[]): Promise<APIResponse> {
     console.log("Requesting to remove a custom MagicMirrorPackage");
-    return this.postPackages("packages/mm-pkg/remove", packages);
+    return this.postPackages("packages/custom-pkg/remove", packages);
   }
   public postVersionHistory(pkg: MagicMirrorPackage): Promise<APIResponse> {
     console.log(`Requesting version history for ${pkg.title}`);

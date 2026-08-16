@@ -1,4 +1,4 @@
-"""Command line options for 'mm-pkg' subcommand"""
+"""Command line options for 'custom-pkg' subcommand"""
 
 from mmpm.constants import color
 from mmpm.log.factory import MMPMLogFactory
@@ -9,9 +9,9 @@ from mmpm.utils import confirm, prompt
 logger = MMPMLogFactory.get_logger(__name__)
 
 
-class MmPkg(SubCmd):
+class CustomPkg(SubCmd):
     """
-    The 'MmPkg' subcommand allows users to add/remove custom MagicMirror packages to/from their local database
+    The 'CustomPkg' subcommand allows users to add/remove custom MagicMirror packages to/from their local database
 
     Custom Attributes:
         database (MagicMirrorDatabase): An instance of the MagicMirrorDatabase class for managing the database.
@@ -19,13 +19,14 @@ class MmPkg(SubCmd):
 
     def __init__(self, app_name):
         self.app_name = app_name
-        self.name = "mm-pkg"
+        self.name = "custom-pkg"
+        self.aliases = ["pkg"]
         self.help = "Manually add/remove custom MagicMirror packages in your local database (similar to add-apt-repository)"
         self.usage = f"{self.app_name} {self.name} <add/remove> [--<option>]"
         self.database = MagicMirrorDatabase()
 
     def register(self, subparser):
-        self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
+        self.parser = subparser.add_parser(self.name, usage=self.usage, aliases=self.aliases, help=self.help)
 
         subparsers = self.parser.add_subparsers(
             dest="command",
@@ -98,14 +99,17 @@ class MmPkg(SubCmd):
             self.database.load()
 
         if args.command == "add":
+            required = lambda field: lambda value: None if value else f"{field} cannot be empty"
+            valid_repo = lambda value: None if value.startswith(("http://", "https://", "git@")) else f"'{value}' does not look like a repository URL"
+
             if not args.title:
-                args.title = prompt("Title: ")
+                args.title = prompt("Title: ", validate=required("Title"))
             if not args.author:
-                args.author = prompt("Author: ")
+                args.author = prompt("Author: ", validate=required("Author"))
             if not args.repo:
-                args.repo = prompt("Repository: ")
+                args.repo = prompt("Repository: ", validate=valid_repo)
             if not args.desc:
-                args.desc = prompt("Description: ")
+                args.desc = prompt("Description: ", validate=required("Description"))
 
             self.database.add_mm_pkg(args.title, args.author, args.repo, args.desc)
         elif args.command == "remove":

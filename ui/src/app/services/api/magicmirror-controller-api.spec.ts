@@ -26,37 +26,37 @@ describe('MagicMirrorControllerAPI', () => {
     expect(service).toBeTruthy();
   });
 
-  it('getStart calls mm-ctl/start endpoint', () => {
+  it('getStart calls mm/start endpoint', () => {
     service.getStart().then(res => expect(res.code).toBe(200));
-    const req = httpMock.expectOne(r => r.url.includes('mm-ctl/start'));
+    const req = httpMock.expectOne(r => r.url.includes('mm/start'));
     expect(req.request.method).toBe('GET');
     req.flush({ code: 200, message: '' });
   });
 
-  it('getRestart calls mm-ctl/restart endpoint', () => {
+  it('getRestart calls mm/restart endpoint', () => {
     service.getRestart().then(res => expect(res.code).toBe(200));
-    const req = httpMock.expectOne(r => r.url.includes('mm-ctl/restart'));
+    const req = httpMock.expectOne(r => r.url.includes('mm/restart'));
     expect(req.request.method).toBe('GET');
     req.flush({ code: 200, message: '' });
   });
 
-  it('getStop calls mm-ctl/stop endpoint', () => {
+  it('getStop calls mm/stop endpoint', () => {
     service.getStop().then(res => expect(res.code).toBe(200));
-    const req = httpMock.expectOne(r => r.url.includes('mm-ctl/stop'));
+    const req = httpMock.expectOne(r => r.url.includes('mm/stop'));
     expect(req.request.method).toBe('GET');
     req.flush({ code: 200, message: '' });
   });
 
-  it('postHide calls mm-ctl/hide endpoint', () => {
+  it('postHide calls mm/hide endpoint', () => {
     service.postHide(mmModule).then(res => expect(res.code).toBe(200));
-    const req = httpMock.expectOne(r => r.url.includes('mm-ctl/hide'));
+    const req = httpMock.expectOne(r => r.url.includes('mm/hide'));
     expect(req.request.method).toBe('POST');
     req.flush({ code: 200, message: '' });
   });
 
-  it('postShow calls mm-ctl/show endpoint', () => {
+  it('postShow calls mm/show endpoint', () => {
     service.postShow(mmModule).then(res => expect(res.code).toBe(200));
-    const req = httpMock.expectOne(r => r.url.includes('mm-ctl/show'));
+    const req = httpMock.expectOne(r => r.url.includes('mm/show'));
     expect(req.request.method).toBe('POST');
     req.flush({ code: 200, message: '' });
   });

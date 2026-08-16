@@ -17,6 +17,7 @@ import { ShoppingCartComponent } from "./components/shopping-cart/shopping-cart.
 import { MagicMirrorControllerComponent } from "./components/magicmirror-controller/magicmirror-controller.component";
 import { MirrorPreviewComponent } from "./components/mirror-preview/mirror-preview.component";
 import { CurrentlyInstalledComponent } from "./components/currently-installed/currently-installed.component";
+import { DoctorComponent } from "./components/doctor/doctor.component";
 import { providePrimeNG } from "primeng/config";
 import Aura from "@primeuix/themes/aura";
 import { definePreset } from "@primeuix/themes";
@@ -85,6 +86,7 @@ export function init_shared_store(store: SharedStoreService) {
     MagicMirrorControllerComponent,
     MirrorPreviewComponent,
     CurrentlyInstalledComponent,
+    DoctorComponent,
   ],
   imports: [BrowserAnimationsModule, BrowserModule, AppRoutingModule, HttpClientModule, PrimeNgModule, MonacoEditorModule.forRoot()],
   providers: [

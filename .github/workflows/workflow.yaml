@@ -20,7 +20,6 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
@@ -56,9 +55,11 @@ jobs:
 
       - name: Install Test
         run: |
-          options=("version" "--help" "completion --help" "db --help" "guided-setup --help" "install --help" "list --help" "logs --help" "mm-ctl --help" "mm-pkg --help" "open --help" "remove --help" "search --help" "show --help" "ui --help" "update --help" "upgrade --help" "version --help")
+          ${{ github.workspace }}/.venv/bin/mmpm version
 
-          for option in "${options[@]}"; do ${{ github.workspace }}/.venv/bin/mmpm $option; done
+          options=("" "add" "install" "completion" "custom-pkg" "pkg" "db" "doctor" "env" "guided-setup" "list" "logs" "mm" "magicmirror" "open" "remove" "rollback" "search" "show" "sync" "ui" "update" "upgrade" "version")
+
+          for option in "${options[@]}"; do ${{ github.workspace }}/.venv/bin/mmpm $option --help; done
 
       - name: Install Nix
         uses: nixbuild/nix-quick-install-action@v30
@@ -159,7 +160,6 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"

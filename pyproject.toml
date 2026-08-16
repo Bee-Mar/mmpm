@@ -1,13 +1,13 @@
 [project]
 name = "mmpm"
-version = "4.7.0"
+version = "5.0.0"
 description = "MMPM, the MagicMirror Package Manager CLI simplifies the installation, removal, and general maintenance of MagicMirror packages"
 
 authors = [
   { name = "Brandon Marlowe", email = "bpmarlowe-software@protonmail.com" },
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 readme = "README.md"
 license = { text = "MIT" }
@@ -17,23 +17,23 @@ keywords = [
 ]
 
 dependencies = [
-  "argcomplete>=3.5.3,<4.0.0",
-  "argparse<2.0.0,>=1.4.0",
-  "colorama<1.0.0,>=0.4.6",
-  "flask<4.0.0,>=3.1.0",
-  "flask-cors<6.0.0,>=5.0.0",
-  "flask-socketio<6.0.0,>=5.5.1",
-  "gevent<25.0.0,>=24.11.1",
-  "gevent-websocket<1.0.0,>=0.10.1",
-  "gitpython<4.0.0,>=3.1.44",
-  "gunicorn<24.0.0,>=23.0.0",
-  "prompt-toolkit<4.0.0,>=3.0.48",
-  "pygments<3.0.0,>=2.19.1",
-  "python-socketio[client]<6.0.0,>=5.12.1",
-  "importlib-resources<7.0.0,>=6.5.2",
-  "jinja2<4.0.0,>=3.1.5",
-  "requests<3.0.0,>=2.32.3",
-  "yaspin<4.0.0,>=3.1.0",
+  "argcomplete",
+  "argparse",
+  "colorama",
+  "flask",
+  "flask-cors",
+  "flask-socketio",
+  "gevent",
+  "gevent-websocket",
+  "gitpython",
+  "gunicorn",
+  "prompt-toolkit",
+  "pygments",
+  "python-socketio[client]",
+  "importlib-resources",
+  "jinja2",
+  "requests",
+  "yaspin",
 ]
 
 [tool.mypy]

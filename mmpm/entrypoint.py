@@ -7,6 +7,7 @@ import mmpm.subcommands
 from mmpm.constants import urls
 from mmpm.log.factory import MMPMLogFactory
 from mmpm.subcommands.loader import Loader
+from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogFactory.get_logger(__name__)
 
@@ -46,14 +47,15 @@ def main():
         metavar="",
     )
 
-    loader = Loader(
+    loader: Loader[SubCmd] = Loader(
         module_path=mmpm.subcommands.__path__,
         module_name="mmpm.subcommands",
         app_name=app_name,
         prefix="_sub_cmd",
     )
 
-    for subcommand in loader.objects.values():
+    # aliases map to the same instance, so dedupe to avoid registering a subcommand twice
+    for subcommand in dict.fromkeys(loader.objects.values()):
         subcommand.register(subparser)
 
     argcomplete.autocomplete(parser)

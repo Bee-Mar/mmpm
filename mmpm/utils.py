@@ -5,7 +5,7 @@ import subprocess
 import time
 import urllib.request
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
 import git
 import requests
@@ -236,14 +236,33 @@ def confirm(message: str) -> bool:  # pragma: no cover
 
 
 # wrapping prompt_toolkit so it's easier to switch out in the future if desired
-def prompt(message: str, default=""):  # pragma: no cover
+def prompt(
+    message: str, default: str = "", validate: Optional[Callable[[str], Optional[str]]] = None, allow_invalid: bool = False
+) -> str:  # pragma: no cover
     """
-    Displays a prompt to the user with the given message and waits for input.
+    Displays a prompt to the user with the given message and waits for input,
+    optionally validating the response.
 
     Parameters:
         message (str): The message to display in the prompt.
+        default (str): Value prefilled in the prompt.
+        validate (Callable): Optional validator called with the stripped response;
+            it returns an error message when the response is invalid, or None when valid.
+        allow_invalid (bool): When True, an invalid response may be kept anyway after
+            confirmation; when False, the user is re-prompted until the response is valid.
 
     Returns:
-        str: The user's input as a string.
+        str: The user's (stripped) input as a string.
     """
-    return ptk_prompt(message, default=default)
+
+    while True:
+        response: str = ptk_prompt(message, default=default).strip()
+        error = validate(response) if validate else None
+
+        if not error:
+            return response
+
+        logger.warning(error)
+
+        if allow_invalid and confirm("Keep this value anyway?"):
+            return response

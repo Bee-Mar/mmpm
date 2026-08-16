@@ -40,6 +40,12 @@
       <span class="nav-label">Server Logs</span>
     </button>
 
+    <button class="nav-btn" [class.active]="activeTab === 'doctor'" (click)="setTab('doctor')" title="Doctor">
+      <span class="nav-icon"><i class="fa-solid fa-stethoscope"></i></span>
+      <span class="tip">Doctor</span>
+      <span class="nav-label">Doctor</span>
+    </button>
+
     <div class="spacer"></div>
 
     <button class="nav-btn rail-toggle" (click)="toggleRail()" [title]="isRailExpanded ? 'Collapse' : 'Expand'">
@@ -128,6 +134,18 @@
         </div>
         <div class="tab-content">
           <app-log-stream-viewer></app-log-stream-viewer>
+        </div>
+      }
+
+      @if (activeTab === 'doctor') {
+        <div class="page-head">
+          <div class="page-title">
+            <h1>Doctor</h1>
+            <span class="sub">// mmpm system diagnostics</span>
+          </div>
+        </div>
+        <div class="tab-content">
+          <app-doctor></app-doctor>
         </div>
       }
 

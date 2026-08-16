@@ -69,6 +69,15 @@ class MagicMirror(Singleton):
 
     env: MMPMEnv = MMPMEnv()
 
+    @property
+    def is_installed(self) -> bool:
+        """
+        Whether MagicMirror appears to be installed at MMPM_MAGICMIRROR_ROOT
+        (the root exists and contains both modules/ and node_modules/).
+        """
+        root: PosixPath = self.env.MMPM_MAGICMIRROR_ROOT.get()
+        return root.exists() and (root / "modules").exists() and (root / "node_modules").exists()
+
     def update(self):
         """
         Checks for updates available to the MagicMirror repository
@@ -158,14 +167,14 @@ class MagicMirror(Singleton):
         root = self.env.MMPM_MAGICMIRROR_ROOT
         root_path: PosixPath = root.get()
 
-        if root_path.exists() and Path(root_path / "modules").exists() and Path(root_path / "node_modules").exists():
-            message = f"MagicMirror appears to already be installed in {root_path}. To install MagicMirror elsewhere, modify the {root.name} using 'mmpm open --env'"
+        if self.is_installed:
+            message = f"MagicMirror appears to already be installed in {root_path}. To install MagicMirror elsewhere, modify the {root.name} using 'mmpm open env'"
             logger.fatal(message)
             return False
 
         for cmd in ["git", "npm"]:
             if not shutil.which(cmd):
-                logger.fatal(f"'{cmd}' command not found. Please install '{cmd}', then re-run 'mmpm mm-ctl --install'")
+                logger.fatal(f"'{cmd}' command not found. Please install '{cmd}', then re-run 'mmpm mm install'")
                 return False
 
         if not root_path.exists():
@@ -195,7 +204,7 @@ class MagicMirror(Singleton):
             return False
 
         logger.info("Installed MagicMirror!")
-        print(f"Run {color.n_green('`mmpm mm-ctl --start`')} to start MagicMirror")
+        print(f"Run {color.n_green('`mmpm mm start`')} to start MagicMirror")
         return True
 
     def remove(self) -> bool:

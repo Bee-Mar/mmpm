@@ -53,7 +53,8 @@ def main():
         prefix="_sub_cmd",
     )
 
-    for subcommand in loader.objects.values():
+    # aliases map to the same instance, so dedupe to avoid registering a subcommand twice
+    for subcommand in dict.fromkeys(loader.objects.values()):
         subcommand.register(subparser)
 
     argcomplete.autocomplete(parser)

@@ -23,12 +23,13 @@ class Add(SubCmd):
     def __init__(self, app_name):
         self.app_name = app_name
         self.name = "add"
+        self.aliases = ["install"]
         self.help = "Add (install) MagicMirror packages"
         self.usage = f"{self.app_name} {self.name} <package(s)> [--yes]"
         self.database = MagicMirrorDatabase()
 
     def register(self, subparser):
-        self.parser = subparser.add_parser(self.name, usage=self.usage, help=self.help)
+        self.parser = subparser.add_parser(self.name, usage=self.usage, aliases=self.aliases, help=self.help)
 
         self.parser.add_argument(
             "-y",

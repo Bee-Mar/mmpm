@@ -3,6 +3,7 @@ from pkgutil import iter_modules
 from typing import Dict
 
 from mmpm.log.factory import MMPMLogFactory
+from mmpm.subcommands.sub_cmd import SubCmd
 
 logger = MMPMLogFactory.get_logger(__name__)
 
@@ -32,9 +33,9 @@ class Loader:
             prefix (str, optional): A prefix to filter which submodules to load. Defaults to an empty string.
         """
 
-        self.objects: Dict[str, object] = self.__load__(module_path, module_name, app_name, prefix)
+        self.objects: Dict[str, SubCmd] = self.__load__(module_path, module_name, app_name, prefix)
 
-    def __load__(self, module_path, module_name: str, app_name: str = "", prefix: str = "") -> Dict[str, object]:
+    def __load__(self, module_path, module_name: str, app_name: str = "", prefix: str = "") -> Dict[str, SubCmd]:
         """
         Loads objects dynamically from the specified module.
 
@@ -66,8 +67,12 @@ class Loader:
                 try:
                     imported_module = import_module(f"{module_name}.{submodule.name}")
                     objekt = getattr(imported_module, class_name)
-                    instance = objekt(app_name) if app_name else objekt()
+                    instance: SubCmd = objekt(app_name) if app_name else objekt()
                     objects[instance.name] = instance
+
+                    for alias in getattr(instance, "aliases", []):
+                        objects[alias] = instance
+
                 except (AttributeError, AssertionError, Exception) as error:
                     logger.error(f"Failed to load subcommand module: {error}")
 

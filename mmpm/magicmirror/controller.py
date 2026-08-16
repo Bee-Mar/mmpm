@@ -219,7 +219,7 @@ class MagicMirrorController(Singleton):
         root.mkdir(exist_ok=True, parents=True)
 
         if not Path(root / "node_modules").exists():
-            logger.error("MagicMirror dependencies have not been installed. Please run `mmpm mm-ctl --install` first.")
+            logger.error("MagicMirror dependencies have not been installed. Please run `mmpm mm install` first.")
             return False
 
         os.chdir(root)

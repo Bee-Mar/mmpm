@@ -165,7 +165,7 @@ class MagicMirror(Singleton):
 
         for cmd in ["git", "npm"]:
             if not shutil.which(cmd):
-                logger.fatal(f"'{cmd}' command not found. Please install '{cmd}', then re-run 'mmpm mm-ctl --install'")
+                logger.fatal(f"'{cmd}' command not found. Please install '{cmd}', then re-run 'mmpm mm install'")
                 return False
 
         if not root_path.exists():
@@ -195,7 +195,7 @@ class MagicMirror(Singleton):
             return False
 
         logger.info("Installed MagicMirror!")
-        print(f"Run {color.n_green('`mmpm mm-ctl --start`')} to start MagicMirror")
+        print(f"Run {color.n_green('`mmpm mm start`')} to start MagicMirror")
         return True
 
     def remove(self) -> bool:

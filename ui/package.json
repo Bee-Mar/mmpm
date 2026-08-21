@@ -47,7 +47,7 @@
     "@angular-eslint/schematics": "22.1.0",
     "@angular-eslint/template-parser": "22.1.0",
     "@angular/build": "^22.1.4",
-    "@angular/cli": "^22.1.4",
+    "@angular/cli": "^22.1.5",
     "@angular/compiler-cli": "^22.1.2",
     "@types/jasmine": "^5.1.0",
     "@types/node": "26.2.0",

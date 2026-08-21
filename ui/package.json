@@ -1,6 +1,6 @@
 {
   "name": "MMPM-UI",
-  "version": "5.0.2",
+  "version": "5.0.1",
   "scripts": {
     "ng": "./node_modules/@angular/cli/bin/ng.js",
     "start": "./node_modules/@angular/cli/bin/ng.js serve",

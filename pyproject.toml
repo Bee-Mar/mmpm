@@ -34,6 +34,7 @@ dependencies = [
   "jinja2",
   "requests",
   "yaspin",
+  "packaging>=26.3",
 ]
 
 [tool.mypy]

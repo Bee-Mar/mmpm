@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input,
   OnDestroy,
@@ -19,6 +20,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-database-info',
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './database-info.component.html',
   styleUrls: ['./database-info.component.scss'],
   providers: [MessageService, ConfirmationService],

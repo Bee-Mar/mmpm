@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, OnDestroy } from "@angular/core";
+import { ChangeDetectionStrategy, Component, AfterViewInit, OnDestroy } from "@angular/core";
 import { MagicMirrorPackage } from "@/models/magicmirror-package";
 
 const DOCK_WIDTH_KEY = 'mmpm.dock-width';
@@ -9,6 +9,7 @@ const CONTENT_MIN = 420; // minimum px to reserve for main content area
 
 @Component({
   selector: "app-root",
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
   standalone: false,

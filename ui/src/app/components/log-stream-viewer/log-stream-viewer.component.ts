@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   HostListener,
   NgZone,
@@ -27,6 +28,7 @@ const PRUNE_INTERVAL_MS = 2 * 60 * 1000; // check every 2 minutes
 
 @Component({
   selector: 'app-log-stream-viewer',
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './log-stream-viewer.component.html',
   styleUrls: ['./log-stream-viewer.component.scss'],
   standalone: false,

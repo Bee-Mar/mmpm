@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   HostListener,
   OnDestroy,
@@ -24,6 +25,7 @@ interface FileContentsState {
 
 @Component({
   selector: 'app-config-editor',
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './config-editor.component.html',
   styleUrls: ['./config-editor.component.scss'],
   providers: [MessageService],

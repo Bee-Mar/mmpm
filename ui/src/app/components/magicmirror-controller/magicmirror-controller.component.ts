@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   HostListener,
   OnDestroy,
@@ -21,6 +22,7 @@ import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-magicmirror-controller',
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './magicmirror-controller.component.html',
   styleUrls: ['./magicmirror-controller.component.scss'],
   providers: [MessageService, ConfirmationService],

@@ -18,6 +18,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 @Component({
   selector: 'app-doctor',
+  // eslint-disable-next-line @angular-eslint/prefer-on-push-component-change-detection -- Eager required after Angular 22 upgrade, see #388
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './doctor.component.html',
   styleUrls: ['./doctor.component.scss'],

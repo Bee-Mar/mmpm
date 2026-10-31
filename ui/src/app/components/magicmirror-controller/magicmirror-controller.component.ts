@@ -22,6 +22,7 @@ import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-magicmirror-controller',
+  // eslint-disable-next-line @angular-eslint/prefer-on-push-component-change-detection -- Eager required after Angular 22 upgrade, see #388
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './magicmirror-controller.component.html',
   styleUrls: ['./magicmirror-controller.component.scss'],

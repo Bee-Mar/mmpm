@@ -8,6 +8,7 @@ import { getModuleIcon, ModuleIcon } from '@/utils/module-icon';
 
 @Component({
   selector: 'app-package-details-viewer',
+  // eslint-disable-next-line @angular-eslint/prefer-on-push-component-change-detection -- Eager required after Angular 22 upgrade, see #388
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './package-details-viewer.component.html',
   styleUrls: ['./package-details-viewer.component.scss'],

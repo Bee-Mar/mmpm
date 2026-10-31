@@ -550,3 +550,10 @@
 ### Tooling
 
 - `Loader` is now generic (`Loader[SubCmd]` / `Loader[Endpoint]`) with alias resolution, keeping mypy strict across both the CLI and API entrypoints
+
+## Version 5.0.2
+
+### UI
+
+- Restored `ChangeDetectionStrategy.Eager` on components that mutate state from outside Angular's template-event graph (window-level resize listeners, splash-screen timing, etc.), fixing a regression from the Angular 22 upgrade where those views stopped reflecting updates under the new OnPush default
+- Silenced the `@angular-eslint/prefer-on-push-component-change-detection` lint rule on those same components with an explicit justification comment, since the Eager strategy there is intentional rather than an oversight

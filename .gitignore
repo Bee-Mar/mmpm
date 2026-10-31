@@ -41,3 +41,5 @@ mmpm/ui
 # nix
 result
 
+# agent help
+.codegraph

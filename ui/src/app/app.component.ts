@@ -9,6 +9,7 @@ const CONTENT_MIN = 420; // minimum px to reserve for main content area
 
 @Component({
   selector: "app-root",
+  // eslint-disable-next-line @angular-eslint/prefer-on-push-component-change-detection -- Eager required after Angular 22 upgrade, see #388
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],

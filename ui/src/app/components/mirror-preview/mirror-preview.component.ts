@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, ViewChild, inject } from '@angular/core';
 import { MagicMirrorPackage } from '@/models/magicmirror-package';
 import { SharedStoreService } from '@/services/shared-store.service';
 import { ConfigFileAPI } from '@/services/api/config-file-api.service';
@@ -42,6 +42,7 @@ function emptyLayout(): MirrorLayout {
 
 @Component({
   selector: 'app-mirror-preview',
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './mirror-preview.component.html',
   styleUrls: ['./mirror-preview.component.scss'],
   providers: [MessageService],

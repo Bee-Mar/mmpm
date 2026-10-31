@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { DoctorApiService, DoctorCheck, DoctorReport } from '@/services/api/doctor-api.service';
 
 interface DoctorCategory {
@@ -18,6 +18,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 @Component({
   selector: 'app-doctor',
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './doctor.component.html',
   styleUrls: ['./doctor.component.scss'],
   standalone: false,

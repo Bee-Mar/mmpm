@@ -3,6 +3,7 @@ import { APIResponse } from '@/services/api/base-api';
 import { MagicMirrorPackageAPI } from '@/services/api/magicmirror-package-api.service';
 import { SharedStoreService } from '@/services/shared-store.service';
 import {
+  ChangeDetectionStrategy,
   Component,
   OnInit,
   ViewChild,
@@ -18,6 +19,7 @@ import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-custom-package-manager',
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './custom-package-manager.component.html',
   styleUrls: ['./custom-package-manager.component.scss'],
   providers: [MessageService],

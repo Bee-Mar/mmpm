@@ -1,13 +1,14 @@
 import { MagicMirrorPackage } from '@/models/magicmirror-package';
 import { MagicMirrorPackageAPI } from '@/services/api/magicmirror-package-api.service';
 import { SharedStoreService } from '@/services/shared-store.service';
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
 type OpStatus = 'pending' | 'working' | 'done' | 'failed';
 
 @Component({
   selector: 'app-shopping-cart',
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './shopping-cart.component.html',
   styleUrls: ['./shopping-cart.component.scss'],
   providers: [MessageService, ConfirmationService],

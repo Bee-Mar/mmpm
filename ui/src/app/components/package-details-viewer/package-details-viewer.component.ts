@@ -1,5 +1,5 @@
 import { MagicMirrorPackage, PackageVersion, RemotePackageDetails } from '@/models/magicmirror-package';
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { APIResponse } from '@/services/api/base-api';
 import { MagicMirrorPackageAPI } from '@/services/api/magicmirror-package-api.service';
 import { SharedStoreService } from '@/services/shared-store.service';
@@ -8,6 +8,7 @@ import { getModuleIcon, ModuleIcon } from '@/utils/module-icon';
 
 @Component({
   selector: 'app-package-details-viewer',
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './package-details-viewer.component.html',
   styleUrls: ['./package-details-viewer.component.scss'],
   providers: [MessageService],

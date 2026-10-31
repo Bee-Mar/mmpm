@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, Input, Output, EventEmitter, inject } from '@angular/core';
 import { MagicMirrorPackage } from '@/models/magicmirror-package';
 import { SharedStoreService } from '@/services/shared-store.service';
 import { Subscription } from 'rxjs';
@@ -6,6 +6,7 @@ import { getModuleIcon, ModuleIcon } from '@/utils/module-icon';
 
 @Component({
   selector: 'app-currently-installed',
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './currently-installed.component.html',
   styleUrls: ['./currently-installed.component.scss'],
   standalone: false,

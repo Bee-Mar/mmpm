@@ -179,6 +179,7 @@
               # a real node is required in PATH: without it, bun executes ng.js itself and
               # reports its emulated Node version, which Angular CLI 22+ rejects as too old
               pkgs.nodejs_24
+              pkgs.patchelf
             ];
 
             bunDeps = pkgs.bun2nix.fetchBunDeps {
@@ -186,6 +187,13 @@
             };
 
             buildPhase = ''
+              # sass-embedded ships a prebuilt dart binary linked against the FHS
+              # dynamic linker path, which doesn't exist in the Nix sandbox
+              find node_modules -type f -path '*sass-embedded-*/dart-sass/src/dart' -print0 \
+                | xargs -0 --no-run-if-empty patchelf \
+                    --set-interpreter "$(cat ${pkgs.stdenv.cc}/nix-support/dynamic-linker)" \
+                    --set-rpath "${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.glibc}/lib"
+
               bun run build-prod
             '';
 

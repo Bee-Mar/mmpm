@@ -557,3 +557,7 @@
 
 - Restored `ChangeDetectionStrategy.Eager` on components that mutate state from outside Angular's template-event graph (window-level resize listeners, splash-screen timing, etc.), fixing a regression from the Angular 22 upgrade where those views stopped reflecting updates under the new OnPush default
 - Silenced the `@angular-eslint/prefer-on-push-component-change-detection` lint rule on those same components with an explicit justification comment, since the Eager strategy there is intentional rather than an oversight
+
+### Nix
+
+- Fixed `nix build` failing with `spawn .../sass-embedded-linux-x64/dart-sass/src/dart ENOENT`: the prebuilt `dart` binary shipped by `sass-embedded` is linked against the FHS dynamic linker path, which doesn't exist in the Nix sandbox; it's now patched with `patchelf` before the Angular build runs

@@ -561,3 +561,9 @@
 ### Nix
 
 - Fixed `nix build` failing with `spawn .../sass-embedded-linux-x64/dart-sass/src/dart ENOENT`: the prebuilt `dart` binary shipped by `sass-embedded` is linked against the FHS dynamic linker path, which doesn't exist in the Nix sandbox; it's now patched with `patchelf` before the Angular build runs
+
+### Bug Fixes
+
+- Fixed `MagicMirrorPackage.upgrade()` (#393): plain `git stash` exits `0` with "No local changes to save" when the only local change is an untracked file, without creating a new stash entry; MMPM previously treated that exit code alone as proof a stash was created, so the subsequent `git stash pop` could restore an unrelated, pre-existing stash — recreating already-resolved conflicts (e.g. in `package-lock.json`) on later updates. `upgrade()` now compares `refs/stash` before and after running `git stash` to confirm a new entry actually exists before popping, and pops that specific entry (`stash@{0}`) rather than relying on exit code alone
+- A conflicting `git stash pop` is now treated as a failed upgrade with an actionable error message instead of only logging a warning; the stash is left in place for manual resolution
+- Added regression coverage in `tests/magicmirror/test_package.py` for: untracked-only changes with a pre-existing stash, no pre-existing stash, genuine tracked changes on top of a pre-existing stash, and stash-pop conflicts

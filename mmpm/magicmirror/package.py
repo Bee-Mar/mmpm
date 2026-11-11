@@ -305,13 +305,22 @@ class MagicMirrorPackage:
         stashed = False
 
         if status_out.strip():
+            _, before_stash_ref, _ = run_cmd(["git", "rev-parse", "-q", "--verify", "refs/stash"], progress=False, cwd=pkg_dir)
+
             logger.debug(f"Stashing local changes in {self.directory} before upgrade")
             stash_code, _, stash_err = run_cmd(["git", "stash"], message="Stashing local changes", cwd=pkg_dir)
 
             if stash_code:
                 return False, f"Failed to stash local changes: {stash_err.strip()}"
 
-            stashed = True
+            _, after_stash_ref, _ = run_cmd(["git", "rev-parse", "-q", "--verify", "refs/stash"], progress=False, cwd=pkg_dir)
+
+            # `git stash` exits 0 even when it stashes nothing — e.g. "No local
+            # changes to save" when the only local change is an untracked file.
+            # Only treat this as a real stash if refs/stash actually moved;
+            # otherwise a later `stash pop` would restore an unrelated,
+            # pre-existing stash entry instead of doing nothing.
+            stashed = bool(after_stash_ref.strip()) and after_stash_ref.strip() != before_stash_ref.strip()
 
         # A rollback leaves the repo on a detached HEAD where `git pull` cannot
         # merge — return to the default branch first so the upgrade proceeds.
@@ -330,15 +339,21 @@ class MagicMirrorPackage:
 
         error_code, stdout, stderr = run_cmd(["git", "pull"], message="Retrieving changes", cwd=pkg_dir)
 
-        # Restore stashed changes regardless of pull outcome.
+        # Restore stashed changes regardless of pull outcome. `stashed` is only
+        # True when this upgrade just created the stash, so stash@{0} is
+        # guaranteed to be that entry, not some unrelated older one.
         if stashed:
-            pop_code, _, pop_err = run_cmd(["git", "stash", "pop"], message="Restoring local changes", cwd=pkg_dir)
+            pop_code, _, pop_err = run_cmd(["git", "stash", "pop", "stash@{0}"], message="Restoring local changes", cwd=pkg_dir)
 
             if pop_code:
-                # Conflicts between the stash and the pulled changes need manual resolution.
-                logger.warning(
-                    f"git stash pop had conflicts in {self.directory}. Run 'git stash pop' in the module directory to resolve them manually."
+                # Conflicts between the stash and the pulled changes need manual resolution;
+                # the stash is left in place so no local changes are lost.
+                error_msg = (
+                    f"Failed to restore stashed changes in {self.directory}: {pop_err.strip()}. "
+                    "The stash was kept; resolve the conflict and run 'git stash pop' in the module directory manually."
                 )
+                logger.error(error_msg)
+                return False, error_msg
 
         # Only a non-zero exit code signals failure — git writes fetch progress to
         # stderr even on a successful pull, so checking stderr alone gives false negatives.

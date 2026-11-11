@@ -201,6 +201,101 @@ class TestMagicMirrorPackage(unittest.TestCase):
         self.assertTrue(ok)
         self.assertEqual(err, "")
 
+    @patch("mmpm.magicmirror.package.run_cmd")
+    @patch("mmpm.magicmirror.package.InstallationHandler.install")
+    def test_upgrade_untracked_only_does_not_pop_unrelated_stash(self, mock_install, mock_run_cmd):
+        """Regression for #393: an untracked-only working tree must not pop a pre-existing stash.
+
+        `git stash` exits 0 with "No local changes to save" when only untracked
+        files are present, without creating a new entry. refs/stash therefore
+        resolves to the same sha before and after, so no pop should be attempted.
+        """
+        # status (untracked file only) → rev-parse refs/stash (before, pre-existing stash)
+        # → stash (no-op, exit 0) → rev-parse refs/stash (after, unchanged)
+        # → symbolic-ref (on a branch) → pull (changes pulled) → rev-parse (lock file entry)
+        mock_run_cmd.side_effect = [
+            (0, "?? untracked_file\n", ""),
+            (0, "deadbeef\n", ""),
+            (0, "No local changes to save\n", ""),
+            (0, "deadbeef\n", ""),
+            (0, "refs/heads/master\n", ""),
+            (0, "Updating abc..def\nFast-forward", ""),
+            (0, "def456\n", ""),
+        ]
+        mock_install.return_value = True
+        ok, err = self.package.upgrade()
+        self.assertTrue(ok)
+        self.assertEqual(err, "")
+        calls = [call.args[0] for call in mock_run_cmd.call_args_list]
+        self.assertNotIn(["git", "stash", "pop", "stash@{0}"], calls)
+
+    @patch("mmpm.magicmirror.package.run_cmd")
+    @patch("mmpm.magicmirror.package.InstallationHandler.install")
+    def test_upgrade_no_pre_existing_stash(self, mock_install, mock_run_cmd):
+        """A genuine stash with no prior stash entries is created and popped."""
+        # status (dirty) → rev-parse refs/stash (before, none exist) → stash (creates one)
+        # → rev-parse refs/stash (after, now exists) → symbolic-ref (on a branch)
+        # → pull → stash pop stash@{0} → rev-parse (lock file entry)
+        mock_run_cmd.side_effect = [
+            (0, " M tracked.txt\n", ""),
+            (1, "", ""),
+            (0, "", ""),
+            (0, "cafef00d\n", ""),
+            (0, "refs/heads/master\n", ""),
+            (0, "Updating abc..def\nFast-forward", ""),
+            (0, "", ""),
+            (0, "def456\n", ""),
+        ]
+        mock_install.return_value = True
+        ok, err = self.package.upgrade()
+        self.assertTrue(ok)
+        self.assertEqual(err, "")
+        calls = [call.args[0] for call in mock_run_cmd.call_args_list]
+        self.assertIn(["git", "stash", "pop", "stash@{0}"], calls)
+
+    @patch("mmpm.magicmirror.package.run_cmd")
+    @patch("mmpm.magicmirror.package.InstallationHandler.install")
+    def test_upgrade_genuine_tracked_changes_stashed_and_restored(self, mock_install, mock_run_cmd):
+        """Genuine tracked changes on top of a pre-existing stash are stashed and popped correctly."""
+        # status (dirty) → rev-parse refs/stash (before, pre-existing stash) → stash (creates a new one)
+        # → rev-parse refs/stash (after, different sha) → symbolic-ref (on a branch)
+        # → pull → stash pop stash@{0} → rev-parse (lock file entry)
+        mock_run_cmd.side_effect = [
+            (0, " M tracked.txt\n", ""),
+            (0, "deadbeef\n", ""),
+            (0, "", ""),
+            (0, "cafef00d\n", ""),
+            (0, "refs/heads/master\n", ""),
+            (0, "Updating abc..def\nFast-forward", ""),
+            (0, "", ""),
+            (0, "def456\n", ""),
+        ]
+        mock_install.return_value = True
+        ok, err = self.package.upgrade()
+        self.assertTrue(ok)
+        self.assertEqual(err, "")
+        calls = [call.args[0] for call in mock_run_cmd.call_args_list]
+        self.assertIn(["git", "stash", "pop", "stash@{0}"], calls)
+
+    @patch("mmpm.magicmirror.package.run_cmd")
+    def test_upgrade_stash_pop_conflict_is_a_failure(self, mock_run_cmd):
+        """A conflicting `git stash pop` must fail the upgrade instead of only logging a warning."""
+        # status (dirty) → rev-parse refs/stash (before, none) → stash (creates one)
+        # → rev-parse refs/stash (after) → symbolic-ref (on a branch) → pull → stash pop (conflict)
+        mock_run_cmd.side_effect = [
+            (0, " M tracked.txt\n", ""),
+            (1, "", ""),
+            (0, "", ""),
+            (0, "cafef00d\n", ""),
+            (0, "refs/heads/master\n", ""),
+            (0, "Updating abc..def\nFast-forward", ""),
+            (1, "", "error: could not restore untracked files from stash"),
+        ]
+        ok, err = self.package.upgrade()
+        self.assertFalse(ok)
+        self.assertIn("stash", err.lower())
+        self.assertIn("kept", err.lower())
+
     def test_display_title_only(self):
         """Lines 139-141: title_only displays just the title."""
         import io
